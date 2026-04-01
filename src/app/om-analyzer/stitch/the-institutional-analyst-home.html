@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=Playfair+Display:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary-fixed-variant": "#414658",
+                        "on-tertiary-fixed-variant": "#5c4300",
+                        "on-secondary-container": "#5e6476",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#ffb3b2",
+                        "outline-variant": "#e3bebd",
+                        "on-primary-container": "#ffffff",
+                        "background": "#faf8ff",
+                        "tertiary-container": "#957012",
+                        "on-tertiary-fixed": "#261a00",
+                        "surface-dim": "#d4d9ef",
+                        "tertiary-fixed": "#ffdea0",
+                        "surface-container": "#eaedff",
+                        "secondary": "#585e70",
+                        "on-tertiary-container": "#ffffff",
+                        "outline": "#8f6f6f",
+                        "surface-variant": "#dde2f8",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#dde2f8",
+                        "secondary-fixed": "#dde2f8",
+                        "surface": "#faf8ff",
+                        "surface-container-highest": "#dde2f8",
+                        "primary-container": "#dc3545",
+                        "tertiary": "#785800",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f2f3ff",
+                        "inverse-on-surface": "#eef0ff",
+                        "secondary-fixed-dim": "#c1c6db",
+                        "on-secondary-fixed": "#151b2b",
+                        "on-surface-variant": "#5b4040",
+                        "on-primary-fixed": "#410008",
+                        "primary-fixed": "#ffdad9",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-background": "#151b2b",
+                        "error": "#ba1a1a",
+                        "inverse-surface": "#2a3040",
+                        "primary-fixed-dim": "#ffb3b2",
+                        "on-primary-fixed-variant": "#92001f",
+                        "tertiary-fixed-dim": "#eec05e",
+                        "primary": "#b9172f",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#faf8ff",
+                        "surface-tint": "#ba1830",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#e2e7fd",
+                        "on-surface": "#151b2b"
+                    },
+                    fontFamily: {
+                        "headline": ["Playfair Display", "serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(221, 226, 248, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        .primary-gradient {
+            background: linear-gradient(135deg, #b9172f 0%, #dc3545 100%);
+        }
+        .tabular-numbers {
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shadow-xl shadow-slate-900/5 px-8 py-3 flex justify-between items-center">
+<div class="flex items-center gap-12">
+<span class="font-serif italic text-xl text-slate-900 dark:text-slate-100">The Institutional Analyst</span>
+<div class="hidden md:flex items-center gap-8 font-sans text-sm font-medium tracking-tight">
+<a class="text-slate-500 hover:text-slate-900 transition-colors" href="#">Portfolio</a>
+<a class="text-slate-500 hover:text-slate-900 transition-colors" href="#">Analysis</a>
+<a class="text-slate-500 hover:text-slate-900 transition-colors" href="#">Market Data</a>
+<a class="text-slate-500 hover:text-slate-900 transition-colors" href="#">Comps</a>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden lg:flex items-center bg-surface-container rounded-lg px-3 py-1.5 gap-2 border border-outline-variant/20">
+<span class="material-symbols-outlined text-secondary scale-75">search</span>
+<input class="bg-transparent border-none text-xs focus:ring-0 w-48 p-0" placeholder="Search assets..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-slate-600 hover:bg-slate-50 p-2 rounded-full transition-colors">notifications</button>
+<button class="material-symbols-outlined text-slate-600 hover:bg-slate-50 p-2 rounded-full transition-colors">account_circle</button>
+<button class="primary-gradient text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all">
+                    Upgrade to Pro
+                </button>
+</div>
+</div>
+</nav>
+<main class="pt-24">
+<!-- Hero & Upload Section -->
+<section class="max-w-7xl mx-auto px-8 pt-16 pb-24 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div class="space-y-8">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tertiary/10 border border-tertiary/20">
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">stars</span>
+<span class="text-xs font-bold uppercase tracking-widest text-tertiary">Institutional Grade AI</span>
+</div>
+<h1 class="font-headline text-5xl md:text-6xl text-on-surface leading-tight">
+                    Underwrite any CRE <br/>
+<span class="italic text-primary">Deal in Seconds.</span>
+</h1>
+<p class="text-lg text-secondary max-w-xl leading-relaxed">
+                    Transform static Offering Memorandums into dynamic financial models. Our AI extracts rent rolls, P&amp;L data, and market comps with 99.8% precision.
+                </p>
+<div class="flex flex-wrap gap-4">
+<div class="flex items-center gap-3 bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-outline-variant/10">
+<span class="text-3xl font-bold tabular-numbers text-on-surface">4.2k</span>
+<div class="flex flex-col">
+<span class="text-[10px] uppercase tracking-tighter text-secondary">Assets Analyzed</span>
+<div class="h-1 w-12 bg-primary rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center gap-3 bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-outline-variant/10">
+<span class="text-3xl font-bold tabular-numbers text-on-surface">$12B</span>
+<div class="flex flex-col">
+<span class="text-[10px] uppercase tracking-tighter text-secondary">Transaction Volume</span>
+<div class="h-1 w-12 bg-tertiary rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Upload Widget -->
+<div class="relative">
+<div class="absolute -inset-4 bg-gradient-to-tr from-primary/5 to-tertiary/5 rounded-3xl blur-2xl"></div>
+<div class="relative bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-8 shadow-2xl shadow-on-surface/5 overflow-hidden">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-sm font-bold uppercase tracking-widest text-secondary">Analyzer Widget v2.4</h3>
+<div class="flex gap-1">
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+</div>
+</div>
+<div class="border-2 border-dashed border-outline-variant/50 rounded-xl p-12 flex flex-col items-center text-center group hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer">
+<div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">upload_file</span>
+</div>
+<h4 class="text-lg font-semibold mb-2">Drop your OM here</h4>
+<p class="text-sm text-secondary mb-6">PDF, Excel, or CSV accepted (Max 50MB)</p>
+<button class="px-6 py-2.5 bg-on-surface text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors">
+                            Select File from Local
+                        </button>
+</div>
+<div class="mt-8 space-y-3">
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">description</span>
+<span class="text-xs font-medium">One_Vanderbilt_OM.pdf</span>
+</div>
+<span class="text-[10px] text-tertiary font-bold uppercase">Ready</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Bento Grid -->
+<section class="bg-surface-container-low py-24">
+<div class="max-w-7xl mx-auto px-8">
+<div class="mb-16">
+<h2 class="font-headline text-4xl mb-4 text-on-surface">Precision Underwriting</h2>
+<p class="text-secondary max-w-2xl">Advanced neural networks trained specifically on commercial real estate documentation and financial reporting standards.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Feature Card 1 -->
+<div class="bg-surface-container-lowest p-8 rounded-2xl shadow-sm border border-outline-variant/10 md:col-span-2">
+<div class="flex justify-between items-start mb-8">
+<div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">analytics</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-widest px-2 py-1 bg-surface-container rounded">Real-time processing</span>
+</div>
+<h3 class="text-xl font-bold mb-3">Automated Cash Flow Modeling</h3>
+<p class="text-secondary text-sm leading-relaxed mb-6">Our system instantly parses historical P&amp;Ls and T-12 statements to project 10-year levered and unlevered cash flows with sensitivity analysis built-in.</p>
+<img class="w-full h-48 object-cover rounded-xl grayscale opacity-80 hover:grayscale-0 transition-all duration-500" data-alt="close-up of clean financial dashboard with line charts and glowing data points in deep navy and red accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrrsJco-ltjMl4QkH21R5MtB_sYBdgCkZ6laTnKPZ1QLhDHRhvc11AxPd4ejowiMNqGKjJYnoBGFycBKD4ts_TRsM1sDIUpIdqUUw4p4fpHxm2PVgK7qse_i9FGY9wKyiBZ8B02LHpnWq1ZwZ0G62TGMu1HyaOSo0K8FRDikvfZh2Z6P3kSZo6a_Kf0QcBee5p2-8nGJKmGKXFo-sGy1wjT-tMgsSM_ZCB7QROUP0b0wCirrG7VRZKb5EoNtNLXnnP0taSyYsiX4Q"/>
+</div>
+<!-- Feature Card 2 -->
+<div class="bg-on-surface text-white p-8 rounded-2xl shadow-xl flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-4xl mb-6">verified_user</span>
+<h3 class="text-xl font-bold mb-3">Institutional Compliance</h3>
+<p class="text-slate-400 text-sm leading-relaxed">Every extraction is cross-referenced with our proprietary database of 500k+ assets to flag anomalies in OpEx and Rent Rolls.</p>
+</div>
+<div class="mt-8 pt-8 border-t border-white/10">
+<div class="flex -space-x-3 overflow-hidden">
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-on-surface" data-alt="professional headshot of executive in dark suit" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdEZd6Z-2GHZQILCnK7hq748tn5eZhxG3MuMAxzA8zXy-MZzxgpYpfBe__uxxgKKTCQT96UAeBJRIYHPfoogcjgjJ42Rq28lQkKMGtBbfpd7rMR9ZaAosMY7PY21Oid2KpmWVF90KWfG-CAxS4lNVQ2SruhXAWS7HHAXskYXfysdr-sG2RAWcGU5tBNnX6434yM2ywd6ws_y_GQm1qG1swldvnxmS719pVhhjHpyBYYkqC0w1nKADJ1WhKEHlszfaizpRcaFB4IEE"/>
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-on-surface" data-alt="professional headshot of female analyst" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgdqSOMituBuSgtEKSdsOx8rDc17vnVRAQogwpovjpQRePVsvm_2E-ya4gQ-8MObr9xZm4ReQcHZrYVtrfS6Hb-gvyCwsrQt7HRPrfHru1EhOpxt0vJoMnK914VWrzFPDlJ4YA0hVtkh0ASJe7w9dn7jKlWLMt_UbpVihqEWRspTGSdtt0Fl1q2rrxzssNJfeXLaTiWetzkHwuvroQaYfcSGBl8CpD2QXzVOj3n2JXoWdD5iI-1o6w28gBhGYymfUKpUO0OYNQvSM"/>
+<img class="inline-block h-8 w-8 rounded-full ring-2 ring-on-surface" data-alt="professional headshot of senior broker" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdaQX3LAlW1z9-X_9SeMZqgFnGiHLjItQZVNHwYyqTM2afa7fS9bxprXTeDXbDTBAncOWOEv5zoH8HOpqs5u7ge9o1PkJFSyXaVWQ8QErIoo35wG2crjUKM079V3TfF-rQItcYF1FQQKQenqnT-L1RuUaEqlEJ_yXvkb41bpDrv1EuudfpFkfjwC14SVSg8H6wszx6dBnruWKPKNyeZ9LlhY-W-pjxVkgsImHlIXBtyq4RK2rhT8hZeU3-l5UWuCYY67IjOWZ7PWM"/>
+</div>
+<p class="mt-3 text-[10px] text-slate-500 uppercase tracking-widest font-bold italic">Trusted by the Big 4</p>
+</div>
+</div>
+<!-- Feature Card 3 -->
+<div class="bg-surface-container-lowest p-8 rounded-2xl shadow-sm border border-outline-variant/10">
+<span class="material-symbols-outlined text-primary mb-6">view_list</span>
+<h3 class="text-xl font-bold mb-3">Lease Roll Analysis</h3>
+<p class="text-secondary text-sm leading-relaxed">Instantly identify lease expirations, rollover risks, and weighted average lease terms (WALT).</p>
+</div>
+<!-- Feature Card 4 -->
+<div class="bg-surface-container-lowest p-8 rounded-2xl shadow-sm border border-outline-variant/10 md:col-span-2 relative overflow-hidden">
+<div class="flex flex-col md:flex-row gap-8 items-center">
+<div class="flex-1">
+<span class="material-symbols-outlined text-tertiary mb-6">map</span>
+<h3 class="text-xl font-bold mb-3">Hyper-Local Comps</h3>
+<p class="text-secondary text-sm leading-relaxed">We don't just give you city data. We find the 5 most relevant assets within a 1-mile radius of your target property.</p>
+</div>
+<div class="w-full md:w-1/2 h-40 bg-slate-200 rounded-xl overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="detailed topographic architectural site map of a city block in minimalist dark style" data-location="New York" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwpApw3xl7A0eyDTqoV0_pgsWGO9xvfKEWwh2eKXLfUgicWv48fru97sNl0mYP3DfUXs6eENYX-WOSFc39pN0PGFmxicrIULQD4rZuQgMmswLHCf9nNlGIbZ6uLuaIJtU3mn07Vu1Ft_0CCWFSIRmpK5V29cr8tMfwUvr_xLjIPe4905EYmfqZp1wFDQRxPS7BJ8ywST-_qXGEwlQy25ajdy-BUUWVdfJdjgJx4-q34fQJ6KDrUa7oRYjL7F_hVjQMwRzIk3_xCP0"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-4 h-4 bg-primary rounded-full animate-pulse border-2 border-white shadow-lg"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Pricing Comparison -->
+<section class="py-24 max-w-7xl mx-auto px-8">
+<div class="text-center mb-16">
+<h2 class="font-headline text-4xl mb-4">Enterprise Grade Analysis</h2>
+<p class="text-secondary">Simple, transparent pricing for teams of all sizes.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-px bg-outline-variant/20 rounded-2xl overflow-hidden border border-outline-variant/30">
+<!-- Free Plan -->
+<div class="bg-surface-container-lowest p-12">
+<div class="mb-12">
+<span class="text-xs font-bold uppercase tracking-widest text-secondary">Individual</span>
+<h3 class="text-3xl font-bold mt-2">Free</h3>
+<p class="text-sm text-secondary mt-4">Perfect for individual brokers and students.</p>
+</div>
+<ul class="space-y-4 mb-12">
+<li class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-primary scale-75" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            3 Deal Analyses per month
+                        </li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-primary scale-75" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            Standard PDF extraction
+                        </li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-primary scale-75" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            Community Support
+                        </li>
+<li class="flex items-center gap-3 text-sm opacity-30 line-through">
+                            Bulk Uploads
+                        </li>
+<li class="flex items-center gap-3 text-sm opacity-30 line-through">
+                            AI Scoring Models
+                        </li>
+<li class="flex items-center gap-3 text-sm opacity-30 line-through">
+                            Excel Export (Full Model)
+                        </li>
+</ul>
+<button class="w-full py-4 border-2 border-on-surface rounded-xl font-bold hover:bg-on-surface hover:text-white transition-all">Get Started</button>
+</div>
+<!-- Pro Plan -->
+<div class="bg-on-surface text-white p-12 relative overflow-hidden">
+<div class="absolute top-8 right-8 px-3 py-1 bg-primary rounded-full text-[10px] font-bold uppercase tracking-widest">Recommended</div>
+<div class="mb-12">
+<span class="text-xs font-bold uppercase tracking-widest text-slate-400">Institutional</span>
+<h3 class="text-3xl font-bold mt-2">$299<span class="text-lg font-normal text-slate-500">/mo</span></h3>
+<p class="text-sm text-slate-400 mt-4">For active acquisitions and underwriting teams.</p>
+</div>
+<ul class="space-y-4 mb-12">
+<li class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-tertiary-fixed-dim scale-75" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            Unlimited Deal Analyses
+                        </li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-tertiary-fixed-dim scale-75" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            Priority Multi-Thread Processing
+                        </li>
+<li class="flex items-center gap-3 text-sm font-bold text-primary-fixed">
+<span class="material-symbols-outlined text-primary-fixed scale-75" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                            Bulk Uploads (Entire Portfolios)
+                        </li>
+<li class="flex items-center gap-3 text-sm font-bold text-primary-fixed">
+<span class="material-symbols-outlined text-primary-fixed scale-75" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                            AI Scoring Models &amp; Risk Ratings
+                        </li>
+<li class="flex items-center gap-3 text-sm font-bold text-primary-fixed">
+<span class="material-symbols-outlined text-primary-fixed scale-75" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                            Excel Exports (Unprotected Models)
+                        </li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-tertiary-fixed-dim scale-75" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            API Access &amp; CRM Integration
+                        </li>
+</ul>
+<button class="w-full py-4 primary-gradient text-white rounded-xl font-bold shadow-xl shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all">Go Pro Now</button>
+</div>
+</div>
+</section>
+<!-- Newsletter / CTA -->
+<section class="py-24 bg-surface-container px-8">
+<div class="max-w-4xl mx-auto bg-surface-container-lowest p-12 rounded-3xl shadow-lg text-center border border-outline-variant/30">
+<h2 class="font-headline text-3xl mb-4">Master the Market.</h2>
+<p class="text-secondary mb-8">Join 15,000+ analysts receiving our weekly proprietary CRE market insights.</p>
+<form class="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
+<input class="flex-1 bg-surface-container-low border-none rounded-xl focus:ring-primary" placeholder="work@company.com" type="email"/>
+<button class="px-8 py-3 bg-on-surface text-white font-bold rounded-xl hover:bg-slate-800 transition-colors">Subscribe</button>
+</form>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-50 dark:bg-slate-950 border-t border-slate-200/10 w-full py-12 mt-auto">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8 px-12 max-w-7xl mx-auto">
+<div class="space-y-4">
+<span class="font-serif text-lg">Institutional Analyst</span>
+<p class="font-sans text-xs text-slate-500 leading-relaxed">
+                    The next generation of financial intelligence for commercial real estate professionals. Built in NYC.
+                </p>
+</div>
+<div class="flex flex-col gap-3">
+<span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Platform</span>
+<a class="font-sans text-xs text-slate-500 hover:text-red-600 underline transition-all" href="#">Underwriting</a>
+<a class="font-sans text-xs text-slate-500 hover:text-red-600 underline transition-all" href="#">Market Data</a>
+<a class="font-sans text-xs text-slate-500 hover:text-red-600 underline transition-all" href="#">API Documentation</a>
+</div>
+<div class="flex flex-col gap-3">
+<span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Company</span>
+<a class="font-sans text-xs text-slate-500 hover:text-red-600 underline transition-all" href="#">Privacy Policy</a>
+<a class="font-sans text-xs text-slate-500 hover:text-red-600 underline transition-all" href="#">Terms of Service</a>
+<a class="font-sans text-xs text-slate-500 hover:text-red-600 underline transition-all" href="#">Contact Sales</a>
+</div>
+<div class="flex flex-col gap-3">
+<span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Social</span>
+<a class="font-sans text-xs text-slate-500 hover:text-red-600 underline transition-all" href="#">LinkedIn</a>
+<a class="font-sans text-xs text-slate-500 hover:text-red-600 underline transition-all" href="#">Twitter / X</a>
+</div>
+</div>
+<div class="max-w-7xl mx-auto px-12 mt-12 pt-8 border-t border-slate-200/10 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="font-sans text-xs text-slate-500">© 2024 Institutional Analyst. All rights reserved.</p>
+<div class="flex gap-6">
+<span class="material-symbols-outlined text-slate-400 text-lg">public</span>
+<span class="material-symbols-outlined text-slate-400 text-lg">security</span>
+</div>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,131 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===== HELPER FUNCTIONS =====
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ===== ARTICLES =====
+    match /articles/{articleId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ===== DEALS =====
+    match /deals/{dealId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ===== GLOSSARY =====
+    match /glossary/{termId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ===== GUIDES =====
+    match /guides/{guideId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ===== MARKET DATA SERIES =====
+    match /series/{seriesId} {
+      allow read: if true;
+      allow write: if isAdmin();
+
+      match /points/{pointId} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
+    }
+
+    // ===== MARKET SNAPSHOT =====
+    match /market_snapshot/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ===== MARKET DATA (latest rates, history) =====
+    match /market_data/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ===== TICKER CONFIG =====
+    match /ticker_config/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ===== SITE CONFIG =====
+    match /site_config/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ===== CALCULATORS =====
+    match /calculators/{calcId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ===== SUBSCRIBERS =====
+    match /subscribers/{subscriberId} {
+      allow read: if isAuthenticated() && request.auth.uid == subscriberId;
+      allow create: if true;
+      allow update: if isAdmin() ||
+        (isAuthenticated() && request.auth.uid == subscriberId);
+      allow delete: if isAdmin();
+    }
+
+    // ===== EMAIL CAMPAIGNS =====
+    match /email_campaigns/{campaignId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ===== EMAIL SENDS / EVENTS =====
+    match /email_sends/{sendId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /email_events/{eventId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ===== INGESTION LOGS =====
+    match /ingestion_logs/{logId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ===== AI TOOLS =====
+    match /ai_tools/{toolId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ===== AI WORKFLOWS =====
+    match /ai_workflows/{workflowId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ===== ADMINS =====
+    match /admins/{adminId} {
+      allow read: if isAuthenticated() && request.auth.uid == adminId;
+      allow write: if false; // Managed via Admin SDK only
+    }
+  }
+}
