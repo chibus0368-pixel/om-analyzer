@@ -126,6 +126,8 @@ export async function PATCH(req: NextRequest) {
     if (updates.whiteLabel !== undefined) allowed.whiteLabel = updates.whiteLabel;
     if (updates.hideDocuments !== undefined) allowed.hideDocuments = updates.hideDocuments;
     if (updates.isActive !== undefined) allowed.isActive = updates.isActive;
+    if (updates.workspaceId !== undefined) allowed.workspaceId = updates.workspaceId;
+    if (updates.workspaceName !== undefined) allowed.workspaceName = updates.workspaceName;
     if (updates.contactName !== undefined) allowed.contactName = updates.contactName;
     if (updates.contactAgency !== undefined) allowed.contactAgency = updates.contactAgency;
     if (updates.contactPhone !== undefined) allowed.contactPhone = updates.contactPhone;

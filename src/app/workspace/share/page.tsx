@@ -56,6 +56,7 @@ export default function ShareLinksPage() {
 
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editWorkspaceId, setEditWorkspaceId] = useState("");
   const [editDisplayName, setEditDisplayName] = useState("");
   const [editWhiteLabel, setEditWhiteLabel] = useState(true);
   const [editHideDocuments, setEditHideDocuments] = useState(true);
@@ -125,6 +126,7 @@ export default function ShareLinksPage() {
 
   function startEdit(link: ShareLink) {
     setEditingId(link.id);
+    setEditWorkspaceId(link.workspaceId);
     setEditDisplayName(link.displayName || "");
     setEditWhiteLabel(link.whiteLabel);
     setEditHideDocuments(link.hideDocuments);
@@ -139,12 +141,15 @@ export default function ShareLinksPage() {
 
   async function handleSaveEdit(link: ShareLink) {
     setSaving(true);
+    const newWs = workspaces.find(w => w.id === editWorkspaceId);
     try {
       const res = await fetch("/api/workspace/share", {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: "Bearer mock" },
         body: JSON.stringify({
           id: link.id,
+          workspaceId: editWorkspaceId,
+          workspaceName: newWs?.name || link.workspaceName,
           displayName: editDisplayName.trim(),
           whiteLabel: editWhiteLabel,
           hideDocuments: editHideDocuments,
@@ -157,6 +162,8 @@ export default function ShareLinksPage() {
       if (res.ok) {
         setLinks(prev => prev.map(l => l.id === link.id ? {
           ...l,
+          workspaceId: editWorkspaceId,
+          workspaceName: newWs?.name || l.workspaceName,
           displayName: editDisplayName.trim(),
           whiteLabel: editWhiteLabel,
           hideDocuments: editHideDocuments,
@@ -406,6 +413,22 @@ export default function ShareLinksPage() {
                       <span style={{ fontSize: 11, color: C.secondary }}>
                         URL stays the same for your client
                       </span>
+                    </div>
+
+                    {/* Workspace */}
+                    <div style={{ marginBottom: 12 }}>
+                      <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.onSurface, marginBottom: 6 }}>
+                        Workspace
+                      </label>
+                      <select
+                        value={editWorkspaceId}
+                        onChange={e => setEditWorkspaceId(e.target.value)}
+                        style={{ ...inputStyle, cursor: "pointer" }}
+                      >
+                        {workspaces.map(ws => (
+                          <option key={ws.id} value={ws.id}>{ws.name}</option>
+                        ))}
+                      </select>
                     </div>
 
                     {/* Display Name */}
