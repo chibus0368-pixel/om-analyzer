@@ -19,14 +19,13 @@ const SIDEBAR_NAV = [
   { href: "/workspace/scoreboard", label: "Scoreboard", icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
   { href: "/workspace/upload", label: "Upload Property", icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" },
   { href: "/workspace/map", label: "Map", icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" },
+  { href: "/workspace/share", label: "Shareable Links", icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" },
 ];
 
 /* Top header nav links — removed per design: sidebar handles all nav inside the app */
 
 const BOTTOM_NAV = [
-  { href: "/workspace/share", label: "Shareable Links", icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" },
   { href: "/workspace/manage", label: "Workspaces", icon: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" },
-  { href: "/workspace/help", label: "Help", icon: "M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
   { href: "/workspace/settings", label: "Settings", icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" },
   { href: "/workspace/profile", label: "Account Profile", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" },
 ];
@@ -191,7 +190,7 @@ function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean;
         }}
       >
         <span style={{
-          fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.2,
+          fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8,
           color: "#b9172f", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
           flex: 1,
         }}>
@@ -215,10 +214,11 @@ function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean;
 
       {open && (
         <div style={{
-          position: "absolute", top: "100%", left: 8, right: 8, marginTop: 4,
-          background: "#ffffff", borderRadius: 6, zIndex: 100,
-          boxShadow: "0 20px 40px rgba(21, 27, 43, 0.12)",
-          overflow: "hidden",
+          position: "absolute", top: "100%", left: 4, right: 4, marginTop: 6,
+          background: "#ffffff", borderRadius: 12, zIndex: 100,
+          boxShadow: "0 20px 48px rgba(21, 27, 43, 0.15)",
+          overflow: "hidden", border: "1px solid #e2e8f0",
+          padding: "6px",
         }}>
           {workspaces.map(ws => (
             <button
@@ -226,40 +226,40 @@ function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean;
               onClick={() => { switchWorkspace(ws.id); setOpen(false); }}
               className="ws-nav"
               style={{
-                display: "flex", alignItems: "center", gap: 8, width: "100%",
-                padding: "9px 12px", background: ws.id === activeWorkspace?.id ? "rgba(185, 23, 47, 0.06)" : "transparent",
-                border: "none", cursor: "pointer", fontSize: 12, color: ws.id === activeWorkspace?.id ? "#b9172f" : "#585e70",
-                fontWeight: ws.id === activeWorkspace?.id ? 600 : 400, fontFamily: "inherit",
-                textAlign: "left",
+                display: "flex", alignItems: "center", gap: 10, width: "100%",
+                padding: "12px 14px", background: ws.id === activeWorkspace?.id ? "rgba(185, 23, 47, 0.06)" : "transparent",
+                border: "none", cursor: "pointer", fontSize: 14, color: ws.id === activeWorkspace?.id ? "#b9172f" : "#475569",
+                fontWeight: ws.id === activeWorkspace?.id ? 700 : 500, fontFamily: "inherit",
+                textAlign: "left", borderRadius: 8,
               }}
             >
-              {ws.id === activeWorkspace?.id && <span style={{ color: "#b9172f", fontSize: 12 }}>✓</span>}
-              {ws.id !== activeWorkspace?.id && <span style={{ width: 12 }} />}
+              {ws.id === activeWorkspace?.id && <span style={{ color: "#b9172f", fontSize: 14 }}>✓</span>}
+              {ws.id !== activeWorkspace?.id && <span style={{ width: 14 }} />}
               <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ws.name}</span>
               <span style={{
                 display: "inline-flex", alignItems: "center",
-                padding: "2px 6px", borderRadius: 3,
-                background: `${ANALYSIS_TYPE_COLORS[ws.analysisType || "retail"]}25`,
+                padding: "3px 8px", borderRadius: 6,
+                background: `${ANALYSIS_TYPE_COLORS[ws.analysisType || "retail"]}20`,
                 color: ANALYSIS_TYPE_COLORS[ws.analysisType || "retail"],
-                fontSize: 10, fontWeight: 600,
+                fontSize: 11, fontWeight: 600,
               }}>
                 {ANALYSIS_TYPE_LABELS[ws.analysisType || "retail"]}
               </span>
             </button>
           ))}
-          <div style={{ margin: "4px 0 0" }}>
+          <div style={{ margin: "4px 0 0", borderTop: "1px solid #f1f5f9", paddingTop: 4 }}>
             <button
               onClick={() => { setOpen(false); onAddNew(); }}
               className="ws-nav"
               style={{
-                display: "flex", alignItems: "center", gap: 8, width: "100%",
-                padding: "9px 12px", background: "transparent",
-                border: "none", cursor: "pointer", fontSize: 12,
-                color: "#585e70", fontWeight: 500, fontFamily: "inherit",
-                textAlign: "left", transition: "color 0.15s",
+                display: "flex", alignItems: "center", gap: 10, width: "100%",
+                padding: "12px 14px", background: "transparent",
+                border: "none", cursor: "pointer", fontSize: 14,
+                color: "#64748b", fontWeight: 600, fontFamily: "inherit",
+                textAlign: "left", transition: "color 0.15s", borderRadius: 8,
               }}
               onMouseEnter={e => (e.currentTarget.style.color = "#b9172f")}
-              onMouseLeave={e => (e.currentTarget.style.color = "#585e70")}
+              onMouseLeave={e => (e.currentTarget.style.color = "#64748b")}
             >
               <span style={{ fontSize: 14, lineHeight: 1 }}>+</span>
               <span>Add New Workspace</span>
@@ -461,9 +461,12 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               {userTier === "pro" ? "Pro Plan" : userTier === "pro_plus" ? "Pro+" : "My Plan"}
             </Link>
           )}
-          <button style={{ background: "none", border: "none", cursor: "pointer", color: "#585e70", padding: 4 }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-          </button>
+          <Link href="/workspace/help" className="ws-header-nav" title="Help" style={{
+            background: "none", border: "none", cursor: "pointer", color: "#585e70", padding: 4,
+            display: "flex", alignItems: "center", borderRadius: 6, transition: "color 0.15s",
+          }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+          </Link>
           <Link href="/workspace/profile" className="ws-header-nav" title="Account Profile" style={{
             background: "none", border: "none", cursor: "pointer", color: "#585e70", padding: 4,
             display: "flex", alignItems: "center", borderRadius: 6, transition: "color 0.15s, background 0.15s",
