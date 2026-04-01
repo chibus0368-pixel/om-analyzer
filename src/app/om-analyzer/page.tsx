@@ -391,63 +391,49 @@ export default function OmAnalyzerPage() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,700&display=swap');
         body, input, button, select, textarea { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
         @keyframes spin { to { transform: rotate(360deg) } }
         @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.5 } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes scoreCount { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
         @keyframes barGrow { from { width: 0; } }
-        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-        @keyframes meshMove {
-          0% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(30px, -20px) scale(1.05); }
-          66% { transform: translate(-20px, 15px) scale(0.95); }
-          100% { transform: translate(0, 0) scale(1); }
-        }
-        .ds-card { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
-        .ds-card:hover { transform: translateY(-4px); box-shadow: 0 24px 48px rgba(11,17,32,0.12); }
-        .ds-cta { transition: all 0.2s ease; }
-        .ds-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(185,23,47,0.35); filter: brightness(1.08); }
-        .ds-cta-outline { transition: all 0.2s ease; }
-        .ds-cta-outline:hover { background: rgba(185,23,47,0.06) !important; border-color: #b9172f !important; color: #b9172f !important; }
-        .ds-nav-link { transition: color 0.15s ease; position: relative; }
-        .ds-nav-link:hover { color: #b9172f !important; }
-        .ds-nav-link::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: #b9172f; transform: scaleX(0); transition: transform 0.2s ease; }
-        .ds-nav-link:hover::after { transform: scaleX(1); }
+        .ds-card { transition: all 0.25s ease; border-radius: 20px; }
+        .ds-card:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.08); }
+        .ds-btn { display: inline-flex; align-items: center; justify-content: center; font-weight: 700; border-radius: 50px; cursor: pointer; transition: all 0.2s ease; text-decoration: none; border: none; }
+        .ds-btn:hover { transform: translateY(-1px); }
+        .ds-btn-primary { background: #b9172f; color: #fff; }
+        .ds-btn-primary:hover { box-shadow: 0 8px 24px rgba(185,23,47,0.3); }
+        .ds-btn-outline { background: #fff; color: #1e293b; border: 2px solid #e2e8f0; }
+        .ds-btn-outline:hover { border-color: #b9172f; color: #b9172f; }
         .om-upload-zone { transition: all 0.2s ease; }
-        .om-upload-zone:hover { box-shadow: 0 16px 40px rgba(11,17,32,0.08); border-color: #b9172f !important; }
+        .om-upload-zone:hover { border-color: #b9172f !important; background: rgba(185,23,47,0.02) !important; }
         .dl-btn { transition: all 0.2s ease; }
-        .dl-btn:hover { background: #f2f3ff !important; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(21,27,43,0.08); }
+        .dl-btn:hover { background: #f2f3ff !important; transform: translateY(-1px); }
         .om-dark-btn { transition: all 0.2s ease; }
-        .om-dark-btn:hover { background: #0d1220 !important; }
         .om-cta-btn { transition: all 0.2s ease; }
-        .om-cta-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(185,23,47,0.35); filter: brightness(1.08); }
-        .om-feature-card { transition: all 0.25s cubic-bezier(0.4,0,0.2,1); }
-        .om-feature-card:hover { transform: translateY(-4px); box-shadow: 0 20px 48px rgba(21,27,43,0.10); }
-        .om-glow { box-shadow: 0 0 0 1px rgba(185,23,47,0.08), 0 24px 64px rgba(185,23,47,0.12); }
-        .ds-section-label { font-size: 12px; font-weight: 700; color: #b9172f; text-transform: uppercase; letter-spacing: 2.5px; margin-bottom: 16px; }
-        .ds-heading { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; color: #0B1120; letter-spacing: -0.5px; line-height: 1.15; }
-        .ds-subtext { font-size: 17px; color: #5A7091; line-height: 1.7; max-width: 560px; }
+        .om-cta-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(185,23,47,0.3); }
+        .om-feature-card { transition: all 0.25s ease; }
+        .om-feature-card:hover { transform: translateY(-2px); }
         footer a { transition: color 0.15s ease; }
         footer a:hover { color: #b9172f !important; }
-        input:focus { background: #ffffff !important; box-shadow: 0 0 0 2px rgba(185,23,47,0.12); }
-        @media (max-width: 768px) {
-          .ds-hero-grid { grid-template-columns: 1fr !important; }
-          .ds-hero-left { text-align: center; }
+        input:focus { box-shadow: 0 0 0 3px rgba(185,23,47,0.1) !important; }
+        @media (max-width: 900px) {
+          .ds-hero-grid { grid-template-columns: 1fr !important; text-align: center; }
           .ds-hero-left h1 { font-size: 36px !important; }
-          .ds-hero-stats { justify-content: center !important; }
-          .ds-hero-trust { justify-content: center !important; }
+          .ds-hero-btns { justify-content: center !important; }
+          .ds-features-3 { grid-template-columns: 1fr !important; }
           .ds-features-grid { grid-template-columns: 1fr !important; }
           .ds-pro-grid { grid-template-columns: 1fr !important; }
           .ds-pricing-grid { grid-template-columns: 1fr !important; }
           .ds-steps-grid { grid-template-columns: 1fr !important; }
-          .ds-footer-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+          .ds-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
           .ds-nav-links { display: none !important; }
           .ds-pro-features { grid-template-columns: 1fr 1fr !important; }
-          .ds-metrics-row { grid-template-columns: 1fr !important; }
+          .ds-testimonials { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 480px) {
+          .ds-footer-grid { grid-template-columns: 1fr !important; }
+          .ds-pro-features { grid-template-columns: 1fr !important; }
         }
       `}</style>
 
@@ -501,33 +487,31 @@ export default function OmAnalyzerPage() {
         </div>
       )}
 
-      {/* ===== HEADER — sticky glass nav ===== */}
+      {/* ===== HEADER ===== */}
       <header style={{
         position: "sticky", top: 0, zIndex: 100,
-        background: "rgba(255,255,255,0.85)", backdropFilter: "blur(16px) saturate(180%)",
-        borderBottom: "1px solid rgba(11,17,32,0.06)",
+        background: "#fff",
+        borderBottom: "1px solid #f1f5f9",
       }}>
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          maxWidth: 1200, margin: "0 auto", padding: "0 32px", height: 64,
+          maxWidth: 1160, margin: "0 auto", padding: "0 32px", height: 68,
         }}>
           <Link href="/om-analyzer" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
             <DealSignalLogo size={30} fontSize={17} gap={8} />
           </Link>
-          <nav className="ds-nav-links" style={{ display: "flex", alignItems: "center", gap: 32 }}>
-            <a href="#how-it-works" className="ds-nav-link" style={{ fontSize: 13, fontWeight: 500, color: "#3D516E", textDecoration: "none" }}>How it works</a>
-            <a href="#features" className="ds-nav-link" style={{ fontSize: 13, fontWeight: 500, color: "#3D516E", textDecoration: "none" }}>Features</a>
-            <Link href="/pricing" className="ds-nav-link" style={{ fontSize: 13, fontWeight: 500, color: "#3D516E", textDecoration: "none" }}>Pricing</Link>
+          <nav className="ds-nav-links" style={{ display: "flex", alignItems: "center", gap: 36 }}>
+            <a href="#how-it-works" style={{ fontSize: 14, fontWeight: 500, color: "#475569", textDecoration: "none", transition: "color 0.15s" }}>How it works</a>
+            <a href="#features" style={{ fontSize: 14, fontWeight: 500, color: "#475569", textDecoration: "none", transition: "color 0.15s" }}>Features</a>
+            <Link href="/pricing" style={{ fontSize: 14, fontWeight: 500, color: "#475569", textDecoration: "none", transition: "color 0.15s" }}>Pricing</Link>
           </nav>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <Link href="/workspace/login" style={{
-              fontSize: 13, fontWeight: 600, color: "#3D516E", textDecoration: "none",
-              padding: "8px 16px",
-            }}>Sign in</Link>
-            <Link href="/try-pro" className="ds-cta" style={{
-              fontSize: 13, fontWeight: 700, color: "#fff", textDecoration: "none",
-              background: "#b9172f", borderRadius: 8, padding: "9px 22px",
-            }}>Start free</Link>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Link href="/workspace/login" className="ds-btn ds-btn-outline" style={{
+              fontSize: 13, padding: "9px 22px",
+            }}>Sign up</Link>
+            <Link href="/try-pro" className="ds-btn ds-btn-primary" style={{
+              fontSize: 13, padding: "9px 22px",
+            }}>Get it Now</Link>
           </div>
         </div>
       </header>
@@ -549,100 +533,57 @@ export default function OmAnalyzerPage() {
 
       {/* ===== HERO + LANDING PAGE ===== */}
       {view === "upload" && (
-        <section style={{ background: "#ffffff" }}>
+        <section style={{ background: "#fff" }}>
 
-          {/* ── 1. HERO SECTION ── */}
-          <div style={{
-            position: "relative", overflow: "hidden",
-            padding: "80px 32px 100px",
-            background: "#FAFBFC",
-          }}>
-            {/* Subtle mesh gradient orbs */}
-            <div style={{ position: "absolute", top: -120, right: -80, width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(185,23,47,0.06) 0%, transparent 70%)", animation: "meshMove 20s ease-in-out infinite", pointerEvents: "none" }} />
-            <div style={{ position: "absolute", bottom: -100, left: -60, width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.04) 0%, transparent 70%)", animation: "meshMove 25s ease-in-out infinite reverse", pointerEvents: "none" }} />
-
+          {/* ── 1. HERO ── */}
+          <div style={{ padding: "72px 32px 88px", background: "#fff" }}>
             <div className="ds-hero-grid" style={{
-              maxWidth: 1120, margin: "0 auto", position: "relative", zIndex: 1,
-              display: "grid", gridTemplateColumns: "1fr 420px", gap: 72, alignItems: "center",
+              maxWidth: 1100, margin: "0 auto",
+              display: "grid", gridTemplateColumns: "1fr 420px", gap: 64, alignItems: "center",
             }}>
-              {/* Left — messaging */}
-              <div className="ds-hero-left" style={{ animation: "fadeInUp 0.6s ease-out" }}>
-                <div style={{
-                  display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 16px 6px 6px", borderRadius: 100,
-                  background: "#fff", marginBottom: 28,
-                  border: "1px solid #EDF0F5", boxShadow: "0 2px 8px rgba(11,17,32,0.04)",
-                }}>
-                  <span style={{ width: 24, height: 24, borderRadius: "50%", background: "#D1FAE5", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="3" strokeLinecap="round"><path d="M5 13l4 4L19 7" /></svg>
-                  </span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "#3D516E" }}>
-                    Free CRE underwriting — no signup needed
-                  </span>
-                </div>
-
+              {/* Left */}
+              <div className="ds-hero-left" style={{ animation: "fadeInUp 0.5s ease-out" }}>
                 <h1 style={{
-                  fontFamily: "'Playfair Display', Georgia, serif", fontSize: 54, fontWeight: 700,
-                  color: "#0B1120", lineHeight: 1.1, marginBottom: 20, letterSpacing: -1,
+                  fontSize: 48, fontWeight: 800, color: "#1e293b", lineHeight: 1.15,
+                  marginBottom: 20, letterSpacing: -1,
                 }}>
-                  Underwrite any deal<br />
-                  <span style={{ color: "#b9172f" }}>in 60 seconds</span>
+                  Increase your deal flow<br />success with <span style={{ color: "#b9172f" }}>Deal Signal</span>
                 </h1>
                 <p style={{
-                  fontSize: 18, color: "#5A7091", lineHeight: 1.7,
-                  maxWidth: 460, marginBottom: 40,
+                  fontSize: 17, color: "#64748b", lineHeight: 1.75,
+                  maxWidth: 480, marginBottom: 36,
                 }}>
-                  Upload an offering memorandum. Get instant financials, a deal score, risk flags, and a buy/hold/pass signal. Built for CRE investors who move fast.
+                  Deal Signal allows you to underwrite any CRE deal in 60 seconds, extract 47+ data points, and get a buy/hold/pass recommendation from one document upload.
                 </p>
-
-                {/* Stats row */}
-                <div className="ds-hero-stats" style={{ display: "flex", gap: 40, marginBottom: 48 }}>
-                  {[
-                    { num: "47+", label: "Data points extracted" },
-                    { num: "60s", label: "Average analysis" },
-                    { num: "90%+", label: "Extraction accuracy" },
-                  ].map(s => (
-                    <div key={s.label}>
-                      <div style={{ fontSize: 28, fontWeight: 800, color: "#0B1120", letterSpacing: -0.5 }}>{s.num}</div>
-                      <div style={{ fontSize: 12, color: "#8899B0", fontWeight: 500, marginTop: 2 }}>{s.label}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Trusted by row */}
-                <div className="ds-hero-trust" style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ display: "flex" }}>
-                    {["M", "J", "D", "S", "A"].map((initial, i) => (
-                      <div key={i} style={{
-                        width: 32, height: 32, borderRadius: "50%",
-                        background: ["#b9172f", "#3B82F6", "#059669", "#8B5CF6", "#F59E0B"][i],
-                        border: "2px solid #fff", marginLeft: i > 0 ? -8 : 0,
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 11, fontWeight: 700, color: "#fff",
-                      }}>{initial}</div>
-                    ))}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: "#0B1120" }}>Trusted by CRE professionals</div>
-                    <div style={{ fontSize: 11, color: "#8899B0" }}>Investors, brokers & analysts</div>
-                  </div>
+                <div className="ds-hero-btns" style={{ display: "flex", gap: 12 }}>
+                  <button onClick={() => fileRef.current?.click()} className="ds-btn ds-btn-primary" style={{
+                    fontSize: 15, padding: "14px 32px",
+                  }}>
+                    Get it Now
+                  </button>
+                  <button onClick={() => { setData(generateDemoResult("Walgreens-NNN-Texas")); setView("result"); }} className="ds-btn ds-btn-outline" style={{
+                    fontSize: 15, padding: "14px 32px",
+                  }}>
+                    Try a Demo
+                  </button>
                 </div>
               </div>
 
               {/* Right — upload card */}
               <div style={{
-                background: "#ffffff", borderRadius: 20, padding: "32px 28px",
-                border: "1px solid #EDF0F5",
-                animation: "fadeInUp 0.6s ease-out 0.15s both",
-              }} className="om-glow">
-                <div style={{ textAlign: "center", marginBottom: 20 }}>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: "#0B1120" }}>Analyze a Deal</div>
-                  <div style={{ fontSize: 13, color: "#8899B0", marginTop: 4 }}>Drop any CRE document to get started</div>
+                background: "#fff", borderRadius: 24, padding: "32px 26px",
+                boxShadow: "0 8px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)",
+                animation: "fadeInUp 0.5s ease-out 0.1s both",
+              }}>
+                <div style={{ textAlign: "center", marginBottom: 18 }}>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: "#1e293b" }}>Analyze a Deal</div>
+                  <div style={{ fontSize: 13, color: "#94a3b8", marginTop: 4 }}>Drop any CRE document to get started</div>
                 </div>
 
                 {/* Asset Type Selector */}
                 <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: "#8899B0", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Asset Type</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 4 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Asset Type</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 5 }}>
                     {[
                       { value: "auto", label: "Auto", svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg> },
                       { value: "retail", label: "Retail", svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg> },
@@ -651,32 +592,23 @@ export default function OmAnalyzerPage() {
                       { value: "land", label: "Land", svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 22L12 2l10 20H2z" /><path d="M7 22l5-10 5 10" /></svg> },
                     ].map(type => {
                       const isActive = selectedAssetType === type.value;
-                      const color = isActive ? "#b9172f" : "#8899B0";
+                      const color = isActive ? "#b9172f" : "#94a3b8";
                       return (
-                      <button
-                        key={type.value}
-                        onClick={() => setSelectedAssetType(type.value)}
-                        style={{
-                          padding: "8px 4px", border: "1.5px solid",
-                          borderColor: isActive ? "#b9172f" : "#EDF0F5",
-                          background: isActive ? "rgba(185,23,47,0.04)" : "#fff",
-                          borderRadius: 8, cursor: "pointer", textAlign: "center",
-                          transition: "all 0.15s",
-                        }}
-                      >
+                      <button key={type.value} onClick={() => setSelectedAssetType(type.value)} style={{
+                        padding: "8px 4px", border: "2px solid",
+                        borderColor: isActive ? "#b9172f" : "#f1f5f9",
+                        background: isActive ? "rgba(185,23,47,0.04)" : "#fff",
+                        borderRadius: 12, cursor: "pointer", textAlign: "center", transition: "all 0.15s",
+                      }}>
                         <div style={{ lineHeight: 1, display: "flex", justifyContent: "center" }}>
                           <span style={{ stroke: color, display: "inline-flex" }}>{type.svg}</span>
                         </div>
-                        <div style={{
-                          fontSize: 9, fontWeight: 700, marginTop: 3,
-                          color: isActive ? "#b9172f" : "#585e70",
-                          letterSpacing: 0.3,
-                        }}>{type.label}</div>
+                        <div style={{ fontSize: 9, fontWeight: 700, marginTop: 3, color: isActive ? "#b9172f" : "#64748b", letterSpacing: 0.3 }}>{type.label}</div>
                       </button>
                     );})}
                   </div>
-                  <div style={{ fontSize: 10, color: "#B4C1D1", marginTop: 4, textAlign: "center" }}>
-                    {selectedAssetType === "auto" ? "AI will detect the asset type automatically" : `Using ${selectedAssetType} scoring model`}
+                  <div style={{ fontSize: 10, color: "#cbd5e1", marginTop: 4, textAlign: "center" }}>
+                    {selectedAssetType === "auto" ? "AI will detect the asset type" : `Using ${selectedAssetType} scoring model`}
                   </div>
                 </div>
 
@@ -688,36 +620,34 @@ export default function OmAnalyzerPage() {
                   onClick={() => !selectedFile && fileRef.current?.click()}
                   className="om-upload-zone"
                   style={{
-                    background: dragging ? "rgba(185,23,47,0.02)" : "#FAFBFC",
-                    borderRadius: 14,
-                    padding: selectedFile ? "18px" : "32px 20px",
+                    background: dragging ? "rgba(185,23,47,0.02)" : "#f8fafc",
+                    borderRadius: 16, padding: selectedFile ? "16px" : "28px 20px",
                     cursor: selectedFile ? "default" : "pointer",
-                    border: `2px dashed ${dragging ? "#b9172f" : "#D8DFE9"}`,
+                    border: `2px dashed ${dragging ? "#b9172f" : "#e2e8f0"}`,
                     textAlign: "center",
                   }}
                 >
                   {!selectedFile ? (
                     <>
                       <div style={{
-                        width: 48, height: 48, borderRadius: 12, background: "rgba(185,23,47,0.06)",
-                        display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
+                        width: 48, height: 48, borderRadius: 14, background: "rgba(185,23,47,0.06)",
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 10,
                       }}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
                           <polyline points="14,2 14,8 20,8" />
                           <line x1="12" y1="18" x2="12" y2="12" />
                           <line x1="9" y1="15" x2="15" y2="15" />
                         </svg>
                       </div>
-                      <p style={{ fontSize: 15, fontWeight: 600, color: "#0B1120", margin: "0 0 4px" }}>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: "0 0 3px" }}>
                         {dragging ? "Drop your file here" : "Drop your OM or flyer"}
                       </p>
-                      <p style={{ fontSize: 12, color: "#8899B0", margin: "0 0 16px" }}>
+                      <p style={{ fontSize: 12, color: "#94a3b8", margin: "0 0 14px" }}>
                         PDF, Word, Excel, or CSV &middot; Max 50MB
                       </p>
-                      <button onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }} style={{
-                        padding: "11px 32px", background: "#0B1120", color: "#fff", border: "none",
-                        borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                      <button onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }} className="ds-btn ds-btn-primary" style={{
+                        fontSize: 13, padding: "10px 28px",
                       }}>
                         Browse Files
                       </button>
@@ -725,20 +655,18 @@ export default function OmAnalyzerPage() {
                   ) : (
                     <>
                       <div style={{
-                        display: "flex", alignItems: "center", gap: 10, padding: "12px 14px",
-                        background: "#F6F8FB", borderRadius: 8, textAlign: "left",
+                        display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
+                        background: "#f1f5f9", borderRadius: 10, textAlign: "left",
                       }}>
-                        <span style={{ padding: "2px 8px", background: "#EDF0F5", borderRadius: 4, fontSize: 9, fontWeight: 700, color: "#585e70", textTransform: "uppercase", flexShrink: 0 }}>
+                        <span style={{ padding: "2px 8px", background: "#e2e8f0", borderRadius: 6, fontSize: 9, fontWeight: 700, color: "#64748b", textTransform: "uppercase", flexShrink: 0 }}>
                           {selectedFile.name.split(".").pop()}
                         </span>
-                        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500, fontSize: 14, color: "#0B1120" }}>{selectedFile.name}</span>
-                        <span style={{ fontSize: 12, color: "#8899B0", flexShrink: 0 }}>{(selectedFile.size / (1024 * 1024)).toFixed(1)} MB</span>
-                        <button onClick={(e) => { e.stopPropagation(); removeFile(); }} style={{ background: "none", border: "none", color: "#B4C1D1", cursor: "pointer", fontSize: 18, padding: 4, lineHeight: 1 }}>&times;</button>
+                        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500, fontSize: 13, color: "#1e293b" }}>{selectedFile.name}</span>
+                        <span style={{ fontSize: 11, color: "#94a3b8", flexShrink: 0 }}>{(selectedFile.size / (1024 * 1024)).toFixed(1)} MB</span>
+                        <button onClick={(e) => { e.stopPropagation(); removeFile(); }} style={{ background: "none", border: "none", color: "#cbd5e1", cursor: "pointer", fontSize: 18, padding: 4, lineHeight: 1 }}>&times;</button>
                       </div>
-                      <button onClick={(e) => { e.stopPropagation(); startAnalysis(); }} className="ds-cta" style={{
-                        display: "block", width: "100%", padding: "14px 32px", marginTop: 14,
-                        background: "#b9172f", color: "#fff", border: "none",
-                        borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer",
+                      <button onClick={(e) => { e.stopPropagation(); startAnalysis(); }} className="ds-btn ds-btn-primary" style={{
+                        display: "block", width: "100%", fontSize: 15, padding: "13px 32px", marginTop: 12,
                       }}>
                         Run Deal Signal
                       </button>
@@ -750,46 +678,31 @@ export default function OmAnalyzerPage() {
 
                 {/* Usage counter */}
                 {usageData && (
-                  <div style={{
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                    marginTop: 14, padding: "6px 0",
-                  }}>
-                    <div style={{
-                      flex: "0 0 auto", height: 4, width: 60, background: "#EDF0F5", borderRadius: 2, overflow: "hidden",
-                    }}>
-                      <div style={{
-                        height: "100%", borderRadius: 2, transition: "width 0.3s ease",
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 12, padding: "4px 0" }}>
+                    <div style={{ flex: "0 0 auto", height: 4, width: 56, background: "#f1f5f9", borderRadius: 2, overflow: "hidden" }}>
+                      <div style={{ height: "100%", borderRadius: 2, transition: "width 0.3s ease",
                         width: `${Math.min(100, (usageData.uploadsUsed / usageData.uploadLimit) * 100)}%`,
                         background: usageData.uploadsUsed >= usageData.uploadLimit ? "#b9172f" : usageData.uploadsUsed >= usageData.uploadLimit - 1 ? "#eab308" : "#10b981",
                       }} />
                     </div>
-                    <span style={{
-                      fontSize: 11, fontWeight: 600,
-                      color: usageData.uploadsUsed >= usageData.uploadLimit ? "#b9172f" : "#8899B0",
-                    }}>
-                      {usageData.uploadsUsed} / {usageData.uploadLimit} free analyses
+                    <span style={{ fontSize: 11, fontWeight: 600, color: usageData.uploadsUsed >= usageData.uploadLimit ? "#b9172f" : "#94a3b8" }}>
+                      {usageData.uploadsUsed} / {usageData.uploadLimit} free
                     </span>
                   </div>
                 )}
 
                 {/* Sample deals */}
-                <div style={{ marginTop: 16, display: "flex", gap: 8, alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 11, color: "#8899B0" }}>Or try:</span>
+                <div style={{ marginTop: 14, display: "flex", gap: 8, alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 11, color: "#94a3b8" }}>Or try:</span>
                   {[
                     { label: "Walgreens NNN", file: "Walgreens-NNN-Texas" },
                     { label: "Strip Center", file: "Strip-Center-Illinois" },
                   ].map(sample => (
-                    <button
-                      key={sample.file}
-                      onClick={() => { setData(generateDemoResult(sample.file)); setView("result"); }}
-                      style={{
-                        display: "flex", alignItems: "center", gap: 5, padding: "5px 12px",
-                        background: "transparent", border: "1.5px solid #EDF0F5", borderRadius: 6,
-                        cursor: "pointer", fontSize: 11, fontWeight: 600, color: "#585e70",
-                        transition: "all 0.15s",
-                      }}
-                      className="om-feature-card"
-                    >
+                    <button key={sample.file} onClick={() => { setData(generateDemoResult(sample.file)); setView("result"); }}
+                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px",
+                        background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 50,
+                        cursor: "pointer", fontSize: 11, fontWeight: 600, color: "#64748b", transition: "all 0.15s",
+                      }} className="om-feature-card">
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
                       {sample.label}
                     </button>
@@ -799,187 +712,187 @@ export default function OmAnalyzerPage() {
             </div>
           </div>
 
-          {/* ── 2. SOCIAL PROOF BAR ── */}
-          <div style={{
-            borderTop: "1px solid #EDF0F5", borderBottom: "1px solid #EDF0F5",
-            padding: "40px 32px", background: "#fff",
-          }}>
-            <div style={{ maxWidth: 1000, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 32 }} className="ds-metrics-row">
+          {/* ── 2. FEATURE CARDS (3-col) ── */}
+          <div style={{ padding: "64px 32px 80px", background: "#fff" }}>
+            <div className="ds-features-3" style={{ maxWidth: 1000, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
               {[
-                { quote: "Cuts our deal screening time by 75%. We use it on every listing now.", author: "Marcus C.", title: "Investor, Los Angeles" },
-                { quote: "I send a Deal Signal report with every offer. Buyers love the clarity.", author: "Jennifer P.", title: "Broker, Chicago" },
-                { quote: "Underwriting starts with this. Gets the hard metrics out of the way instantly.", author: "David R.", title: "Analyst, Dallas" },
-              ].map((item, idx) => (
-                <div key={idx} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
+                  title: "All-in-one Analysis", desc: "Deal Signal extracts financials, scores the deal, flags risks, and generates a buy/hold/pass recommendation — all from a single document upload." },
+                { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
+                  title: "Free to start", desc: "Our free tier gives you 2 analyses per month with no signup, no credit card. Upgrade to Pro when you're ready for more." },
+                { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>,
+                  title: "Deal Signal Score", desc: "Every analysis includes a weighted 0-100 score across pricing, cashflow, tenant, rollover, location, and upside factors." },
+              ].map((f, i) => (
+                <div key={i} style={{
+                  background: "#f8fafc", borderRadius: 20, padding: "32px 28px",
+                  border: "1px solid #f1f5f9",
+                }}>
                   <div style={{
-                    width: 40, height: 40, borderRadius: "50%", flexShrink: 0,
-                    background: ["#b9172f", "#3B82F6", "#059669"][idx],
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 14, fontWeight: 700, color: "#fff",
-                  }}>{item.author[0]}</div>
-                  <div>
-                    <p style={{ fontSize: 13, color: "#3D516E", lineHeight: 1.55, margin: "0 0 6px", fontStyle: "italic" }}>&ldquo;{item.quote}&rdquo;</p>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: "#0B1120" }}>{item.author}</div>
-                    <div style={{ fontSize: 11, color: "#8899B0" }}>{item.title}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ── 3. VIDEO/DEMO SECTION ── */}
-          <div style={{ maxWidth: 1000, margin: "0 auto", padding: "96px 32px", textAlign: "center" }}>
-            <div className="ds-section-label">See it in action</div>
-            <h2 className="ds-heading" style={{ fontSize: 40, marginBottom: 14 }}>
-              From 40-page OM to one-screen summary
-            </h2>
-            <p className="ds-subtext" style={{ margin: "0 auto 56px" }}>
-              Watch how Deal Signal transforms a complex offering memorandum into actionable intelligence.
-            </p>
-
-            {/* Video placeholder */}
-            <div style={{
-              position: "relative", width: "100%", maxWidth: 840, margin: "0 auto",
-              aspectRatio: "16 / 9", borderRadius: 20, overflow: "hidden",
-              background: "linear-gradient(135deg, #0B1120 0%, #162036 100%)",
-              boxShadow: "0 40px 80px rgba(11,17,32,0.2)",
-            }}>
-              <div style={{
-                position: "absolute", inset: 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                flexDirection: "column", gap: 16,
-              }}>
-                <div style={{
-                  width: 72, height: 72, borderRadius: "50%",
-                  background: "rgba(185,23,47,0.2)", border: "2px solid rgba(185,23,47,0.4)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer", transition: "all 0.3s ease",
-                }}>
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="#b9172f" stroke="none">
-                    <polygon points="5 3 19 12 5 21 5 3" />
-                  </svg>
-                </div>
-                <span style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>
-                  Product demo — 60 seconds
-                </span>
-              </div>
-            </div>
-
-            {/* Example output metrics */}
-            <div className="ds-metrics-row" style={{ marginTop: 48, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, maxWidth: 560, margin: "48px auto 0" }}>
-              {[
-                { label: "Cap Rate", value: "5.85%", accent: "#b9172f" },
-                { label: "Deal Score", value: "74/100", accent: "#059669" },
-                { label: "Signal", value: "BUY", accent: "#10b981" },
-              ].map(m => (
-                <div key={m.label} className="ds-card" style={{
-                  padding: "20px 16px", borderRadius: 14,
-                  background: "#fff", border: "1px solid #EDF0F5",
-                  boxShadow: "0 4px 12px rgba(11,17,32,0.04)",
-                }}>
-                  <div style={{ fontSize: 11, color: "#8899B0", fontWeight: 600, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>{m.label}</div>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: m.accent }}>{m.value}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ── 4. HOW IT WORKS ── */}
-          <div id="how-it-works" style={{ background: "#FAFBFC", padding: "96px 32px", borderTop: "1px solid #EDF0F5", borderBottom: "1px solid #EDF0F5" }}>
-            <div style={{ maxWidth: 1000, margin: "0 auto", textAlign: "center" }}>
-              <div className="ds-section-label">How it works</div>
-              <h2 className="ds-heading" style={{ fontSize: 40, marginBottom: 14 }}>
-                Three steps to clarity
-              </h2>
-              <p className="ds-subtext" style={{ margin: "0 auto 64px" }}>
-                Upload your document and let AI handle the heavy lifting.
-              </p>
-              <div className="ds-steps-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 32, position: "relative" }}>
-                {[
-                  { step: "01", title: "Upload", desc: "Drop a PDF, flyer, or rent roll. Any CRE document works.", icon: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2v6h6", color: "#b9172f" },
-                  { step: "02", title: "Analyze", desc: "AI extracts 47+ data points, calculates metrics, and scores the deal.", icon: "M22 12h-4l-3 9L9 3l-3 9H2", color: "#6366F1" },
-                  { step: "03", title: "Decide", desc: "Get a Deal Signal score, risk flags, and a buy/hold/pass recommendation.", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z", color: "#059669" },
-                ].map((s) => (
-                  <div key={s.step} className="ds-card" style={{
-                    background: "#fff", borderRadius: 16, padding: "36px 28px",
-                    border: "1px solid #EDF0F5", textAlign: "center",
+                    width: 52, height: 52, borderRadius: 14, background: "#fff",
+                    border: "1px solid #f1f5f9",
+                    display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18,
                   }}>
-                    <div style={{
-                      width: 64, height: 64, borderRadius: 16, margin: "0 auto 20px",
-                      background: `${s.color}08`, border: `1.5px solid ${s.color}15`,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={s.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={s.icon} /></svg>
-                    </div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: s.color, letterSpacing: 2, marginBottom: 10, textTransform: "uppercase" }}>Step {s.step}</div>
-                    <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 22, fontWeight: 700, color: "#0B1120", marginBottom: 8 }}>{s.title}</h3>
-                    <p style={{ fontSize: 14, color: "#5A7091", lineHeight: 1.65, margin: 0 }}>{s.desc}</p>
+                    {f.icon}
+                  </div>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: "#1e293b", marginBottom: 8 }}>{f.title}</h3>
+                  <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.65, margin: 0 }}>{f.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── 3. HOW IT WORKS ── */}
+          <div id="how-it-works" style={{ background: "#f8fafc", padding: "88px 32px", borderTop: "1px solid #f1f5f9" }}>
+            <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
+              <h2 style={{ fontSize: 36, fontWeight: 800, color: "#1e293b", marginBottom: 10 }}>
+                How <span style={{ color: "#b9172f" }}>Deal Signal</span> works
+              </h2>
+              <p style={{ fontSize: 16, color: "#64748b", marginBottom: 56, lineHeight: 1.7 }}>
+                Deal Signal answers the urgent demand for fast and accurate CRE deal screening
+              </p>
+              <div className="ds-steps-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 28 }}>
+                {[
+                  { num: "[1]", title: "Upload document", desc: "Drop a PDF, flyer, or rent roll. Any CRE document works — the AI handles the rest." },
+                  { num: "[2]", title: "AI extracts data", desc: "47+ data points extracted in seconds: cap rate, NOI, DSCR, lease terms, and more." },
+                  { num: "[3]", title: "Get your signal", desc: "Receive a Deal Signal score, risk flags, and a buy/hold/pass recommendation." },
+                ].map((s, i) => (
+                  <div key={i} style={{
+                    background: "#fff", borderRadius: 20, padding: "32px 24px",
+                    border: "1px solid #f1f5f9", boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
+                    textAlign: "center",
+                  }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#b9172f", marginBottom: 16, fontFamily: "monospace" }}>{s.num}</div>
+                    <h3 style={{ fontSize: 16, fontWeight: 700, color: "#1e293b", marginBottom: 8 }}>{s.title}</h3>
+                    <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6, margin: 0 }}>{s.desc}</p>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* ── 5. FEATURES ── */}
-          <div id="features" style={{ maxWidth: 1080, margin: "0 auto", padding: "96px 32px 0" }}>
-            <div style={{ textAlign: "center", marginBottom: 64 }}>
-              <div className="ds-section-label">What you get</div>
-              <h2 className="ds-heading" style={{ fontSize: 40 }}>
-                Everything in your Deal Signal report
+          {/* ── 4. DEMO / SCREENSHOT SECTION ── */}
+          <div style={{ padding: "88px 32px", background: "#fff" }}>
+            <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
+              <h2 style={{ fontSize: 34, fontWeight: 800, color: "#1e293b", marginBottom: 10, lineHeight: 1.2 }}>
+                We offer an advanced<br />deal analysis platform
+              </h2>
+              <p style={{ fontSize: 16, color: "#64748b", marginBottom: 20, lineHeight: 1.7, maxWidth: 520, margin: "0 auto 24px" }}>
+                With Deal Signal, you can increase your deal screening speed by 75% and ensure every investment decision is backed by data.
+              </p>
+              <button onClick={() => fileRef.current?.click()} className="ds-btn ds-btn-outline" style={{
+                fontSize: 14, padding: "12px 28px", marginBottom: 56,
+              }}>
+                Learn more
+              </button>
+
+              {/* App mockup placeholder */}
+              <div style={{
+                position: "relative", maxWidth: 800, margin: "0 auto",
+                borderRadius: 24, overflow: "hidden",
+                background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+                boxShadow: "0 32px 64px rgba(0,0,0,0.15)",
+                aspectRatio: "16 / 9",
+              }}>
+                {/* Browser chrome */}
+                <div style={{
+                  position: "absolute", top: 0, left: 0, right: 0, height: 40,
+                  background: "rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.06)",
+                  display: "flex", alignItems: "center", gap: 6, paddingLeft: 16,
+                }}>
+                  {[0, 1, 2].map(i => (
+                    <div key={i} style={{ width: 10, height: 10, borderRadius: "50%",
+                      background: i === 0 ? "#ef4444" : i === 1 ? "#eab308" : "#22c55e", opacity: 0.6,
+                    }} />
+                  ))}
+                  <div style={{ marginLeft: 16, padding: "4px 16px", borderRadius: 6, background: "rgba(255,255,255,0.06)", fontSize: 11, color: "rgba(255,255,255,0.3)" }}>dealsignals.app/workspace</div>
+                </div>
+                <div style={{
+                  position: "absolute", inset: 0, display: "flex", flexDirection: "column",
+                  alignItems: "center", justifyContent: "center", gap: 12, paddingTop: 40,
+                }}>
+                  <div style={{ width: 64, height: 64, borderRadius: "50%",
+                    background: "rgba(185,23,47,0.15)", border: "2px solid rgba(185,23,47,0.3)",
+                    display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                  }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#b9172f" stroke="none">
+                      <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.4)" }}>Product demo — 60 seconds</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── 5. TESTIMONIALS ── */}
+          <div style={{ padding: "80px 32px", background: "#f8fafc", borderTop: "1px solid #f1f5f9" }}>
+            <div style={{ maxWidth: 900, margin: "0 auto" }}>
+              <h2 style={{ fontSize: 34, fontWeight: 800, color: "#1e293b", marginBottom: 10, textAlign: "center" }}>
+                What our clients <span style={{ color: "#b9172f" }}>say about us</span>
+              </h2>
+              <p style={{ fontSize: 15, color: "#64748b", marginBottom: 48, textAlign: "center", lineHeight: 1.7 }}>
+                CRE professionals trust Deal Signal for fast, reliable deal screening
+              </p>
+              <div className="ds-testimonials" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+                {[
+                  { quote: "Cuts our deal screening time by 75%. We use it on every listing now.", author: "Marcus Chen", title: "Investor, Los Angeles", color: "#b9172f" },
+                  { quote: "I send a Deal Signal report with every offer. Buyers love the clarity it provides.", author: "Jennifer Patel", title: "Broker, Chicago", color: "#3B82F6" },
+                  { quote: "Underwriting starts with this. Gets the hard metrics out of the way instantly.", author: "David Rogers", title: "Analyst, Dallas", color: "#059669" },
+                ].map((t, i) => (
+                  <div key={i} style={{
+                    background: "#fff", borderRadius: 20, padding: "28px 24px",
+                    border: "1px solid #f1f5f9", boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
+                  }}>
+                    <div style={{ fontSize: 28, color: "#e2e8f0", marginBottom: 12 }}>&ldquo;&ldquo;</div>
+                    <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.65, margin: "0 0 16px" }}>{t.quote}</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{
+                        width: 36, height: 36, borderRadius: "50%", background: t.color,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 13, fontWeight: 700, color: "#fff",
+                      }}>{t.author[0]}</div>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "#1e293b" }}>{t.author}</div>
+                        <div style={{ fontSize: 11, color: "#94a3b8" }}>{t.title}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ── 6. FEATURES GRID (detailed) ── */}
+          <div id="features" style={{ maxWidth: 1000, margin: "0 auto", padding: "88px 32px 0" }}>
+            <div style={{ textAlign: "center", marginBottom: 56 }}>
+              <h2 style={{ fontSize: 34, fontWeight: 800, color: "#1e293b", marginBottom: 10 }}>
+                Everything in your <span style={{ color: "#b9172f" }}>Deal Signal</span> report
               </h2>
             </div>
-            <div className="ds-features-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24 }}>
+            <div className="ds-features-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 20 }}>
               {[
-                {
-                  icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
-                  title: "Extracted Financials",
-                  desc: "Cap rate, NOI, DSCR, price/SF, rent/SF, occupancy, lease terms, and 40+ more fields pulled from your document automatically.",
-                  color: "#b9172f",
-                  metrics: ["Cap Rate 6.25%", "NOI $412K", "DSCR 1.45x"],
-                },
-                {
-                  icon: "M22 12h-4l-3 9L9 3l-3 9H2",
-                  title: "Deal Signal Score",
-                  desc: "A weighted 0-100 score across pricing, cashflow, tenant, rollover, location, and upside factors. Instantly compare deals.",
-                  color: "#059669",
-                  metrics: ["Score 74", "Band BUY", "Confidence HIGH"],
-                },
-                {
-                  icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z",
-                  title: "Risk Flags & Signals",
-                  desc: "Color-coded signals for cap rate, DSCR, occupancy, tenant quality, basis, and rollover risk. See problems before you read page one.",
-                  color: "#D97706",
-                  metrics: ["Rollover YELLOW", "Tenant GREEN", "Basis RED"],
-                },
-                {
-                  icon: "M4 6h16M4 10h16M4 14h16M4 18h16",
-                  title: "Investment Thesis",
-                  desc: "A concise buy/hold/pass recommendation with supporting rationale. Forward it to your team or add it to your deal pipeline.",
-                  color: "#6366F1",
-                  metrics: ["Summary", "Recommendation", "Key Risks"],
-                },
+                { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", title: "Extracted Financials", desc: "Cap rate, NOI, DSCR, price/SF, rent/SF, occupancy, lease terms, and 40+ more fields.", color: "#b9172f", metrics: ["Cap Rate 6.25%", "NOI $412K", "DSCR 1.45x"] },
+                { icon: "M22 12h-4l-3 9L9 3l-3 9H2", title: "Deal Signal Score", desc: "A weighted 0-100 score across pricing, cashflow, tenant, rollover, location, and upside.", color: "#059669", metrics: ["Score 74", "Band BUY", "Confidence HIGH"] },
+                { icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z", title: "Risk Flags & Signals", desc: "Color-coded signals for cap rate, DSCR, occupancy, tenant quality, basis, and rollover risk.", color: "#D97706", metrics: ["Rollover YELLOW", "Tenant GREEN", "Basis RED"] },
+                { icon: "M4 6h16M4 10h16M4 14h16M4 18h16", title: "Investment Thesis", desc: "A concise buy/hold/pass recommendation with supporting rationale for your team.", color: "#6366F1", metrics: ["Summary", "Recommendation", "Key Risks"] },
               ].map(f => (
-                <div key={f.title} className="ds-card" style={{
-                  background: "#ffffff", borderRadius: 16, padding: "32px 28px",
-                  border: "1px solid #EDF0F5",
-                  display: "flex", gap: 20,
+                <div key={f.title} style={{
+                  background: "#f8fafc", borderRadius: 20, padding: "28px 24px",
+                  border: "1px solid #f1f5f9", display: "flex", gap: 18,
                 }}>
                   <div style={{
-                    width: 52, height: 52, borderRadius: 14, flexShrink: 0,
-                    background: `${f.color}08`, border: `1.5px solid ${f.color}15`,
+                    width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+                    background: "#fff", border: "1px solid #f1f5f9",
                     display: "flex", alignItems: "center", justifyContent: "center",
                   }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={f.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={f.icon} /></svg>
                   </div>
                   <div style={{ flex: 1 }}>
-                    <h3 style={{ fontSize: 17, fontWeight: 700, color: "#0B1120", marginBottom: 6 }}>{f.title}</h3>
-                    <p style={{ fontSize: 14, color: "#5A7091", lineHeight: 1.65, margin: "0 0 14px" }}>{f.desc}</p>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "#1e293b", marginBottom: 4 }}>{f.title}</h3>
+                    <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6, margin: "0 0 10px" }}>{f.desc}</p>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                       {f.metrics.map(m => (
-                        <span key={m} style={{
-                          fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 6,
-                          background: `${f.color}06`, color: f.color, letterSpacing: 0.3,
-                        }}>{m}</span>
+                        <span key={m} style={{ fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 50, background: `${f.color}0A`, color: f.color }}>{m}</span>
                       ))}
                     </div>
                   </div>
@@ -988,231 +901,131 @@ export default function OmAnalyzerPage() {
             </div>
           </div>
 
-          {/* ── 6. PRO WORKSPACE PREVIEW ── */}
-          <div style={{ maxWidth: 1080, margin: "0 auto", padding: "96px 32px 0" }}>
-            <div style={{ textAlign: "center", marginBottom: 56 }}>
-              <div className="ds-section-label">Go beyond the free tool</div>
-              <h2 className="ds-heading" style={{ fontSize: 40, marginBottom: 14 }}>
-                Your full deal workspace
-              </h2>
-              <p className="ds-subtext" style={{ margin: "0 auto" }}>
-                Deep research on tenant credit, location intelligence, comp analysis, and everything the OM doesn&apos;t mention.
-              </p>
-            </div>
-
-            <div className="ds-pro-grid" style={{
-              background: "#0B1120", borderRadius: 24,
-              padding: "56px 48px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 56, alignItems: "center",
+          {/* ── 7. PRO WORKSPACE PREVIEW ── */}
+          <div style={{ maxWidth: 1000, margin: "0 auto", padding: "88px 32px 0" }}>
+            <div style={{
+              background: "#0f172a", borderRadius: 28, padding: "52px 44px",
+              display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center",
               position: "relative", overflow: "hidden",
-            }}>
-              {/* Accent orbs */}
-              <div style={{ position: "absolute", top: -60, right: -40, width: 250, height: 250, borderRadius: "50%", background: "radial-gradient(circle, rgba(185,23,47,0.12) 0%, transparent 70%)", filter: "blur(50px)", pointerEvents: "none" }} />
-              <div style={{ position: "absolute", bottom: -40, left: "30%", width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)", filter: "blur(40px)", pointerEvents: "none" }} />
-
+            }} className="ds-pro-grid">
               <div style={{ position: "relative", zIndex: 1 }}>
-                <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 16, lineHeight: 1.2 }}>
-                  Deal analysis meets intelligence
+                <h3 style={{ fontSize: 28, fontWeight: 800, color: "#fff", marginBottom: 14, lineHeight: 1.25 }}>
+                  Your full deal workspace
                 </h3>
-                <p style={{ fontSize: 15, color: "rgba(255,255,255,0.55)", lineHeight: 1.75, margin: "0 0 32px" }}>
-                  Save, track, and compare every deal in your pipeline. Get tenant credit scores, location demographics, and comp data in one place.
+                <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.75, margin: "0 0 28px" }}>
+                  Deep research on tenant credit, location intel, comp analysis, and everything the OM doesn&apos;t mention. Save, track, and compare every deal.
                 </p>
-                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                  <Link href="/workspace" className="ds-cta" style={{
-                    display: "inline-block", padding: "14px 32px",
-                    background: "#b9172f", color: "#fff", border: "none", borderRadius: 10,
-                    fontSize: 15, fontWeight: 700, textDecoration: "none",
-                  }}>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <Link href="/workspace" className="ds-btn ds-btn-primary" style={{ fontSize: 14, padding: "12px 28px" }}>
                     Try Pro Free
                   </Link>
-                  <Link href="/pricing" style={{
-                    display: "inline-block", padding: "14px 32px",
-                    background: "transparent", color: "rgba(255,255,255,0.7)", borderRadius: 10,
-                    fontSize: 15, fontWeight: 600, textDecoration: "none",
-                    border: "1.5px solid rgba(255,255,255,0.15)",
-                    transition: "all 0.2s",
-                  }}>
+                  <Link href="/pricing" className="ds-btn" style={{ fontSize: 14, padding: "12px 28px", border: "1.5px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.7)" }}>
                     See Plans
                   </Link>
                 </div>
               </div>
-
-              {/* Screenshot mockup */}
               <div style={{
-                height: 340, borderRadius: 16, overflow: "hidden",
-                background: "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
-                border: "1px solid rgba(255,255,255,0.08)", position: "relative", zIndex: 1,
+                height: 280, borderRadius: 20, overflow: "hidden",
+                background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)",
                 display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 13, color: "rgba(255,255,255,0.2)", fontWeight: 500,
               }}>
-                {/* Browser chrome */}
-                <div style={{
-                  position: "absolute", top: 0, left: 0, right: 0, height: 36,
-                  background: "rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.06)",
-                  display: "flex", alignItems: "center", gap: 6, paddingLeft: 14,
-                }}>
-                  {[0, 1, 2].map(i => (
-                    <div key={i} style={{
-                      width: 8, height: 8, borderRadius: "50%",
-                      background: i === 0 ? "rgba(255,100,100,0.5)" : i === 1 ? "rgba(255,200,0,0.5)" : "rgba(100,200,100,0.5)",
-                    }} />
-                  ))}
-                  <div style={{ marginLeft: 12, padding: "3px 12px", borderRadius: 4, background: "rgba(255,255,255,0.06)", fontSize: 10, color: "rgba(255,255,255,0.3)" }}>dealsignals.app/workspace</div>
-                </div>
-                <div style={{
-                  paddingTop: 36, textAlign: "center", color: "rgba(255,255,255,0.25)",
-                  fontSize: 14, fontWeight: 500,
-                }}>
-                  Pro Workspace Screenshot
-                </div>
+                Pro Workspace Screenshot
               </div>
             </div>
 
-            {/* Pro feature cards */}
-            <div className="ds-pro-features" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginTop: 24 }}>
+            <div className="ds-pro-features" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginTop: 20 }}>
               {[
-                { icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z", title: "Location Intel", desc: "Demographics, walk scores, development pipeline" },
-                { icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", title: "Tenant Research", desc: "Credit history, expansion plans, performance" },
-                { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", title: "Comp Analysis", desc: "Nearby sales, listings, pricing trends" },
-                { icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z", title: "Deal Pipeline", desc: "Save, organize, and share deals instantly" },
+                { icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z", title: "Location Intel", desc: "Demographics, walk scores, pipeline" },
+                { icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", title: "Tenant Research", desc: "Credit, expansion, performance" },
+                { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", title: "Comp Analysis", desc: "Sales, listings, pricing trends" },
+                { icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z", title: "Deal Pipeline", desc: "Save, organize, share deals" },
               ].map(f => (
-                <div key={f.title} className="ds-card" style={{
-                  padding: "20px 18px", borderRadius: 14, background: "#fff",
-                  border: "1px solid #EDF0F5",
-                }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 10 }}><path d={f.icon} /></svg>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#0B1120", marginBottom: 4 }}>{f.title}</div>
-                  <div style={{ fontSize: 12, color: "#5A7091", lineHeight: 1.5 }}>{f.desc}</div>
+                <div key={f.title} style={{ padding: "18px 16px", borderRadius: 16, background: "#f8fafc", border: "1px solid #f1f5f9" }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 8 }}><path d={f.icon} /></svg>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", marginBottom: 3 }}>{f.title}</div>
+                  <div style={{ fontSize: 11, color: "#64748b", lineHeight: 1.4 }}>{f.desc}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* ── 7. PRICING TEASER ── */}
-          <div style={{ maxWidth: 900, margin: "0 auto", padding: "96px 32px 0" }}>
-            <div style={{ textAlign: "center", marginBottom: 56 }}>
-              <div className="ds-section-label">Pricing</div>
-              <h2 className="ds-heading" style={{ fontSize: 40 }}>
-                Choose the right plan
-              </h2>
-            </div>
-            <div className="ds-pricing-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, maxWidth: 720, margin: "0 auto" }}>
-              {/* Free plan */}
-              <div style={{
-                padding: "36px 32px", borderRadius: 20,
-                background: "#fff", border: "1px solid #EDF0F5",
-              }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#5A7091", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>Free</div>
-                <div style={{ marginBottom: 20 }}>
-                  <span style={{ fontSize: 40, fontWeight: 800, color: "#0B1120" }}>$0</span>
-                  <span style={{ fontSize: 15, color: "#8899B0", marginLeft: 4 }}>/month</span>
+          {/* ── 8. PRICING ── */}
+          <div style={{ maxWidth: 800, margin: "0 auto", padding: "88px 32px 0" }}>
+            <h2 style={{ fontSize: 34, fontWeight: 800, color: "#1e293b", marginBottom: 48, textAlign: "center" }}>
+              Simple, transparent pricing
+            </h2>
+            <div className="ds-pricing-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+              <div style={{ padding: "32px 28px", borderRadius: 24, background: "#f8fafc", border: "1px solid #f1f5f9" }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>Free</div>
+                <div style={{ marginBottom: 16 }}>
+                  <span style={{ fontSize: 36, fontWeight: 800, color: "#1e293b" }}>$0</span>
+                  <span style={{ fontSize: 14, color: "#94a3b8" }}>/month</span>
                 </div>
-                <p style={{ fontSize: 13, color: "#5A7091", marginBottom: 24, lineHeight: 1.6 }}>
-                  Perfect for evaluating your first deals
-                </p>
-                <ul style={{ margin: "0 0 28px", padding: 0, listStyle: "none" }}>
-                  {["2 analyses/month", "Basic scoring", "XLSX export", "No signup required"].map(f => (
-                    <li key={f} style={{
-                      fontSize: 13, color: "#3D516E", padding: "8px 0", display: "flex", alignItems: "center", gap: 10,
-                      borderBottom: "1px solid #F6F8FB",
-                    }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round"><path d="M5 13l4 4L19 7" /></svg>
+                <p style={{ fontSize: 13, color: "#64748b", marginBottom: 20 }}>Perfect for getting started</p>
+                <ul style={{ margin: "0 0 24px", padding: 0, listStyle: "none" }}>
+                  {["2 analyses/month", "Basic scoring", "XLSX export", "No signup"].map(f => (
+                    <li key={f} style={{ fontSize: 13, color: "#475569", padding: "7px 0", display: "flex", alignItems: "center", gap: 10 }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round"><path d="M5 13l4 4L19 7" /></svg>
                       {f}
                     </li>
                   ))}
                 </ul>
-                <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="ds-cta-outline" style={{
-                  width: "100%", padding: "13px 24px",
-                  background: "#fff", color: "#3D516E", border: "1.5px solid #D8DFE9", borderRadius: 10,
-                  fontSize: 14, fontWeight: 700, cursor: "pointer",
-                }}>
+                <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="ds-btn ds-btn-outline" style={{ width: "100%", fontSize: 14, padding: "12px 24px" }}>
                   Start now
                 </button>
               </div>
-
-              {/* Pro plan */}
-              <div style={{
-                padding: "36px 32px", borderRadius: 20,
-                background: "#0B1120", position: "relative", overflow: "hidden",
-              }}>
-                <div style={{ position: "absolute", top: 16, right: 16, padding: "4px 12px", borderRadius: 100, background: "rgba(185,23,47,0.2)", fontSize: 10, fontWeight: 700, color: "#f87171", textTransform: "uppercase", letterSpacing: 1 }}>Popular</div>
+              <div style={{ padding: "32px 28px", borderRadius: 24, background: "#0f172a", position: "relative" }}>
+                <div style={{ position: "absolute", top: 14, right: 14, padding: "4px 12px", borderRadius: 50, background: "rgba(185,23,47,0.15)", fontSize: 10, fontWeight: 700, color: "#f87171", textTransform: "uppercase", letterSpacing: 1 }}>Popular</div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>Pro</div>
-                <div style={{ marginBottom: 20 }}>
-                  <span style={{ fontSize: 40, fontWeight: 800, color: "#fff" }}>$40</span>
-                  <span style={{ fontSize: 15, color: "rgba(255,255,255,0.4)", marginLeft: 4 }}>/month</span>
+                <div style={{ marginBottom: 16 }}>
+                  <span style={{ fontSize: 36, fontWeight: 800, color: "#fff" }}>$40</span>
+                  <span style={{ fontSize: 14, color: "rgba(255,255,255,0.4)" }}>/month</span>
                 </div>
-                <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 24, lineHeight: 1.6 }}>
-                  For serious deal flow and pipeline management
-                </p>
-                <ul style={{ margin: "0 0 28px", padding: 0, listStyle: "none" }}>
-                  {["40+ analyses/month", "Deep research tools", "Full scoring model", "Map view & shareable links", "Priority support"].map(f => (
-                    <li key={f} style={{
-                      fontSize: 13, color: "rgba(255,255,255,0.75)", padding: "8px 0", display: "flex", alignItems: "center", gap: 10,
-                      borderBottom: "1px solid rgba(255,255,255,0.06)",
-                    }}>
+                <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 20 }}>For serious deal flow</p>
+                <ul style={{ margin: "0 0 24px", padding: 0, listStyle: "none" }}>
+                  {["40+ analyses/month", "Deep research tools", "Full scoring model", "Shareable links", "Priority support"].map(f => (
+                    <li key={f} style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", padding: "7px 0", display: "flex", alignItems: "center", gap: 10 }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="2.5" strokeLinecap="round"><path d="M5 13l4 4L19 7" /></svg>
                       {f}
                     </li>
                   ))}
                 </ul>
-                <Link href="/try-pro" className="ds-cta" style={{
-                  display: "block", width: "100%", padding: "13px 24px",
-                  background: "#b9172f", color: "#fff", border: "none", borderRadius: 10,
-                  fontSize: 14, fontWeight: 700, cursor: "pointer", textDecoration: "none", textAlign: "center",
-                }}>
+                <Link href="/try-pro" className="ds-btn ds-btn-primary" style={{ display: "block", width: "100%", fontSize: 14, padding: "12px 24px", textAlign: "center" }}>
                   Start free trial
                 </Link>
               </div>
             </div>
-            <div style={{ textAlign: "center", marginTop: 32 }}>
-              <Link href="/pricing" style={{
-                fontSize: 13, color: "#b9172f", fontWeight: 600, textDecoration: "none",
-              }}>
-                Compare all plans &rarr;
-              </Link>
-            </div>
           </div>
 
-          {/* ── 8. FAQ SECTION ── */}
-          <div style={{ maxWidth: 720, margin: "0 auto", padding: "96px 32px" }}>
-            <div style={{ textAlign: "center", marginBottom: 56 }}>
-              <h2 className="ds-heading" style={{ fontSize: 36 }}>
-                Frequently asked questions
-              </h2>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+          {/* ── 9. FAQ ── */}
+          <div style={{ maxWidth: 680, margin: "0 auto", padding: "88px 32px" }}>
+            <h2 style={{ fontSize: 30, fontWeight: 800, color: "#1e293b", marginBottom: 48, textAlign: "center" }}>
+              Frequently asked questions
+            </h2>
+            <div style={{ display: "flex", flexDirection: "column" }}>
               {[
-                { q: "What is Deal Signal?", a: "Deal Signal is an AI-powered CRE underwriting tool that extracts key financial metrics, calculates investment scores, and flags risks from offering memorandums in seconds. It's designed as a fast first pass to help you screen deals quickly." },
-                { q: "What file types are supported?", a: "We accept PDF, Word documents (.docx), Excel spreadsheets (.xlsx/.xls), CSV files, and plain text. PDF is recommended for best accuracy. Max file size is 50MB." },
-                { q: "Is Deal Signal really free?", a: "Yes. Free tier gives you 2 analyses per month with no signup required. Pro tier unlocks 40+ analyses monthly plus deep research tools, starting at $40/month." },
-                { q: "How accurate is the extraction?", a: "Our AI achieves 90%+ accuracy on standard CRE metrics like cap rate, NOI, and DSCR. More complex calculations may require verification. Always review the original document for critical decisions." },
-                { q: "What's included in Pro?", a: "Pro adds location intelligence, tenant credit research, comp analysis, a full deal pipeline, map view, shareable reports, and priority support. Perfect for serious investors and brokers." },
-                { q: "Is my data private?", a: "Yes. We don't store your documents permanently. Analyses are processed in real-time and deleted immediately after. No tracking, no account required for the free tier." },
-                { q: "Can I share reports with my team?", a: "Pro users can generate shareable links to reports. Free tier users can export as XLSX or PDF for sharing manually." },
-                { q: "What if the extraction is wrong?", a: "You can adjust any extracted value in the Pro workspace. We're training our models constantly with user feedback to improve accuracy." },
+                { q: "What is Deal Signal?", a: "Deal Signal is an AI-powered CRE underwriting tool that extracts key financial metrics, calculates investment scores, and flags risks from offering memorandums in seconds." },
+                { q: "What file types are supported?", a: "PDF, Word (.docx), Excel (.xlsx/.xls), CSV, and plain text. PDF is recommended for best accuracy. Max 50MB." },
+                { q: "Is Deal Signal really free?", a: "Yes. 2 analyses/month, no signup. Pro unlocks 40+ monthly analyses plus deep research tools at $40/month." },
+                { q: "How accurate is the extraction?", a: "90%+ accuracy on standard CRE metrics. Always review the original document for critical decisions." },
+                { q: "What's included in Pro?", a: "Location intelligence, tenant research, comp analysis, deal pipeline, map view, shareable reports, and priority support." },
+                { q: "Is my data private?", a: "Yes. Documents are processed in real-time and not stored permanently. No tracking, no account required for free tier." },
               ].map((item, idx) => (
-                <div key={idx} style={{
-                  borderBottom: idx < 7 ? "1px solid #EDF0F5" : "none",
-                }}>
-                  <button
-                    onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                    style={{
-                      width: "100%", padding: "20px 0", background: "transparent",
-                      border: "none", textAlign: "left", cursor: "pointer",
-                      display: "flex", justifyContent: "space-between", alignItems: "center",
-                      gap: 16,
-                    }}
-                  >
-                    <span style={{ fontSize: 15, fontWeight: 600, color: "#0B1120" }}>{item.q}</span>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8899B0" strokeWidth="2" style={{
-                      transition: "transform 0.2s ease",
-                      transform: openFaq === idx ? "rotate(180deg)" : "rotate(0deg)",
-                      flexShrink: 0,
-                    }}>
+                <div key={idx} style={{ borderBottom: idx < 5 ? "1px solid #f1f5f9" : "none" }}>
+                  <button onClick={() => setOpenFaq(openFaq === idx ? null : idx)} style={{
+                    width: "100%", padding: "18px 0", background: "transparent",
+                    border: "none", textAlign: "left", cursor: "pointer",
+                    display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16,
+                  }}>
+                    <span style={{ fontSize: 15, fontWeight: 600, color: "#1e293b" }}>{item.q}</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === idx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
                       <polyline points="6 9 12 15 18 9" />
                     </svg>
                   </button>
                   {openFaq === idx && (
-                    <div style={{ paddingBottom: 20 }}>
-                      <p style={{ fontSize: 14, color: "#5A7091", lineHeight: 1.7, margin: 0 }}>{item.a}</p>
+                    <div style={{ paddingBottom: 18 }}>
+                      <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7, margin: 0 }}>{item.a}</p>
                     </div>
                   )}
                 </div>
@@ -1220,45 +1033,18 @@ export default function OmAnalyzerPage() {
             </div>
           </div>
 
-          {/* ── 9. FINAL CTA ── */}
-          <div style={{
-            background: "#0B1120", padding: "80px 32px", textAlign: "center",
-            position: "relative", overflow: "hidden",
-          }}>
-            <div style={{ position: "absolute", top: -60, left: "50%", transform: "translateX(-50%)", width: 600, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(185,23,47,0.1) 0%, transparent 70%)", filter: "blur(60px)", pointerEvents: "none" }} />
-            <div style={{ position: "relative", zIndex: 1, maxWidth: 600, margin: "0 auto" }}>
-              <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 36, fontWeight: 700, color: "#fff", marginBottom: 14, lineHeight: 1.2 }}>
-                Stop reading OMs page by page
+          {/* ── 10. FINAL CTA ── */}
+          <div style={{ background: "#f8fafc", padding: "72px 32px", textAlign: "center", borderTop: "1px solid #f1f5f9" }}>
+            <div style={{ maxWidth: 520, margin: "0 auto" }}>
+              <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: 16, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>Get started today</p>
+              <h2 style={{ fontSize: 28, fontWeight: 800, color: "#1e293b", marginBottom: 12, lineHeight: 1.3 }}>
+                Try the all-in-one deal analysis tool with AI-powered underwriting
               </h2>
-              <p style={{ fontSize: 16, color: "rgba(255,255,255,0.5)", marginBottom: 36, lineHeight: 1.7 }}>
-                Get a Deal Signal in under a minute. Free, no account required.
-              </p>
-              <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-                <button
-                  onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                  className="ds-cta"
-                  style={{
-                    padding: "16px 44px", background: "#b9172f", color: "#fff",
-                    border: "none", borderRadius: 12, fontSize: 16, fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
-                  Upload an OM
-                </button>
-                <button
-                  onClick={() => { setData(generateDemoResult("Walgreens-NNN-Texas")); setView("result"); }}
-                  style={{
-                    padding: "16px 44px", background: "transparent", color: "rgba(255,255,255,0.8)",
-                    border: "1.5px solid rgba(255,255,255,0.15)", borderRadius: 12, fontSize: 16, fontWeight: 700,
-                    cursor: "pointer", transition: "all 0.2s",
-                  }}
-                >
-                  Try a sample deal
+              <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 28 }}>
+                <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="ds-btn ds-btn-primary" style={{ fontSize: 15, padding: "14px 36px" }}>
+                  Get it Now
                 </button>
               </div>
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", marginTop: 24 }}>
-                Not a full underwriting model. A fast first pass to decide where to spend time.
-              </p>
             </div>
           </div>
         </section>
@@ -1345,61 +1131,61 @@ export default function OmAnalyzerPage() {
 
       {/* ===== FOOTER ===== */}
       <footer style={{
-        background: "#0B1120", padding: "64px 32px 32px",
-        borderTop: view === "upload" ? "none" : "1px solid #EDF0F5",
+        background: "#f8fafc", padding: "56px 32px 32px",
+        borderTop: "1px solid #e2e8f0",
       }}>
         <div className="ds-footer-grid" style={{ maxWidth: 1080, margin: "0 auto", display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr 1fr", gap: 48, marginBottom: 48 }}>
           <div>
-            <DealSignalLogo size={28} fontSize={16} gap={8} light={true} />
-            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, marginTop: 16, maxWidth: 280 }}>
+            <DealSignalLogo size={28} fontSize={16} gap={8} />
+            <p style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.7, marginTop: 16, maxWidth: 280 }}>
               AI-powered CRE underwriting and deal management. Built for investors, brokers, and analysts who move fast.
             </p>
           </div>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>Product</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>Product</div>
             {[
               { label: "OM Analyzer", href: "/om-analyzer" },
               { label: "Pro Workspace", href: "/workspace" },
               { label: "Pricing", href: "/pricing" },
             ].map(link => (
               <Link key={link.label} href={link.href} style={{
-                display: "block", fontSize: 13, color: "rgba(255,255,255,0.5)", textDecoration: "none", marginBottom: 10,
+                display: "block", fontSize: 13, color: "#64748b", textDecoration: "none", marginBottom: 10,
               }}>{link.label}</Link>
             ))}
           </div>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>Company</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>Company</div>
             {[
               { label: "About", href: "/about" },
               { label: "Contact", href: "/contact" },
               { label: "Support", href: "/contact" },
             ].map(link => (
               <Link key={link.label} href={link.href} style={{
-                display: "block", fontSize: 13, color: "rgba(255,255,255,0.5)", textDecoration: "none", marginBottom: 10,
+                display: "block", fontSize: 13, color: "#64748b", textDecoration: "none", marginBottom: 10,
               }}>{link.label}</Link>
             ))}
           </div>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>Legal</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>Legal</div>
             {[
               { label: "Privacy Policy", href: "/privacy" },
               { label: "Terms of Service", href: "/terms" },
             ].map(link => (
               <Link key={link.label} href={link.href} style={{
-                display: "block", fontSize: 13, color: "rgba(255,255,255,0.5)", textDecoration: "none", marginBottom: 10,
+                display: "block", fontSize: 13, color: "#64748b", textDecoration: "none", marginBottom: 10,
               }}>{link.label}</Link>
             ))}
           </div>
         </div>
         <div style={{
           maxWidth: 1080, margin: "0 auto", paddingTop: 24,
-          borderTop: "1px solid rgba(255,255,255,0.06)",
+          borderTop: "1px solid #e2e8f0",
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
+          <span style={{ fontSize: 12, color: "#94a3b8" }}>
             &copy; 2026 Deal Signal. All rights reserved.
           </span>
-          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>
+          <span style={{ fontSize: 12, color: "#cbd5e1" }}>
             dealsignals.app
           </span>
         </div>
