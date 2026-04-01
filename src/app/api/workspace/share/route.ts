@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/firebase-admin";
+import { getAdminDb, getAdminAuth } from "@/lib/firebase-admin";
 import { nanoid } from "nanoid";
 
 const db = () => getAdminDb();
@@ -11,7 +11,7 @@ const db = () => getAdminDb();
  * Document schema:
  *   id: string (auto)
  *   shareId: string (short nanoid for URL)
- *   userId: string (owner)
+ *   userId: string (owner — real Firebase UID)
  *   workspaceId: string
  *   workspaceName: string
  *   displayName: string (custom override name, or empty)
@@ -23,19 +23,29 @@ const db = () => getAdminDb();
  *   updatedAt: string
  */
 
-function getUserIdFromToken(req: NextRequest): string | null {
-  // Simple extraction — in production, verify Firebase ID token
+async function getUserIdFromToken(req: NextRequest): Promise<string | null> {
   const auth = req.headers.get("authorization");
   if (!auth?.startsWith("Bearer ")) return null;
-  // For now, accept any token and extract uid from the workspace mock
-  // In production: use Firebase Admin verifyIdToken
-  return "admin-user";
+  const token = auth.replace("Bearer ", "");
+  if (!token || token === "mock") return null;
+
+  try {
+    const adminAuth = getAdminAuth();
+    const decoded = await adminAuth.verifyIdToken(token);
+    return decoded.uid;
+  } catch (err) {
+    console.error("[share] Token verification failed:", err);
+    return null;
+  }
 }
 
 // GET — list share links for current user
 export async function GET(req: NextRequest) {
   try {
-    const userId = getUserIdFromToken(req) || "admin-user";
+    const userId = await getUserIdFromToken(req);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized — valid Firebase token required" }, { status: 401 });
+    }
     const workspaceId = req.nextUrl.searchParams.get("workspaceId");
 
     let q = db().collection("share_links").where("userId", "==", userId);
@@ -56,7 +66,10 @@ export async function GET(req: NextRequest) {
 // POST — create a new share link
 export async function POST(req: NextRequest) {
   try {
-    const userId = getUserIdFromToken(req) || "admin-user";
+    const userId = await getUserIdFromToken(req);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized — valid Firebase token required" }, { status: 401 });
+    }
     const body = await req.json();
     const { workspaceId, workspaceName, displayName, whiteLabel, hideDocuments, contactName, contactAgency, contactPhone } = body;
 
@@ -100,7 +113,10 @@ export async function POST(req: NextRequest) {
 // PATCH — update a share link
 export async function PATCH(req: NextRequest) {
   try {
-    const userId = getUserIdFromToken(req) || "admin-user";
+    const userId = await getUserIdFromToken(req);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized — valid Firebase token required" }, { status: 401 });
+    }
     const body = await req.json();
     const { id, ...updates } = body;
 
@@ -145,7 +161,10 @@ export async function PATCH(req: NextRequest) {
 // DELETE — remove a share link
 export async function DELETE(req: NextRequest) {
   try {
-    const userId = getUserIdFromToken(req) || "admin-user";
+    const userId = await getUserIdFromToken(req);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized — valid Firebase token required" }, { status: 401 });
+    }
     const id = req.nextUrl.searchParams.get("id");
 
     if (!id) {

@@ -32,9 +32,24 @@ export async function GET(
     shareDoc.ref.update({ viewCount: (shareData.viewCount || 0) + 1 }).catch(() => {});
 
     // Get properties for this workspace
-    const propsSnap = await db().collection("workspace_properties")
+    // Query by userId first (the owner of the share link)
+    let propsSnap = await db().collection("workspace_properties")
       .where("userId", "==", shareData.userId)
       .get();
+
+    // Fallback: if userId is "admin-user" (legacy links created before auth fix),
+    // query all properties for the workspaceId instead
+    if (propsSnap.empty && shareData.userId === "admin-user") {
+      const wsId = shareData.workspaceId;
+      if (wsId && wsId !== "default") {
+        propsSnap = await db().collection("workspace_properties")
+          .where("workspaceId", "==", wsId)
+          .get();
+      } else {
+        // For default workspace, get all properties that have no workspaceId or "default"
+        propsSnap = await db().collection("workspace_properties").get();
+      }
+    }
 
     // Filter by workspace client-side (same pattern as workspace firestore.ts)
     const allProps = propsSnap.docs.map(d => ({ id: d.id, ...d.data() }));

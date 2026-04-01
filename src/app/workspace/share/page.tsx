@@ -66,14 +66,25 @@ export default function ShareLinksPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    loadLinks();
-  }, []);
+    if (user) loadLinks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  async function getAuthHeaders(): Promise<Record<string, string>> {
+    if (!user) return {};
+    try {
+      const token = await user.getIdToken();
+      return { Authorization: `Bearer ${token}` };
+    } catch {
+      return {};
+    }
+  }
 
   async function loadLinks() {
     try {
-      const res = await fetch("/api/workspace/share", {
-        headers: { Authorization: "Bearer mock" },
-      });
+      const headers = await getAuthHeaders();
+      if (!headers.Authorization) { setLoading(false); return; }
+      const res = await fetch("/api/workspace/share", { headers });
       if (res.ok) {
         const data = await res.json();
         setLinks(data.links || []);
@@ -91,9 +102,10 @@ export default function ShareLinksPage() {
     const ws = workspaces.find(w => w.id === selectedWsId);
 
     try {
+      const authHeaders = await getAuthHeaders();
       const res = await fetch("/api/workspace/share", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer mock" },
+        headers: { "Content-Type": "application/json", ...authHeaders },
         body: JSON.stringify({
           workspaceId: selectedWsId,
           workspaceName: ws?.name || "Workspace",
@@ -143,9 +155,10 @@ export default function ShareLinksPage() {
     setSaving(true);
     const newWs = workspaces.find(w => w.id === editWorkspaceId);
     try {
+      const authHeaders = await getAuthHeaders();
       const res = await fetch("/api/workspace/share", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer mock" },
+        headers: { "Content-Type": "application/json", ...authHeaders },
         body: JSON.stringify({
           id: link.id,
           workspaceId: editWorkspaceId,
@@ -181,9 +194,10 @@ export default function ShareLinksPage() {
 
   async function handleToggle(link: ShareLink) {
     try {
+      const authHeaders = await getAuthHeaders();
       await fetch("/api/workspace/share", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer mock" },
+        headers: { "Content-Type": "application/json", ...authHeaders },
         body: JSON.stringify({ id: link.id, isActive: !link.isActive }),
       });
       setLinks(prev => prev.map(l => l.id === link.id ? { ...l, isActive: !l.isActive } : l));
@@ -195,9 +209,10 @@ export default function ShareLinksPage() {
   async function handleDelete(link: ShareLink) {
     if (!confirm("Delete this shareable link? Recipients will no longer be able to access it.")) return;
     try {
+      const authHeaders = await getAuthHeaders();
       await fetch(`/api/workspace/share?id=${link.id}`, {
         method: "DELETE",
-        headers: { Authorization: "Bearer mock" },
+        headers: authHeaders,
       });
       setLinks(prev => prev.filter(l => l.id !== link.id));
     } catch (err) {
