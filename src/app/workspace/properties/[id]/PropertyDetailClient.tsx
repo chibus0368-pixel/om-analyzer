@@ -15,6 +15,7 @@ import { generateUnderwritingXLSX, generateBriefDownload } from "@/lib/workspace
 import { extractTextFromFiles } from "@/lib/workspace/file-reader";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import Link from "next/link";
+import AskDealPanel from "@/components/AskDealPanel";
 
 /* ── Design tokens ─────────────────────────────────────── */
 const C = {
@@ -1604,6 +1605,11 @@ function PropertyDetailInner({
           </button>
         </div>
       )}
+
+      {/* ═══════════════════════════════════════════════════ */}
+      {/*  ASK THE DEAL — AI Insights Panel                   */}
+      {/* ═══════════════════════════════════════════════════ */}
+      {hasData && <AskDealPanel propertyId={propertyId} userTier={userTier} />}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  DANGER ZONE                                        */}

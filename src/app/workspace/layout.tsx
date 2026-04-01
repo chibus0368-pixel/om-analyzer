@@ -39,31 +39,35 @@ function SidebarIcon({ d, size = 18 }: { d: string; size?: number }) {
   );
 }
 
-function NavLink({ href, label, icon, active, collapsed }: { href: string; label: string; icon: string; active: boolean; collapsed: boolean }) {
+function NavLink({ href, label, icon, active, collapsed, compact = false }: { href: string; label: string; icon: string; active: boolean; collapsed: boolean; compact?: boolean }) {
+  const iconSize = compact ? 28 : 30;
+  const fontSize = compact ? 11 : 13;
+  const padding = collapsed ? (compact ? "6px 0" : "8px 0") : (compact ? "5px 12px" : "7px 14px");
+
   return (
     <Link
       href={href}
       className="ws-nav"
       style={{
-        display: "flex", alignItems: "center", gap: collapsed ? 0 : 10,
-        padding: collapsed ? "10px 0" : "9px 14px",
+        display: "flex", alignItems: "center", gap: collapsed ? 0 : 8,
+        padding,
         justifyContent: collapsed ? "center" : "flex-start",
-        borderRadius: 10,
+        borderRadius: 8,
         color: active ? "#b9172f" : "#64748b",
         background: active ? "rgba(185, 23, 47, 0.06)" : "transparent",
-        textDecoration: "none", fontSize: 13, fontWeight: active ? 600 : 500,
+        textDecoration: "none", fontSize, fontWeight: active ? 600 : 500,
         transition: "all 0.15s",
         position: "relative",
       }}
       title={collapsed ? label : undefined}
     >
       <div style={{
-        width: 34, height: 34, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center",
+        width: iconSize, height: iconSize, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
         background: active ? "rgba(185, 23, 47, 0.08)" : "transparent",
         transition: "background 0.15s",
         flexShrink: 0,
       }}>
-        <SidebarIcon d={icon} />
+        <SidebarIcon d={icon} size={compact ? 15 : 18} />
       </div>
       {!collapsed && <span style={{ whiteSpace: "nowrap" }}>{label}</span>}
     </Link>
@@ -487,7 +491,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         {collapsed && <SidebarWorkspaceSwitcher collapsed={collapsed} onAddNew={() => setShowNewWs(true)} />}
 
         {/* Main nav */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 2, padding: "0 8px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 1, padding: "0 8px" }}>
           {SIDEBAR_NAV.map(item => (
             <NavLink key={item.href} {...item} active={isActive(item.href)} collapsed={collapsed} />
           ))}
@@ -558,31 +562,31 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
         {/* Divider */}
         {!collapsed && (
-          <div style={{ margin: "4px 12px 4px", borderTop: "1px solid #f1f5f9" }} />
+          <div style={{ margin: "2px 12px 2px", borderTop: "1px solid #f1f5f9" }} />
         )}
 
-        {/* Bottom nav */}
-        <div style={{ padding: "4px 8px 8px", display: "flex", flexDirection: "column", gap: 2 }}>
+        {/* Bottom nav — compact */}
+        <div style={{ padding: "2px 8px 6px", display: "flex", flexDirection: "column", gap: 0 }}>
           {BOTTOM_NAV.map(item => (
-            <NavLink key={item.href} {...item} active={isActive(item.href)} collapsed={collapsed} />
+            <NavLink key={item.href} {...item} active={isActive(item.href)} collapsed={collapsed} compact />
           ))}
           <button
             onClick={() => setCollapsed(!collapsed)}
             className="ws-collapse"
             style={{
-              display: "flex", alignItems: "center", gap: collapsed ? 0 : 10,
+              display: "flex", alignItems: "center", gap: collapsed ? 0 : 8,
               justifyContent: collapsed ? "center" : "flex-start",
-              padding: collapsed ? "10px 0" : "9px 14px",
+              padding: collapsed ? "6px 0" : "5px 12px",
               background: "none", border: "none", color: "#94a3b8",
-              cursor: "pointer", fontSize: 12, fontWeight: 500, width: "100%", borderRadius: 10, fontFamily: "inherit",
+              cursor: "pointer", fontSize: 11, fontWeight: 500, width: "100%", borderRadius: 8, fontFamily: "inherit",
               transition: "all 0.15s",
             }}
           >
             <div style={{
-              width: 34, height: 34, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center",
+              width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
               flexShrink: 0,
             }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
                 {collapsed ? <path d="M13 5l7 7-7 7M5 5l7 7-7 7" /> : <path d="M11 19l-7-7 7-7M19 19l-7-7 7-7" />}
               </svg>
             </div>
