@@ -404,8 +404,7 @@ export default function OmAnalyzerPage() {
         @keyframes scoreFill { from { stroke-dashoffset: 126; } to { stroke-dashoffset: var(--score-offset); } }
         @keyframes metricBar { from { width: 0; } to { width: var(--bar-w); } }
         @keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: 200px 0; } }
-        @keyframes loopRestart { 0%,92% { opacity: 1; } 96%,100% { opacity: 0; } }
-        .ds-process-strip { animation: loopRestart 8s ease-in-out infinite; }
+        .ds-process-strip { opacity: 1; }
         .ds-process-step { opacity: 0; animation: stepFadeIn 0.5s ease-out forwards; }
         .ds-process-connector { position: relative; height: 2px; flex: 1; min-width: 32px; background: #e2e8f0; overflow: hidden; border-radius: 1px; align-self: center; }
         .ds-process-connector::after { content: ''; position: absolute; left: 0; top: 0; height: 100%; background: #b9172f; border-radius: 1px; animation: connectorGrow 0.6s ease-out forwards; }
