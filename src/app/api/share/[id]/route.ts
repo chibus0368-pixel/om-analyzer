@@ -31,32 +31,50 @@ export async function GET(
     // Increment view count (fire and forget)
     shareDoc.ref.update({ viewCount: (shareData.viewCount || 0) + 1 }).catch(() => {});
 
+    console.log("[share/[id]] shareData:", JSON.stringify({
+      userId: shareData.userId,
+      workspaceId: shareData.workspaceId,
+      workspaceName: shareData.workspaceName,
+    }));
+
     // Get properties for this workspace
     // Query by userId first (the owner of the share link)
     let propsSnap = await db().collection("workspace_properties")
       .where("userId", "==", shareData.userId)
       .get();
 
+    console.log("[share/[id]] userId query found:", propsSnap.size, "docs for userId:", shareData.userId);
+
     // Fallback: if userId is "admin-user" (legacy links created before auth fix),
     // query all properties for the workspaceId instead
     if (propsSnap.empty && shareData.userId === "admin-user") {
       const wsId = shareData.workspaceId;
+      console.log("[share/[id]] Fallback: admin-user detected, wsId:", wsId);
       if (wsId && wsId !== "default") {
         propsSnap = await db().collection("workspace_properties")
           .where("workspaceId", "==", wsId)
           .get();
       } else {
-        // For default workspace, get all properties that have no workspaceId or "default"
+        // For default workspace, get all properties
         propsSnap = await db().collection("workspace_properties").get();
       }
+      console.log("[share/[id]] Fallback query found:", propsSnap.size, "docs");
     }
 
     // Filter by workspace client-side (same pattern as workspace firestore.ts)
     const allProps = propsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     const wsId = shareData.workspaceId;
+
+    console.log("[share/[id]] allProps count:", allProps.length, "wsId:", wsId);
+    if (allProps.length > 0) {
+      console.log("[share/[id]] sample prop workspaceIds:", allProps.slice(0, 3).map((p: any) => p.workspaceId));
+    }
+
     const properties = wsId === "default"
       ? allProps.filter((p: any) => !p.workspaceId || p.workspaceId === "default")
       : allProps.filter((p: any) => p.workspaceId === wsId);
+
+    console.log("[share/[id]] filtered properties count:", properties.length);
 
     // Get extracted fields for each property
     const propertiesWithFields = [];
