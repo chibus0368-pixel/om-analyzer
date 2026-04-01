@@ -3,35 +3,35 @@ import "@/styles/globals.css";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://nnntriplenet.com"),
+  metadataBase: new URL("https://dealsignals.app"),
   title: {
-    default: "NNNTripleNet - Daily Intelligence for CRE Investors",
-    template: "%s | NNNTripleNet",
+    default: "Deal Signals - OM Analyzer & CRE Workspace",
+    template: "%s | Deal Signals",
   },
   description:
-    "The daily intelligence platform for individual commercial real estate investors. Data-driven insights, market analysis, and calculators for smarter NNN investing.",
+    "AI-powered OM analysis and deal management workspace for commercial real estate investors.",
   alternates: {
-    canonical: "https://nnntriplenet.com",
+    canonical: "https://dealsignals.app",
   },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://nnntriplenet.com",
-    siteName: "NNNTripleNet",
+    url: "https://dealsignals.app",
+    siteName: "Deal Signals",
     title: {
-      default: "NNNTripleNet - Daily Intelligence for CRE Investors",
-      template: "%s | NNNTripleNet",
+      default: "Deal Signals - OM Analyzer & CRE Workspace",
+      template: "%s | Deal Signals",
     },
     description:
-      "The daily intelligence platform for individual commercial real estate investors. Market data, calculators, and research for NNN investing.",
+      "AI-powered OM analysis and deal management workspace for commercial real estate investors.",
   },
   twitter: {
     card: "summary_large_image",
     title: {
-      default: "NNNTripleNet - Daily Intelligence for CRE Investors",
-      template: "%s | NNNTripleNet",
+      default: "Deal Signals - OM Analyzer & CRE Workspace",
+      template: "%s | Deal Signals",
     },
-    description: "Daily intelligence for CRE investors.",
+    description: "AI-powered OM analysis and CRE deal workspace.",
   },
   robots: {
     index: true,
