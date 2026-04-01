@@ -523,7 +523,7 @@ export default function SharedViewPage() {
                   padding: "16px 20px", borderTop: "1px solid #e5e7eb",
                   textAlign: "center", fontSize: 10, color: "#94a3b8",
                 }}>
-                  Deal Signal &mdash; CRE Intelligence
+                  Deal Signals &mdash; CRE Intelligence
                 </div>
               )}
             </>

@@ -2,7 +2,7 @@ import Link from "next/link";
 import DealSignalLogo from "./DealSignalLogo";
 
 /**
- * Deal Signal branded footer — used on om-analyzer and related pages
+ * Deal Signals branded footer — used on om-analyzer and related pages
  * (terms, privacy, contact/support)
  */
 export default function DealSignalFooter() {
@@ -26,7 +26,7 @@ export default function DealSignalFooter() {
         ))}
       </div>
       <span style={{ fontSize: 10, color: "#B4C1D1" }}>
-        &copy; 2026 Deal Signal
+        &copy; 2026 Deal Signals
       </span>
     </footer>
   );

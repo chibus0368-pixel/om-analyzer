@@ -13,7 +13,7 @@ import TrialStatusBar from "@/components/billing/TrialStatusBar";
 
 import UpgradeModal from "@/components/billing/UpgradeModal";
 
-/* Sidebar nav — matches Deal Signal design */
+/* Sidebar nav — matches Deal Signals design */
 const SIDEBAR_NAV = [
   { href: "/workspace", label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4" },
   { href: "/workspace/scoreboard", label: "Scoreboard", icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
@@ -415,7 +415,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", background: "#faf8ff" }}>
-      {/* ===== TOP HEADER BAR — Deal Signal ===== */}
+      {/* ===== TOP HEADER BAR — Deal Signals ===== */}
       <header style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "0 24px", height: 56, minHeight: 56,
@@ -583,7 +583,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             fontSize: 11, color: "#585e70",
           }}>
             <div>
-              <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 14, color: "#151b2b", display: "block", marginBottom: 6 }}>Deal Signal</span>
+              <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 14, color: "#151b2b", display: "block", marginBottom: 6 }}>Deal Signals</span>
               <span style={{ color: "#585e70", fontSize: 10 }}>&copy; 2026 NNNTripleNet. All rights reserved.</span>
             </div>
             <div style={{ display: "flex", gap: 24 }}>

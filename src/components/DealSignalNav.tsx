@@ -2,13 +2,13 @@ import Link from "next/link";
 import DealSignalLogo from "./DealSignalLogo";
 
 /**
- * Deal Signal branded nav bar — used on om-analyzer and related pages
+ * Deal Signals branded nav bar — used on om-analyzer and related pages
  * (terms, privacy, contact/support)
  */
 export default function DealSignalNav() {
   return (
     <>
-    {/* Inter font for Deal Signal branded pages */}
+    {/* Inter font for Deal Signals branded pages */}
     {/* eslint-disable-next-line @next/next/no-css-tags */}
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" />
     <header style={{

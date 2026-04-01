@@ -79,7 +79,7 @@ export default function DealSignalLogo({
               lineHeight: 1,
             }}
           >
-            Signal
+            Signals
           </span>
         </span>
       )}

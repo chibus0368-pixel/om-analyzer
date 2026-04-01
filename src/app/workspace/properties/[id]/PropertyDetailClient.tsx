@@ -173,7 +173,7 @@ function MetricTooltip({ text }: { text: string }) {
   );
 }
 
-/* ── Score badge (Deal Signal) ─────────────────────────── */
+/* ── Score badge (Deal Signals) ─────────────────────────── */
 function DealSignalBadge({ score, band }: { score: number | null; band: string }) {
   if (!score) return null;
   const b = band.toLowerCase().replace(/_/g, " ");
@@ -535,7 +535,7 @@ export default function PropertyDetailClient() {
       if (parseData.success && parseData.fieldsExtracted > 0) {
         setReparseStatus("Generating output files...");
         try { await fetch("/api/workspace/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ propertyId, userId: user.uid, parsedData: parseData.fields }) }); } catch { /* non-blocking */ }
-        setReparseStatus("Calculating Deal Signal...");
+        setReparseStatus("Calculating Deal Signals...");
         try { await fetch("/api/workspace/score", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ propertyId, userId: user.uid, analysisType }) }); } catch { /* non-blocking */ }
         setReparseStatus(`Complete — ${parseData.fieldsExtracted} fields extracted.`);
       } else {
@@ -914,7 +914,7 @@ function PropertyDetailInner({
             )}
           </div>
 
-          {/* Center: Deal Signal */}
+          {/* Center: Deal Signals */}
           {scoreTotal && (
             <div style={{
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
@@ -922,7 +922,7 @@ function PropertyDetailInner({
               minWidth: 140,
             }}>
               <DealSignalBadge score={scoreTotal} band={scoreBand} />
-              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.secondary, marginTop: 8 }}>Deal Signal</span>
+              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.secondary, marginTop: 8 }}>Deal Signals</span>
             </div>
           )}
 

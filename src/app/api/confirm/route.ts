@@ -56,7 +56,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         // Send welcome email
         try {
           const welcomeHtml = welcomeTemplate({ email });
-          await sendEmail(email, 'Welcome to Deal Signal!', welcomeHtml);
+          await sendEmail(email, 'Welcome to Deal Signals!', welcomeHtml);
         } catch {
           // Don't block confirmation if welcome email fails
         }
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Send welcome email (don't let failure block confirmation)
     try {
       const welcomeHtml = welcomeTemplate({ email });
-      await sendEmail(email, 'Welcome to Deal Signal!', welcomeHtml);
+      await sendEmail(email, 'Welcome to Deal Signals!', welcomeHtml);
     } catch (emailError) {
       console.error('Welcome email failed (confirmation still succeeded):', emailError);
     }

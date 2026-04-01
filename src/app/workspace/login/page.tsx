@@ -234,7 +234,7 @@ export default function WorkspaceLoginPage() {
           <p style={{ fontSize: 14, color: "#5A7091", marginTop: 6, fontFamily: "'Inter', sans-serif" }}>
             {upgradePlan
               ? `Sign ${mode === "login" ? "in" : "up"} to complete your upgrade to ${upgradePlan === "pro_plus" ? "Pro+" : "Pro"}`
-              : (mode === "login" ? "Sign in to your workspace" : "Get started with Deal Signal Pro")}
+              : (mode === "login" ? "Sign in to your workspace" : "Get started with Deal Signals Pro")}
           </p>
         </div>
 
@@ -416,7 +416,7 @@ export default function WorkspaceLoginPage() {
           textAlign: "center", marginTop: 8, fontSize: 10, color: "#B4C1D1",
           fontFamily: "'Inter', sans-serif", lineHeight: 1.5,
         }}>
-          Deal Signal — CRE intelligence &amp; analytics
+          Deal Signals — CRE intelligence &amp; analytics
         </p>
       </div>
 

@@ -94,7 +94,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const userConfirmationHtml = generateUserConfirmationEmail(sanitizedName);
     await sendEmail(
       sanitizedEmail,
-      'We Received Your Message - Deal Signal',
+      'We Received Your Message - Deal Signals',
       userConfirmationHtml
     );
 
@@ -231,12 +231,12 @@ function generateUserConfirmationEmail(name: string): string {
 
           <p style="margin: 30px 0 0 0; font-size: 14px; color: #666;">
             Best regards,<br/>
-            The Deal Signal Team
+            The Deal Signals Team
           </p>
         </div>
 
         <div style="text-align: center; padding-top: 20px; font-size: 12px; color: #999;">
-          <p style="margin: 0;">© ${new Date().getFullYear()} Deal Signal. All rights reserved.</p>
+          <p style="margin: 0;">© ${new Date().getFullYear()} Deal Signals. All rights reserved.</p>
         </div>
       </td>
     </tr>

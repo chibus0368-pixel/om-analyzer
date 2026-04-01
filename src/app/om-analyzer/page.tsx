@@ -397,6 +397,18 @@ export default function OmAnalyzerPage() {
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes scoreCount { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
         @keyframes barGrow { from { width: 0; } }
+        @keyframes stepFadeIn { from { opacity: 0; transform: translateY(8px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes connectorGrow { from { width: 0; } to { width: 100%; } }
+        @keyframes docSlide { 0% { transform: translateY(6px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+        @keyframes extractPulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
+        @keyframes scoreFill { from { stroke-dashoffset: 126; } to { stroke-dashoffset: var(--score-offset); } }
+        @keyframes metricBar { from { width: 0; } to { width: var(--bar-w); } }
+        @keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: 200px 0; } }
+        @keyframes loopRestart { 0%,92% { opacity: 1; } 96%,100% { opacity: 0; } }
+        .ds-process-strip { animation: loopRestart 8s ease-in-out infinite; }
+        .ds-process-step { opacity: 0; animation: stepFadeIn 0.5s ease-out forwards; }
+        .ds-process-connector { position: relative; height: 2px; flex: 1; min-width: 32px; background: #e2e8f0; overflow: hidden; border-radius: 1px; align-self: center; }
+        .ds-process-connector::after { content: ''; position: absolute; left: 0; top: 0; height: 100%; background: #b9172f; border-radius: 1px; animation: connectorGrow 0.6s ease-out forwards; }
         .ds-card { transition: all 0.25s ease; border-radius: 20px; }
         .ds-card:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.08); }
         .ds-btn { display: inline-flex; align-items: center; justify-content: center; font-weight: 700; border-radius: 50px; cursor: pointer; transition: all 0.2s ease; text-decoration: none; border: none; }
@@ -430,6 +442,7 @@ export default function OmAnalyzerPage() {
           .ds-nav-links { display: none !important; }
           .ds-pro-features { grid-template-columns: 1fr 1fr !important; }
           .ds-testimonials { grid-template-columns: 1fr !important; }
+          .ds-process-strip { transform: scale(0.85); transform-origin: left center; }
         }
         @media (max-width: 480px) {
           .ds-footer-grid { grid-template-columns: 1fr !important; }
@@ -543,17 +556,138 @@ export default function OmAnalyzerPage() {
             }}>
               {/* Left */}
               <div className="ds-hero-left" style={{ animation: "fadeInUp 0.5s ease-out" }}>
+
+                {/* ── Animated 3-step process strip ── */}
+                <div className="ds-process-strip" style={{
+                  display: "flex", alignItems: "center", gap: 0,
+                  marginBottom: 28, padding: "14px 0",
+                }}>
+                  {/* Step 1: Upload */}
+                  <div className="ds-process-step" style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    background: "#f8fafc", borderRadius: 14, padding: "10px 16px",
+                    border: "1.5px solid #e2e8f0", animationDelay: "0.3s",
+                  }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 10, background: "#fff",
+                      border: "1.5px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      {/* Upload / document icon */}
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="12" y1="18" x2="12" y2="12" />
+                        <polyline points="9 15 12 12 15 15" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#1e293b", lineHeight: 1.2 }}>Upload</div>
+                      <div style={{ fontSize: 9.5, color: "#94a3b8", fontWeight: 500 }}>PDF / XLS</div>
+                    </div>
+                    {/* Mini animated doc icons */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 3, marginLeft: 2 }}>
+                      <div style={{
+                        width: 16, height: 10, borderRadius: 2, background: "#fee2e2",
+                        border: "1px solid #fca5a5", animation: "docSlide 0.4s ease-out 0.6s both",
+                      }} />
+                      <div style={{
+                        width: 16, height: 10, borderRadius: 2, background: "#dcfce7",
+                        border: "1px solid #86efac", animation: "docSlide 0.4s ease-out 0.8s both",
+                      }} />
+                    </div>
+                  </div>
+
+                  {/* Connector 1→2 */}
+                  <div className="ds-process-connector" style={{ animationDelay: "1s" }}>
+                    <div style={{ position: "absolute", left: 0, top: 0, height: "100%", background: "#b9172f", borderRadius: 1, animation: "connectorGrow 0.6s ease-out 1.2s forwards", width: 0 }} />
+                  </div>
+
+                  {/* Step 2: Extract */}
+                  <div className="ds-process-step" style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    background: "#f8fafc", borderRadius: 14, padding: "10px 16px",
+                    border: "1.5px solid #e2e8f0", animationDelay: "1.6s",
+                  }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 10, background: "#fff",
+                      border: "1.5px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      {/* Extract / data icon */}
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#1e293b", lineHeight: 1.2 }}>Extract</div>
+                      <div style={{ fontSize: 9.5, color: "#94a3b8", fontWeight: 500 }}>47+ fields</div>
+                    </div>
+                    {/* Animated extraction lines */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 3, marginLeft: 2 }}>
+                      {[0, 1, 2].map(i => (
+                        <div key={i} style={{
+                          height: 3, borderRadius: 2, background: `linear-gradient(90deg, #e2e8f0 0%, #b9172f 50%, #e2e8f0 100%)`,
+                          backgroundSize: "200px 100%",
+                          animation: `shimmer 1.5s linear infinite ${1.8 + i * 0.2}s`,
+                          width: [24, 18, 20][i], opacity: 0,
+                          animationFillMode: "forwards",
+                        }}>
+                          <div style={{ width: "100%", height: "100%", borderRadius: 2, animation: `docSlide 0.3s ease-out ${1.8 + i * 0.15}s both` }} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Connector 2→3 */}
+                  <div className="ds-process-connector">
+                    <div style={{ position: "absolute", left: 0, top: 0, height: "100%", background: "#b9172f", borderRadius: 1, animation: "connectorGrow 0.6s ease-out 2.4s forwards", width: 0 }} />
+                  </div>
+
+                  {/* Step 3: Score */}
+                  <div className="ds-process-step" style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    background: "#f8fafc", borderRadius: 14, padding: "10px 16px",
+                    border: "1.5px solid #e2e8f0", animationDelay: "2.8s",
+                  }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 10, background: "#fff",
+                      border: "1.5px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      {/* Score / gauge icon */}
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 20V10" />
+                        <path d="M18 20V4" />
+                        <path d="M6 20v-4" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#1e293b", lineHeight: 1.2 }}>Score</div>
+                      <div style={{ fontSize: 9.5, color: "#94a3b8", fontWeight: 500 }}>Deal metrics</div>
+                    </div>
+                    {/* Animated mini score ring */}
+                    <svg width="32" height="32" viewBox="0 0 32 32" style={{ marginLeft: 2 }}>
+                      <circle cx="16" cy="16" r="12" fill="none" stroke="#e2e8f0" strokeWidth="3" />
+                      <circle cx="16" cy="16" r="12" fill="none" stroke="#059669" strokeWidth="3"
+                        strokeDasharray="75.4" strokeDashoffset="75.4" strokeLinecap="round"
+                        style={{ transform: "rotate(-90deg)", transformOrigin: "center", animation: "scoreFill 1s ease-out 3.2s forwards", ["--score-offset" as string]: "22" }} />
+                      <text x="16" y="18" textAnchor="middle" fontSize="8" fontWeight="800" fill="#1e293b" style={{ opacity: 0, animation: "docSlide 0.3s ease-out 3.6s forwards" }}>82</text>
+                    </svg>
+                  </div>
+                </div>
+
                 <h1 style={{
                   fontSize: 48, fontWeight: 800, color: "#1e293b", lineHeight: 1.15,
                   marginBottom: 20, letterSpacing: -1,
                 }}>
-                  Increase your deal flow<br />success with <span style={{ color: "#b9172f" }}>Deal Signal</span>
+                  Increase your deal flow<br />success with <span style={{ color: "#b9172f" }}>Deal Signals</span>
                 </h1>
                 <p style={{
                   fontSize: 17, color: "#64748b", lineHeight: 1.75,
                   maxWidth: 480, marginBottom: 36,
                 }}>
-                  Deal Signal allows you to underwrite any CRE deal in 60 seconds, extract 47+ data points, and get a buy/hold/pass recommendation from one document upload.
+                  Deal Signals allows you to underwrite any CRE deal in 60 seconds, extract 47+ data points, and get a buy/hold/pass recommendation from one document upload.
                 </p>
                 <div className="ds-hero-btns" style={{ display: "flex", gap: 12 }}>
                   <button onClick={() => fileRef.current?.click()} className="ds-btn ds-btn-primary" style={{
@@ -668,7 +802,7 @@ export default function OmAnalyzerPage() {
                       <button onClick={(e) => { e.stopPropagation(); startAnalysis(); }} className="ds-btn ds-btn-primary" style={{
                         display: "block", width: "100%", fontSize: 15, padding: "13px 32px", marginTop: 12,
                       }}>
-                        Run Deal Signal
+                        Run Deal Signals
                       </button>
                     </>
                   )}
@@ -717,11 +851,11 @@ export default function OmAnalyzerPage() {
             <div className="ds-features-3" style={{ maxWidth: 1000, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
               {[
                 { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
-                  title: "All-in-one Analysis", desc: "Deal Signal extracts financials, scores the deal, flags risks, and generates a buy/hold/pass recommendation — all from a single document upload." },
+                  title: "All-in-one Analysis", desc: "Deal Signals extracts financials, scores the deal, flags risks, and generates a buy/hold/pass recommendation — all from a single document upload." },
                 { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
                   title: "Free to start", desc: "Our free tier gives you 2 analyses per month with no signup, no credit card. Upgrade to Pro when you're ready for more." },
                 { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>,
-                  title: "Deal Signal Score", desc: "Every analysis includes a weighted 0-100 score across pricing, cashflow, tenant, rollover, location, and upside factors." },
+                  title: "Deal Signals Score", desc: "Every analysis includes a weighted 0-100 score across pricing, cashflow, tenant, rollover, location, and upside factors." },
               ].map((f, i) => (
                 <div key={i} style={{
                   background: "#f8fafc", borderRadius: 20, padding: "32px 28px",
@@ -745,16 +879,16 @@ export default function OmAnalyzerPage() {
           <div id="how-it-works" style={{ background: "#f8fafc", padding: "88px 32px", borderTop: "1px solid #f1f5f9" }}>
             <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
               <h2 style={{ fontSize: 36, fontWeight: 800, color: "#1e293b", marginBottom: 10 }}>
-                How <span style={{ color: "#b9172f" }}>Deal Signal</span> works
+                How <span style={{ color: "#b9172f" }}>Deal Signals</span> works
               </h2>
               <p style={{ fontSize: 16, color: "#64748b", marginBottom: 56, lineHeight: 1.7 }}>
-                Deal Signal answers the urgent demand for fast and accurate CRE deal screening
+                Deal Signals answers the urgent demand for fast and accurate CRE deal screening
               </p>
               <div className="ds-steps-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 28 }}>
                 {[
                   { num: "[1]", title: "Upload document", desc: "Drop a PDF, flyer, or rent roll. Any CRE document works — the AI handles the rest." },
                   { num: "[2]", title: "AI extracts data", desc: "47+ data points extracted in seconds: cap rate, NOI, DSCR, lease terms, and more." },
-                  { num: "[3]", title: "Get your signal", desc: "Receive a Deal Signal score, risk flags, and a buy/hold/pass recommendation." },
+                  { num: "[3]", title: "Get your signal", desc: "Receive a Deal Signals score, risk flags, and a buy/hold/pass recommendation." },
                 ].map((s, i) => (
                   <div key={i} style={{
                     background: "#fff", borderRadius: 20, padding: "32px 24px",
@@ -777,7 +911,7 @@ export default function OmAnalyzerPage() {
                 We offer an advanced<br />deal analysis platform
               </h2>
               <p style={{ fontSize: 16, color: "#64748b", marginBottom: 20, lineHeight: 1.7, maxWidth: 520, margin: "0 auto 24px" }}>
-                With Deal Signal, you can increase your deal screening speed by 75% and ensure every investment decision is backed by data.
+                With Deal Signals, you can increase your deal screening speed by 75% and ensure every investment decision is backed by data.
               </p>
               <button onClick={() => fileRef.current?.click()} className="ds-btn ds-btn-outline" style={{
                 fontSize: 14, padding: "12px 28px", marginBottom: 56,
@@ -831,12 +965,12 @@ export default function OmAnalyzerPage() {
                 What our clients <span style={{ color: "#b9172f" }}>say about us</span>
               </h2>
               <p style={{ fontSize: 15, color: "#64748b", marginBottom: 48, textAlign: "center", lineHeight: 1.7 }}>
-                CRE professionals trust Deal Signal for fast, reliable deal screening
+                CRE professionals trust Deal Signals for fast, reliable deal screening
               </p>
               <div className="ds-testimonials" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
                 {[
                   { quote: "Cuts our deal screening time by 75%. We use it on every listing now.", author: "Marcus Chen", title: "Investor, Los Angeles", color: "#b9172f" },
-                  { quote: "I send a Deal Signal report with every offer. Buyers love the clarity it provides.", author: "Jennifer Patel", title: "Broker, Chicago", color: "#3B82F6" },
+                  { quote: "I send a Deal Signals report with every offer. Buyers love the clarity it provides.", author: "Jennifer Patel", title: "Broker, Chicago", color: "#3B82F6" },
                   { quote: "Underwriting starts with this. Gets the hard metrics out of the way instantly.", author: "David Rogers", title: "Analyst, Dallas", color: "#059669" },
                 ].map((t, i) => (
                   <div key={i} style={{
@@ -866,13 +1000,13 @@ export default function OmAnalyzerPage() {
           <div id="features" style={{ maxWidth: 1000, margin: "0 auto", padding: "88px 32px 0" }}>
             <div style={{ textAlign: "center", marginBottom: 56 }}>
               <h2 style={{ fontSize: 34, fontWeight: 800, color: "#1e293b", marginBottom: 10 }}>
-                Everything in your <span style={{ color: "#b9172f" }}>Deal Signal</span> report
+                Everything in your <span style={{ color: "#b9172f" }}>Deal Signals</span> report
               </h2>
             </div>
             <div className="ds-features-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 20 }}>
               {[
                 { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", title: "Extracted Financials", desc: "Cap rate, NOI, DSCR, price/SF, rent/SF, occupancy, lease terms, and 40+ more fields.", color: "#b9172f", metrics: ["Cap Rate 6.25%", "NOI $412K", "DSCR 1.45x"] },
-                { icon: "M22 12h-4l-3 9L9 3l-3 9H2", title: "Deal Signal Score", desc: "A weighted 0-100 score across pricing, cashflow, tenant, rollover, location, and upside.", color: "#059669", metrics: ["Score 74", "Band BUY", "Confidence HIGH"] },
+                { icon: "M22 12h-4l-3 9L9 3l-3 9H2", title: "Deal Signals Score", desc: "A weighted 0-100 score across pricing, cashflow, tenant, rollover, location, and upside.", color: "#059669", metrics: ["Score 74", "Band BUY", "Confidence HIGH"] },
                 { icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z", title: "Risk Flags & Signals", desc: "Color-coded signals for cap rate, DSCR, occupancy, tenant quality, basis, and rollover risk.", color: "#D97706", metrics: ["Rollover YELLOW", "Tenant GREEN", "Basis RED"] },
                 { icon: "M4 6h16M4 10h16M4 14h16M4 18h16", title: "Investment Thesis", desc: "A concise buy/hold/pass recommendation with supporting rationale for your team.", color: "#6366F1", metrics: ["Summary", "Recommendation", "Key Risks"] },
               ].map(f => (
@@ -1005,9 +1139,9 @@ export default function OmAnalyzerPage() {
             </h2>
             <div style={{ display: "flex", flexDirection: "column" }}>
               {[
-                { q: "What is Deal Signal?", a: "Deal Signal is an AI-powered CRE underwriting tool that extracts key financial metrics, calculates investment scores, and flags risks from offering memorandums in seconds." },
+                { q: "What is Deal Signals?", a: "Deal Signals is an AI-powered CRE underwriting tool that extracts key financial metrics, calculates investment scores, and flags risks from offering memorandums in seconds." },
                 { q: "What file types are supported?", a: "PDF, Word (.docx), Excel (.xlsx/.xls), CSV, and plain text. PDF is recommended for best accuracy. Max 50MB." },
-                { q: "Is Deal Signal really free?", a: "Yes. 2 analyses/month, no signup. Pro unlocks 40+ monthly analyses plus deep research tools at $40/month." },
+                { q: "Is Deal Signals really free?", a: "Yes. 2 analyses/month, no signup. Pro unlocks 40+ monthly analyses plus deep research tools at $40/month." },
                 { q: "How accurate is the extraction?", a: "90%+ accuracy on standard CRE metrics. Always review the original document for critical decisions." },
                 { q: "What's included in Pro?", a: "Location intelligence, tenant research, comp analysis, deal pipeline, map view, shareable reports, and priority support." },
                 { q: "Is my data private?", a: "Yes. Documents are processed in real-time and not stored permanently. No tracking, no account required for free tier." },
@@ -1183,7 +1317,7 @@ export default function OmAnalyzerPage() {
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
           <span style={{ fontSize: 12, color: "#94a3b8" }}>
-            &copy; 2026 Deal Signal. All rights reserved.
+            &copy; 2026 Deal Signals. All rights reserved.
           </span>
           <span style={{ fontSize: 12, color: "#cbd5e1" }}>
             dealsignals.app
@@ -1397,7 +1531,7 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
             <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0, color: "#151b2b", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Inter', sans-serif" }}>
               <span style={{ width: 3, height: 20, background: "#b9172f", borderRadius: 2 }} />
-              Deal Signal Score Breakdown
+              Deal Signals Score Breakdown
             </h2>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 10, fontWeight: 700, color: "#8899B0", textTransform: "uppercase", letterSpacing: 0.5 }}>{detectedType} model</span>
@@ -1613,7 +1747,7 @@ function ProUpsell() {
           Do this across your <em style={{ fontStyle: "italic", background: "linear-gradient(135deg, #f87171, #b9172f)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>entire pipeline</em>
         </h2>
         <p style={{ fontSize: 15, color: "rgba(255,255,255,0.55)", lineHeight: 1.7, marginBottom: 28, maxWidth: 520 }}>
-          You just saw what Deal Signal can do with one OM. Now imagine it across every deal you touch &mdash; saved, scored, and compared side by side.
+          You just saw what Deal Signals can do with one OM. Now imagine it across every deal you touch &mdash; saved, scored, and compared side by side.
         </p>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 32 }}>

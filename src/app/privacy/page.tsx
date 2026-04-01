@@ -4,17 +4,17 @@ import DealSignalFooter from "@/components/DealSignalFooter";
 import DealSignalLogo from "@/components/DealSignalLogo";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Deal Signal",
-  description: "Deal Signal privacy policy - how we collect, use, and protect your information.",
+  title: "Privacy Policy | Deal Signals",
+  description: "Deal Signals privacy policy - how we collect, use, and protect your information.",
   openGraph: {
     title: "Privacy Policy",
     description:
-      "Deal Signal privacy policy - how we collect, use, and protect your information.",
+      "Deal Signals privacy policy - how we collect, use, and protect your information.",
   },
   twitter: {
     title: "Privacy Policy",
     description:
-      "Deal Signal privacy policy - how we collect, use, and protect your information.",
+      "Deal Signals privacy policy - how we collect, use, and protect your information.",
   },
 };
 
@@ -41,7 +41,7 @@ export default function PrivacyPage() {
           {[
             {
               title: "Information We Collect",
-              content: "When you subscribe to Deal Signal, we collect your email address, subscription preferences, and basic usage data. We use Google Analytics to understand how visitors interact with our site. We do not collect financial account information, social security numbers, or other sensitive personal data."
+              content: "When you subscribe to Deal Signals, we collect your email address, subscription preferences, and basic usage data. We use Google Analytics to understand how visitors interact with our site. We do not collect financial account information, social security numbers, or other sensitive personal data."
             },
             {
               title: "How We Use Your Information",

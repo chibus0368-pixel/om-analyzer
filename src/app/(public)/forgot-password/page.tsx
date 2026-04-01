@@ -61,7 +61,7 @@ export default function ForgotPasswordPage() {
               fontFamily: "Playfair Display, serif",
             }}
           >
-            Deal Signal
+            Deal Signals
           </h1>
           <p
             style={{

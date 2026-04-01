@@ -4,17 +4,17 @@ import DealSignalFooter from "@/components/DealSignalFooter";
 import DealSignalLogo from "@/components/DealSignalLogo";
 
 export const metadata: Metadata = {
-  title: "Terms of Use | Deal Signal",
-  description: "Deal Signal terms of use - guidelines for using our platform, content, and tools.",
+  title: "Terms of Use | Deal Signals",
+  description: "Deal Signals terms of use - guidelines for using our platform, content, and tools.",
   openGraph: {
     title: "Terms of Use",
     description:
-      "Deal Signal terms of use - guidelines for using our platform, content, and tools.",
+      "Deal Signals terms of use - guidelines for using our platform, content, and tools.",
   },
   twitter: {
     title: "Terms of Use",
     description:
-      "Deal Signal terms of use - guidelines for using our platform, content, and tools.",
+      "Deal Signals terms of use - guidelines for using our platform, content, and tools.",
   },
 };
 
@@ -41,15 +41,15 @@ export default function TermsPage() {
           {[
             {
               title: "Acceptance of Terms",
-              content: "By accessing and using Deal Signal.com, you agree to be bound by these Terms of Use. If you do not agree to these terms, please do not use the site. We reserve the right to modify these terms at any time; continued use constitutes acceptance of changes."
+              content: "By accessing and using Deal Signals.com, you agree to be bound by these Terms of Use. If you do not agree to these terms, please do not use the site. We reserve the right to modify these terms at any time; continued use constitutes acceptance of changes."
             },
             {
               title: "Not Investment Advice",
-              content: "Deal Signal provides market data, educational content, and analytical tools for informational purposes only. Nothing on this site constitutes investment advice, financial advice, tax advice, or legal advice. Market data, statistics, risk scores, and analysis should not be relied upon as the sole basis for any investment decision. Always consult with qualified financial, legal, and tax professionals before making investment decisions."
+              content: "Deal Signals provides market data, educational content, and analytical tools for informational purposes only. Nothing on this site constitutes investment advice, financial advice, tax advice, or legal advice. Market data, statistics, risk scores, and analysis should not be relied upon as the sole basis for any investment decision. Always consult with qualified financial, legal, and tax professionals before making investment decisions."
             },
             {
               title: "Data Accuracy Disclaimer",
-              content: "While we strive to provide accurate and up-to-date information, Deal Signal makes no warranties or representations regarding the accuracy, completeness, or timeliness of any data, analysis, or content on this site. Market data may be estimated, delayed, or sourced from third-party providers. We recommend verifying critical data points with primary sources such as CoStar, MSCI Real Capital Analytics, CBRE Research, and government agencies (FRED, BLS, SEC)."
+              content: "While we strive to provide accurate and up-to-date information, Deal Signals makes no warranties or representations regarding the accuracy, completeness, or timeliness of any data, analysis, or content on this site. Market data may be estimated, delayed, or sourced from third-party providers. We recommend verifying critical data points with primary sources such as CoStar, MSCI Real Capital Analytics, CBRE Research, and government agencies (FRED, BLS, SEC)."
             },
             {
               title: "No Guarantees",
@@ -57,11 +57,11 @@ export default function TermsPage() {
             },
             {
               title: "Intellectual Property",
-              content: "All content on Deal Signal.com, including text, graphics, logos, tools, and software, is the property of Deal Signal or its content suppliers and is protected by copyright laws. You may not reproduce, distribute, or create derivative works from our content without express written permission."
+              content: "All content on Deal Signals.com, including text, graphics, logos, tools, and software, is the property of Deal Signals or its content suppliers and is protected by copyright laws. You may not reproduce, distribute, or create derivative works from our content without express written permission."
             },
             {
               title: "Permitted Use",
-              content: "You may use Deal Signal for personal, non-commercial research and educational purposes. You may share individual articles or pages via direct links. You may not scrape, crawl, or systematically download content from the site. You may not use our content to create competing products or services."
+              content: "You may use Deal Signals for personal, non-commercial research and educational purposes. You may share individual articles or pages via direct links. You may not scrape, crawl, or systematically download content from the site. You may not use our content to create competing products or services."
             },
             {
               title: "User Accounts & Subscriptions",
@@ -69,11 +69,11 @@ export default function TermsPage() {
             },
             {
               title: "Third-Party Links",
-              content: "Deal Signal may contain links to third-party websites. We are not responsible for the content, accuracy, or practices of external sites. Links do not imply endorsement."
+              content: "Deal Signals may contain links to third-party websites. We are not responsible for the content, accuracy, or practices of external sites. Links do not imply endorsement."
             },
             {
               title: "Limitation of Liability",
-              content: "Deal Signal and its operators shall not be liable for any direct, indirect, incidental, special, or consequential damages arising from your use of the site, reliance on any data or analysis, or inability to access the site. This includes, without limitation, damages from investment decisions made using information from this site."
+              content: "Deal Signals and its operators shall not be liable for any direct, indirect, incidental, special, or consequential damages arising from your use of the site, reliance on any data or analysis, or inability to access the site. This includes, without limitation, damages from investment decisions made using information from this site."
             },
             {
               title: "Governing Law",

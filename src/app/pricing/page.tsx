@@ -13,7 +13,7 @@ const TIERS = [
     features: [
       { text: "2 Deal Analyses", included: true },
       { text: "Standard PDF extraction", included: true },
-      { text: "Basic Deal Signal score", included: true },
+      { text: "Basic Deal Signals score", included: true },
       { text: "First-pass brief download", included: true },
       { text: "Save & organize deals", included: false },
       { text: "AI scoring models", included: false },
@@ -32,7 +32,7 @@ const TIERS = [
     features: [
       { text: "Up to 40 deals/month", included: true },
       { text: "Save & organize deals", included: true },
-      { text: "Deal Signal scoring", included: true },
+      { text: "Deal Signals scoring", included: true },
       { text: "Full Excel workbooks (6 sheets)", included: true },
       { text: "Pro workspace with history", included: true },
       { text: "Interactive property map", included: true },
@@ -284,7 +284,7 @@ export default function PricingPage() {
           ))}
         </div>
         <span style={{ fontSize: 10, color: "#B4C1D1" }}>
-          &copy; 2026 Deal Signal
+          &copy; 2026 Deal Signals
         </span>
       </footer>
     </>

@@ -4,17 +4,17 @@ import DealSignalFooter from "@/components/DealSignalFooter";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Email Confirmed - Deal Signal",
-  description: "Your email has been confirmed. Welcome to Deal Signal!",
+  title: "Email Confirmed - Deal Signals",
+  description: "Your email has been confirmed. Welcome to Deal Signals!",
   openGraph: {
     title: "Email Confirmed",
     description:
-      "Your email has been confirmed. Welcome to Deal Signal!",
+      "Your email has been confirmed. Welcome to Deal Signals!",
   },
   twitter: {
     title: "Email Confirmed",
     description:
-      "Your email has been confirmed. Welcome to Deal Signal!",
+      "Your email has been confirmed. Welcome to Deal Signals!",
   },
 };
 
@@ -77,7 +77,7 @@ export default function ConfirmedPage() {
               marginBottom: 40,
             }}
           >
-            Your email has been confirmed. Welcome to Deal Signal!
+            Your email has been confirmed. Welcome to Deal Signals!
             You&apos;ll start receiving market updates, deal analysis, and
             investment insights right away.
           </p>
@@ -97,7 +97,7 @@ export default function ConfirmedPage() {
                 transition: "all 0.2s ease",
               }}
             >
-              Explore Deal Signal
+              Explore Deal Signals
             </Link>
             <Link
               href="/om-analyzer"

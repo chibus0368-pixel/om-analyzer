@@ -141,7 +141,7 @@ export default function VerifyEmailPage() {
               fontFamily: "Playfair Display, serif",
             }}
           >
-            Deal Signal
+            Deal Signals
           </h1>
           <p
             style={{
@@ -209,7 +209,7 @@ export default function VerifyEmailPage() {
             fontFamily: "Playfair Display, serif",
           }}
         >
-          Deal Signal
+          Deal Signals
         </h1>
         <p
           style={{

@@ -43,8 +43,8 @@ function getResend(): any {
 /**
  * Default email configuration
  */
-const DEFAULT_FROM = process.env.EMAIL_FROM_ADDRESS || 'Deal Signal <onboarding@resend.dev>';
-const COMPANY_NAME = 'Deal Signal';
+const DEFAULT_FROM = process.env.EMAIL_FROM_ADDRESS || 'Deal Signals <onboarding@resend.dev>';
+const COMPANY_NAME = 'Deal Signals';
 const UNSUBSCRIBE_DOMAIN = process.env.UNSUBSCRIBE_DOMAIN || 'https://nnntriplenet.com';
 const PHYSICAL_ADDRESS = 'Mequon, Wisconsin';
 

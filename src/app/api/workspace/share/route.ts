@@ -15,7 +15,7 @@ const db = () => getAdminDb();
  *   workspaceId: string
  *   workspaceName: string
  *   displayName: string (custom override name, or empty)
- *   whiteLabel: boolean (hide Deal Signal branding)
+ *   whiteLabel: boolean (hide Deal Signals branding)
  *   hideDocuments: boolean (don't show source docs)
  *   isActive: boolean
  *   viewCount: number

@@ -192,7 +192,7 @@ export default function TryProPage() {
                 <span style={{ fontSize: 10, fontWeight: 700, color: "#f87171", letterSpacing: 0.5 }}>PRO PREVIEW</span>
               </div>
               <h1 style={{ fontFamily: "'Inter', sans-serif", fontSize: 28, fontWeight: 800, color: "#fff", margin: "0 0 8px", letterSpacing: -0.5 }}>
-                See Deal Signal Pro in action
+                See Deal Signals Pro in action
               </h1>
               <p style={{ fontSize: 14, color: "rgba(255,255,255,0.55)", margin: 0, maxWidth: 500 }}>
                 Explore two sample deals with full Pro scoring models, category breakdowns, and risk analysis. This is what every deal looks like in your Pro workspace.
@@ -299,7 +299,7 @@ export default function TryProPage() {
 
             {/* Score Card */}
             <div style={{ background: "#fff", borderRadius: 12, boxShadow: "0 8px 24px rgba(21,27,43,0.05)", padding: 24, textAlign: "center" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#8899B0", textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>Deal Signal Score</div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#8899B0", textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>Deal Signals Score</div>
               {/* Score Ring */}
               <div style={{ position: "relative", width: 140, height: 140, margin: "0 auto 12px" }}>
                 <svg width="140" height="140" viewBox="0 0 140 140" style={{ transform: "rotate(-90deg)" }}>
@@ -444,7 +444,7 @@ export default function TryProPage() {
                 Ready to analyze your own deals?
               </h2>
               <p style={{ fontSize: 14, color: "rgba(255,255,255,0.55)", margin: "0 0 24px" }}>
-                Start your free Pro trial — no credit card required. Upload your first OM and get a full Deal Signal report.
+                Start your free Pro trial — no credit card required. Upload your first OM and get a full Deal Signals report.
               </p>
               <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
                 <Link href="/workspace/login" className="cta-btn" style={{
@@ -488,7 +488,7 @@ export default function TryProPage() {
             }}>{link.label}</Link>
           ))}
         </div>
-        <span style={{ fontSize: 10, color: "#B4C1D1" }}>&copy; 2026 Deal Signal</span>
+        <span style={{ fontSize: 10, color: "#B4C1D1" }}>&copy; 2026 Deal Signals</span>
       </footer>
     </>
   );

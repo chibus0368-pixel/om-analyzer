@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
             });
             const emailResult = await sendEmail(
               userData.email,
-              `Your Deal Signal ${planConfig.tier === 'pro_plus' ? 'Pro+' : 'Pro'} Subscription Is Active`,
+              `Your Deal Signals ${planConfig.tier === 'pro_plus' ? 'Pro+' : 'Pro'} Subscription Is Active`,
               html
             );
             if (!emailResult.success) {

@@ -341,7 +341,7 @@ export default function ShareLinksPage() {
               />
               <div>
                 <div style={{ fontWeight: 600 }}>White Label</div>
-                <div style={{ fontSize: 11, color: C.secondary }}>Hide Deal Signal branding from the shared page</div>
+                <div style={{ fontSize: 11, color: C.secondary }}>Hide Deal Signals branding from the shared page</div>
               </div>
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 13, color: C.onSurface }}>
@@ -498,7 +498,7 @@ export default function ShareLinksPage() {
                         />
                         <div>
                           <div style={{ fontWeight: 600 }}>White Label</div>
-                          <div style={{ fontSize: 11, color: C.secondary }}>Hide Deal Signal branding from the shared page</div>
+                          <div style={{ fontSize: 11, color: C.secondary }}>Hide Deal Signals branding from the shared page</div>
                         </div>
                       </label>
                       <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 13, color: C.onSurface }}>

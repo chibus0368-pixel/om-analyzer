@@ -93,7 +93,7 @@ function ResetPasswordContent() {
               fontFamily: "Playfair Display, serif",
             }}
           >
-            Deal Signal
+            Deal Signals
           </h1>
           <p
             style={{
@@ -196,7 +196,7 @@ function ResetPasswordContent() {
               fontFamily: "Playfair Display, serif",
             }}
           >
-            Deal Signal
+            Deal Signals
           </h1>
           <p
             style={{

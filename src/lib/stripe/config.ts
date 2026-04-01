@@ -29,7 +29,7 @@ export const PLANS: Record<string, PlanConfig> = {
     features: [
       "2 deal analyses",
       "Standard PDF extraction",
-      "Basic Deal Signal score",
+      "Basic Deal Signals score",
       "First-pass brief",
     ],
   },
@@ -43,7 +43,7 @@ export const PLANS: Record<string, PlanConfig> = {
     features: [
       "Up to 40 deals/month",
       "Save & organize deals",
-      "Deal Signal scoring",
+      "Deal Signals scoring",
       "6-sheet Excel workbook",
       "Workspace + history",
       "Property map",

@@ -1,5 +1,5 @@
 /**
- * Email template functions for Deal Signal
+ * Email template functions for Deal Signals
  * All templates use inline CSS and table-based layout for email client compatibility
  */
 
@@ -24,7 +24,7 @@ function emailWrapper(content: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Deal Signal</title>
+  <title>Deal Signals</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -73,7 +73,7 @@ function emailHeader(): string {
       <tr>
         <td style="text-align: center; padding-bottom: 20px; border-bottom: 3px solid ${COLORS.navy};">
           <a href="${appUrl}" style="text-decoration: none;">
-            <img src="${appUrl}/logo.png" alt="Deal Signal" width="220" style="max-width: 220px; height: auto; display: inline-block;" />
+            <img src="${appUrl}/logo.png" alt="Deal Signals" width="220" style="max-width: 220px; height: auto; display: inline-block;" />
           </a>
           <p style="margin: 8px 0 0 0; color: ${COLORS.gold}; font-size: 12px; font-weight: bold; letter-spacing: 1px;">MARKET INTELLIGENCE</p>
         </td>
@@ -248,7 +248,7 @@ export function dailyBriefTemplate(data: {
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 40px; padding-top: 20px; border-top: 1px solid ${COLORS.borderGray};">
       <tr>
         <td style="font-size: 11px; color: ${COLORS.darkGray}; text-align: center; padding: 20px 0;">
-          <p style="margin: 5px 0;">© ${new Date().getFullYear()} Deal Signal. All rights reserved.</p>
+          <p style="margin: 5px 0;">© ${new Date().getFullYear()} Deal Signals. All rights reserved.</p>
           <p style="margin: 5px 0;">Mequon, Wisconsin</p>
           <p style="margin: 5px 0;">
             <a href="${unsubscribeUrl}" style="color: #0066cc;">Unsubscribe</a> |
@@ -357,7 +357,7 @@ export function weeklyDigestTemplate(data: {
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 40px; padding-top: 20px; border-top: 1px solid ${COLORS.borderGray};">
       <tr>
         <td style="font-size: 11px; color: ${COLORS.darkGray}; text-align: center; padding: 20px 0;">
-          <p style="margin: 5px 0;">© ${new Date().getFullYear()} Deal Signal. All rights reserved.</p>
+          <p style="margin: 5px 0;">© ${new Date().getFullYear()} Deal Signals. All rights reserved.</p>
           <p style="margin: 5px 0;">Mequon, Wisconsin</p>
           <p style="margin: 5px 0;">
             <a href="${unsubscribeUrl}" style="color: #0066cc;">Unsubscribe</a> |
@@ -385,7 +385,7 @@ export function confirmationTemplate(data: { email: string; confirmUrl: string }
     </h2>
 
     <p style="margin: 0 0 20px 0; color: ${COLORS.textGray}; font-size: 14px; line-height: 1.6;">
-      Thank you for signing up for Deal Signal! To complete your subscription and start receiving our daily briefings, please confirm your email address.
+      Thank you for signing up for Deal Signals! To complete your subscription and start receiving our daily briefings, please confirm your email address.
     </p>
 
     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
@@ -413,7 +413,7 @@ export function confirmationTemplate(data: { email: string; confirmUrl: string }
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 40px; padding-top: 20px; border-top: 1px solid ${COLORS.borderGray};">
       <tr>
         <td style="font-size: 11px; color: ${COLORS.darkGray}; text-align: center; padding: 20px 0;">
-          <p style="margin: 5px 0;">© ${new Date().getFullYear()} Deal Signal. All rights reserved.</p>
+          <p style="margin: 5px 0;">© ${new Date().getFullYear()} Deal Signals. All rights reserved.</p>
           <p style="margin: 5px 0;">Mequon, Wisconsin</p>
         </td>
       </tr>
@@ -446,7 +446,7 @@ export function welcomeTemplate(data: { email: string; manageToken?: string }): 
     ${emailHeader()}
 
     <h2 style="margin: 30px 0 20px 0; color: ${COLORS.navy}; text-align: center;">
-      Welcome to Deal Signal!
+      Welcome to Deal Signals!
     </h2>
 
     <p style="margin: 0 0 15px 0; color: ${COLORS.textGray}; font-size: 14px; line-height: 1.6;">
@@ -491,7 +491,7 @@ export function welcomeTemplate(data: { email: string; manageToken?: string }): 
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 40px; padding-top: 20px; border-top: 1px solid ${COLORS.borderGray};">
       <tr>
         <td style="font-size: 11px; color: ${COLORS.darkGray}; text-align: center; padding: 20px 0;">
-          <p style="margin: 5px 0;">© ${new Date().getFullYear()} Deal Signal. All rights reserved.</p>
+          <p style="margin: 5px 0;">© ${new Date().getFullYear()} Deal Signals. All rights reserved.</p>
           <p style="margin: 5px 0;">Mequon, Wisconsin</p>
           <p style="margin: 5px 0;">
             <a href="${unsubscribeUrl}" style="color: #0066cc;">Unsubscribe</a> |
@@ -518,7 +518,7 @@ export function registrationWelcomeTemplate(data: { name: string; email: string 
     ${emailHeader()}
 
     <h2 style="margin: 30px 0 20px 0; color: ${COLORS.navy}; text-align: center;">
-      Welcome to Deal Signal, ${displayName}!
+      Welcome to Deal Signals, ${displayName}!
     </h2>
 
     <p style="margin: 0 0 15px 0; color: ${COLORS.textGray}; font-size: 14px; line-height: 1.6;">
@@ -533,7 +533,7 @@ export function registrationWelcomeTemplate(data: { name: string; email: string 
             <tr>
               <td style="padding: 6px 0; font-size: 14px; color: ${COLORS.textGray};">
                 <span style="color: ${COLORS.red}; font-weight: bold; margin-right: 8px;">1.</span>
-                Upload an offering memorandum to get a Deal Signal score
+                Upload an offering memorandum to get a Deal Signals score
               </td>
             </tr>
             <tr>
@@ -596,7 +596,7 @@ export function registrationWelcomeTemplate(data: { name: string; email: string 
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 40px; padding-top: 20px; border-top: 1px solid ${COLORS.borderGray};">
       <tr>
         <td style="font-size: 11px; color: ${COLORS.darkGray}; text-align: center; padding: 20px 0;">
-          <p style="margin: 5px 0;">&copy; ${new Date().getFullYear()} Deal Signal. All rights reserved.</p>
+          <p style="margin: 5px 0;">&copy; ${new Date().getFullYear()} Deal Signals. All rights reserved.</p>
           <p style="margin: 5px 0;">Mequon, Wisconsin</p>
         </td>
       </tr>
@@ -641,7 +641,7 @@ export function purchaseConfirmationTemplate(data: { name: string; email: string
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
               <td style="padding: 8px 0; font-size: 14px; color: ${COLORS.darkGray}; border-bottom: 1px solid ${COLORS.borderGray};">Plan</td>
-              <td style="padding: 8px 0; font-size: 14px; color: ${COLORS.navy}; font-weight: bold; text-align: right; border-bottom: 1px solid ${COLORS.borderGray};">Deal Signal ${planDisplay}</td>
+              <td style="padding: 8px 0; font-size: 14px; color: ${COLORS.navy}; font-weight: bold; text-align: right; border-bottom: 1px solid ${COLORS.borderGray};">Deal Signals ${planDisplay}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; font-size: 14px; color: ${COLORS.darkGray}; border-bottom: 1px solid ${COLORS.borderGray};">Monthly Price</td>
@@ -669,7 +669,7 @@ export function purchaseConfirmationTemplate(data: { name: string; email: string
           <h3 style="margin: 0 0 15px 0; color: ${COLORS.navy}; font-size: 15px;">What's included in ${planDisplay}:</h3>
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Up to ${uploadLimit} deal analyses per month</td></tr>
-            <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Full Deal Signal scoring with category breakdowns</td></tr>
+            <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Full Deal Signals scoring with category breakdowns</td></tr>
             <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> 6-sheet Excel pro forma workbook</td></tr>
             <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Workspace with saved deals and history</td></tr>
             <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Property map and scoreboard views</td></tr>
@@ -705,7 +705,7 @@ export function purchaseConfirmationTemplate(data: { name: string; email: string
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 40px; padding-top: 20px; border-top: 1px solid ${COLORS.borderGray};">
       <tr>
         <td style="font-size: 11px; color: ${COLORS.darkGray}; text-align: center; padding: 20px 0;">
-          <p style="margin: 5px 0;">&copy; ${new Date().getFullYear()} Deal Signal. All rights reserved.</p>
+          <p style="margin: 5px 0;">&copy; ${new Date().getFullYear()} Deal Signals. All rights reserved.</p>
           <p style="margin: 5px 0;">Mequon, Wisconsin</p>
         </td>
       </tr>
