@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { GUIDES } from "@/lib/guides-data";
-import { GLOSSARY_TERMS } from "@/lib/glossary-data";
+// Guides and glossary removed — deal signals app only
+const GUIDES: any[] = [];
+const GLOSSARY_TERMS: any[] = [];
 
 const TRENDING_TOPICS = [
   "NNN",
