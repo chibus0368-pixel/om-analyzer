@@ -1,10 +1,11 @@
 "use client";
-/* OM Analyzer Lite — v2 with hero image extraction from PDF page 1 */
+/* OM Analyzer Lite — v3 with smart hero image extraction (skips tables) */
 
-import { useState, useRef, useCallback } from "react";
-import Nav from "@/components/Nav";
-import Footer from "@/components/Footer";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
+import DealSignalLogo from "@/components/DealSignalLogo";
 
 /* ===========================================================================
    FORMAT HELPERS — IDENTICAL to pro property page
@@ -97,8 +98,8 @@ function PropertyImage({ heroImageUrl, location, encodedAddress, propertyName }:
         target="_blank" rel="noopener noreferrer"
         style={{
           position: "absolute", bottom: 8, right: 8, padding: "4px 10px",
-          background: "rgba(11,17,32,0.85)", borderRadius: 6, fontSize: 10,
-          color: "#C49A3C", textDecoration: "none", fontWeight: 600, backdropFilter: "blur(4px)",
+          background: "rgba(255,255,255,0.92)", borderRadius: 6, fontSize: 10,
+          color: "#DC2626", textDecoration: "none", fontWeight: 600, backdropFilter: "blur(4px)",
         }}>
         Open in Google Maps &rarr;
       </a>
@@ -109,17 +110,17 @@ function PropertyImage({ heroImageUrl, location, encodedAddress, propertyName }:
     <div style={{
       display: "flex", alignItems: "center", justifyContent: "center",
       width: "100%", height: "100%", minHeight: 200,
-      background: "linear-gradient(135deg, #1a2744, #253352)",
+      background: "#F6F8FB",
     }}>
       <div style={{ textAlign: "center", padding: 20 }}>
         <div style={{ fontSize: 36, marginBottom: 8 }}>📍</div>
-        <div style={{ color: "#B4C1D1", fontSize: 12, fontWeight: 500, lineHeight: 1.4 }}>{location || "No address"}</div>
+        <div style={{ color: "#5A7091", fontSize: 12, fontWeight: 500, lineHeight: 1.4 }}>{location || "No address"}</div>
       </div>
     </div>
   );
 
   return (
-    <div style={{ width: 300, minHeight: 200, flexShrink: 0, borderLeft: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
+    <div style={{ width: 300, minHeight: 200, flexShrink: 0, overflow: "hidden" }}>
       {heroImageUrl && !imgError ? (
         <img src={heroImageUrl} alt={propertyName}
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", minHeight: 200 }}
@@ -141,13 +142,74 @@ const ACCEPTED_EXT = ".pdf,.docx,.xlsx,.xls,.csv,.txt";
    MAIN PAGE COMPONENT
    =========================================================================== */
 export default function OmAnalyzerPage() {
+  const router = useRouter();
   const [view, setView] = useState<ViewState>("upload");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [statusMsg, setStatusMsg] = useState("");
   const [data, setData] = useState<AnalysisData>(null);
   const [heroImageUrl, setHeroImageUrl] = useState<string>("");
   const [dragging, setDragging] = useState(false);
+  const [selectedAssetType, setSelectedAssetType] = useState<string>("auto");
+  const [scoreResult, setScoreResult] = useState<any>(null);
+  const [usageData, setUsageData] = useState<{ uploadsUsed: number; uploadLimit: number } | null>(null);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // ===== REDIRECT LOGGED-IN USERS TO WORKSPACE =====
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+    (async () => {
+      try {
+        const { getAuth, onAuthStateChanged } = await import("firebase/auth");
+        const auth = getAuth();
+        unsubscribe = onAuthStateChanged(auth, (user) => {
+          if (user) {
+            router.replace("/workspace");
+          }
+        });
+      } catch { /* Firebase not available, continue as normal */ }
+    })();
+    return () => { if (unsubscribe) unsubscribe(); };
+  }, [router]);
+
+  // ===== ANONYMOUS USAGE TRACKING =====
+  const getAnonId = useCallback(() => {
+    let id = localStorage.getItem("nnn_anon_id");
+    if (!id) {
+      id = "anon_" + Math.random().toString(36).substring(2) + Date.now().toString(36);
+      localStorage.setItem("nnn_anon_id", id);
+    }
+    return id;
+  }, []);
+
+  const fetchUsage = useCallback(async () => {
+    try {
+      const anonId = getAnonId();
+      const res = await fetch(`/api/workspace/usage?anonId=${anonId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setUsageData({ uploadsUsed: data.uploadsUsed, uploadLimit: data.uploadLimit });
+      }
+    } catch { /* silent */ }
+  }, [getAnonId]);
+
+  const incrementUsage = useCallback(async () => {
+    try {
+      const anonId = getAnonId();
+      const res = await fetch("/api/workspace/usage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ anonId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUsageData({ uploadsUsed: data.uploadsUsed, uploadLimit: data.uploadLimit });
+      }
+    } catch { /* silent */ }
+  }, [getAnonId]);
+
+  // Fetch usage on mount
+  useEffect(() => { fetchUsage(); }, [fetchUsage]);
 
   // ===== FILE HANDLING =====
   const handleFile = useCallback((file: File) => {
@@ -167,6 +229,13 @@ export default function OmAnalyzerPage() {
   // ===== ANALYSIS — client-side PDF extraction + parse-lite API =====
   const startAnalysis = useCallback(async () => {
     if (!selectedFile) return;
+
+    // Check usage limit before starting
+    if (usageData && usageData.uploadsUsed >= usageData.uploadLimit) {
+      setShowUpgradePrompt(true);
+      return;
+    }
+
     setView("processing");
     setStatusMsg("Uploading files...");
 
@@ -177,6 +246,51 @@ export default function OmAnalyzerPage() {
       // Extract text client-side (identical to pro's extractTextFromFiles flow)
       if (ext === "pdf") {
         setStatusMsg("Extracting property image...");
+        // Smart hero image extraction: scans first 5 pages, picks best photo-like page
+        // Skips tables/text pages — returns null if no good property image found
+        try {
+          const heroBlob = await extractHeroImageFromPDF(selectedFile);
+          if (heroBlob && heroBlob.size > 5000) {
+            // Set temporary blob URL immediately for fast display
+            setHeroImageUrl(URL.createObjectURL(heroBlob));
+            console.log("[om-analyzer] Smart hero image set (blob)");
+            // Upload to Firebase Storage for persistent URL (non-blocking)
+            (async () => {
+              try {
+                const reader = new FileReader();
+                const base64 = await new Promise<string>((resolve, reject) => {
+                  reader.onload = () => {
+                    const result = reader.result as string;
+                    resolve(result.split(",")[1]);
+                  };
+                  reader.onerror = reject;
+                  reader.readAsDataURL(heroBlob);
+                });
+                const res = await fetch("/api/om-analyzer/upload-image", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ imageBase64: base64 }),
+                });
+                if (res.ok) {
+                  const { url } = await res.json();
+                  if (url) {
+                    setHeroImageUrl(url);
+                    console.log("[om-analyzer] Hero image persisted to Storage:", url);
+                  }
+                }
+              } catch (uploadErr) {
+                console.warn("[om-analyzer] Storage upload failed, using blob URL:", uploadErr);
+              }
+            })();
+          } else {
+            console.log("[om-analyzer] No good property image found in PDF — will use map fallback");
+          }
+        } catch (imgErr) {
+          console.warn("[om-analyzer] Hero image extraction failed:", imgErr);
+        }
+
+        // Now load pdf.js for text extraction (image extractor already loaded it)
+        setStatusMsg("Reading file contents...");
         if (!(window as any).pdfjsLib) {
           await new Promise<void>((resolve, reject) => {
             const s = document.createElement("script");
@@ -192,30 +306,8 @@ export default function OmAnalyzerPage() {
             document.head.appendChild(s);
           });
         }
-        setStatusMsg("Reading file contents...");
         const arrayBuffer = await selectedFile.arrayBuffer();
         const pdf = await (window as any).pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-
-        // Extract hero image from page 1 (identical to pro image-extractor.ts)
-        try {
-          const imgPage = await pdf.getPage(1);
-          const viewport = imgPage.getViewport({ scale: 1.5 });
-          const canvas = document.createElement("canvas");
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-          const ctx = canvas.getContext("2d");
-          if (ctx) {
-            await imgPage.render({ canvasContext: ctx, viewport }).promise;
-            const blob: Blob | null = await new Promise((res) => canvas.toBlob(res, "image/jpeg", 0.85));
-            console.log(`[om-analyzer] Hero image blob: ${blob?.size ? (blob.size / 1024).toFixed(0) + "KB" : "null"}`);
-            if (blob && blob.size > 0) {
-              setHeroImageUrl(URL.createObjectURL(blob));
-              console.log("[om-analyzer] Hero image URL set successfully");
-            }
-          }
-        } catch (imgErr) {
-          console.warn("[om-analyzer] Hero image extraction failed:", imgErr);
-        }
 
         const maxPages = Math.min(pdf.numPages, 12);
         for (let i = 1; i <= maxPages; i++) {
@@ -231,8 +323,9 @@ export default function OmAnalyzerPage() {
         documentText = `[${ext.toUpperCase()} file: ${selectedFile.name}]\n(Binary file — upload PDF for best results)`;
       }
 
-      // Call parse-lite API (identical two-stage GPT-4o pipeline as pro)
+      // Call parse-lite API with asset-type-specific models (same as Pro pipeline)
       setStatusMsg("Analyzing property data...");
+      const analysisType = selectedAssetType === "auto" ? undefined : selectedAssetType;
       const response = await fetch("/api/workspace/parse-lite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -240,28 +333,53 @@ export default function OmAnalyzerPage() {
           documentText: documentText.substring(0, 40000),
           fileName: selectedFile.name,
           source: "om-analyzer-page",
+          analysisType,
         }),
       });
-
-      setStatusMsg("Generating output files...");
 
       if (!response.ok) throw new Error("Analysis failed");
       const result = await response.json();
 
+      // Run scoring using the same Pro models
+      setStatusMsg("Scoring deal...");
+      try {
+        const scoreRes = await fetch("/api/om-analyzer/score-lite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            analysisType: result.analysisType || "retail",
+            data: result,
+          }),
+        });
+        if (scoreRes.ok) {
+          const scoreData = await scoreRes.json();
+          result.proScore = scoreData;
+          setScoreResult(scoreData);
+        }
+      } catch (scoreErr) {
+        console.warn("[om-analyzer] Scoring failed (non-blocking):", scoreErr);
+      }
+
       setData(result);
       setView("result");
+
+      // Increment usage counter after successful analysis
+      incrementUsage();
     } catch (err) {
       console.error("Analysis error:", err);
       setData(generateDemoResult(selectedFile.name));
       setView("result");
+      // Still increment on demo fallback (counts as an analysis attempt)
+      incrementUsage();
     }
-  }, [selectedFile]);
+  }, [selectedFile, usageData, incrementUsage]);
 
   const resetAnalyzer = useCallback(() => {
     if (heroImageUrl) URL.revokeObjectURL(heroImageUrl);
     setSelectedFile(null);
     setData(null);
     setHeroImageUrl("");
+    setScoreResult(null);
     setView("upload");
     setStatusMsg("");
     if (fileRef.current) fileRef.current.value = "";
@@ -270,241 +388,729 @@ export default function OmAnalyzerPage() {
 
   return (
     <>
-      <Nav />
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,700&display=swap');
+        body, input, button, select, textarea { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif; }
+        @keyframes spin { to { transform: rotate(360deg) } }
+        @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.5 } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes scoreCount { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
+        @keyframes barGrow { from { width: 0; } }
+        @keyframes glowPulse { 0%,100% { box-shadow: 0 0 20px rgba(185,23,47,0.15); } 50% { box-shadow: 0 0 40px rgba(185,23,47,0.3); } }
+        @keyframes heroGradient {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .om-feature-card { transition: all 0.25s cubic-bezier(0.4,0,0.2,1); }
+        .om-feature-card:hover { transform: translateY(-6px); box-shadow: 0 32px 64px rgba(21,27,43,0.12); }
+        .dl-btn { transition: all 0.2s ease; }
+        .dl-btn:hover { background: #f2f3ff !important; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(21,27,43,0.08); }
+        .om-dark-btn { transition: all 0.2s ease; }
+        .om-dark-btn:hover { background: #0d1220 !important; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(21,27,43,0.2); }
+        .om-cta-btn { transition: all 0.2s ease; }
+        .om-cta-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(185,23,47,0.35); filter: brightness(1.08); }
+        .om-cta-outline { transition: all 0.2s ease; border: 2px solid rgba(255,255,255,0.25); }
+        .om-cta-outline:hover { border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.08) !important; transform: translateY(-2px); }
+        header nav a { transition: color 0.15s ease; }
+        header nav a:hover { color: #b9172f !important; }
+        header nav a:last-child:hover { color: #fff !important; filter: brightness(1.1); }
+        .om-upload-zone { transition: all 0.2s ease; }
+        .om-upload-zone:hover { box-shadow: 0 24px 48px rgba(21,27,43,0.1); border-color: #b9172f !important; }
+        footer a { transition: color 0.15s ease; }
+        footer a:hover { color: #b9172f !important; }
+        .om-stat-card { transition: all 0.2s ease; }
+        .om-stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(21,27,43,0.08); }
+        .om-glow { animation: glowPulse 3s ease-in-out infinite; }
+        input:focus { background: #ffffff !important; box-shadow: 0 0 0 2px rgba(185,23,47,0.15); }
+      `}</style>
 
-      {/* ===== HERO BANNER ===== */}
-      <section style={{
-        background: "linear-gradient(135deg, #06080F 0%, #0B1120 40%, #162036 100%)",
-        padding: view === "result" ? "32px 0 16px" : "80px 0 60px",
-        position: "relative", overflow: "hidden", transition: "padding 0.3s ease",
+      {/* ===== UPGRADE PROMPT OVERLAY ===== */}
+      {showUpgradePrompt && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9999,
+          background: "rgba(11,17,32,0.6)", backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }} onClick={() => setShowUpgradePrompt(false)}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: "#fff", borderRadius: 16, padding: "40px 36px", maxWidth: 420,
+            textAlign: "center", boxShadow: "0 32px 80px rgba(0,0,0,0.3)",
+          }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: 14, background: "rgba(185,23,47,0.08)",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 16,
+            }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+            <h3 style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 800, color: "#151b2b", margin: "0 0 8px", letterSpacing: -0.3 }}>
+              Free Trial Complete
+            </h3>
+            <p style={{ fontSize: 14, color: "#585e70", lineHeight: 1.6, margin: "0 0 24px" }}>
+              You&apos;ve used your 2 free analyses. Upgrade to Pro to continue analyzing deals with full scoring, Excel exports, and your own deal workspace.
+            </p>
+            <Link href="/workspace/login?upgrade=pro" style={{
+              display: "inline-block", padding: "14px 36px",
+              background: "linear-gradient(135deg, #b9172f, #dc3545)", color: "#fff",
+              borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: "none",
+              marginBottom: 8,
+            }}>
+              Upgrade to Pro — $40/mo
+            </Link>
+            <Link href="/pricing" style={{
+              display: "block", padding: "10px 20px",
+              color: "#585e70", fontSize: 13, fontWeight: 500, textDecoration: "none",
+            }}>
+              Compare all plans
+            </Link>
+            <button onClick={() => setShowUpgradePrompt(false)} style={{
+              display: "block", width: "100%", marginTop: 12, padding: "10px",
+              background: "none", border: "none", color: "#8899B0", cursor: "pointer",
+              fontSize: 13, fontWeight: 500,
+            }}>
+              Maybe later
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ===== HEADER — Deal Signal brand ===== */}
+      <header style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        maxWidth: 1280, margin: "0 auto", padding: "18px 40px",
       }}>
-        <div style={{ position: "absolute", top: "-50%", right: "-20%", width: "80%", height: "200%",
-          background: "radial-gradient(ellipse, rgba(196,154,60,0.06) 0%, transparent 60%)", pointerEvents: "none" }} />
-        <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center", position: "relative", zIndex: 1, padding: "0 24px" }}>
-          {view !== "result" && (
-            <>
-              <div style={{
-                display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 16px",
-                background: "rgba(196,154,60,0.12)", border: "1px solid rgba(196,154,60,0.25)",
-                borderRadius: 20, fontSize: 12, fontWeight: 600, color: "#D4B255",
-                marginBottom: 24, letterSpacing: 0.5, textTransform: "uppercase",
-              }}>
-                Free Tool &mdash; No Account Required
+        <Link href="/om-analyzer" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+          <DealSignalLogo size={34} fontSize={19} gap={9} />
+        </Link>
+        <nav style={{ display: "flex", alignItems: "center", gap: 28 }}>
+          <a href="#how-it-works" style={{ fontSize: 12, fontWeight: 600, color: "#585e70", textDecoration: "none", textTransform: "uppercase", letterSpacing: 1 }}>How it works</a>
+          <Link href="/pricing" style={{ fontSize: 12, fontWeight: 600, color: "#585e70", textDecoration: "none", textTransform: "uppercase", letterSpacing: 1 }}>Pricing</Link>
+          <Link href="/workspace/login" style={{ fontSize: 12, fontWeight: 600, color: "#585e70", textDecoration: "none", textTransform: "uppercase", letterSpacing: 1 }}>Login</Link>
+          <Link href="/try-pro" style={{
+            fontSize: 12, fontWeight: 700, color: "#fff", textDecoration: "none",
+            background: "linear-gradient(135deg, #b9172f, #dc3545)", borderRadius: 6, padding: "8px 20px",
+            textTransform: "uppercase", letterSpacing: 0.5,
+          }}>Free Pro Trial</Link>
+        </nav>
+      </header>
+
+      {/* ===== RESULT: minimal header bar ===== */}
+      {view === "result" && (
+        <div style={{ padding: "12px 0", borderBottom: "1px solid #EDF0F5" }}>
+          <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <button onClick={resetAnalyzer} style={{
+              padding: "8px 20px", background: "#fff", border: "1.5px solid #D8DFE9",
+              borderRadius: 6, fontSize: 13, fontWeight: 600, color: "#585e70", cursor: "pointer",
+            }}>
+              &larr; Analyze Another
+            </button>
+            <DealSignalLogo size={24} fontSize={14} gap={8} />
+          </div>
+        </div>
+      )}
+
+      {/* ===== HERO + LANDING PAGE ===== */}
+      {view === "upload" && (
+        <section style={{ background: "#faf8f4" }}>
+
+          {/* ── 1. FULL-BLEED HERO ── */}
+          <div style={{
+            background: "linear-gradient(135deg, #0B1120 0%, #151b2b 25%, #1a1230 50%, #0d1a2e 75%, #0B1120 100%)",
+            backgroundSize: "400% 400%",
+            animation: "heroGradient 15s ease infinite",
+            position: "relative", overflow: "hidden",
+            padding: "80px 40px 100px",
+          }}>
+            {/* Geometric grid overlay */}
+            <div style={{
+              position: "absolute", inset: 0, opacity: 0.04,
+              backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+              backgroundSize: "60px 60px",
+            }} />
+            {/* Gradient accent blobs */}
+            <div style={{ position: "absolute", top: -80, right: -80, width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(185,23,47,0.2) 0%, transparent 70%)", filter: "blur(60px)" }} />
+            <div style={{ position: "absolute", bottom: -60, left: "20%", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)", filter: "blur(50px)" }} />
+
+            <div style={{
+              maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1,
+              display: "grid", gridTemplateColumns: "1fr 440px", gap: 64, alignItems: "center",
+            }}>
+              {/* Left — messaging */}
+              <div style={{ animation: "fadeInUp 0.6s ease-out" }}>
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px 5px 6px", borderRadius: 20,
+                  background: "rgba(185,23,47,0.15)", marginBottom: 24, border: "1px solid rgba(185,23,47,0.25)",
+                }}>
+                  <span style={{ width: 22, height: 22, borderRadius: "50%", background: "#b9172f", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
+                  </span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#f87171", letterSpacing: 0.5 }}>
+                    Free CRE Underwriting Tool
+                  </span>
+                </div>
+
+                <h1 style={{
+                  fontFamily: "'Inter', sans-serif", fontSize: 52, fontWeight: 900,
+                  color: "#ffffff", lineHeight: 1.08, marginBottom: 20, letterSpacing: -1.5,
+                }}>
+                  Drop an OM.<br />
+                  <span style={{ background: "linear-gradient(135deg, #f87171, #b9172f)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    Get the signal.
+                  </span>
+                </h1>
+                <p style={{
+                  fontSize: 18, color: "rgba(255,255,255,0.6)", lineHeight: 1.7,
+                  maxWidth: 440, marginBottom: 36,
+                }}>
+                  Upload any offering memorandum. In under 60 seconds, Deal Signal extracts key financials, scores the deal, and flags risks.
+                </p>
+
+                {/* Stats row */}
+                <div style={{ display: "flex", gap: 32, marginBottom: 0 }}>
+                  {[
+                    { num: "30s", label: "Average analysis" },
+                    { num: "47", label: "Data points extracted" },
+                    { num: "Free", label: "No signup needed" },
+                  ].map(s => (
+                    <div key={s.label}>
+                      <div style={{ fontSize: 28, fontWeight: 800, color: "#fff", letterSpacing: -0.5 }}>{s.num}</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontWeight: 500, marginTop: 2 }}>{s.label}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <h1 style={{
-                fontFamily: "'Playfair Display', Georgia, serif", fontSize: 48, fontWeight: 800,
-                color: "#fff", lineHeight: 1.15, marginBottom: 20, letterSpacing: -0.5,
-              }}>
-                Underwrite Any NNN Deal<br />in <span style={{ color: "#C49A3C" }}>60 Seconds</span>
-              </h1>
-              <p style={{ fontSize: 17, color: "#B4C1D1", lineHeight: 1.7, maxWidth: 600, margin: "0 auto 32px" }}>
-                Drop an Offering Memorandum. Our AI reads it like a senior analyst &mdash; extracting every data point, calculating returns, and scoring the deal. What took an hour now takes a minute.
-              </p>
 
-              {/* Try It Free CTA */}
-              <button onClick={() => {
-                const el = document.getElementById("upload-section");
-                if (el) el.scrollIntoView({ behavior: "smooth" });
-              }} style={{
-                display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 36px",
-                background: "linear-gradient(135deg, #DC3545, #B91C1C)",
-                color: "#fff", borderRadius: 10, fontSize: 15, fontWeight: 700, border: "none",
-                cursor: "pointer", fontFamily: "inherit", marginBottom: 40,
-              }}>
-                Try It Free &darr;
-              </button>
+              {/* Right — upload card */}
+              <div style={{
+                background: "#ffffff", borderRadius: 16, padding: "36px 30px",
+                boxShadow: "0 32px 80px rgba(0,0,0,0.4)", animation: "fadeInUp 0.6s ease-out 0.15s both",
+              }} className="om-glow">
+                <div style={{ textAlign: "center", marginBottom: 16 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "#151b2b" }}>Analyze a Deal</div>
+                  <div style={{ fontSize: 12, color: "#8899B0", marginTop: 2 }}>Get a Deal Signal report in seconds</div>
+                </div>
 
-              {/* Stats row */}
-              <div style={{ display: "flex", justifyContent: "center", gap: 40, flexWrap: "wrap" }}>
+                {/* Asset Type Selector */}
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#8899B0", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Asset Type</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 4 }}>
+                    {[
+                      { value: "auto", label: "Auto", svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg> },
+                      { value: "retail", label: "Retail", svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg> },
+                      { value: "industrial", label: "Industrial", svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20h20V8l-7 4V8l-7 4V4H2z" /></svg> },
+                      { value: "office", label: "Office", svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" /><line x1="9" y1="6" x2="9" y2="6.01" /><line x1="15" y1="6" x2="15" y2="6.01" /><line x1="9" y1="10" x2="9" y2="10.01" /><line x1="15" y1="10" x2="15" y2="10.01" /><line x1="9" y1="14" x2="9" y2="14.01" /><line x1="15" y1="14" x2="15" y2="14.01" /><path d="M9 22v-4h6v4" /></svg> },
+                      { value: "land", label: "Land", svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 22L12 2l10 20H2z" /><path d="M7 22l5-10 5 10" /></svg> },
+                    ].map(type => {
+                      const isActive = selectedAssetType === type.value;
+                      const color = isActive ? "#b9172f" : "#8899B0";
+                      return (
+                      <button
+                        key={type.value}
+                        onClick={() => setSelectedAssetType(type.value)}
+                        style={{
+                          padding: "8px 4px", border: "1.5px solid",
+                          borderColor: isActive ? "#b9172f" : "#EDF0F5",
+                          background: isActive ? "rgba(185,23,47,0.04)" : "#fff",
+                          borderRadius: 6, cursor: "pointer", textAlign: "center",
+                          transition: "all 0.15s",
+                        }}
+                      >
+                        <div style={{ lineHeight: 1, display: "flex", justifyContent: "center" }}>
+                          <span style={{ stroke: color, display: "inline-flex" }}>{type.svg}</span>
+                        </div>
+                        <div style={{
+                          fontSize: 9, fontWeight: 700, marginTop: 3,
+                          color: isActive ? "#b9172f" : "#585e70",
+                          letterSpacing: 0.3,
+                        }}>{type.label}</div>
+                      </button>
+                    );})}
+                  </div>
+                  <div style={{ fontSize: 10, color: "#B4C1D1", marginTop: 4, textAlign: "center" }}>
+                    {selectedAssetType === "auto" ? "AI will detect the asset type automatically" : `Using ${selectedAssetType} scoring model`}
+                  </div>
+                </div>
+                <div
+                  onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDragging(true); }}
+                  onDragLeave={e => { e.preventDefault(); e.stopPropagation(); setDragging(false); }}
+                  onDrop={e => { e.preventDefault(); e.stopPropagation(); setDragging(false); if (e.dataTransfer.files?.length) handleFile(e.dataTransfer.files[0]); }}
+                  onClick={() => !selectedFile && fileRef.current?.click()}
+                  className="om-upload-zone"
+                  style={{
+                    background: dragging ? "rgba(185,23,47,0.03)" : "#faf8f4",
+                    borderRadius: 12,
+                    padding: selectedFile ? "20px" : "32px 20px",
+                    cursor: selectedFile ? "default" : "pointer",
+                    border: `2px dashed ${dragging ? "#b9172f" : "#D8DFE9"}`,
+                    textAlign: "center",
+                  }}
+                >
+                  {!selectedFile ? (
+                    <>
+                      <div style={{
+                        width: 52, height: 52, borderRadius: 12, background: "rgba(185,23,47,0.06)",
+                        display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
+                      }}>
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                          <polyline points="14,2 14,8 20,8" />
+                          <line x1="12" y1="18" x2="12" y2="12" />
+                          <line x1="9" y1="15" x2="15" y2="15" />
+                        </svg>
+                      </div>
+                      <p style={{ fontSize: 15, fontWeight: 600, color: "#151b2b", margin: "0 0 4px" }}>
+                        {dragging ? "Drop your file here" : "Drop your OM or flyer"}
+                      </p>
+                      <p style={{ fontSize: 12, color: "#8899B0", margin: "0 0 16px" }}>
+                        PDF, Word, Excel, or CSV &middot; Max 50MB
+                      </p>
+                      <button onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }} style={{
+                        padding: "11px 32px", background: "#151b2b", color: "#fff", border: "none",
+                        borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                      }}>
+                        Browse Files
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{
+                        display: "flex", alignItems: "center", gap: 10, padding: "12px 14px",
+                        background: "#f2f3ff", borderRadius: 8, textAlign: "left",
+                      }}>
+                        <span style={{ padding: "2px 8px", background: "#EDF0F5", borderRadius: 4, fontSize: 9, fontWeight: 700, color: "#585e70", textTransform: "uppercase", flexShrink: 0 }}>
+                          {selectedFile.name.split(".").pop()}
+                        </span>
+                        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500, fontSize: 14, color: "#151b2b" }}>{selectedFile.name}</span>
+                        <span style={{ fontSize: 12, color: "#8899B0", flexShrink: 0 }}>{(selectedFile.size / (1024 * 1024)).toFixed(1)} MB</span>
+                        <button onClick={(e) => { e.stopPropagation(); removeFile(); }} style={{ background: "none", border: "none", color: "#B4C1D1", cursor: "pointer", fontSize: 18, padding: 4, lineHeight: 1 }}>&times;</button>
+                      </div>
+                      <button onClick={(e) => { e.stopPropagation(); startAnalysis(); }} className="om-cta-btn" style={{
+                        display: "block", width: "100%", padding: "14px 32px", marginTop: 14,
+                        background: "linear-gradient(135deg, #b9172f, #dc3545)", color: "#fff", border: "none",
+                        borderRadius: 8, fontSize: 15, fontWeight: 700, cursor: "pointer",
+                      }}>
+                        Run Deal Signal
+                      </button>
+                    </>
+                  )}
+                </div>
+                <input ref={fileRef} type="file" style={{ display: "none" }} accept={ACCEPTED_EXT}
+                  onChange={(e) => { if (e.target.files?.length) handleFile(e.target.files[0]); }} />
+
+                {/* Usage counter */}
+                {usageData && (
+                  <div style={{
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    marginTop: 12, padding: "6px 0",
+                  }}>
+                    <div style={{
+                      flex: "0 0 auto", height: 4, width: 60, background: "#EDF0F5", borderRadius: 2, overflow: "hidden",
+                    }}>
+                      <div style={{
+                        height: "100%", borderRadius: 2, transition: "width 0.3s ease",
+                        width: `${Math.min(100, (usageData.uploadsUsed / usageData.uploadLimit) * 100)}%`,
+                        background: usageData.uploadsUsed >= usageData.uploadLimit ? "#b9172f" : usageData.uploadsUsed >= usageData.uploadLimit - 1 ? "#eab308" : "#10b981",
+                      }} />
+                    </div>
+                    <span style={{
+                      fontSize: 11, fontWeight: 600,
+                      color: usageData.uploadsUsed >= usageData.uploadLimit ? "#b9172f" : "#8899B0",
+                    }}>
+                      {usageData.uploadsUsed} / {usageData.uploadLimit} free analyses
+                    </span>
+                  </div>
+                )}
+
+                {/* Sample deals */}
+                <div style={{ marginTop: 16, display: "flex", gap: 8, alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 11, color: "#8899B0" }}>Or try:</span>
+                  {[
+                    { label: "Walgreens NNN", file: "Walgreens-NNN-Texas" },
+                    { label: "Strip Center", file: "Strip-Center-Illinois" },
+                  ].map(sample => (
+                    <button
+                      key={sample.file}
+                      onClick={() => { setData(generateDemoResult(sample.file)); setView("result"); }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 5, padding: "5px 12px",
+                        background: "transparent", border: "1.5px solid #EDF0F5", borderRadius: 6,
+                        cursor: "pointer", fontSize: 11, fontWeight: 600, color: "#585e70",
+                        transition: "all 0.15s",
+                      }}
+                      className="om-feature-card"
+                    >
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
+                      {sample.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── 3. HOW IT WORKS — 3-step visual pipeline ── */}
+          <div id="how-it-works" style={{ maxWidth: 1000, margin: "0 auto", padding: "80px 40px 0", textAlign: "center" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#b9172f", textTransform: "uppercase", letterSpacing: 2, marginBottom: 12 }}>How it works</div>
+            <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: 36, fontWeight: 800, color: "#151b2b", marginBottom: 12, letterSpacing: -0.5 }}>
+              From OM to opinion in three steps
+            </h2>
+            <p style={{ fontSize: 16, color: "#585e70", marginBottom: 56, maxWidth: 520, margin: "0 auto 56px" }}>
+              No account. No learning curve. Just drop your file.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 0, position: "relative" }}>
+              {/* Connecting line */}
+              <div style={{ position: "absolute", top: 48, left: "20%", right: "20%", height: 2, background: "linear-gradient(90deg, #b9172f, #6366F1, #059669)", opacity: 0.2 }} />
+              {[
+                { step: "01", title: "Upload", desc: "Drop a PDF, flyer, or rent roll. Any CRE document works.", icon: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2v6h6", color: "#b9172f" },
+                { step: "02", title: "Analyze", desc: "AI extracts 47+ data points, calculates metrics, and scores the deal.", icon: "M22 12h-4l-3 9L9 3l-3 9H2", color: "#6366F1" },
+                { step: "03", title: "Decide", desc: "Get a Deal Signal score, risk flags, and a buy/hold/pass recommendation.", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z", color: "#059669" },
+              ].map((s) => (
+                <div key={s.step} style={{ position: "relative", padding: "0 24px", textAlign: "center" }}>
+                  <div style={{
+                    width: 96, height: 96, borderRadius: 24, margin: "0 auto 20px",
+                    background: `${s.color}08`, border: `2px solid ${s.color}20`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    position: "relative", zIndex: 1,
+                  }}>
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={s.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={s.icon} /></svg>
+                  </div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: s.color, letterSpacing: 1.5, marginBottom: 8 }}>{s.step}</div>
+                  <h3 style={{ fontFamily: "'Inter', sans-serif", fontSize: 20, fontWeight: 700, color: "#151b2b", marginBottom: 8 }}>{s.title}</h3>
+                  <p style={{ fontSize: 13, color: "#585e70", lineHeight: 1.6, margin: 0 }}>{s.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── 4. WHAT YOU GET — bold feature showcase ── */}
+          <div id="features" style={{ maxWidth: 1000, margin: "0 auto", padding: "80px 40px 0" }}>
+            <div style={{ textAlign: "center", marginBottom: 56 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#b9172f", textTransform: "uppercase", letterSpacing: 2, marginBottom: 12 }}>Your Deal Signal report</div>
+              <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: 36, fontWeight: 800, color: "#151b2b", letterSpacing: -0.5 }}>
+                Everything you need to make a call
+              </h2>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 20 }}>
+              {[
+                {
+                  icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
+                  title: "Extracted Financials",
+                  desc: "Cap rate, NOI, DSCR, price/SF, rent/SF, occupancy, lease terms, and 40+ more fields pulled from your document automatically.",
+                  color: "#b9172f",
+                  metrics: ["Cap Rate 6.25%", "NOI $412K", "DSCR 1.45x"],
+                },
+                {
+                  icon: "M22 12h-4l-3 9L9 3l-3 9H2",
+                  title: "Deal Signal Score",
+                  desc: "A weighted 0-100 score across pricing, cashflow, tenant, rollover, location, and upside factors. Instantly compare deals.",
+                  color: "#059669",
+                  metrics: ["Score 74", "Band BUY", "Confidence HIGH"],
+                },
+                {
+                  icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z",
+                  title: "Risk Flags & Signals",
+                  desc: "Color-coded signals for cap rate, DSCR, occupancy, tenant quality, basis, and rollover risk. See problems before you read page one.",
+                  color: "#D97706",
+                  metrics: ["Rollover YELLOW", "Tenant GREEN", "Basis RED"],
+                },
+                {
+                  icon: "M4 6h16M4 10h16M4 14h16M4 18h16",
+                  title: "Investment Thesis",
+                  desc: "A concise buy/hold/pass recommendation with supporting rationale. Forward it to your team or add it to your deal pipeline.",
+                  color: "#6366F1",
+                  metrics: ["Summary", "Recommendation", "Key Risks"],
+                },
+              ].map(f => (
+                <div key={f.title} className="om-feature-card" style={{
+                  background: "#ffffff", borderRadius: 14, padding: "32px 28px",
+                  boxShadow: "0 4px 20px rgba(21,27,43,0.05)", border: "1px solid #EDF0F5",
+                  display: "flex", gap: 20,
+                }}>
+                  <div style={{
+                    width: 56, height: 56, borderRadius: 14, flexShrink: 0,
+                    background: `${f.color}0A`, border: `1.5px solid ${f.color}20`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={f.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={f.icon} /></svg>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ fontFamily: "'Inter', sans-serif", fontSize: 16, fontWeight: 700, color: "#151b2b", marginBottom: 6 }}>{f.title}</h3>
+                    <p style={{ fontSize: 13, color: "#585e70", lineHeight: 1.6, margin: "0 0 12px" }}>{f.desc}</p>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {f.metrics.map(m => (
+                        <span key={m} style={{
+                          fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 4,
+                          background: `${f.color}08`, color: f.color, letterSpacing: 0.3,
+                        }}>{m}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── 5. BEFORE → AFTER — dramatic transformation ── */}
+          <div style={{ maxWidth: 800, margin: "0 auto", padding: "80px 40px 0" }}>
+            <div style={{ textAlign: "center", marginBottom: 40 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#b9172f", textTransform: "uppercase", letterSpacing: 2, marginBottom: 12 }}>The transformation</div>
+              <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: 30, fontWeight: 800, color: "#151b2b", letterSpacing: -0.5 }}>
+                40 pages to one screen
+              </h2>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 64px 1fr", gap: 0, alignItems: "center" }}>
+              {/* Before */}
+              <div style={{
+                background: "#fff", borderRadius: 14, boxShadow: "0 8px 32px rgba(21,27,43,0.06)",
+                padding: "28px 24px", border: "1px solid #EDF0F5",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 16 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#D8DFE9" }} />
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#8899B0", textTransform: "uppercase", letterSpacing: 1 }}>Before</span>
+                </div>
+                <div style={{ background: "#f6f8fb", borderRadius: 8, padding: "18px 16px", marginBottom: 10 }}>
+                  {[85, 60, 92, 45, 75, 50, 88].map((w, i) => (
+                    <div key={i} style={{ width: `${w}%`, height: 4, background: "#D8DFE9", borderRadius: 2, marginBottom: i < 6 ? 5 : 0 }} />
+                  ))}
+                </div>
+                <div style={{ background: "#f6f8fb", borderRadius: 8, padding: "14px 16px" }}>
+                  {[70, 55, 80, 40].map((w, i) => (
+                    <div key={i} style={{ width: `${w}%`, height: 4, background: "#D8DFE9", borderRadius: 2, marginBottom: i < 3 ? 5 : 0 }} />
+                  ))}
+                </div>
+                <div style={{ textAlign: "center", fontSize: 11, color: "#B4C1D1", marginTop: 14, fontWeight: 500 }}>40+ page offering memorandum</div>
+              </div>
+              {/* Arrow */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                <div style={{
+                  width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, #b9172f, #dc3545)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  boxShadow: "0 4px 16px rgba(185,23,47,0.3)",
+                }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                </div>
+                <span style={{ fontSize: 9, fontWeight: 700, color: "#b9172f", letterSpacing: 0.5 }}>45s</span>
+              </div>
+              {/* After */}
+              <div style={{
+                background: "#fff", borderRadius: 14, boxShadow: "0 8px 32px rgba(21,27,43,0.06)",
+                padding: "28px 24px", border: "1px solid #EDF0F5",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 16 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#059669" }} />
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#059669", textTransform: "uppercase", letterSpacing: 1 }}>Deal Signal</span>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {[
+                    { label: "Cap Rate", value: "5.85%", color: "#151b2b" },
+                    { label: "NOI", value: "$412,500", color: "#151b2b" },
+                    { label: "DSCR", value: "1.62x", color: "#059669" },
+                    { label: "Deal Score", value: "74", badge: "Buy", color: "#059669" },
+                  ].map(m => (
+                    <div key={m.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 12, color: "#585e70", fontWeight: 500 }}>{m.label}</span>
+                      {m.badge ? (
+                        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontSize: 16, fontWeight: 800, color: m.color }}>{m.value}</span>
+                          <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", background: "rgba(5,150,105,0.1)", color: "#059669", borderRadius: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>{m.badge}</span>
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: 15, fontWeight: 700, color: m.color }}>{m.value}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div style={{ borderTop: "1px solid #EDF0F5", paddingTop: 10, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {["Rollover 3.2yr", "Single-tenant", "Below-mkt esc."].map(r => (
+                      <span key={r} style={{ fontSize: 10, fontWeight: 600, padding: "2px 7px", background: "rgba(220,38,38,0.06)", color: "#DC2626", borderRadius: 3 }}>{r}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── 6. PRO WORKSPACE TEASER — dark cinematic block ── */}
+          <div style={{ maxWidth: 1000, margin: "0 auto", padding: "80px 40px 0" }}>
+            <div style={{
+              background: "linear-gradient(135deg, #0B1120 0%, #151b2b 50%, #1e2740 100%)", borderRadius: 20,
+              padding: "56px 48px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center",
+              boxShadow: "0 32px 64px rgba(11,17,32,0.3)", position: "relative", overflow: "hidden",
+            }}>
+              <div style={{ position: "absolute", top: -40, right: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(185,23,47,0.15) 0%, transparent 70%)", filter: "blur(40px)" }} />
+              <div style={{ position: "relative", zIndex: 1 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#f87171", textTransform: "uppercase", letterSpacing: 2, marginBottom: 14 }}>Pro Workspace</div>
+                <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: 30, fontWeight: 800, color: "#fff", marginBottom: 14, letterSpacing: -0.5, lineHeight: 1.2 }}>
+                  Go beyond<br />the OM
+                </h2>
+                <p style={{ fontSize: 14, color: "rgba(255,255,255,0.55)", lineHeight: 1.7, margin: "0 0 28px" }}>
+                  Deep research on tenant credit, location intelligence, comp analysis, and what the OM doesn&apos;t mention. Save, track, and compare every deal in your pipeline.
+                </p>
+                <div style={{ display: "flex", gap: 12 }}>
+                  <Link href="/workspace" className="om-cta-btn" style={{
+                    display: "inline-block", padding: "13px 28px",
+                    background: "linear-gradient(135deg, #b9172f, #dc3545)", color: "#fff", border: "none", borderRadius: 8,
+                    fontSize: 14, fontWeight: 700, textDecoration: "none",
+                  }}>
+                    Try Pro Free
+                  </Link>
+                  <Link href="/pricing" className="om-cta-outline" style={{
+                    display: "inline-block", padding: "13px 28px",
+                    background: "transparent", color: "rgba(255,255,255,0.8)", borderRadius: 8,
+                    fontSize: 14, fontWeight: 600, textDecoration: "none",
+                  }}>
+                    See Plans
+                  </Link>
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, position: "relative", zIndex: 1 }}>
                 {[
-                  { value: "<60s", label: "Analysis Time" },
-                  { value: "60+", label: "Data Points Extracted" },
-                  { value: "9", label: "Scoring Categories" },
-                  { value: "0–100", label: "Deal Score" },
-                ].map(s => (
-                  <div key={s.label} style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: "#C49A3C", letterSpacing: -0.5, lineHeight: 1 }}>{s.value}</div>
-                    <div style={{ fontSize: 11, color: "#5A7091", fontWeight: 600, marginTop: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>{s.label}</div>
+                  { icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z", title: "Location Intel", desc: "Demographics, development, area signals" },
+                  { icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", title: "Tenant Research", desc: "Credit, news, expansion trends" },
+                  { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", title: "Comp Analysis", desc: "Nearby sales and listing comps" },
+                  { icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z", title: "Deal Pipeline", desc: "Save, compare, track every deal" },
+                ].map(f => (
+                  <div key={f.title} style={{
+                    padding: "18px 16px", borderRadius: 12,
+                    background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 8 }}><path d={f.icon} /></svg>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 4 }}>{f.title}</div>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", lineHeight: 1.4 }}>{f.desc}</div>
                   </div>
                 ))}
               </div>
-            </>
-          )}
-          {view === "result" && (
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <button onClick={resetAnalyzer} style={{
-                padding: "8px 20px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)",
-                borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#B4C1D1", cursor: "pointer", fontFamily: "inherit",
-              }}>
-                &larr; Analyze Another OM
-              </button>
-              <div style={{ fontSize: 12, color: "#5A7091" }}>
-                Powered by <Link href="/" style={{ color: "#C49A3C", textDecoration: "none" }}>NNNTripleNet</Link>
-              </div>
             </div>
-          )}
-        </div>
-      </section>
+          </div>
 
-      {/* ===== UPLOAD STATE ===== */}
-      {view === "upload" && (
-        <section id="upload-section" style={{ padding: "60px 0 40px", background: "#F6F8FB" }}>
-          <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 24px" }}>
-            <div style={{
-              background: "#fff", borderRadius: 16, border: "1px solid #EDF0F5",
-              boxShadow: "0 12px 40px rgba(6,8,15,0.08)", padding: 40,
-            }}>
-              <h2 style={{ fontSize: 22, fontWeight: 800, textAlign: "center", marginBottom: 6 }}>Analyze Your OM</h2>
-              <p style={{ fontSize: 14, color: "#5A7091", textAlign: "center", marginBottom: 28 }}>
-                Upload one Offering Memorandum and get a complete first-pass underwriting.
-              </p>
-
-              {/* Drop zone — identical feel to pro upload page */}
-              {!selectedFile && (
-                <div
-                  onClick={() => fileRef.current?.click()}
-                  onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-                  onDragLeave={() => setDragging(false)}
-                  onDrop={(e) => { e.preventDefault(); setDragging(false); if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); }}
-                  style={{
-                    border: `2px dashed ${dragging ? "#C49A3C" : "#D8DFE9"}`, borderRadius: 12,
-                    padding: "48px 24px", textAlign: "center", cursor: "pointer",
-                    transition: "all 0.2s ease", background: dragging ? "rgba(196,154,60,0.04)" : "#FAFBFC",
-                  }}
-                >
-                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#B4C1D1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 8 }}>
-                    <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, color: "#253352" }}>
-                    {dragging ? "Drop files here" : "Drop your OM or flyer here, or click to browse"}
-                  </h3>
-                  <p style={{ fontSize: 12, color: "#B4C1D1", margin: 0 }}>PDF, DOCX, XLS, XLSX, CSV, TXT &bull; Max 50MB</p>
-                </div>
-              )}
-
-              {/* Selected file preview — identical pill to pro */}
-              {selectedFile && (
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 8, padding: "7px 16px",
-                  background: "#F6F8FB", borderRadius: 10, border: "1px solid #EDF0F5",
+          {/* ── 7. WHO THIS IS FOR ── */}
+          <div style={{ maxWidth: 900, margin: "0 auto", padding: "80px 40px 0", textAlign: "center" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#b9172f", textTransform: "uppercase", letterSpacing: 2, marginBottom: 12 }}>Built for deal flow</div>
+            <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: 30, fontWeight: 800, color: "#151b2b", marginBottom: 48, letterSpacing: -0.5 }}>
+              Works for everyone in the deal
+            </h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+              {[
+                { icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", title: "Investors", desc: "Screen 20 deals in the time it takes to read one OM. Rank by score and focus your diligence.", accent: "#b9172f" },
+                { icon: "M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z", title: "Brokers", desc: "Send a Deal Signal report with every listing. Buyers get structured data instead of just a PDF.", accent: "#6366F1" },
+                { icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2", title: "Analysts", desc: "Get a head start on underwriting. Key metrics extracted in seconds, then go deep where it matters.", accent: "#059669" },
+              ].map(p => (
+                <div key={p.title} className="om-feature-card" style={{
+                  padding: "32px 24px", background: "#fff", borderRadius: 14,
+                  boxShadow: "0 4px 20px rgba(21,27,43,0.05)", textAlign: "left",
+                  border: "1px solid #EDF0F5", position: "relative", overflow: "hidden",
                 }}>
-                  <span style={{ padding: "1px 5px", background: "#EDF0F5", borderRadius: 3, fontSize: 9, fontWeight: 700, color: "#5A7091", textTransform: "uppercase", flexShrink: 0 }}>
-                    {selectedFile.name.split(".").pop()}
-                  </span>
-                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500, fontSize: 13 }}>{selectedFile.name}</span>
-                  <span style={{ fontSize: 11, color: "#8899B0", flexShrink: 0 }}>{(selectedFile.size / (1024 * 1024)).toFixed(1)} MB</span>
-                  <button onClick={removeFile} style={{ background: "none", border: "none", color: "#B4C1D1", cursor: "pointer", fontSize: 18, padding: 4, lineHeight: 1 }}>&times;</button>
-                </div>
-              )}
-
-              {selectedFile && (
-                <button onClick={startAnalysis} style={{
-                  display: "block", width: "100%", padding: "11px 32px", marginTop: 20,
-                  background: "#DC2626", color: "#fff", border: "none",
-                  borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer",
-                  fontFamily: "inherit",
-                }}>
-                  Upload &amp; Analyze
-                </button>
-              )}
-
-              <input ref={fileRef} type="file" style={{ display: "none" }} accept={ACCEPTED_EXT}
-                onChange={(e) => { if (e.target.files?.length) handleFile(e.target.files[0]); }} />
-
-              <p style={{ fontSize: 11, color: "#8899B0", textAlign: "center", marginTop: 16 }}>
-                Your document is processed securely and not stored. One free analysis per session.
-              </p>
-            </div>
-
-            {/* File types bar */}
-            <div style={{ marginTop: 28, borderTop: "1px solid #EDF0F5", paddingTop: 20 }}>
-              <div style={{ fontSize: 12, color: "#8899B0", lineHeight: 1.7 }}>
-                <strong style={{ color: "#5A7091" }}>Best results with PDFs.</strong> Upload the broker&apos;s Offering Memorandum PDF. We also accept rent rolls (XLS), T-12s, lease abstracts, and Word docs.
-              </div>
-              <div style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {["PDF", "XLS/XLSX", "DOCX", "CSV", "TXT"].map(ext => (
-                  <span key={ext} style={{
-                    padding: "3px 8px", background: (ext === "PDF" || ext === "XLS/XLSX") ? "#C49A3C" : "#EDF0F5",
-                    color: (ext === "PDF" || ext === "XLS/XLSX") ? "#fff" : "#5A7091",
-                    borderRadius: 4, fontSize: 10, fontWeight: 600,
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${p.accent}, ${p.accent}60)` }} />
+                  <div style={{
+                    width: 48, height: 48, borderRadius: 12, background: `${p.accent}08`, border: `1.5px solid ${p.accent}15`,
+                    display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16,
                   }}>
-                    {ext}
-                  </span>
-                ))}
-                <span style={{ fontSize: 11, color: "#B4C1D1", alignSelf: "center", marginLeft: 4 }}>Best results with PDFs and Excel files</span>
-              </div>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={p.accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={p.icon} /></svg>
+                  </div>
+                  <h3 style={{ fontFamily: "'Inter', sans-serif", fontSize: 18, fontWeight: 700, color: "#151b2b", marginBottom: 8 }}>{p.title}</h3>
+                  <p style={{ fontSize: 13, color: "#585e70", lineHeight: 1.65, margin: 0 }}>{p.desc}</p>
+                </div>
+              ))}
             </div>
+          </div>
+
+          {/* ── 8. FINAL CTA ── */}
+          <div style={{ maxWidth: 680, margin: "0 auto", textAlign: "center", padding: "80px 40px 72px" }}>
+            <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: 32, fontWeight: 800, color: "#151b2b", marginBottom: 12, letterSpacing: -0.5 }}>
+              Stop reading OMs page by page
+            </h2>
+            <p style={{ fontSize: 15, color: "#585e70", marginBottom: 32 }}>
+              Get a Deal Signal in under a minute. Free, no account required.
+            </p>
+            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="om-cta-btn"
+                style={{
+                  padding: "16px 40px", background: "linear-gradient(135deg, #b9172f, #dc3545)", color: "#fff",
+                  border: "none", borderRadius: 10, fontSize: 16, fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Upload an OM
+              </button>
+              <button
+                onClick={() => { setData(generateDemoResult("Walgreens-NNN-Texas")); setView("result"); }}
+                style={{
+                  padding: "16px 40px", background: "#fff", color: "#151b2b",
+                  border: "2px solid #D8DFE9", borderRadius: 10, fontSize: 16, fontWeight: 700,
+                  cursor: "pointer",
+                }}
+                className="om-feature-card"
+              >
+                Try a sample deal
+              </button>
+            </div>
+            <p style={{ fontSize: 12, color: "#B4C1D1", marginTop: 20 }}>
+              Not a full underwriting model. A fast first pass to decide where to spend time.
+            </p>
           </div>
         </section>
       )}
 
-      {/* ===== PROCESSING STATE — IDENTICAL to pro workspace/upload page ===== */}
+      {/* ===== PROCESSING STATE ===== */}
       {view === "processing" && (
-        <section style={{ padding: "60px 0 40px", background: "#F6F8FB" }}>
-          <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 24px" }}>
-            <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EDF0F5", padding: 28 }}>
-              <style>{`@keyframes spin { to { transform: rotate(360deg) } }
-                @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.5 } }`}</style>
-
-              {/* Stage progress — IDENTICAL horizontal 5-stage bar from pro */}
-              <div style={{ display: "flex", gap: 0, marginBottom: 24 }}>
+        <section style={{ background: "#faf8ff", minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ maxWidth: 520, width: "100%", padding: "0 24px" }}>
+            <div style={{ background: "#ffffff", borderRadius: 6, boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)", padding: "40px 36px" }}>
+              {/* Stage progress */}
+              <div style={{ display: "flex", gap: 0, marginBottom: 28 }}>
                 {[
                   { label: "Upload", iconPath: "M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12", done: statusMsg !== "Uploading files..." },
-                  { label: "Extract Image", iconPath: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z", done: !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
-                  { label: "Read Document", iconPath: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", done: statusMsg !== "Reading file contents..." && !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
-                  { label: "AI Analysis", iconPath: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z", done: !statusMsg.includes("Analyzing") && !statusMsg.includes("Reading") && !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
+                  { label: "Extract", iconPath: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z", done: !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
+                  { label: "Read", iconPath: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", done: statusMsg !== "Reading file contents..." && !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
+                  { label: "Analyze", iconPath: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z", done: !statusMsg.includes("Analyzing") && !statusMsg.includes("Reading") && !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
                   { label: "Generate", iconPath: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", done: statusMsg.includes("Generating") || statusMsg.includes("complete") },
                 ].map((stage, i, arr) => {
                   const isCurrent = !stage.done && (i === 0 || arr[i - 1].done);
                   return (
                     <div key={stage.label} style={{ flex: 1, textAlign: "center" }}>
                       <div style={{
-                        width: 36, height: 36, borderRadius: "50%", margin: "0 auto 6px",
+                        width: 32, height: 32, borderRadius: "50%", margin: "0 auto 5px",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        background: stage.done ? "#D1FAE5" : isCurrent ? "#DBEAFE" : "#F6F8FB",
-                        border: isCurrent ? "2px solid #2563EB" : "2px solid transparent",
+                        background: stage.done ? "#D1FAE5" : isCurrent ? "#FEF2F2" : "#F6F8FB",
+                        border: isCurrent ? "2px solid #DC2626" : "2px solid transparent",
                         animation: isCurrent ? "pulse 1.5s ease-in-out infinite" : "none",
                       }}>
                         {stage.done ? (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>
                         ) : (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={isCurrent ? "#2563EB" : "#B4C1D1"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d={stage.iconPath} /></svg>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={isCurrent ? "#DC2626" : "#B4C1D1"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d={stage.iconPath} /></svg>
                         )}
                       </div>
-                      <div style={{ fontSize: 10, fontWeight: 600, color: stage.done ? "#059669" : isCurrent ? "#2563EB" : "#B4C1D1" }}>
+                      <div style={{ fontSize: 9, fontWeight: 600, color: stage.done ? "#059669" : isCurrent ? "#DC2626" : "#B4C1D1", textTransform: "uppercase", letterSpacing: 0.3 }}>
                         {stage.label}
                       </div>
-                      {i < arr.length - 1 && (
-                        <div style={{ position: "relative", top: -26, left: "50%", width: "100%", height: 2, background: stage.done ? "#10B981" : "#EDF0F5" }} />
-                      )}
                     </div>
                   );
                 })}
               </div>
-
               <div style={{ textAlign: "center" }}>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "#253352", margin: "0 0 4px" }}>{statusMsg}</p>
-                <p style={{ fontSize: 12, color: "#8899B0", margin: "0 0 4px" }}>
-                  {statusMsg.includes("Analyzing") ? "AI is extracting property data and calculating underwriting (30-60 seconds)" :
-                   statusMsg.includes("Reading") ? "Extracting text from your document (5-15 seconds)" :
-                   statusMsg.includes("image") ? "Capturing property image from PDF (5 seconds)" :
-                   statusMsg.includes("Generating") ? "Creating output files (5 seconds)" :
+                <p style={{ fontSize: 15, fontWeight: 600, color: "#0B1120", margin: "0 0 4px" }}>{statusMsg}</p>
+                <p style={{ fontSize: 12, color: "#8899B0", margin: 0 }}>
+                  {statusMsg.includes("Analyzing") ? "AI is extracting property data and calculating underwriting (30–60s)" :
+                   statusMsg.includes("Reading") ? "Extracting text from your document (5–15s)" :
+                   statusMsg.includes("image") ? "Capturing property image from PDF (5s)" :
+                   statusMsg.includes("Generating") ? "Creating output files (5s)" :
                    "Processing your files..."}
                 </p>
-                <p style={{ fontSize: 11, color: "#B4C1D1", margin: 0 }}>
-                  Your document is processed securely and not stored.
-                </p>
               </div>
-
               {selectedFile && (
-                <div style={{ marginTop: 16, textAlign: "left" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0", fontSize: 12 }}>
-                    <span style={{ padding: "1px 5px", background: "#EDF0F5", borderRadius: 3, fontSize: 9, fontWeight: 700, color: "#5A7091", textTransform: "uppercase" }}>
-                      {selectedFile.name.split(".").pop()}
-                    </span>
-                    <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#5A7091" }}>{selectedFile.name}</span>
-                    <span style={{ color: "#10B981", fontSize: 13, flexShrink: 0 }}>✓</span>
-                  </div>
+                <div style={{ marginTop: 20, display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "#F6F8FB", borderRadius: 8, fontSize: 12 }}>
+                  <span style={{ padding: "1px 5px", background: "#EDF0F5", borderRadius: 3, fontSize: 9, fontWeight: 700, color: "#5A7091", textTransform: "uppercase" }}>
+                    {selectedFile.name.split(".").pop()}
+                  </span>
+                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#5A7091" }}>{selectedFile.name}</span>
+                  <span style={{ color: "#059669", fontSize: 13, flexShrink: 0 }}>✓</span>
                 </div>
               )}
             </div>
@@ -512,20 +1118,16 @@ export default function OmAnalyzerPage() {
         </section>
       )}
 
-      {/* ===== RESULT STATE — Pro property page output + conversion upsell ===== */}
+      {/* ===== RESULT STATE ===== */}
       {view === "result" && data && (
-        <section style={{ padding: "24px 0 60px", background: "#F6F8FB" }}>
+        <section style={{ padding: "24px 0 60px", background: "#faf8ff" }}>
           <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
-            <style>{`
-              .dl-btn { transition: all 0.15s ease; }
-              .dl-btn:hover { background: #EDF0F5 !important; border-color: #C49A3C !important; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-            `}</style>
             <PropertyOutput data={data} heroImageUrl={heroImageUrl} />
             <ProUpsell />
             <div style={{ textAlign: "center", marginTop: 24 }}>
               <button onClick={resetAnalyzer} style={{
-                padding: "12px 28px", background: "#fff", border: "1.5px solid #D8DFE9",
-                borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", color: "#253352", fontFamily: "inherit",
+                padding: "12px 28px", background: "#fff", border: "1.5px solid rgba(227, 190, 189, 0.2)",
+                borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: "pointer", color: "#585e70", fontFamily: "'Inter', sans-serif",
               }}>
                 &larr; Analyze Another OM
               </button>
@@ -534,93 +1136,29 @@ export default function OmAnalyzerPage() {
         </section>
       )}
 
-      {/* ===== LANDING PAGE SECTIONS (hidden when results shown) ===== */}
-      {view !== "result" && (
-        <>
-          <section style={{ padding: "60px 0", background: "#fff" }}>
-            <div style={{ maxWidth: 960, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
-              <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 32, fontWeight: 700, marginBottom: 8 }}>How It Works</h2>
-              <p style={{ fontSize: 15, color: "#5A7091", marginBottom: 48 }}>Three steps. Sixty seconds. One complete underwriting.</p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 32 }}>
-                {[
-                  { num: 1, title: "Drop Your OM", desc: "Upload any Offering Memorandum — the glossy broker PDF you receive for every net lease deal. We accept PDF, DOCX, XLSX, and more." },
-                  { num: 2, title: "AI Reads & Calculates", desc: "GPT-4o extracts 60+ data points, then runs a two-pass analysis: first extracting facts, then calculating cap rates, DSCR, cash-on-cash, and investment signals." },
-                  { num: 3, title: "Get Your Underwriting", desc: "A complete property page with key metrics, signal assessment, tenant detail, and a scored investment recommendation. In under a minute." },
-                ].map(s => (
-                  <div key={s.num} style={{ textAlign: "center" }}>
-                    <div style={{
-                      width: 48, height: 48, borderRadius: 12, background: "linear-gradient(135deg, #DC3545, #B91C1C)",
-                      color: "#fff", fontSize: 20, fontWeight: 800, display: "flex", alignItems: "center",
-                      justifyContent: "center", margin: "0 auto 16px",
-                    }}>{s.num}</div>
-                    <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>{s.title}</h3>
-                    <p style={{ fontSize: 13, color: "#5A7091", lineHeight: 1.6 }}>{s.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section style={{ padding: "60px 0", background: "#F6F8FB" }}>
-            <div style={{ maxWidth: 740, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
-              <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 32, fontWeight: 700, marginBottom: 8 }}>Free vs. Pro</h2>
-              <p style={{ fontSize: 15, color: "#5A7091", marginBottom: 40 }}>Start free. Upgrade when you need the full deal pipeline.</p>
-              <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid #D8DFE9", background: "#fff" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead>
-                    <tr>
-                      <th style={{ padding: "14px 20px", textAlign: "left", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, background: "#0B1120", color: "#fff" }}>Feature</th>
-                      <th style={{ padding: "14px 20px", textAlign: "center", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, background: "#0B1120", color: "#fff" }}>Free</th>
-                      <th style={{ padding: "14px 20px", textAlign: "center", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, background: "linear-gradient(135deg, #A17A2B, #C49A3C)", color: "#fff" }}>Pro &mdash; $40/mo</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      ["OMs per month", "1 at a time", "100"],
-                      ["AI-extracted fields", "60+", "60+"],
-                      ["Deal scoring & signals", "✓", "✓"],
-                      ["Investment recommendation", "✓", "✓"],
-                      ["Side-by-side scoreboard", "—", "✓"],
-                      ["Interactive property map", "—", "✓"],
-                      ["Excel underwriting export", "—", "✓"],
-                      ["Stored deal archives", "—", "✓"],
-                      ["Sharable deal links", "—", "✓"],
-                      ["Multi-workspace pipelines", "—", "✓"],
-                      ["AI scoring models", "—", "✓"],
-                      ["Bulk upload (10 at once)", "—", "✓"],
-                    ].map(([feature, free, pro], i) => (
-                      <tr key={i}>
-                        <td style={{ padding: "12px 20px", fontSize: 13, borderBottom: "1px solid #EDF0F5" }}>{feature}</td>
-                        <td style={{ padding: "12px 20px", fontSize: 13, textAlign: "center", borderBottom: "1px solid #EDF0F5", color: free === "✓" ? "#0A7E5A" : free === "—" ? "#B4C1D1" : undefined, fontWeight: free === "✓" ? 700 : undefined }}>{free}</td>
-                        <td style={{ padding: "12px 20px", fontSize: 13, textAlign: "center", borderBottom: "1px solid #EDF0F5", color: pro === "✓" ? "#0A7E5A" : undefined, fontWeight: pro === "✓" ? 700 : undefined }}>{pro}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </section>
-
-          <section style={{ padding: "60px 0", background: "linear-gradient(135deg, #0B1120, #162036)", textAlign: "center" }}>
-            <div style={{ maxWidth: 500, margin: "0 auto", padding: "0 24px" }}>
-              <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
-                Ready to stop re-keying numbers?
-              </h2>
-              <p style={{ fontSize: 15, color: "#B4C1D1", marginBottom: 28 }}>
-                Try it free. Drop one OM and see the underwriting. No account, no credit card, no catch.
-              </p>
-              <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} style={{
-                display: "inline-block", padding: "14px 36px", background: "linear-gradient(135deg, #DC3545, #B91C1C)",
-                color: "#fff", borderRadius: 10, fontSize: 15, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "inherit",
-              }}>
-                Analyze Your First OM &uarr;
-              </button>
-            </div>
-          </section>
-        </>
-      )}
-
-      <Footer />
+      {/* ===== FOOTER — Deal Signal ===== */}
+      <footer style={{
+        padding: "28px 40px", borderTop: "1px solid #EDF0F5",
+        maxWidth: 1280, margin: "0 auto",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <DealSignalLogo size={22} fontSize={13} gap={7} />
+        <div style={{ display: "flex", gap: 24 }}>
+          {[
+            { label: "Privacy", href: "/privacy" },
+            { label: "Terms", href: "/terms" },
+            { label: "Support", href: "/contact" },
+          ].map(link => (
+            <Link key={link.label} href={link.href} style={{
+              fontSize: 11, fontWeight: 500, color: "#585e70", textDecoration: "none",
+              textTransform: "uppercase", letterSpacing: 0.5,
+            }}>{link.label}</Link>
+          ))}
+        </div>
+        <span style={{ fontSize: 10, color: "#B4C1D1" }}>
+          &copy; 2026 Deal Signal
+        </span>
+      </footer>
     </>
   );
 }
@@ -632,12 +1170,77 @@ export default function OmAnalyzerPage() {
    Same rendering, same sections, same order.
    =========================================================================== */
 
+/* ===========================================================================
+   DEAL SCORE RING — SVG circular score gauge
+   =========================================================================== */
+function DealScoreRing({ score, label }: { score: number; label: string }) {
+  const radius = 54;
+  const stroke = 8;
+  const circumference = 2 * Math.PI * radius;
+  const pct = Math.max(0, Math.min(100, score)) / 100;
+  const offset = circumference * (1 - pct);
+  const color = score >= 70 ? "#059669" : score >= 50 ? "#C49A3C" : "#b9172f";
+  const bgColor = score >= 70 ? "#D1FAE5" : score >= 50 ? "#FEF3C7" : "#FEE2E2";
+  const sentiment = score >= 80 ? "BULLISH" : score >= 60 ? "NEUTRAL" : "BEARISH";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+      <div style={{ position: "relative", width: 130, height: 130 }}>
+        <svg width="130" height="130" viewBox="0 0 130 130" style={{ transform: "rotate(-90deg)" }}>
+          <circle cx="65" cy="65" r={radius} fill="none" stroke="rgba(227, 190, 189, 0.15)" strokeWidth={stroke} />
+          <circle cx="65" cy="65" r={radius} fill="none" stroke={color} strokeWidth={stroke}
+            strokeDasharray={circumference} strokeDashoffset={offset}
+            strokeLinecap="round" style={{ transition: "stroke-dashoffset 0.8s ease" }} />
+        </svg>
+        <div style={{
+          position: "absolute", inset: 0, display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+        }}>
+          <span style={{ fontSize: 32, fontWeight: 800, color: "#151b2b", lineHeight: 1, letterSpacing: -1 }}>{score}</span>
+          <span style={{ fontSize: 9, fontWeight: 700, color, textTransform: "uppercase", letterSpacing: 1, marginTop: 2 }}>{sentiment}</span>
+        </div>
+      </div>
+      <span style={{ fontSize: 10, fontWeight: 600, color: "#585e70", textTransform: "uppercase", letterSpacing: 0.5 }}>{label}</span>
+    </div>
+  );
+}
+
+/* Compute a numeric deal score from signal data */
+function computeDealScore(d: any): number {
+  const signals = d.signals || {};
+  let total = 0, count = 0;
+  const keys = ["cap_rate", "dscr", "occupancy", "basis", "tenant_quality", "rollover_risk"];
+  for (const k of keys) {
+    const val = String(signals[k] || "");
+    if (val.includes("🟢") || val.toLowerCase().includes("green")) { total += 90; count++; }
+    else if (val.includes("🟡") || val.toLowerCase().includes("yellow")) { total += 60; count++; }
+    else if (val.includes("🔴") || val.toLowerCase().includes("red")) { total += 30; count++; }
+  }
+  if (count === 0) {
+    // Fallback: estimate from financial metrics
+    const cap = Number(d.capRateOm) || 0;
+    const dscr = Number(d.dscrOm) || 0;
+    const occ = Number(d.occupancyPct) || 0;
+    let fallback = 50;
+    if (cap >= 5 && cap <= 7) fallback += 10;
+    if (dscr >= 1.35) fallback += 10;
+    if (occ >= 90) fallback += 10;
+    return Math.min(99, Math.max(10, fallback));
+  }
+  return Math.round(total / count);
+}
+
 function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroImageUrl?: string }) {
   const location = [d.address, d.city, d.state].filter(Boolean).join(", ");
   const encodedAddress = encodeURIComponent(location || d.propertyName);
-  const recommendation = d.signals?.recommendation || "";
-  const brief = d.brief || "";
+  const recommendation = typeof d.signals?.recommendation === "string" ? d.signals.recommendation : d.signals?.recommendation?.text ? String(d.signals.recommendation.text) : String(d.signals?.recommendation || "");
+  const brief = typeof d.brief === "string" ? d.brief : Array.isArray(d.brief) ? d.brief.join("\n") : String(d.brief || "");
   const tenants = d.tenants || [];
+  const dealScore = d.proScore?.totalScore || computeDealScore(d);
+  const scoreBand = d.proScore?.scoreBand || (dealScore >= 70 ? "buy" : dealScore >= 50 ? "hold" : "pass");
+  const scoreRecommendation = d.proScore?.recommendation || "";
+  const scoreCategories = d.proScore?.categories || [];
+  const detectedType = d.analysisType || d.assetType || "retail";
 
   const heroStats = [
     { label: "Asking Price", value: fmt$(d.askingPrice) },
@@ -679,29 +1282,28 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
-      {/* ===== HERO SECTION ===== */}
-      <div style={{ background: "linear-gradient(135deg, #0B1120 0%, #162036 100%)", borderRadius: 14, padding: 0, marginBottom: 20, overflow: "hidden" }}>
+      {/* ===== HERO SECTION — Property Info + Deal Score ===== */}
+      <div style={{ background: "#ffffff", borderRadius: 6, boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)", marginBottom: 20, overflow: "hidden" }}>
         <div style={{ display: "flex" }}>
           <div style={{ flex: 1, padding: "28px 28px 20px" }}>
-            <h1 style={{ fontSize: 26, fontWeight: 800, color: "#fff", margin: 0, lineHeight: 1.2 }}>{d.propertyName}</h1>
+            <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 700, color: "#151b2b", margin: 0, lineHeight: 1.2 }}>{d.propertyName}</h1>
             {location && (
-              <div style={{ marginTop: 10 }}>
-                <span style={{ fontSize: 14, color: "#B4C1D1" }}>{location}</span>
+              <div style={{ marginTop: 8 }}>
+                <span style={{ fontSize: 13, color: "#585e70" }}>{location}</span>
                 <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
                   {[
                     { label: "Google Maps", url: `https://www.google.com/maps/search/?api=1&query=${encodedAddress}` },
                     { label: "Google Earth", url: `https://earth.google.com/web/search/${encodedAddress}/` },
                   ].map(link => (
                     <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer" style={{
-                      padding: "4px 10px", background: "rgba(255,255,255,0.08)", borderRadius: 6,
-                      fontSize: 11, color: "#8899B0", textDecoration: "none", fontWeight: 500,
-                      border: "1px solid rgba(255,255,255,0.06)",
+                      padding: "4px 10px", background: "#f2f3ff", borderRadius: 6,
+                      fontSize: 11, color: "#585e70", textDecoration: "none", fontWeight: 500,
                     }}>{link.label} &rarr;</a>
                   ))}
                 </div>
               </div>
             )}
-            <div style={{ display: "flex", gap: 16, marginTop: 16, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 16, marginTop: 14, flexWrap: "wrap" }}>
               {[
                 { label: "Type", value: d.assetType },
                 { label: "Built", value: d.yearBuilt },
@@ -710,55 +1312,108 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
                 { label: "Traffic", value: d.traffic },
               ].filter((x) => x.value).map((x) => (
                 <div key={x.label}>
-                  <div style={{ fontSize: 9, color: "#5A7091", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{x.label}</div>
-                  <div style={{ fontSize: 12, color: "#B4C1D1", marginTop: 1, fontWeight: 500 }}>{x.value}</div>
+                  <div style={{ fontSize: 9, color: "#585e70", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{x.label}</div>
+                  <div style={{ fontSize: 12, color: "#151b2b", marginTop: 1, fontWeight: 500 }}>{x.value}</div>
                 </div>
               ))}
             </div>
-            <p style={{ fontSize: 10, color: "rgba(90,112,145,0.6)", margin: "12px 0 0", fontStyle: "italic" }}>
-              First-pass underwriting screen &middot; Directional only
-            </p>
+          </div>
+          {/* Deal Score Ring */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 28px" }}>
+            <DealScoreRing score={dealScore} label="Deal Score" />
           </div>
           <PropertyImage heroImageUrl={heroImageUrl} location={location} encodedAddress={encodedAddress} propertyName={d.propertyName} />
         </div>
-        {heroStats.length > 0 && (
-          <div style={{ display: "flex", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-            {heroStats.map((s, i) => (
-              <div key={s.label} style={{
-                flex: 1, padding: "14px 16px", textAlign: "center",
-                borderRight: i < heroStats.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
-              }}>
-                <div style={{ fontSize: 9, color: "#5A7091", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8 }}>{s.label}</div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: "#C49A3C", marginTop: 3, letterSpacing: -0.3 }}>{s.value}</div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
+
+      {/* ===== METRIC CARDS — Grid layout ===== */}
+      {heroStats.length > 0 && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
+          {heroStats.map(s => (
+            <div key={s.label} style={{
+              background: "#ffffff", borderRadius: 6, padding: "16px 18px",
+              boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)",
+            }}>
+              <div style={{ fontSize: 10, color: "#585e70", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6, fontFamily: "'Inter', sans-serif" }}>{s.label}</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: "#b9172f", letterSpacing: -0.3, fontVariantNumeric: "tabular-nums" }}>{s.value}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ===== DISCLAIMER ===== */}
+      <p style={{ fontSize: 10, color: "#B4C1D1", margin: "0 0 16px", fontStyle: "italic", textAlign: "center" }}>
+        First-pass underwriting screen &middot; Directional only &middot; Verify all data independently
+      </p>
 
       {/* ===== RECOMMENDATION BANNER ===== */}
       {recommendation && (
         <div style={{
-          padding: "14px 20px", borderRadius: 10, marginBottom: 16,
+          padding: "14px 20px", borderRadius: 6, marginBottom: 16,
           background: recommendation.includes("🟢") ? "linear-gradient(135deg, #D1FAE5, #ECFDF5)" : recommendation.includes("🔴") ? "linear-gradient(135deg, #FDE8EA, #FFF1F2)" : "linear-gradient(135deg, #FFFBF0, #FEF3C7)",
-          border: `1.5px solid ${recommendation.includes("🟢") ? "#10B981" : recommendation.includes("🔴") ? "#DC3545" : "#E5CA7A"}`,
           color: recommendation.includes("🟢") ? "#065F46" : recommendation.includes("🔴") ? "#991B1B" : "#78350F",
           fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 10,
+          boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)",
         }}>
           <span style={{ fontSize: 20 }}>{recommendation.includes("🟢") ? "🟢" : recommendation.includes("🔴") ? "🔴" : "🟡"}</span>
           <span>{recommendation.replace(/🟢|🟡|🔴/g, "").trim()}</span>
         </div>
       )}
 
+      {/* ===== SCORE BREAKDOWN — from Pro scoring model ===== */}
+      {scoreCategories.length > 0 && (
+        <div style={{ background: "#ffffff", borderRadius: 6, boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)", padding: 24, marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0, color: "#151b2b", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Inter', sans-serif" }}>
+              <span style={{ width: 3, height: 20, background: "#b9172f", borderRadius: 2 }} />
+              Deal Signal Score Breakdown
+            </h2>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#8899B0", textTransform: "uppercase", letterSpacing: 0.5 }}>{detectedType} model</span>
+              <span style={{
+                fontSize: 11, fontWeight: 800, padding: "3px 10px", borderRadius: 4, letterSpacing: 0.5,
+                background: scoreBand === "strong_buy" || scoreBand === "buy" ? "rgba(5,150,105,0.1)" : scoreBand === "hold" ? "rgba(196,154,60,0.1)" : "rgba(185,23,47,0.1)",
+                color: scoreBand === "strong_buy" || scoreBand === "buy" ? "#059669" : scoreBand === "hold" ? "#C49A3C" : "#b9172f",
+                textTransform: "uppercase",
+              }}>{scoreBand.replace("_", " ")}</span>
+            </div>
+          </div>
+          {scoreRecommendation && (
+            <p style={{ fontSize: 13, color: "#3B4C68", lineHeight: 1.6, margin: "0 0 16px", padding: "12px 16px", background: "#f8f9fb", borderRadius: 8 }}>
+              {scoreRecommendation}
+            </p>
+          )}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {scoreCategories.map((cat: any) => {
+              const barColor = cat.score >= 70 ? "#059669" : cat.score >= 50 ? "#C49A3C" : "#b9172f";
+              return (
+                <div key={cat.name} style={{ padding: "10px 14px", background: "#f8f9fb", borderRadius: 8 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#151b2b", textTransform: "capitalize" }}>{cat.name}</span>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: barColor }}>{cat.score}</span>
+                  </div>
+                  <div style={{ height: 4, background: "rgba(0,0,0,0.06)", borderRadius: 2, overflow: "hidden" }}>
+                    <div style={{ width: `${cat.score}%`, height: "100%", background: barColor, borderRadius: 2, animation: "barGrow 0.8s ease-out" }} />
+                  </div>
+                  {cat.explanation && (
+                    <div style={{ fontSize: 10, color: "#8899B0", marginTop: 3 }}>{cat.explanation}</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ===== BRIEF / INITIAL ASSESSMENT ===== */}
       {brief && (
-        <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EDF0F5", padding: 24, marginBottom: 16 }}>
-          <h2 style={{ fontSize: 17, fontWeight: 700, margin: "0 0 4px", color: "#0B1120", display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 3, height: 20, background: "#C49A3C", borderRadius: 2 }} />
+        <div style={{ background: "#ffffff", borderRadius: 6, boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)", padding: 24, marginBottom: 16 }}>
+          <h2 style={{ fontSize: 17, fontWeight: 700, margin: "0 0 4px", color: "#151b2b", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Inter', sans-serif" }}>
+            <span style={{ width: 3, height: 20, background: "#b9172f", borderRadius: 2 }} />
             Initial Assessment
           </h2>
-          <p style={{ fontSize: 11, color: "#8899B0", margin: "0 0 14px" }}>AI-generated first-pass analysis based on uploaded documents</p>
-          <div style={{ fontSize: 14, color: "#253352", lineHeight: 1.8 }}>
+          <p style={{ fontSize: 11, color: "#585e70", margin: "0 0 14px" }}>AI-generated first-pass analysis based on uploaded documents</p>
+          <div style={{ fontSize: 14, color: "#151b2b", lineHeight: 1.8 }}>
             {brief.split("\n").filter((p: string) => p.trim()).map((p: string, i: number) => (
               <p key={i} style={{ margin: "0 0 14px" }}>{p}</p>
             ))}
@@ -770,30 +1425,30 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
       {hasData && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
           {metrics.length > 0 && (
-            <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EDF0F5", overflow: "hidden" }}>
-              <div style={{ padding: "12px 18px", borderBottom: "1px solid #EDF0F5", background: "#F6F8FB", display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ width: 3, height: 14, background: "#2563EB", borderRadius: 2 }} />
-                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#253352" }}>Key Metrics</h3>
+            <div style={{ background: "#ffffff", borderRadius: 6, boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)", overflow: "hidden" }}>
+              <div style={{ padding: "12px 18px", background: "#f2f3ff", display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ width: 3, height: 14, background: "#b9172f", borderRadius: 2 }} />
+                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#151b2b", fontFamily: "'Inter', sans-serif" }}>Key Metrics</h3>
               </div>
               {metrics.map(([label, val, tooltip], i) => (
                 <div key={String(label)} style={{
                   display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 18px",
-                  borderBottom: i < metrics.length - 1 ? "1px solid #F6F8FB" : "none",
+                  background: i % 2 === 1 ? "#f2f3ff" : "transparent",
                 }}>
-                  <span style={{ fontSize: 12, color: "#5A7091", display: "flex", alignItems: "center", gap: 5 }}>
+                  <span style={{ fontSize: 12, color: "#585e70", display: "flex", alignItems: "center", gap: 5 }}>
                     {String(label)}
                     {tooltip && <MetricTooltip text={String(tooltip)} />}
                   </span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "#0B1120", fontVariantNumeric: "tabular-nums" }}>{String(val)}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#151b2b", fontVariantNumeric: "tabular-nums" }}>{String(val)}</span>
                 </div>
               ))}
             </div>
           )}
           {signals.length > 0 && (
-            <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EDF0F5", overflow: "hidden" }}>
-              <div style={{ padding: "12px 18px", borderBottom: "1px solid #EDF0F5", background: "#F6F8FB", display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ width: 3, height: 14, background: "#C49A3C", borderRadius: 2 }} />
-                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#253352" }}>Signal Assessment</h3>
+            <div style={{ background: "#ffffff", borderRadius: 6, boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)", overflow: "hidden" }}>
+              <div style={{ padding: "12px 18px", background: "#f2f3ff", display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ width: 3, height: 14, background: "#b9172f", borderRadius: 2 }} />
+                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#151b2b", fontFamily: "'Inter', sans-serif" }}>Signal Assessment</h3>
               </div>
               {signals.map(([label, val], i) => {
                 const raw = String(val);
@@ -804,12 +1459,12 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
                 const text = raw.replace(/^[🟢🟡🔴]\s*/, "");
                 return (
                   <div key={String(label)} style={{
-                    padding: "12px 18px", borderBottom: i < signals.length - 1 ? "1px solid #F0F2F6" : "none",
+                    padding: "12px 18px",
                     background: bgColor, borderLeft, display: "flex", flexDirection: "column", gap: 2,
                   }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#253352", textTransform: "uppercase", letterSpacing: 0.3 }}>{String(label)}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#151b2b", textTransform: "uppercase", letterSpacing: 0.3 }}>{String(label)}</span>
                     </div>
                     <span style={{ fontSize: 13, color: "#3B4C68", lineHeight: 1.5, paddingLeft: 14 }}>{text}</span>
                   </div>
@@ -822,29 +1477,29 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
 
       {/* ===== TENANT SUMMARY ===== */}
       {tenants.length > 0 && (
-        <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EDF0F5", overflow: "hidden", marginBottom: 16 }}>
-          <div style={{ padding: "12px 18px", borderBottom: "1px solid #EDF0F5", background: "#F6F8FB" }}>
-            <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#253352" }}>Tenant Summary</h3>
+        <div style={{ background: "#ffffff", borderRadius: 6, boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)", overflow: "hidden", marginBottom: 16 }}>
+          <div style={{ padding: "12px 18px", background: "#f2f3ff" }}>
+            <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#151b2b", fontFamily: "'Inter', sans-serif" }}>Tenant Summary</h3>
           </div>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
-              <tr style={{ background: "#FAFBFC" }}>
-                <th style={{ padding: "6px 16px", textAlign: "left", fontWeight: 600, color: "#5A7091" }}>Tenant</th>
-                <th style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, color: "#5A7091" }}>SF</th>
-                <th style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, color: "#5A7091" }}>Annual Rent</th>
-                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#5A7091" }}>Type</th>
-                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#5A7091" }}>Lease End</th>
-                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#5A7091" }}>Status</th>
+              <tr>
+                <th style={{ padding: "6px 16px", textAlign: "left", fontWeight: 600, color: "#585e70" }}>Tenant</th>
+                <th style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, color: "#585e70" }}>SF</th>
+                <th style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, color: "#585e70" }}>Annual Rent</th>
+                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#585e70" }}>Type</th>
+                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#585e70" }}>Lease End</th>
+                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#585e70" }}>Status</th>
               </tr>
             </thead>
             <tbody>
               {tenants.map((t: any, i: number) => (
-                <tr key={i} style={{ borderBottom: "1px solid #F6F8FB" }}>
-                  <td style={{ padding: "6px 16px", fontWeight: 600, color: "#0B1120" }}>{t.name}</td>
-                  <td style={{ padding: "6px 12px", textAlign: "right" }}>{t.sf ? Math.round(Number(t.sf)).toLocaleString() : "--"}</td>
-                  <td style={{ padding: "6px 12px", textAlign: "right", fontWeight: 500 }}>{fmt$(t.rent)}</td>
-                  <td style={{ padding: "6px 12px", color: "#5A7091" }}>{t.type || "--"}</td>
-                  <td style={{ padding: "6px 12px", color: "#5A7091" }}>{t.end || "--"}</td>
+                <tr key={i} style={{ background: i % 2 === 1 ? "#f2f3ff" : "transparent" }}>
+                  <td style={{ padding: "6px 16px", fontWeight: 600, color: "#151b2b" }}>{t.name}</td>
+                  <td style={{ padding: "6px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{t.sf ? Math.round(Number(t.sf)).toLocaleString() : "--"}</td>
+                  <td style={{ padding: "6px 12px", textAlign: "right", fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>{fmt$(t.rent)}</td>
+                  <td style={{ padding: "6px 12px", color: "#585e70" }}>{t.type || "--"}</td>
+                  <td style={{ padding: "6px 12px", color: "#585e70" }}>{t.end || "--"}</td>
                   <td style={{ padding: "6px 12px" }}>
                     <span style={{
                       fontSize: 10, fontWeight: 600, padding: "2px 6px", borderRadius: 8,
@@ -861,16 +1516,17 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
 
       {/* ===== DOWNLOAD ASSETS ===== */}
       {hasData && (
-        <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EDF0F5", padding: 20, marginBottom: 16 }}>
+        <div style={{ background: "#ffffff", borderRadius: 6, boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)", padding: 20, marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-            <span style={{ width: 3, height: 14, background: "#8B5CF6", borderRadius: 2 }} />
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Download Assets{d.propertyName ? ` — ${d.propertyName}` : ""}</h3>
+            <span style={{ width: 3, height: 14, background: "#b9172f", borderRadius: 2 }} />
+            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#151b2b" }}>Download Assets{d.propertyName ? ` — ${d.propertyName}` : ""}</h3>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <button className="dl-btn" onClick={() => downloadLiteXLSX(d)} style={{
               display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 18px",
-              background: "#F6F8FB", border: "1.5px solid #D8DFE9", borderRadius: 10,
-              color: "#253352", textAlign: "left", cursor: "pointer", fontFamily: "inherit",
+              background: "#f2f3ff", border: "none", borderRadius: 6,
+              color: "#151b2b", textAlign: "left", cursor: "pointer", fontFamily: "'Inter', sans-serif",
+              boxShadow: "0 2px 8px rgba(21, 27, 43, 0.04)",
             }}>
               <div style={{ width: 40, height: 40, borderRadius: 8, background: "#D1FAE5", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A7E5A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
@@ -882,8 +1538,9 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
             </button>
             <button className="dl-btn" onClick={() => downloadLiteBrief(d)} style={{
               display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 18px",
-              background: "#F6F8FB", border: "1.5px solid #D8DFE9", borderRadius: 10,
-              color: "#253352", textAlign: "left", cursor: "pointer", fontFamily: "inherit",
+              background: "#f2f3ff", border: "none", borderRadius: 6,
+              color: "#151b2b", textAlign: "left", cursor: "pointer", fontFamily: "'Inter', sans-serif",
+              boxShadow: "0 2px 8px rgba(21, 27, 43, 0.04)",
             }}>
               <div style={{ width: 40, height: 40, borderRadius: 8, background: "#DBEAFE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
@@ -897,34 +1554,6 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
         </div>
       )}
 
-      {/* ===== RELATED FROM NNNTRIPLENET ===== */}
-      {hasData && (
-        <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EDF0F5", padding: 20, marginBottom: 16 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 700, margin: "0 0 4px", display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 3, height: 14, background: "#10B981", borderRadius: 2 }} />
-            Related from NNNTripleNet
-          </h3>
-          <p style={{ fontSize: 11, color: "#8899B0", margin: "0 0 12px" }}>Research and market data relevant to this property</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-            {[
-              { label: "Retail Sector Analysis", desc: "Market trends and cap rates for retail properties", href: "/sectors/retail" },
-              { label: "Cap Rate Trends", desc: "Current cap rate data and historical trends", href: "/macro/cap-rate-trends" },
-              { label: "Interest Rates", desc: "Fed policy and impact on CRE valuations", href: "/macro/interest-rates" },
-              { label: "Deal Flow", desc: "Recent NNN transactions and market activity", href: "/deals" },
-              { label: "CRE News", desc: "Latest commercial real estate headlines", href: "/news" },
-              { label: "NNN Calculator", desc: "Cap rate, DSCR, and investment calculators", href: "/tools/calculators" },
-            ].map(item => (
-              <a key={item.href} href={item.href} target="_blank" rel="noopener noreferrer" style={{
-                padding: "12px 14px", background: "#F6F8FB", borderRadius: 8, textDecoration: "none",
-                border: "1px solid #EDF0F5", display: "block",
-              }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "#0B1120", marginBottom: 2 }}>{item.label}</div>
-                <div style={{ fontSize: 10, color: "#8899B0", lineHeight: 1.4 }}>{item.desc}</div>
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -934,41 +1563,63 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
    PRO UPSELL — Conversion component
    =========================================================================== */
 function ProUpsell() {
-  const [submitted, setSubmitted] = useState(false);
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    fetch("/api/leads", { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: formData.get("name"), email: formData.get("email"), tag: "OM Analyzer buyer", source: "om-analyzer-pro-upsell", meta: { plan: "pro", price: "$40/mo" } }),
-    }).catch(() => {});
-    setSubmitted(true);
-  }
   return (
-    <div style={{ background: "linear-gradient(135deg, #0B1120, #162036)", borderRadius: 14, padding: "36px 32px", margin: "32px 0 16px", border: "1.5px solid rgba(196,154,60,0.25)", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", top: "-40%", right: "-15%", width: "60%", height: "180%", background: "radial-gradient(ellipse, rgba(196,154,60,0.08) 0%, transparent 60%)", pointerEvents: "none" }} />
+    <div style={{
+      background: "linear-gradient(135deg, #0B1120 0%, #151b2b 50%, #1e2740 100%)",
+      borderRadius: 16, padding: "48px 40px", margin: "32px 0 16px",
+      boxShadow: "0 32px 64px rgba(11,17,32,0.25)", position: "relative", overflow: "hidden",
+    }}>
+      {/* Accent glow */}
+      <div style={{ position: "absolute", top: -40, right: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(185,23,47,0.2) 0%, transparent 70%)", filter: "blur(40px)" }} />
+
       <div style={{ position: "relative", zIndex: 1 }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", background: "rgba(196,154,60,0.15)", border: "1px solid rgba(196,154,60,0.3)", borderRadius: 6, fontSize: 11, fontWeight: 800, color: "#C49A3C", letterSpacing: 1, textTransform: "uppercase", marginBottom: 16 }}>OM Analyzer Pro</div>
-        <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 28, fontWeight: 700, color: "#fff", marginBottom: 10, lineHeight: 1.25 }}>Want the <span style={{ color: "#C49A3C" }}>full picture</span>?</h2>
-        <p style={{ fontSize: 15, color: "#B4C1D1", lineHeight: 1.7, marginBottom: 24, maxWidth: 560 }}>You just saw what OM Analyzer can do with one document. Imagine it across your entire deal pipeline &mdash; side-by-side scoring, interactive maps, Excel exports, and AI that gets smarter with every OM.</p>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 24px", marginBottom: 28 }}>
-          {["100 OMs per month", "Scored deal comparison grid", "Interactive property map", "XLSX underwriting workbooks", "Sharable deal links", "Stored archives & history", "AI property scoring models", "Multi-workspace management"].map(f => (
-            <div key={f} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, color: "#B4C1D1", lineHeight: 1.5 }}><span style={{ color: "#C49A3C", fontWeight: 700, flexShrink: 0, marginTop: 1 }}>✓</span>{f}</div>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", background: "rgba(185,23,47,0.15)", borderRadius: 20, border: "1px solid rgba(185,23,47,0.25)", marginBottom: 20 }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2.5"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#f87171", letterSpacing: 0.5 }}>Free Pro Trial</span>
+        </div>
+
+        <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: 28, fontWeight: 800, color: "#fff", marginBottom: 10, lineHeight: 1.2, letterSpacing: -0.5 }}>
+          Do this across your <em style={{ fontStyle: "italic", background: "linear-gradient(135deg, #f87171, #b9172f)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>entire pipeline</em>
+        </h2>
+        <p style={{ fontSize: 15, color: "rgba(255,255,255,0.55)", lineHeight: 1.7, marginBottom: 28, maxWidth: 520 }}>
+          You just saw what Deal Signal can do with one OM. Now imagine it across every deal you touch &mdash; saved, scored, and compared side by side.
+        </p>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 32 }}>
+          {[
+            { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", text: "40 deals/month on Pro" },
+            { icon: "M22 12h-4l-3 9L9 3l-3 9H2", text: "AI scoring & risk ratings" },
+            { icon: "M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7", text: "Interactive property map" },
+            { icon: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z", text: "6-sheet Excel workbooks" },
+            { icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z", text: "Saved history & archives" },
+            { icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0", text: "Shareable client links" },
+          ].map(f => (
+            <div key={f.text} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d={f.icon} /></svg>
+              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>{f.text}</span>
+            </div>
           ))}
         </div>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 20 }}>
-          <span style={{ fontSize: 36, fontWeight: 800, color: "#fff", letterSpacing: -1 }}>$40</span>
-          <span style={{ fontSize: 14, color: "#8899B0" }}>/ month</span>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+          <Link href="/workspace/login" style={{
+            display: "inline-flex", alignItems: "center", gap: 8,
+            padding: "14px 32px", background: "linear-gradient(135deg, #b9172f, #dc3545)",
+            color: "#fff", border: "none", borderRadius: 8, fontSize: 15, fontWeight: 700,
+            textDecoration: "none", cursor: "pointer",
+          }}>
+            Start Free Pro Trial
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+          </Link>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>
+              No credit card required &middot; 2 free analyses
+            </span>
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 2 }}>
+              Then $40/mo for Pro &middot; $100/mo for Pro+
+            </span>
+          </div>
         </div>
-        {!submitted ? (
-          <form onSubmit={handleSubmit} style={{ display: "flex", gap: 10, flexWrap: "wrap", maxWidth: 520 }}>
-            <input name="name" type="text" placeholder="Your name" required style={{ flex: 1, minWidth: 140, padding: "12px 14px", border: "1.5px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", borderRadius: 8, fontSize: 13, color: "#fff", outline: "none", fontFamily: "inherit" }} />
-            <input name="email" type="email" placeholder="Email address" required style={{ flex: 1, minWidth: 140, padding: "12px 14px", border: "1.5px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", borderRadius: 8, fontSize: 13, color: "#fff", outline: "none", fontFamily: "inherit" }} />
-            <button type="submit" style={{ padding: "12px 24px", background: "linear-gradient(135deg, #C49A3C, #A17A2B)", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>Get Early Access</button>
-            <div style={{ width: "100%", fontSize: 11, color: "#5A7091", marginTop: 4 }}>We&apos;ll reach out with access details. No credit card required to start.</div>
-          </form>
-        ) : (
-          <div style={{ padding: "16px 0", color: "#10B981", fontWeight: 600, fontSize: 14 }}>✓ You&apos;re on the list! We&apos;ll be in touch soon with your Pro access.</div>
-        )}
       </div>
     </div>
   );
@@ -1247,7 +1898,7 @@ td{padding:5px 10px;border:1px solid #D8DFE9}
 ${snap.length > 0 ? `<h2>Deal Snapshot</h2><ul>${snap.map(s => `<li>${s}</li>`).join("")}</ul>` : ""}
 
 <h2>Initial Assessment</h2>
-${(d.brief || "No assessment available.").split("\n").map((p: string) => p.trim() ? `<p>${p}</p>` : "").join("")}
+${(typeof d.brief === "string" ? d.brief : Array.isArray(d.brief) ? d.brief.join("\n") : String(d.brief || "No assessment available.")).split("\n").map((p: string) => p.trim() ? `<p>${p}</p>` : "").join("")}
 
 <h2>Key Metrics</h2>
 <table>

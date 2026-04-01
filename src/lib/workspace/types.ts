@@ -1,12 +1,13 @@
 // ===== NNNTripleNet Deal Analyzer - Core Types =====
 
 // --- Enums ---
+export type AnalysisType = "retail" | "industrial" | "office" | "land";
 export type ProjectStatus = "active" | "under_review" | "due_diligence" | "closed" | "passed" | "archived";
 export type AssetType = "retail" | "industrial" | "office" | "medical_office" | "mixed_use" | "restaurant" | "auto" | "bank" | "pharmacy" | "dollar_store" | "convenience" | "other";
 export type DocCategory = "om" | "flyer" | "rent_roll" | "t12" | "underwriting" | "lease" | "market_report" | "site_plan" | "image" | "note" | "misc";
 export type ParserStatus = "uploaded" | "queued" | "classifying" | "parsing" | "parsed" | "needs_review" | "failed";
 export type ModelType = "quick" | "standard" | "advanced" | "scenario";
-export type ScoreBand = "strong_buy" | "buy" | "hold" | "pass" | "strong_pass";
+export type ScoreBand = "strong_buy" | "buy" | "hold" | "pass" | "strong_reject";
 export type NoteType = "general" | "investment_thesis" | "risk" | "next_step" | "reminder";
 export type TaskStatus = "open" | "in_progress" | "blocked" | "complete";
 export type TaskPriority = "low" | "medium" | "high" | "urgent";
@@ -20,6 +21,8 @@ export interface Workspace {
   userId: string;
   name: string;
   slug: string;
+  analysisType: AnalysisType;
+  isDefault?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -99,6 +102,14 @@ export interface Property {
   conditionNotes?: string;
   createdAt: string;
   updatedAt: string;
+  // Multi-asset classification fields
+  detectedType?: AnalysisType | null;
+  analysisType?: AnalysisType;
+  classificationConfidence?: number;
+  classificationReason?: string;
+  isMismatch?: boolean;
+  scoringModelVersion?: string;
+  extractionSchemaVersion?: string;
 }
 
 export interface ProjectDocument {
@@ -239,6 +250,19 @@ export interface Score {
   explanationJson?: Record<string, string>;
   createdAt: string;
   isCurrent: boolean;
+  // New scoring model fields (industrial/office/land)
+  analysisType?: AnalysisType;
+  incomeQualityScore?: number;
+  functionalityScore?: number;
+  occupancyStabilityScore?: number;
+  tenantMixScore?: number;
+  leaseRolloverScore?: number;
+  capitalExposureScore?: number;
+  zoningScore?: number;
+  utilitiesScore?: number;
+  accessScore?: number;
+  categoryScores?: Record<string, number>;
+  categoryWeights?: Record<string, number>;
 }
 
 export interface ProjectOutput {
@@ -309,7 +333,50 @@ export interface ParserRun {
   summaryJson?: Record<string, unknown>;
 }
 
+// --- Feature Flags ---
+export interface FeatureFlags {
+  retailEnabled: boolean;
+  industrialEnabled: boolean;
+  officeEnabled: boolean;
+  landEnabled: boolean;
+}
+
+export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
+  retailEnabled: true,
+  industrialEnabled: true,
+  officeEnabled: true,
+  landEnabled: true,
+};
+
 // --- UI helpers ---
+export const ANALYSIS_TYPE_LABELS: Record<AnalysisType, string> = {
+  retail: "Retail",
+  industrial: "Industrial",
+  office: "Office / Medical Office",
+  land: "Land",
+};
+
+export const ANALYSIS_TYPE_ICONS: Record<AnalysisType, string> = {
+  retail: "🏪",
+  industrial: "🏭",
+  office: "🏢",
+  land: "📍",
+};
+
+export const ANALYSIS_TYPE_COLORS: Record<AnalysisType, string> = {
+  retail: "#10B981",
+  industrial: "#F59E0B",
+  office: "#3B82F6",
+  land: "#8B5CF6",
+};
+
+export const TOP_METRICS: Record<AnalysisType, string[]> = {
+  retail: ["asking_price", "cap_rate", "noi", "occupancy", "tenant_count", "wale", "score"],
+  industrial: ["asking_price", "building_sf", "rent_per_sf", "clear_height", "loading_type", "lease_term", "score"],
+  office: ["asking_price", "building_sf", "occupancy", "rent_per_sf", "tenant_mix", "near_term_rollover", "score"],
+  land: ["asking_price", "land_acres", "price_per_acre", "zoning", "utilities_signal", "access_signal", "score"],
+};
+
 export const ASSET_TYPE_LABELS: Record<AssetType, string> = {
   retail: "Retail",
   industrial: "Industrial",
@@ -348,7 +415,7 @@ export const SCORE_BAND_LABELS: Record<ScoreBand, string> = {
   buy: "Buy",
   hold: "Hold",
   pass: "Pass",
-  strong_pass: "Strong Pass",
+  strong_reject: "Strong Reject",
 };
 
 export const SCORE_BAND_COLORS: Record<ScoreBand, string> = {
@@ -356,7 +423,7 @@ export const SCORE_BAND_COLORS: Record<ScoreBand, string> = {
   buy: "#10B981",
   hold: "#F59E0B",
   pass: "#EF4444",
-  strong_pass: "#991B1B",
+  strong_reject: "#991B1B",
 };
 
 export const DOC_CATEGORY_LABELS: Record<DocCategory, string> = {
@@ -378,7 +445,7 @@ export function getScoreBand(score: number): ScoreBand {
   if (score >= 70) return "buy";
   if (score >= 50) return "hold";
   if (score >= 30) return "pass";
-  return "strong_pass";
+  return "strong_reject";
 }
 
 export function formatCurrency(value: number): string {

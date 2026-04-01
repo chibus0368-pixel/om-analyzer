@@ -9,10 +9,27 @@ import { getWorkspaceProperties, createProperty, createDocument } from "@/lib/wo
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import { extractTextFromFiles } from "@/lib/workspace/file-reader";
 import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
-import type { Property, DocCategory } from "@/lib/workspace/types";
-import { DOC_CATEGORY_LABELS } from "@/lib/workspace/types";
+import type { Property, DocCategory, AnalysisType } from "@/lib/workspace/types";
+import { DOC_CATEGORY_LABELS, ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS, ANALYSIS_TYPE_ICONS } from "@/lib/workspace/types";
+import UpgradeModal from "@/components/billing/UpgradeModal";
 
 const ACCEPTED_EXT = ".pdf,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.webp";
+
+/* ===== DESIGN.md Tokens ===== */
+const C = {
+  primary: "#b9172f",
+  primaryGradient: "linear-gradient(135deg, #b9172f, #dc3545)",
+  onSurface: "#151b2b",
+  secondary: "#585e70",
+  tertiary: "#C49A3C",
+  bg: "#faf8ff",
+  surfLow: "#f2f3ff",
+  surfLowest: "#ffffff",
+  ghost: "rgba(227, 190, 189, 0.15)",
+  shadow: "0 20px 40px rgba(21, 27, 43, 0.06)",
+  shadowDeep: "0 20px 40px rgba(21, 27, 43, 0.12)",
+  radius: 6,
+};
 
 interface FileUpload {
   file: File;
@@ -47,20 +64,20 @@ function derivePropertyName(filename: string): string {
 }
 
 const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "9px 12px", border: "1.5px solid #D8DFE9",
-  borderRadius: 8, fontSize: 13, outline: "none", boxSizing: "border-box", fontFamily: "inherit",
+  width: "100%", padding: "9px 12px", border: `1px solid ${C.ghost}`,
+  borderRadius: C.radius, fontSize: 13, outline: "none", boxSizing: "border-box",
+  fontFamily: "'Inter', sans-serif", background: C.surfLow,
 };
 
 type Step = "upload" | "processing" | "name" | "done";
 
 export default function UploadPage() {
-  const { user } = useAuth();
-  const { activeWorkspace } = useWorkspace();
+  const { user, loading: authLoading } = useAuth();
+  const { activeWorkspace, addWorkspace } = useWorkspace();
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedProperty = searchParams.get("property") || "";
 
-  // State
   const [step, setStep] = useState<Step>(preselectedProperty ? "upload" : "upload");
   const [properties, setProperties] = useState<Property[]>([]);
   const [files, setFiles] = useState<FileUpload[]>([]);
@@ -70,9 +87,12 @@ export default function UploadPage() {
   const [finalPropertyId, setFinalPropertyId] = useState("");
   const [statusMsg, setStatusMsg] = useState("");
   const [parseResult, setParseResult] = useState("");
+  const [showMismatchModal, setShowMismatchModal] = useState(false);
+  const [mismatchInfo, setMismatchInfo] = useState<{ detected: string; workspace: string; propertyId: string } | null>(null);
+  const skipMismatchRef = useRef(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  // Load existing properties for active workspace
   useEffect(() => {
     if (!user || !activeWorkspace) return;
     getWorkspaceProperties(user.uid, activeWorkspace.id).then(setProperties).catch(() => {});
@@ -104,20 +124,43 @@ export default function UploadPage() {
     setFiles(prev => prev.map(f => f.id === id ? { ...f, docCategory: cat } : f));
   }
 
-  // STEP 1 → PROCESSING: Upload files, then auto-parse, then show name step
   async function handleUpload() {
     if (!user || files.length === 0) return;
+
+    // ── Check usage limit before proceeding ──
+    try {
+      const token = await user.getIdToken();
+
+      const usageRes = await fetch("/api/workspace/usage", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (usageRes.ok) {
+        const usageData = await usageRes.json();
+        if (usageData.uploadsUsed >= usageData.uploadLimit) {
+          setShowUpgradeModal(true);
+          return;
+        }
+      } else {
+        // If we can't verify usage, block the upload for safety
+        console.error("[upload] Usage check returned error:", usageRes.status);
+        setStatusMsg("Unable to verify your usage limit. Please try again.");
+        return;
+      }
+    } catch (err) {
+      console.error("[upload] Usage check failed:", err);
+      setStatusMsg("Unable to verify your usage limit. Please try again.");
+      return;
+    }
+
     setStep("processing");
     setStatusMsg("Uploading files...");
 
-    // Auto-derive property name from first file
     const autoName = derivePropertyName(files[0].file.name);
     setPropertyName(autoName);
 
-    // If user pre-selected an existing property, use it
     let propertyId = selectedExistingId;
 
-    // If no existing property selected, create one now with auto-name
     if (!propertyId) {
       try {
         propertyId = await createProperty("workspace-default", {
@@ -134,7 +177,6 @@ export default function UploadPage() {
 
     setFinalPropertyId(propertyId);
 
-    // Upload all files
     const storagePaths: string[] = [];
     for (const fileUpload of files) {
       const { file } = fileUpload;
@@ -191,7 +233,7 @@ export default function UploadPage() {
       try {
         setStatusMsg("Extracting property image...");
         const heroBlob = await extractHeroImageFromPDF(pdfFile.file);
-        if (heroBlob && heroBlob.size > 10000) { // Only save if > 10KB (not a tiny logo)
+        if (heroBlob && heroBlob.size > 10000) {
           const imgRef = ref(storage, `workspace/${user.uid}/${propertyId}/hero.jpg`);
           await uploadBytesResumable(imgRef, heroBlob);
           const imgUrl = await getDownloadURL(imgRef);
@@ -204,84 +246,103 @@ export default function UploadPage() {
       }
     }
 
-    // Auto-parse — extract file text client-side first
+    // ── Extract text client-side (needed before we can hand off to server) ──
     setStatusMsg("Reading file contents...");
+    let extractedText = "";
     try {
-      // Extract actual text from files (SheetJS for Excel, text for CSV/TXT)
-      const extractedText = await extractTextFromFiles(files.map(f => f.file));
-
-      setStatusMsg("Analyzing property data...");
-
-      const res = await fetch("/api/workspace/parse", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          projectId: "workspace-default",
-          propertyId,
-          userId: user.uid,
-          documentText: extractedText,
-        }),
-      });
-      const data = await res.json();
-      if (data.success && data.fieldsExtracted > 0) {
-        setParseResult(`Extracted ${data.fieldsExtracted} fields`);
-        // Auto-name property from parsed data — try multiple paths
-        const p = data.fields?.property || {};
-        const parsedName = p.name || p.property_name
-          || data.fields?.property_basics?.property_name?.value
-          || data.fields?.property?.name?.value;
-        const parsedAddress = p.address
-          || data.fields?.property_basics?.address?.value
-          || data.fields?.property?.address?.value;
-        const parsedCity = p.city
-          || data.fields?.property_basics?.city?.value;
-        const parsedState = p.state
-          || data.fields?.property_basics?.state?.value;
-
-        if (parsedName && parsedName !== "Unknown Property") {
-          const fullName = parsedAddress && parsedAddress !== "Unknown Address"
-            ? `${parsedName} — ${parsedAddress}`
-            : parsedCity && parsedCity !== "Unknown City"
-              ? `${parsedName} — ${parsedCity}, ${parsedState || ""}`
-              : parsedName;
-          setPropertyName(fullName);
-          // Server already updated the property, but update client name too
-          try {
-            const { updateProperty } = await import("@/lib/workspace/firestore");
-            await updateProperty(propertyId, { propertyName: fullName } as any);
-          } catch { /* non-blocking */ }
-        }
-        // Generate output files (CSV underwriting + brief)
-        setStatusMsg("Generating output files...");
-        try {
-          await fetch("/api/workspace/generate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ propertyId, userId: user.uid, parsedData: data.fields }),
-          });
-        } catch { /* non-blocking */ }
-      } else {
-        setParseResult("Files uploaded. Parsing returned limited data — try a different file format.");
-      }
-    } catch (parseErr: any) {
-      setParseResult(`Files uploaded. Parsing issue: ${parseErr?.message || "try again from property page"}`);
+      extractedText = await extractTextFromFiles(files.map(f => f.file));
+    } catch (textErr: any) {
+      console.warn("[upload] Text extraction failed:", textErr);
     }
 
-    // Refresh property name from Firestore (server may have updated it from parsed data)
-    try {
-      const { getProperty } = await import("@/lib/workspace/firestore");
-      const refreshed = await getProperty(propertyId);
-      if (refreshed?.propertyName && !refreshed.propertyName.includes("Unknown")) {
-        setPropertyName(refreshed.propertyName);
-      }
-    } catch { /* non-blocking */ }
+    // ── Classify property type (quick check before server handoff) ──
+    let detectedType = activeWorkspace?.analysisType || "retail";
+    if (extractedText) {
+      try {
+        setStatusMsg("Detecting property type...");
+        const classifyRes = await fetch("/api/workspace/classify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ documentText: extractedText }),
+        });
+        if (classifyRes.ok) {
+          const classifyData = await classifyRes.json();
+          detectedType = classifyData.detected_type || "retail";
+          const classificationConfidence = classifyData.confidence || 0;
 
-    // Notify sidebar to refresh property list
+          if (!skipMismatchRef.current && classificationConfidence >= 0.70 && detectedType !== (activeWorkspace?.analysisType || "retail")) {
+            setMismatchInfo({
+              detected: detectedType,
+              workspace: activeWorkspace?.analysisType || "retail",
+              propertyId,
+            });
+            setShowMismatchModal(true);
+            setStep("upload");
+            return;
+          }
+        }
+      } catch (classifyErr) {
+        console.warn("[upload] Classification failed, proceeding with workspace type:", classifyErr);
+      }
+    }
+
+    // ── Fire server-side processing (parse → generate → score) ──
+    if (extractedText) {
+      setStatusMsg("Analyzing your document — this takes 30-90 seconds...");
+      setParseResult("Running full analysis pipeline (parse → generate → score)...");
+
+      try {
+        const processRes = await fetch("/api/workspace/process", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            propertyId,
+            userId: user.uid,
+            documentText: extractedText,
+            analysisType: detectedType,
+          }),
+        });
+
+        if (processRes.ok) {
+          const processData = await processRes.json();
+          setParseResult(`Analysis complete — ${processData.fieldsExtracted || 0} fields extracted and scored.`);
+        } else {
+          const errData = await processRes.json().catch(() => ({}));
+          console.error("[upload] Process failed:", errData);
+          setParseResult("Analysis encountered an issue. You can re-analyze from the property page.");
+        }
+      } catch (err) {
+        console.error("[upload] Process request failed:", err);
+        setParseResult("Analysis encountered an issue. You can re-analyze from the property page.");
+      }
+    } else {
+      setParseResult("Files uploaded but text extraction was limited. Try re-uploading in a different format.");
+    }
+
     if (typeof window !== "undefined") {
       window.dispatchEvent(new Event("workspace-properties-changed"));
     }
 
-    // If we used an existing property, skip naming and go straight to done
+    // ── Increment usage count after successful upload ──
+    try {
+      const token = await user.getIdToken();
+
+      await fetch("/api/workspace/usage", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({}),
+      });
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("usage-updated"));
+      }
+    } catch (err) {
+      console.warn("[upload] Usage increment failed:", err);
+    }
+
     if (selectedExistingId) {
       setStep("done");
     } else {
@@ -289,84 +350,137 @@ export default function UploadPage() {
     }
   }
 
-  // STEP 2 → Save property name (or use existing)
   async function handleSaveName() {
     if (!finalPropertyId || !propertyName.trim()) return;
-
     try {
-      // Update the property name if user edited it
       const { updateProperty } = await import("@/lib/workspace/firestore");
       await updateProperty(finalPropertyId, { propertyName: propertyName.trim() } as any);
     } catch { /* continue */ }
-
-    // Refresh sidebar
     if (typeof window !== "undefined") {
       window.dispatchEvent(new Event("workspace-properties-changed"));
     }
-
     setStep("done");
   }
 
-  // Switch to existing property instead of auto-created
   async function handleUseExisting(existingId: string) {
     if (!existingId) return;
-
-    // If we already created a new property, delete it
     if (finalPropertyId && finalPropertyId !== existingId) {
       try {
         const { deleteProperty } = await import("@/lib/workspace/firestore");
         await deleteProperty(finalPropertyId, "workspace-default");
       } catch { /* continue */ }
     }
-
-    // Move documents to the existing property
-    // (In practice, docs are already created with the old propertyId —
-    //  for simplicity we'll just update the finalPropertyId and let the user know)
     setFinalPropertyId(existingId);
     setStep("done");
   }
 
   const hasFiles = files.length > 0;
 
+  async function handleMismatchContinue() {
+    if (!mismatchInfo) return;
+    try {
+      const { updateProperty } = await import("@/lib/workspace/firestore");
+      await updateProperty(mismatchInfo.propertyId, { isMismatch: true } as any);
+      setShowMismatchModal(false);
+      setMismatchInfo(null);
+      skipMismatchRef.current = true;
+      setSelectedExistingId(mismatchInfo.propertyId);
+      setStep("processing");
+      handleUpload();
+    } catch (err) {
+      console.error("[upload] Failed to mark property as mismatch:", err);
+    }
+  }
+
+  async function handleMismatchCreateWorkspace() {
+    if (!mismatchInfo || !activeWorkspace) return;
+    try {
+      const newWsName = `${ANALYSIS_TYPE_LABELS[mismatchInfo.detected as any]} Workspace`;
+      const newWs = await addWorkspace(newWsName, mismatchInfo.detected as any);
+      console.log("[upload] Created new workspace:", newWs);
+      const { updateProperty } = await import("@/lib/workspace/firestore");
+      await updateProperty(mismatchInfo.propertyId, { workspaceId: newWs.id } as any);
+      setShowMismatchModal(false);
+      setMismatchInfo(null);
+      router.push(`/workspace/properties/${mismatchInfo.propertyId}`);
+    } catch (err) {
+      console.error("[upload] Failed to create workspace:", err);
+      alert("Failed to create workspace");
+    }
+  }
+
   return (
     <div style={{ maxWidth: 680, margin: "0 auto" }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 6px" }}>Upload Property{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}</h1>
-      <p style={{ fontSize: 13, color: "#5A7091", marginBottom: 20, lineHeight: 1.5 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Playfair Display', Georgia, serif" }}>
+          Upload Property{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}
+        </h1>
+        {activeWorkspace?.analysisType && (
+          <span style={{
+            display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: C.radius,
+            background: `${ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType]}15`,
+            color: ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType],
+            fontSize: 11, fontWeight: 600, letterSpacing: 0.3,
+          }}>
+            {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}
+          </span>
+        )}
+      </div>
+      <p style={{ fontSize: 14, color: C.secondary, marginBottom: 20, lineHeight: 1.5, fontFamily: "'Inter', sans-serif" }}>
         One property at a time. A single OM is enough to get started — you can always add more files later.
       </p>
 
       {/* ===== STEP 1: Upload Files ===== */}
       {step === "upload" && (
         <>
-          {/* If adding to existing property, show which one */}
           {selectedExistingId && (
-            <div style={{ background: "#D1FAE5", padding: "10px 14px", borderRadius: 8, marginBottom: 14, fontSize: 13, color: "#0A7E5A", fontWeight: 500 }}>
+            <div style={{ background: "#D1FAE5", padding: "10px 14px", borderRadius: C.radius, marginBottom: 14, fontSize: 13, color: "#0A7E5A", fontWeight: 500 }}>
               Adding files to: {properties.find(p => p.id === selectedExistingId)?.propertyName || "Selected property"}
             </div>
           )}
 
-          {/* Drop zone */}
+          {/* Drop zone — matches landing page upload card */}
           <div
             onDragOver={e => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
             onDragLeave={e => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
             onDrop={handleDrop}
             onClick={() => fileRef.current?.click()}
             style={{
-              border: `2px dashed ${isDragging ? "#C49A3C" : "#D8DFE9"}`,
-              borderRadius: 10, padding: hasFiles ? "20px 16px" : "48px 16px", textAlign: "center",
-              cursor: "pointer", background: isDragging ? "#FFF9EE" : "#FAFBFC", transition: "all 0.15s",
+              background: C.surfLowest,
+              borderRadius: C.radius,
+              padding: hasFiles ? "24px 20px" : "48px 20px",
+              textAlign: "center",
+              cursor: "pointer",
+              boxShadow: isDragging ? C.shadowDeep : C.shadow,
+              border: `2px dashed ${isDragging ? C.primary : "#D8DFE9"}`,
+              transition: "all 0.2s",
               marginBottom: 14,
             }}
           >
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#B4C1D1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 8 }}>
-              <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            <p style={{ fontSize: 15, fontWeight: 600, color: "#253352", margin: "0 0 4px" }}>
-              {isDragging ? "Drop files here" : "Drop your OM or flyer here, or click to browse"}
+            {/* Building icon — same as landing page */}
+            <div style={{
+              width: 56, height: 56, borderRadius: "50%", background: "rgba(185, 23, 47, 0.08)",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
+            }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9v.01M9 12v.01M9 15v.01M9 18v.01" />
+              </svg>
+            </div>
+            <p style={{ fontSize: 16, fontWeight: 600, color: C.onSurface, margin: "0 0 6px", fontFamily: "'Inter', sans-serif" }}>
+              {isDragging ? "Drop files here" : "Drop your OM or flyer here"}
             </p>
-            <p style={{ fontSize: 12, color: "#B4C1D1", margin: 0 }}>
-              PDF, DOCX, XLS, XLSX, CSV, PNG, JPG, TXT
+            <p style={{ fontSize: 13, color: C.secondary, margin: "0 0 16px" }}>
+              PDF, Excel, or CSV accepted (Max 50MB)
             </p>
+            {!hasFiles && (
+              <button onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }} style={{
+                padding: "12px 32px", background: C.onSurface, color: "#fff", border: "none",
+                borderRadius: C.radius, fontSize: 14, fontWeight: 600, cursor: "pointer",
+                fontFamily: "'Inter', sans-serif",
+              }}>
+                Select File from Local
+              </button>
+            )}
             <input ref={fileRef} type="file" multiple accept={ACCEPTED_EXT} style={{ display: "none" }}
               onChange={e => { if (e.target.files) addFiles(e.target.files); e.target.value = ""; }} />
           </div>
@@ -374,29 +488,29 @@ export default function UploadPage() {
           {/* File list */}
           {hasFiles && (
             <>
-              <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EDF0F5", overflow: "hidden", marginBottom: 16 }}>
-                <div style={{ padding: "10px 16px", borderBottom: "1px solid #EDF0F5", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "#5A7091" }}>{files.length} file{files.length !== 1 ? "s" : ""} ready</span>
-                  <button onClick={() => setFiles([])} style={{ fontSize: 11, color: "#C52D3A", background: "none", border: "none", cursor: "pointer" }}>Clear</button>
+              <div style={{ background: C.surfLowest, borderRadius: C.radius, boxShadow: C.shadow, overflow: "hidden", marginBottom: 16 }}>
+                <div style={{ padding: "10px 16px", borderBottom: `1px solid ${C.ghost}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: C.secondary }}>{files.length} file{files.length !== 1 ? "s" : ""} ready</span>
+                  <button onClick={() => setFiles([])} style={{ fontSize: 11, color: C.primary, background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}>Clear</button>
                 </div>
                 {files.map(f => (
-                  <div key={f.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 16px", borderBottom: "1px solid #F6F8FB", fontSize: 12 }}>
-                    <span style={{ padding: "1px 5px", background: "#EDF0F5", borderRadius: 3, fontSize: 9, fontWeight: 700, color: "#5A7091", textTransform: "uppercase", flexShrink: 0 }}>
+                  <div key={f.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 16px", borderBottom: `1px solid ${C.ghost}`, fontSize: 12 }}>
+                    <span style={{ padding: "1px 5px", background: C.surfLow, borderRadius: 3, fontSize: 9, fontWeight: 700, color: C.secondary, textTransform: "uppercase", flexShrink: 0 }}>
                       {f.file.name.split(".").pop()}
                     </span>
-                    <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>{f.file.name}</span>
+                    <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500, color: C.onSurface }}>{f.file.name}</span>
                     <select value={f.docCategory || ""} onChange={e => setCat(f.id, e.target.value as DocCategory)}
-                      style={{ padding: "3px 6px", border: "1px solid #D8DFE9", borderRadius: 4, fontSize: 10, fontFamily: "inherit", width: 130, flexShrink: 0 }}>
+                      style={{ padding: "3px 6px", border: `1px solid ${C.ghost}`, borderRadius: 4, fontSize: 10, fontFamily: "'Inter', sans-serif", width: 130, flexShrink: 0, background: C.surfLow }}>
                       {Object.entries(DOC_CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </select>
-                    <button onClick={() => removeFile(f.id)} style={{ background: "none", border: "none", color: "#B4C1D1", cursor: "pointer", fontSize: 14, flexShrink: 0, padding: 0 }}>&times;</button>
+                    <button onClick={() => removeFile(f.id)} style={{ background: "none", border: "none", color: C.secondary, cursor: "pointer", fontSize: 14, flexShrink: 0, padding: 0 }}>&times;</button>
                   </div>
                 ))}
               </div>
 
               <button onClick={handleUpload} className="ws-btn-red" style={{
-                padding: "11px 32px", background: "#DC2626", color: "#fff", border: "none",
-                borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", width: "100%",
+                padding: "12px 32px", background: C.primaryGradient, color: "#fff", border: "none",
+                borderRadius: C.radius, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Inter', sans-serif", width: "100%",
               }}>
                 Upload &amp; Analyze
               </button>
@@ -404,22 +518,22 @@ export default function UploadPage() {
           )}
 
           {/* ===== Explanatory Section ===== */}
-          <div style={{ marginTop: 28, borderTop: "1px solid #EDF0F5", paddingTop: 20 }}>
-            <div style={{ fontSize: 12, color: "#8899B0", lineHeight: 1.7 }}>
-              <strong style={{ color: "#5A7091" }}>One property at a time.</strong> Upload all files for a single property, then come back for the next one. One complete OM is enough to get started — add rent rolls, T-12s, or leases later.
+          <div style={{ marginTop: 28, paddingTop: 20 }}>
+            <div style={{ fontSize: 13, color: C.secondary, lineHeight: 1.7, fontFamily: "'Inter', sans-serif" }}>
+              <strong style={{ color: C.onSurface }}>One property at a time.</strong> Upload all files for a single property, then come back for the next one. One complete OM is enough to get started — add rent rolls, T-12s, or leases later.
             </div>
 
             <div style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 6 }}>
               {["PDF", "XLS/XLSX", "DOCX", "CSV", "TXT", "PNG", "JPG"].map(ext => (
                 <span key={ext} style={{
-                  padding: "3px 8px", background: (ext === "PDF" || ext === "XLS/XLSX") ? "#C49A3C" : "#EDF0F5",
-                  color: (ext === "PDF" || ext === "XLS/XLSX") ? "#fff" : "#5A7091",
+                  padding: "3px 8px", background: (ext === "PDF" || ext === "XLS/XLSX") ? C.primary : C.surfLow,
+                  color: (ext === "PDF" || ext === "XLS/XLSX") ? "#fff" : C.secondary,
                   borderRadius: 4, fontSize: 10, fontWeight: 600,
                 }}>
                   {ext}
                 </span>
               ))}
-              <span style={{ fontSize: 11, color: "#B4C1D1", alignSelf: "center", marginLeft: 4 }}>Best results with PDFs and Excel files</span>
+              <span style={{ fontSize: 11, color: C.secondary, alignSelf: "center", marginLeft: 4 }}>Best results with PDFs and Excel files</span>
             </div>
 
             {/* Bulk upload link */}
@@ -427,18 +541,18 @@ export default function UploadPage() {
               href="/workspace/upload/bulk"
               style={{
                 display: "flex", alignItems: "center", gap: 8, marginTop: 20, padding: "12px 16px",
-                background: "#FAFBFC", borderRadius: 8, border: "1px solid #EDF0F5", textDecoration: "none",
-                color: "#5A7091", fontSize: 12, transition: "all 0.15s",
+                background: C.surfLow, borderRadius: C.radius, border: `1px solid ${C.ghost}`, textDecoration: "none",
+                color: C.secondary, fontSize: 12, transition: "all 0.15s",
               }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C49A3C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.tertiary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v-2" />
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                 <line x1="12" y1="2" x2="12" y2="6" />
                 <line x1="12" y1="18" x2="12" y2="22" />
               </svg>
               <div>
-                <div style={{ fontWeight: 600, color: "#253352", marginBottom: 1 }}>Have multiple properties?</div>
+                <div style={{ fontWeight: 600, color: C.onSurface, marginBottom: 1 }}>Have multiple properties?</div>
                 <div>Bulk upload up to 10 OMs at once &rarr;</div>
               </div>
             </a>
@@ -448,11 +562,10 @@ export default function UploadPage() {
 
       {/* ===== PROCESSING ===== */}
       {step === "processing" && (
-        <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EDF0F5", padding: 28 }}>
+        <div style={{ background: C.surfLowest, borderRadius: C.radius, boxShadow: C.shadow, padding: 28 }}>
           <style>{`@keyframes spin { to { transform: rotate(360deg) } }
             @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.5 } }`}</style>
 
-          {/* Stage progress */}
           <div style={{ display: "flex", gap: 0, marginBottom: 24 }}>
             {[
               { label: "Upload", iconPath: "M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12", done: statusMsg !== "Uploading files..." },
@@ -467,21 +580,21 @@ export default function UploadPage() {
                   <div style={{
                     width: 36, height: 36, borderRadius: "50%", margin: "0 auto 6px",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    background: stage.done ? "#D1FAE5" : isCurrent ? "#DBEAFE" : "#F6F8FB",
-                    border: isCurrent ? "2px solid #2563EB" : "2px solid transparent",
+                    background: stage.done ? "#D1FAE5" : isCurrent ? "rgba(185, 23, 47, 0.08)" : C.surfLow,
+                    border: isCurrent ? `2px solid ${C.primary}` : "2px solid transparent",
                     animation: isCurrent ? "pulse 1.5s ease-in-out infinite" : "none",
                   }}>
                     {stage.done ? (
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>
                     ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={isCurrent ? "#2563EB" : "#B4C1D1"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d={stage.iconPath} /></svg>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={isCurrent ? C.primary : C.secondary} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d={stage.iconPath} /></svg>
                     )}
                   </div>
-                  <div style={{ fontSize: 10, fontWeight: 600, color: stage.done ? "#059669" : isCurrent ? "#2563EB" : "#B4C1D1" }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, color: stage.done ? "#059669" : isCurrent ? C.primary : C.secondary }}>
                     {stage.label}
                   </div>
                   {i < arr.length - 1 && (
-                    <div style={{ position: "relative", top: -26, left: "50%", width: "100%", height: 2, background: stage.done ? "#10B981" : "#EDF0F5" }} />
+                    <div style={{ position: "relative", top: -26, left: "50%", width: "100%", height: 2, background: stage.done ? "#10B981" : C.surfLow }} />
                   )}
                 </div>
               );
@@ -489,34 +602,34 @@ export default function UploadPage() {
           </div>
 
           <div style={{ textAlign: "center" }}>
-            <p style={{ fontSize: 14, fontWeight: 600, color: "#253352", margin: "0 0 4px" }}>{statusMsg}</p>
-            <p style={{ fontSize: 12, color: "#8899B0", margin: "0 0 4px" }}>
-              {statusMsg.includes("Analyzing") ? "AI is extracting property data and calculating underwriting (30-60 seconds)" :
+            <p style={{ fontSize: 14, fontWeight: 600, color: C.onSurface, margin: "0 0 4px" }}>{statusMsg}</p>
+            <p style={{ fontSize: 12, color: C.secondary, margin: "0 0 4px" }}>
+              {statusMsg.includes("safely navigate") ? "AI analysis, scoring, and output generation are running on the server." :
+               statusMsg.includes("Analyzing") ? "AI is extracting property data and calculating underwriting (30-60 seconds)" :
                statusMsg.includes("Reading") ? "Extracting text from your document (5-15 seconds)" :
                statusMsg.includes("image") ? "Capturing property image from PDF (5 seconds)" :
-               statusMsg.includes("Generating") ? "Creating output files (5 seconds)" :
+               statusMsg.includes("Detecting") ? "Classifying property type..." :
                "Processing your files..."}
             </p>
-            <p style={{ fontSize: 11, color: "#B4C1D1", margin: 0 }}>
-              You can leave this page — processing will continue in the background.
+            <p style={{ fontSize: 11, fontWeight: 600, color: "#059669", margin: 0 }}>
+              You can safely navigate away — processing continues in the background.
             </p>
           </div>
 
-          {/* File list */}
           <div style={{ marginTop: 16, textAlign: "left" }}>
             {files.map(f => (
               <div key={f.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0", fontSize: 12 }}>
-                <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#5A7091" }}>{f.file.name}</span>
+                <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: C.secondary }}>{f.file.name}</span>
                 {f.status === "uploading" && (
                   <div style={{ width: 60, flexShrink: 0 }}>
-                    <div style={{ height: 3, background: "#EDF0F5", borderRadius: 2, overflow: "hidden" }}>
-                      <div style={{ height: "100%", background: "#C49A3C", width: `${f.progress}%`, transition: "width 0.3s" }} />
+                    <div style={{ height: 3, background: C.surfLow, borderRadius: 2, overflow: "hidden" }}>
+                      <div style={{ height: "100%", background: C.primary, width: `${f.progress}%`, transition: "width 0.3s" }} />
                     </div>
                   </div>
                 )}
                 {f.status === "complete" && <span style={{ color: "#10B981", fontSize: 13, flexShrink: 0 }}>{"\u2713"}</span>}
-                {f.status === "error" && <span style={{ color: "#C52D3A", fontSize: 10, flexShrink: 0 }}>failed</span>}
-                {f.status === "pending" && <span style={{ color: "#B4C1D1", fontSize: 10, flexShrink: 0 }}>waiting</span>}
+                {f.status === "error" && <span style={{ color: C.primary, fontSize: 10, flexShrink: 0 }}>failed</span>}
+                {f.status === "pending" && <span style={{ color: C.secondary, fontSize: 10, flexShrink: 0 }}>waiting</span>}
               </div>
             ))}
           </div>
@@ -525,8 +638,7 @@ export default function UploadPage() {
 
       {/* ===== STEP 2: Name Property ===== */}
       {step === "name" && (
-        <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EDF0F5", padding: 24 }}>
-          {/* Success indicator */}
+        <div style={{ background: C.surfLowest, borderRadius: C.radius, boxShadow: C.shadow, padding: 24 }}>
           <div style={{ textAlign: "center", marginBottom: 20 }}>
             <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#D1FAE5", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 8 }}>
               {"\u2713"}
@@ -534,12 +646,11 @@ export default function UploadPage() {
             <p style={{ fontSize: 14, fontWeight: 600, color: "#0A7E5A", margin: "0 0 4px" }}>
               {files.length} file{files.length !== 1 ? "s" : ""} uploaded and analyzed
             </p>
-            {parseResult && <p style={{ fontSize: 12, color: "#5A7091", margin: 0 }}>{parseResult}</p>}
+            {parseResult && <p style={{ fontSize: 12, color: C.secondary, margin: 0 }}>{parseResult}</p>}
           </div>
 
-          {/* Property name */}
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#253352", marginBottom: 6 }}>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: C.onSurface, marginBottom: 6 }}>
               Property Name
             </label>
             <input
@@ -549,15 +660,14 @@ export default function UploadPage() {
               placeholder="Enter property name"
               autoFocus
             />
-            <p style={{ fontSize: 11, color: "#8899B0", margin: "6px 0 0" }}>
+            <p style={{ fontSize: 11, color: C.secondary, margin: "6px 0 0" }}>
               Auto-generated from your file. Edit if needed.
             </p>
           </div>
 
-          {/* Option to use existing property instead */}
           {properties.length > 0 && (
-            <div style={{ borderTop: "1px solid #EDF0F5", paddingTop: 14, marginBottom: 16 }}>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#5A7091", marginBottom: 6 }}>
+            <div style={{ borderTop: `1px solid ${C.ghost}`, paddingTop: 14, marginBottom: 16 }}>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.secondary, marginBottom: 6 }}>
                 Or add files to an existing property
               </label>
               <select
@@ -575,11 +685,10 @@ export default function UploadPage() {
             </div>
           )}
 
-          {/* Save */}
           <button onClick={handleSaveName} disabled={!propertyName.trim()} className="ws-btn-red" style={{
-            padding: "11px 0", background: "#DC2626", color: "#fff", border: "none",
-            borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: propertyName.trim() ? "pointer" : "not-allowed",
-            opacity: propertyName.trim() ? 1 : 0.4, fontFamily: "inherit", width: "100%",
+            padding: "12px 0", background: C.primaryGradient, color: "#fff", border: "none",
+            borderRadius: C.radius, fontSize: 14, fontWeight: 700, cursor: propertyName.trim() ? "pointer" : "not-allowed",
+            opacity: propertyName.trim() ? 1 : 0.4, fontFamily: "'Inter', sans-serif", width: "100%",
           }}>
             Save Property
           </button>
@@ -588,38 +697,77 @@ export default function UploadPage() {
 
       {/* ===== DONE ===== */}
       {step === "done" && (
-        <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EDF0F5", padding: 32, textAlign: "center" }}>
+        <div style={{ background: C.surfLowest, borderRadius: C.radius, boxShadow: C.shadow, padding: 32, textAlign: "center" }}>
           <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#D1FAE5", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 24, marginBottom: 12 }}>
             {"\u2713"}
           </div>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0B1120", margin: "0 0 6px" }}>Property saved</h2>
-          <p style={{ fontSize: 13, color: "#5A7091", margin: "0 0 4px" }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: C.onSurface, margin: "0 0 6px", fontFamily: "'Playfair Display', Georgia, serif" }}>Property saved</h2>
+          <p style={{ fontSize: 13, color: C.secondary, margin: "0 0 4px" }}>
             {files.length} file{files.length !== 1 ? "s" : ""} uploaded and analyzed.
           </p>
-          {parseResult && <p style={{ fontSize: 12, color: "#8899B0", margin: "0 0 20px" }}>{parseResult}</p>}
+          {parseResult && <p style={{ fontSize: 12, color: C.secondary, margin: "0 0 20px", opacity: 0.7 }}>{parseResult}</p>}
 
           <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
             <button onClick={() => router.push(`/workspace/properties/${finalPropertyId}`)} style={{
-              padding: "10px 24px", background: "#2563EB", color: "#fff", border: "none",
-              borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+              padding: "10px 24px", background: C.primaryGradient, color: "#fff", border: "none",
+              borderRadius: C.radius, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Inter', sans-serif",
             }}>
               View Property
             </button>
             <button onClick={() => {
               setFiles([]); setPropertyName(""); setSelectedExistingId("");
               setFinalPropertyId(""); setStatusMsg(""); setParseResult("");
+              skipMismatchRef.current = false;
               setStep("upload");
-              // Refresh properties list
               if (user && activeWorkspace) getWorkspaceProperties(user.uid, activeWorkspace.id).then(setProperties).catch(() => {});
             }} style={{
-              padding: "10px 24px", background: "#fff", border: "1.5px solid #D8DFE9",
-              borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+              padding: "10px 24px", background: C.surfLowest, border: `1px solid ${C.ghost}`,
+              borderRadius: C.radius, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif",
+              color: C.onSurface,
             }}>
               Upload Another
             </button>
           </div>
         </div>
       )}
+
+      {/* Mismatch Warning Modal */}
+      {showMismatchModal && mismatchInfo && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex",
+          alignItems: "center", justifyContent: "center", zIndex: 200,
+        }} onClick={() => { setShowMismatchModal(false); setMismatchInfo(null); }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: C.surfLowest, borderRadius: 12, padding: "28px 32px", width: 420,
+            boxShadow: C.shadowDeep,
+          }}>
+            <h3 style={{ margin: "0 0 12px", fontSize: 16, fontWeight: 700, color: C.onSurface }}>Property Type Mismatch</h3>
+            <p style={{ margin: "0 0 16px", fontSize: 13, color: C.secondary, lineHeight: 1.5 }}>
+              This looks like a <strong>{ANALYSIS_TYPE_LABELS[mismatchInfo.detected as AnalysisType]}</strong> deal. You are currently in a <strong>{ANALYSIS_TYPE_LABELS[mismatchInfo.workspace as AnalysisType]}</strong> workspace, which uses different metrics and scoring.
+            </p>
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              <button onClick={() => handleMismatchContinue()} style={{
+                padding: "8px 16px", background: C.surfLow, border: `1px solid ${C.ghost}`,
+                borderRadius: C.radius, fontSize: 13, cursor: "pointer", color: C.secondary, fontFamily: "'Inter', sans-serif", fontWeight: 500,
+              }}>
+                Continue Anyway
+              </button>
+              <button onClick={() => handleMismatchCreateWorkspace()} className="ws-btn-gold" style={{
+                padding: "8px 20px", background: C.primaryGradient, color: "#fff", border: "none",
+                borderRadius: C.radius, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif",
+              }}>
+                Create New {ANALYSIS_TYPE_LABELS[mismatchInfo.detected as AnalysisType]} Workspace
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        open={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        reason="limit_reached"
+      />
     </div>
   );
 }

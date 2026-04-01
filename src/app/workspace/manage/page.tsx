@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
+import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
 
 export default function ManageWorkspacesPage() {
   const router = useRouter();
@@ -52,7 +53,19 @@ export default function ManageWorkspacesPage() {
     <div style={{ maxWidth: 720, margin: "0 auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#0B1120" }}>Manage Workspaces</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#0B1120" }}>Manage Workspaces</h1>
+            {activeWorkspace?.analysisType && (
+              <span style={{
+                display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 4,
+                background: `${ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType]}15`,
+                color: ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType],
+                fontSize: 11, fontWeight: 600, letterSpacing: 0.3,
+              }}>
+                {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}
+              </span>
+            )}
+          </div>
           <p style={{ margin: "4px 0 0", fontSize: 13, color: "#5A7091" }}>Add, rename, clear data, or delete workspaces.</p>
         </div>
         <button

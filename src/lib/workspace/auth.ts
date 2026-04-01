@@ -1,19 +1,55 @@
-// Temporary mock auth for workspace — bypasses Firebase Auth
-// TODO: Re-enable real auth when Firebase Auth is configured for custom domain
+"use client";
 
-const MOCK_USER = {
-  uid: "admin-user",
-  email: "admin@nnntriplenet.com",
-  displayName: "Admin",
-  emailVerified: true,
-};
+import { useState, useEffect } from "react";
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  type User,
+} from "firebase/auth";
+import { getAuthInstance } from "@/lib/firebase";
 
-export function useWorkspaceAuth() {
+interface WorkspaceAuthState {
+  user: User | null;
+  isAdmin: boolean;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+}
+
+/**
+ * Real Firebase Auth hook for workspace pages.
+ * Returns the current Firebase user (or null if not logged in).
+ * `loading` is true while Firebase Auth is initializing.
+ */
+export function useWorkspaceAuth(): WorkspaceAuthState {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const auth = getAuthInstance();
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  async function signIn(email: string, password: string) {
+    const auth = getAuthInstance();
+    await signInWithEmailAndPassword(auth, email, password);
+  }
+
+  async function signOut() {
+    const auth = getAuthInstance();
+    await firebaseSignOut(auth);
+  }
+
   return {
-    user: MOCK_USER as any,
-    isAdmin: true,
-    loading: false,
-    signIn: async () => {},
-    signOut: async () => {},
+    user,
+    isAdmin: false, // Admin check can be added later if needed
+    loading,
+    signIn,
+    signOut,
   };
 }

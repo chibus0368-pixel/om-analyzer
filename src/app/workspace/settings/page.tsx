@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useWorkspace } from "@/lib/workspace/workspace-context";
 import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
+import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "9px 12px", border: "1.5px solid #D8DFE9",
@@ -13,37 +15,70 @@ const cardStyle: React.CSSProperties = {
 };
 
 export default function SettingsPage() {
+  const { activeWorkspace } = useWorkspace();
   const { user } = useAuth();
   const [defaults, setDefaults] = useState({
     ltv: 65, interestRate: 6.5, amortYears: 25, holdYears: 10,
     exitCap: 7.0, vacancy: 5, rentGrowth: 2.5, expenseGrowth: 3.0,
   });
   const [saved, setSaved] = useState(false);
+  const [rescoring, setRescoring] = useState(false);
+  const [rescoreStatus, setRescoreStatus] = useState("");
 
-  function handleSave() {
+  async function handleSave() {
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+
+    // Re-score all properties in this workspace after saving assumptions
+    if (!user || !activeWorkspace) return;
+    setRescoring(true);
+    setRescoreStatus("Re-scoring properties with updated assumptions...");
+    try {
+      const { collection, query, where, getDocs } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      const snap = await getDocs(query(
+        collection(db, "workspace_properties"),
+        where("userId", "==", user.uid),
+        where("workspaceId", "==", activeWorkspace.id),
+      ));
+      const properties = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      let scored = 0;
+      const analysisType = activeWorkspace.analysisType || "retail";
+      for (const prop of properties) {
+        try {
+          await fetch("/api/workspace/score", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ propertyId: prop.id, userId: user.uid, analysisType }),
+          });
+          scored++;
+          setRescoreStatus(`Re-scored ${scored} / ${properties.length} properties...`);
+        } catch { /* continue */ }
+      }
+      setRescoreStatus(`Done — ${scored} ${scored === 1 ? "property" : "properties"} re-scored.`);
+    } catch (err) {
+      setRescoreStatus("Could not re-score. Scores will update on next analysis.");
+    }
+    setRescoring(false);
+    setTimeout(() => setRescoreStatus(""), 5000);
   }
 
   return (
     <div style={{ maxWidth: 800, margin: "0 auto" }}>
-      <h1 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 8px" }}>Settings</h1>
-      <p style={{ fontSize: 14, color: "#5A7091", marginBottom: 24 }}>Configure your workspace preferences and default assumptions.</p>
-
-      {/* Profile */}
-      <div style={{ ...cardStyle, marginBottom: 20 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 16px" }}>Profile</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: "#253352", display: "block", marginBottom: 5 }}>Email</label>
-            <input style={inputStyle} value={user?.email || ""} disabled />
-          </div>
-          <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: "#253352", display: "block", marginBottom: 5 }}>Display Name</label>
-            <input style={inputStyle} defaultValue={user?.displayName || ""} placeholder="Your name" />
-          </div>
-        </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Settings</h1>
+        {activeWorkspace?.analysisType && (
+          <span style={{
+            display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 4,
+            background: `${ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType]}15`,
+            color: ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType],
+            fontSize: 11, fontWeight: 600, letterSpacing: 0.3,
+          }}>
+            {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}
+          </span>
+        )}
       </div>
+      <p style={{ fontSize: 14, color: "#5A7091", marginBottom: 24 }}>Configure your workspace preferences and default assumptions.</p>
 
       {/* Default Underwriting Assumptions */}
       <div style={{ ...cardStyle, marginBottom: 20 }}>
@@ -89,11 +124,31 @@ export default function SettingsPage() {
 
       <button
         onClick={handleSave}
+        disabled={rescoring}
         className="ws-btn-red"
-        style={{ padding: "10px 28px", background: saved ? "#10B981" : "#DC2626", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer", transition: "background 0.3s" }}
+        style={{ padding: "10px 28px", background: saved ? "#10B981" : rescoring ? "#585e70" : "#DC2626", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: rescoring ? "not-allowed" : "pointer", transition: "background 0.3s" }}
       >
-        {saved ? "Saved!" : "Save Settings"}
+        {saved ? "Saved!" : rescoring ? "Re-scoring..." : "Save Settings"}
       </button>
+
+      {rescoreStatus && (
+        <div style={{
+          marginTop: 12, padding: "10px 16px", borderRadius: 8,
+          background: rescoring ? "#f2f3ff" : "#ECFDF5",
+          border: `1px solid ${rescoring ? "rgba(185, 23, 47, 0.15)" : "rgba(5, 150, 105, 0.2)"}`,
+          fontSize: 13, fontWeight: 600,
+          color: rescoring ? "#b9172f" : "#059669",
+          display: "flex", alignItems: "center", gap: 8,
+        }}>
+          {rescoring && (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+              style={{ animation: "spin 0.8s linear infinite", flexShrink: 0 }}>
+              <path d="M21 12a9 9 0 11-6.219-8.56" />
+            </svg>
+          )}
+          {rescoreStatus}
+        </div>
+      )}
     </div>
   );
 }

@@ -48,12 +48,12 @@ export default function ComparePage() {
     { label: "Equity Multiple", get: (p: EnrichedProject) => p.snapshot?.equityMultiple ? p.snapshot.equityMultiple.toFixed(2) + "x" : "--" },
   ];
 
-  if (loading) return <div style={{ padding: 40, textAlign: "center", color: "#5A7091" }}>Loading...</div>;
+  if (loading) return <div style={{ padding: 40, textAlign: "center", color: "#585e70" }}>Loading...</div>;
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto" }}>
       <h1 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 8px" }}>Compare Deals</h1>
-      <p style={{ fontSize: 14, color: "#5A7091", marginBottom: 20 }}>Select up to 5 projects to compare side by side.</p>
+      <p style={{ fontSize: 14, color: "#585e70", marginBottom: 20 }}>Select up to 5 projects to compare side by side.</p>
 
       {/* Selector */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
@@ -63,9 +63,9 @@ export default function ComparePage() {
             onClick={() => toggle(p.id)}
             style={{
               padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600,
-              border: selected.includes(p.id) ? "2px solid #C49A3C" : "1.5px solid #D8DFE9",
+              border: selected.includes(p.id) ? "2px solid #C49A3C" : "1px solid rgba(227, 190, 189, 0.15)",
               background: selected.includes(p.id) ? "#FFF9EE" : "#fff",
-              color: selected.includes(p.id) ? "#C49A3C" : "#5A7091",
+              color: selected.includes(p.id) ? "#C49A3C" : "#585e70",
               cursor: "pointer",
             }}
           >
@@ -76,11 +76,11 @@ export default function ComparePage() {
 
       {/* Comparison Table */}
       {compared.length >= 2 ? (
-        <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #EDF0F5", overflow: "auto" }}>
+        <div style={{ background: "#fff", borderRadius: 12, border: "1px solid rgba(227, 190, 189, 0.15)", overflow: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
-              <tr style={{ background: "#F6F8FB" }}>
-                <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 600, color: "#5A7091", minWidth: 140 }}>Metric</th>
+              <tr style={{ background: "#f2f3ff" }}>
+                <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 600, color: "#585e70", minWidth: 140 }}>Metric</th>
                 {compared.map(p => (
                   <th key={p.id} style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, minWidth: 160 }}>
                     {p.projectName}
@@ -90,8 +90,8 @@ export default function ComparePage() {
             </thead>
             <tbody>
               {rows.map(row => (
-                <tr key={row.label} style={{ borderBottom: "1px solid #F6F8FB" }}>
-                  <td style={{ padding: "10px 16px", fontWeight: 600, color: "#5A7091" }}>{row.label}</td>
+                <tr key={row.label} style={{ borderBottom: "1px solid rgba(227, 190, 189, 0.15)" }}>
+                  <td style={{ padding: "10px 16px", fontWeight: 600, color: "#585e70" }}>{row.label}</td>
                   {compared.map(p => (
                     <td key={p.id} style={{ padding: "10px 16px", textAlign: "center", fontWeight: 500 }}>{row.get(p)}</td>
                   ))}
@@ -101,7 +101,7 @@ export default function ComparePage() {
           </table>
         </div>
       ) : (
-        <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #EDF0F5", padding: 48, textAlign: "center", color: "#8899B0" }}>
+        <div style={{ background: "#fff", borderRadius: 12, border: "1px solid rgba(227, 190, 189, 0.15)", padding: 48, textAlign: "center", color: "#585e70" }}>
           Select at least 2 projects above to compare.
         </div>
       )}

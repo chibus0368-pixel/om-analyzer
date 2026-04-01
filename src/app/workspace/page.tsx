@@ -4,10 +4,12 @@ import { useEffect, useState, useRef } from "react";
 import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
 import { getWorkspaceProperties, getProjectDocuments, deleteProperty } from "@/lib/workspace/firestore";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
-import { collection, query, where, getDocs, writeBatch } from "firebase/firestore";
+import { collection, query, where, getDocs, writeBatch, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { Property, ProjectDocument } from "@/lib/workspace/types";
+import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 function ClearAllButton({ onClear, workspaceId, workspaceName }: { onClear: () => void; workspaceId: string; workspaceName: string }) {
   const [clearing, setClearing] = useState(false);
@@ -15,7 +17,6 @@ function ClearAllButton({ onClear, workspaceId, workspaceName }: { onClear: () =
     if (!confirm(`⚠️ This will delete all properties and data in "${workspaceName}".\n\nThis cannot be undone. Continue?`)) return;
     if (!confirm(`Final confirmation: Delete all properties in "${workspaceName}"?`)) return;
     setClearing(true);
-    // Delete only properties (and related data) belonging to this workspace
     const collections = [
       "workspace_properties", "workspace_projects", "workspace_documents",
       "workspace_extracted_fields", "workspace_underwriting_models",
@@ -23,30 +24,24 @@ function ClearAllButton({ onClear, workspaceId, workspaceName }: { onClear: () =
       "workspace_property_snapshots", "workspace_outputs", "workspace_notes",
       "workspace_tasks", "workspace_activity_logs", "workspace_parser_runs",
     ];
-    // First get all property IDs in this workspace
     try {
-      // Get properties assigned to this workspace, plus any unmigrated ones (userId match, no workspaceId)
       const propSnap = await getDocs(query(collection(db, "workspace_properties"), where("workspaceId", "==", workspaceId)));
       const allUserSnap = await getDocs(query(collection(db, "workspace_properties"), where("userId", "==", "admin-user")));
       const unmigratedDocs = allUserSnap.docs.filter(d => !d.data().workspaceId);
       const allDocs = [...propSnap.docs, ...unmigratedDocs];
-      // Deduplicate
       const seenIds = new Set<string>();
       const dedupedDocs = allDocs.filter(d => { if (seenIds.has(d.id)) return false; seenIds.add(d.id); return true; });
       const propIds = dedupedDocs.map(d => d.id);
       const projectIds = dedupedDocs.map(d => d.data().projectId).filter(Boolean);
 
-      // Delete properties
       for (let i = 0; i < dedupedDocs.length; i += 450) {
         const batch = writeBatch(db);
         dedupedDocs.slice(i, i + 450).forEach(d => batch.delete(d.ref));
         await batch.commit();
       }
 
-      // Delete related data by propertyId or projectId
       for (const coll of collections.filter(c => c !== "workspace_properties")) {
         try {
-          // Try by propertyId
           for (const pid of propIds) {
             const snap = await getDocs(query(collection(db, coll), where("propertyId", "==", pid)));
             for (let i = 0; i < snap.docs.length; i += 450) {
@@ -55,7 +50,6 @@ function ClearAllButton({ onClear, workspaceId, workspaceName }: { onClear: () =
               await batch.commit();
             }
           }
-          // Try by projectId
           for (const pid of projectIds) {
             const snap = await getDocs(query(collection(db, coll), where("projectId", "==", pid)));
             for (let i = 0; i < snap.docs.length; i += 450) {
@@ -72,7 +66,7 @@ function ClearAllButton({ onClear, workspaceId, workspaceName }: { onClear: () =
   }
   return (
     <button onClick={handleClear} disabled={clearing} style={{
-      padding: "6px 14px", background: "#FDE8EA", color: "#C52D3A", border: "1px solid #C52D3A",
+      padding: "6px 14px", background: "rgba(185, 23, 47, 0.08)", color: "#b9172f", border: "1px solid #b9172f",
       borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: clearing ? "not-allowed" : "pointer", fontFamily: "inherit",
     }}>
       {clearing ? "Clearing..." : "Clear All Data"}
@@ -80,303 +74,304 @@ function ClearAllButton({ onClear, workspaceId, workspaceName }: { onClear: () =
   );
 }
 
-function PropertyMap({ properties }: { properties: Property[] }) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
+/* ========== Property Card ========== */
+function PropertyCard({ property, docCount }: { property: Property; docCount: number }) {
+  const router = useRouter();
+  const status = (property as any).parseStatus || "pending";
+  const score = (property as any).scoreTotal;
+  const scoreBand = (property as any).scoreBand;
+  const heroUrl = (property as any).heroImageUrl;
+  const location = [property.city, property.state].filter(Boolean).join(", ");
 
-  useEffect(() => {
-    if (!mapRef.current || properties.length === 0) return;
-
-    // Load Leaflet CSS
-    if (!document.querySelector('link[href*="leaflet"]')) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-      document.head.appendChild(link);
-    }
-
-    // Load Leaflet JS
-    const loadLeaflet = () => new Promise<any>((resolve) => {
-      if ((window as any).L) return resolve((window as any).L);
-      const script = document.createElement("script");
-      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-      script.onload = () => resolve((window as any).L);
-      document.head.appendChild(script);
-    });
-
-    async function initMap() {
-      const L = await loadLeaflet();
-      if (!mapRef.current || mapLoaded) return;
-
-      // Create map centered on Wisconsin
-      const map = L.map(mapRef.current).setView([43.0, -88.5], 9);
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 18,
-      }).addTo(map);
-
-      // Geocode each property and add markers
-      const bounds: any[] = [];
-      for (const prop of properties) {
-        const addr = [prop.address1, prop.city, prop.state].filter(Boolean).join(", ");
-        if (!addr || addr === ", ") continue;
-
-        try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}&limit=1`, {
-            headers: { "User-Agent": "NNNTripleNet-DealAnalyzer/1.0" },
-          });
-          const data = await res.json();
-          if (data && data[0]) {
-            const lat = parseFloat(data[0].lat);
-            const lng = parseFloat(data[0].lon);
-            bounds.push([lat, lng]);
-
-            const status = (prop as any).parseStatus || "pending";
-            const color = status === "parsed" ? "#10B981" : "#F59E0B";
-
-            const icon = L.divIcon({
-              html: `<div style="width:28px;height:28px;border-radius:50%;background:${color};border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">$</div>`,
-              className: "",
-              iconSize: [28, 28],
-              iconAnchor: [14, 14],
-            });
-
-            const marker = L.marker([lat, lng], { icon }).addTo(map);
-            marker.bindPopup(`
-              <div style="min-width:180px;font-family:Inter,sans-serif;">
-                <div style="font-weight:700;font-size:13px;margin-bottom:4px;">${prop.propertyName}</div>
-                <div style="font-size:11px;color:#5A7091;margin-bottom:8px;">${addr}</div>
-                <a href="/workspace/properties/${prop.id}" style="display:inline-block;padding:4px 12px;background:#DC2626;color:#fff;border-radius:4px;text-decoration:none;font-size:11px;font-weight:600;">View Property</a>
-              </div>
-            `);
-          }
-        } catch {
-          // Geocoding failed for this property — skip
-        }
-      }
-
-      // Fit map to show all markers
-      if (bounds.length > 0) {
-        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 13 });
-      }
-
-      setMapLoaded(true);
-    }
-
-    initMap();
-  }, [properties, mapLoaded]);
+  const bandColors: Record<string, { bg: string; text: string; label: string }> = {
+    strong_buy: { bg: "#D1FAE5", text: "#059669", label: "Strong Buy" },
+    buy: { bg: "#D1FAE5", text: "#0A7E5A", label: "Buy" },
+    hold: { bg: "#FEF3C7", text: "#D97706", label: "Hold" },
+    pass: { bg: "#FDE8EA", text: "#DC2626", label: "Pass" },
+    strong_reject: { bg: "#FDE8EA", text: "#991B1B", label: "Strong Reject" },
+  };
+  const band = bandColors[scoreBand] || null;
 
   return (
-    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #EDF0F5", overflow: "hidden", marginBottom: 24 }}>
-      <div style={{ padding: "12px 20px", borderBottom: "1px solid #EDF0F5", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>Property Map</h2>
-        <span style={{ fontSize: 11, color: "#8899B0" }}>{properties.length} properties</span>
+    <div
+      onClick={() => router.push(`/workspace/properties/${property.id}`)}
+      style={{
+        background: "#fff", borderRadius: 12, border: "1px solid rgba(227, 190, 189, 0.15)",
+        overflow: "hidden", cursor: "pointer", transition: "box-shadow 0.15s, transform 0.15s",
+        display: "flex", flexDirection: "column",
+      }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "none"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
+    >
+      {/* Hero / Thumbnail */}
+      <div style={{
+        height: 140, background: "linear-gradient(135deg, #1a2744, #151b2b)",
+        overflow: "hidden", position: "relative",
+      }}>
+        {heroUrl ? (
+          <img src={heroUrl} alt={property.propertyName}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center" }}
+          />
+        ) : (
+          <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 32 }}>📍</span>
+          </div>
+        )}
+        {/* Status badge */}
+        <span style={{
+          position: "absolute", top: 8, left: 8,
+          padding: "3px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700,
+          color: status === "parsed" ? "#0A7E5A" : "#92400E",
+          background: status === "parsed" ? "rgba(209,250,229,0.9)" : "rgba(254,243,199,0.9)",
+          backdropFilter: "blur(4px)",
+        }}>
+          {status === "parsed" ? "Analyzed" : "Pending"}
+        </span>
+        {/* Score badge */}
+        {score != null && (
+          <span style={{
+            position: "absolute", top: 8, right: 8,
+            padding: "3px 10px", borderRadius: 6, fontSize: 12, fontWeight: 800,
+            color: "#fff", background: "rgba(11,17,32,0.75)", backdropFilter: "blur(4px)",
+          }}>
+            {Math.round(score)}/100
+          </span>
+        )}
       </div>
-      <div ref={mapRef} style={{ height: 320, width: "100%" }} />
+
+      {/* Card body */}
+      <div style={{ padding: "14px 16px", flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "#151b2b", lineHeight: 1.3, fontFamily: "'Playfair Display', Georgia, serif" }}>
+          {property.propertyName}
+        </div>
+        {location && (
+          <div style={{ fontSize: 12, color: "#585e70" }}>{location}</div>
+        )}
+        <div style={{ marginTop: "auto", paddingTop: 8, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontSize: 11, color: "#585e70" }}>
+            {docCount} file{docCount !== 1 ? "s" : ""}
+          </span>
+          {band && (
+            <span style={{
+              padding: "2px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700,
+              color: band.text, background: band.bg,
+            }}>
+              {band.label}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Delete */}
+      <div style={{ padding: "0 16px 10px", display: "flex", justifyContent: "flex-end" }}>
+        <button
+          onClick={async (e) => {
+            e.stopPropagation();
+            if (!confirm(`Delete "${property.propertyName}"? This cannot be undone.`)) return;
+            const btn = e.currentTarget;
+            btn.disabled = true;
+            btn.textContent = "Deleting...";
+            btn.style.opacity = "0.5";
+            try {
+              await deleteProperty(property.id, property.projectId || "workspace-default");
+              // Remove card visually before reload
+              const card = btn.closest("[data-property-card]") as HTMLElement;
+              if (card) { card.style.opacity = "0"; card.style.transform = "scale(0.95)"; card.style.transition = "all 0.3s ease"; }
+              window.dispatchEvent(new Event("workspace-properties-changed"));
+              setTimeout(() => window.location.reload(), 300);
+            } catch (err) {
+              console.error("[delete] Failed:", err);
+              btn.disabled = false;
+              btn.textContent = "Delete";
+              btn.style.opacity = "1";
+              alert("Failed to delete. Please try again.");
+            }
+          }}
+          style={{ background: "none", border: "none", color: "#C5CBD6", cursor: "pointer", fontSize: 11, padding: "2px 6px", transition: "opacity 0.2s" }}
+          title="Delete property"
+        >
+          Delete
+        </button>
+      </div>
     </div>
   );
 }
 
+/* ========== Upload Drop Zone ========== */
+/* ========== Editable Workspace Title ========== */
+function EditableWorkspaceTitle({ name, workspaceId }: { name: string; workspaceId: string }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(name);
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => { setValue(name); }, [name]);
+  useEffect(() => { if (editing && inputRef.current) inputRef.current.focus(); }, [editing]);
+
+  async function save() {
+    const trimmed = value.trim();
+    if (!trimmed || trimmed === name || !workspaceId) { setEditing(false); setValue(name); return; }
+    try {
+      await updateDoc(doc(db, "workspaces", workspaceId), { name: trimmed });
+      window.location.reload();
+    } catch { setValue(name); }
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <input ref={inputRef} value={value}
+        onChange={e => setValue(e.target.value)}
+        onBlur={save}
+        onKeyDown={e => { if (e.key === "Enter") save(); if (e.key === "Escape") { setEditing(false); setValue(name); } }}
+        style={{
+          fontSize: 22, fontWeight: 700, color: "#151b2b", background: "#f2f3ff",
+          border: "1px solid rgba(227, 190, 189, 0.15)", borderRadius: 8, padding: "2px 10px",
+          margin: 0, lineHeight: 1.2, outline: "none",
+          fontFamily: "'Playfair Display', Georgia, serif", minWidth: 200,
+        }}
+      />
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={() => setEditing(true)}>
+      <h1 style={{ fontSize: 22, fontWeight: 700, color: "#151b2b", margin: 0, fontFamily: "'Playfair Display', Georgia, serif" }}>
+        {name}
+      </h1>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#585e70" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4, flexShrink: 0 }}>
+        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+      </svg>
+    </div>
+  );
+}
+
+/* ========== Main Dashboard ========== */
 export default function WorkspaceDashboard() {
   const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
+  const router = useRouter();
   const [properties, setProperties] = useState<Property[]>([]);
-  const [documents, setDocuments] = useState<ProjectDocument[]>([]);
+  const [docCounts, setDocCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user || !activeWorkspace) return;
     setLoading(true);
-    Promise.all([
-      getWorkspaceProperties(user.uid, activeWorkspace.id),
-    ]).then(async ([props]) => {
+    getWorkspaceProperties(user.uid, activeWorkspace.id).then(async (props) => {
       setProperties(props);
-      // Load all documents for all properties
-      try {
-        const allDocs: ProjectDocument[] = [];
-        for (const prop of props) {
+      const counts: Record<string, number> = {};
+      for (const prop of props) {
+        try {
           const docs = await getProjectDocuments(prop.projectId, prop.id);
-          allDocs.push(...docs);
+          counts[prop.id] = docs.length;
+        } catch {
+          counts[prop.id] = 0;
         }
-        setDocuments(allDocs);
-      } catch {
-        // ignore
       }
+      setDocCounts(counts);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [user, activeWorkspace]);
 
-  const parsed = properties.filter(p => (p as any).parseStatus === "parsed");
-  const pending = properties.filter(p => (p as any).parseStatus === "pending");
-
-  const kpis = [
-    { label: "Total Properties", value: properties.length, color: "#2563EB" },
-    { label: "Total Files", value: documents.length, color: "#10B981" },
-    { label: "Properties Parsed", value: parsed.length, color: "#059669" },
-    { label: "Properties Pending", value: pending.length, color: "#F59E0B" },
-  ];
-
   if (loading) {
-    return <div style={{ padding: 40, textAlign: "center", color: "#5A7091" }}>Loading dashboard...</div>;
+    return <div style={{ padding: 40, textAlign: "center", color: "#585e70" }}>Loading dashboard...</div>;
   }
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto" }}>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: "#0B1120", margin: 0 }}>Dashboard{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}</h1>
-          <p style={{ fontSize: 14, color: "#5A7091", marginTop: 4 }}>Your deal workspace at a glance</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <EditableWorkspaceTitle
+              name={activeWorkspace?.name || "Dashboard"}
+              workspaceId={activeWorkspace?.id || ""}
+            />
+            {activeWorkspace?.analysisType && (
+              <span style={{
+                display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 4,
+                background: `${ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType]}15`,
+                color: ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType],
+                fontSize: 11, fontWeight: 600, letterSpacing: 0.3,
+              }}>
+                {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}
+              </span>
+            )}
+          </div>
+          <p style={{ fontSize: 13, color: "#585e70", marginTop: 2 }}>
+            {properties.length} {properties.length === 1 ? "property" : "properties"}
+          </p>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
-          <Link href="/workspace/upload" className="ws-btn-secondary" style={{ padding: "8px 18px", background: "#fff", border: "1.5px solid #D8DFE9", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#253352", textDecoration: "none", cursor: "pointer" }}>
-            Add Property
+          <Link href="/workspace/upload" style={{
+            padding: "8px 18px", background: "linear-gradient(135deg, #b9172f, #dc3545)", border: "none", borderRadius: 6,
+            fontSize: 13, fontWeight: 600, color: "#fff", textDecoration: "none",
+          }}>
+            + Add Property
           </Link>
-          <Link href="/workspace/scoreboard" className="ws-btn-red" style={{ padding: "8px 18px", background: "#DC2626", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#fff", textDecoration: "none", cursor: "pointer" }}>
-            View Scoreboard
-          </Link>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 28 }}>
-        {kpis.map(kpi => (
-          <div key={kpi.label} style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", border: "1px solid #EDF0F5" }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "#5A7091", textTransform: "uppercase", letterSpacing: "0.5px" }}>{kpi.label}</div>
-            <div style={{ fontSize: 32, fontWeight: 700, color: kpi.color, marginTop: 4 }}>{kpi.value}</div>
+      {/* Property Cards Grid */}
+      {properties.length === 0 ? (
+        <div
+          onClick={() => router.push("/workspace/upload")}
+          onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
+          onDrop={e => { e.preventDefault(); e.stopPropagation(); router.push("/workspace/upload"); }}
+          style={{
+            background: "#fff", borderRadius: 6, border: "2px dashed #D8DFE9",
+            padding: "48px 20px", textAlign: "center", cursor: "pointer",
+            boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)",
+            transition: "all 0.2s",
+          }}
+        >
+          <div style={{
+            width: 56, height: 56, borderRadius: "50%", background: "rgba(185, 23, 47, 0.08)",
+            display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
+          }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9v.01M9 12v.01M9 15v.01M9 18v.01" />
+            </svg>
           </div>
-        ))}
-      </div>
-
-      {/* Content Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 24 }}>
-        {/* Properties List */}
-        <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #EDF0F5", overflow: "hidden" }}>
-          <div style={{ padding: "16px 20px", borderBottom: "1px solid #EDF0F5" }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>Properties ({properties.length})</h2>
-          </div>
-          {properties.length === 0 ? (
-            <div style={{ padding: 40, textAlign: "center", color: "#8899B0" }}>
-              <p style={{ fontSize: 14 }}>No properties yet. Start by adding your first property.</p>
-              <Link href="/workspace/upload" className="ws-btn-red" style={{ display: "inline-block", marginTop: 12, padding: "8px 20px", background: "#DC2626", color: "#fff", borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
-                + Add Property
-              </Link>
-            </div>
-          ) : (
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-              <thead>
-                <tr style={{ background: "#F6F8FB" }}>
-                  <th style={{ padding: "10px 16px", textAlign: "left", fontWeight: 600, color: "#5A7091" }}>Property</th>
-                  <th style={{ padding: "10px 16px", textAlign: "left", fontWeight: 600, color: "#5A7091" }}>Location</th>
-                  <th style={{ padding: "10px 16px", textAlign: "left", fontWeight: 600, color: "#5A7091" }}>Files</th>
-                  <th style={{ padding: "10px 16px", textAlign: "left", fontWeight: 600, color: "#5A7091" }}>Status</th>
-                  <th style={{ padding: "10px 8px", width: 40 }}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {properties.map(p => {
-                  const propDocs = documents.filter(d => d.propertyId === p.id);
-                  const status = (p as any).parseStatus || "pending";
-                  return (
-                    <tr key={p.id} style={{ borderBottom: "1px solid #EDF0F5", cursor: "pointer" }} onClick={() => window.location.href = `/workspace/properties/${p.id}`}>
-                      <td style={{ padding: "12px 16px" }}>
-                        <div style={{ fontWeight: 600, color: "#0B1120" }}>{p.propertyName}</div>
-                      </td>
-                      <td style={{ padding: "12px 16px", color: "#5A7091" }}>
-                        {[p.city, p.state].filter(Boolean).join(", ") || "--"}
-                      </td>
-                      <td style={{ padding: "12px 16px", fontWeight: 600, color: "#0B1120" }}>
-                        {propDocs.length}
-                      </td>
-                      <td style={{ padding: "12px 16px" }}>
-                        <span style={{
-                          display: "inline-block", padding: "3px 10px", borderRadius: 10,
-                          fontSize: 11, fontWeight: 600,
-                          color: status === "parsed" ? "#0A7E5A" : "#F59E0B",
-                          background: status === "parsed" ? "#D1FAE5" : "#FFFBF0",
-                        }}>
-                          {status === "parsed" ? "Parsed" : "Pending"}
-                        </span>
-                      </td>
-                      <td style={{ padding: "12px 8px" }}>
-                        <button
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            if (confirm(`Delete "${p.propertyName}"?`)) {
-                              await deleteProperty(p.id, p.projectId || "workspace-default");
-                              window.location.reload();
-                            }
-                          }}
-                          style={{ background: "none", border: "none", color: "#B4C1D1", cursor: "pointer", fontSize: 16, padding: "2px 6px" }}
-                          title="Delete property"
-                        >
-                          &times;
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
+          <p style={{ fontSize: 16, fontWeight: 600, color: "#151b2b", margin: "0 0 6px", fontFamily: "'Inter', sans-serif" }}>
+            Drop your OM or flyer here
+          </p>
+          <p style={{ fontSize: 13, color: "#585e70", margin: "0 0 16px" }}>
+            PDF, Excel, or CSV accepted (Max 50MB)
+          </p>
+          <button onClick={e => { e.stopPropagation(); router.push("/workspace/upload"); }} style={{
+            padding: "12px 32px", background: "#151b2b", color: "#fff", border: "none",
+            borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: "pointer",
+            fontFamily: "'Inter', sans-serif",
+          }}>
+            Select File from Local
+          </button>
         </div>
-
-        {/* Right Panel */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          {/* Stats */}
-          <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #EDF0F5", padding: 20 }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 14px" }}>Workspace Stats</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {[
-                { label: "Total Properties", value: properties.length, color: "#2563EB" },
-                { label: "Total Files", value: documents.length, color: "#10B981" },
-                { label: "Parsed", value: parsed.length, color: "#059669" },
-                { label: "Pending", value: pending.length, color: "#F59E0B" },
-              ].map(s => (
-                <div key={s.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 12, color: "#5A7091", fontWeight: 500 }}>{s.label}</span>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: s.color }}>{s.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #EDF0F5", padding: 20 }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 14px" }}>Quick Actions</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {[
-                { href: "/workspace/upload", label: "Add Property", icon: "+" },
-                { href: "/workspace/scoreboard", label: "View Scoreboard", icon: "\u2261" },
-                { href: "/workspace/settings", label: "Settings", icon: "\u2699" },
-              ].map(a => (
-                <Link
-                  key={a.href}
-                  href={a.href}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
-                    background: "#F6F8FB", borderRadius: 8, textDecoration: "none",
-                    color: "#253352", fontSize: 13, fontWeight: 500,
-                  }}
-                >
-                  <span style={{ width: 28, height: 28, borderRadius: 6, background: "#EDF0F5", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 16 }}>
-                    {a.icon}
-                  </span>
-                  {a.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          {/* Danger Zone */}
-          <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #FDE8EA", padding: 20 }}>
-            <h2 style={{ fontSize: 13, fontWeight: 700, margin: "0 0 10px", color: "#C52D3A" }}>Clear Workspace</h2>
-            <p style={{ fontSize: 12, color: "#5A7091", margin: "0 0 10px" }}>Delete all properties and data in &ldquo;{activeWorkspace?.name}&rdquo;. Cannot be undone.</p>
-            <ClearAllButton onClear={() => window.location.reload()} workspaceId={activeWorkspace?.id || ""} workspaceName={activeWorkspace?.name || "this workspace"} />
-          </div>
+      ) : (
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+          gap: 16, marginBottom: 24,
+        }}>
+          {properties.map(p => (
+            <PropertyCard key={p.id} property={p} docCount={docCounts[p.id] || 0} />
+          ))}
         </div>
-      </div>
+      )}
+
+      {/* Danger Zone — collapsed */}
+      {properties.length > 0 && (
+        <div style={{
+          background: "#fff", borderRadius: 10, border: "1px solid rgba(227, 190, 189, 0.15)",
+          padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          <div>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#b9172f" }}>Clear Workspace</span>
+            <span style={{ fontSize: 11, color: "#585e70", marginLeft: 8 }}>Delete all properties in &ldquo;{activeWorkspace?.name}&rdquo;</span>
+          </div>
+          <ClearAllButton onClear={() => window.location.reload()} workspaceId={activeWorkspace?.id || ""} workspaceName={activeWorkspace?.name || "this workspace"} />
+        </div>
+      )}
     </div>
   );
 }

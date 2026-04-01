@@ -5,6 +5,7 @@ import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
 import { getWorkspaceProperties, getPropertyExtractedFields, updateProperty } from "@/lib/workspace/firestore";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import type { Property, ExtractedField } from "@/lib/workspace/types";
+import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
 
 function gf(fields: ExtractedField[], group: string, name: string): any {
   const f = fields.find(x => x.fieldGroup === group && x.fieldName === name);
@@ -224,18 +225,18 @@ export default function MapPage() {
 
           const popupHtml = `
             <div style="min-width:220px;font-family:Inter,system-ui,sans-serif;padding:4px 0;">
-              <div style="font-weight:700;font-size:14px;margin-bottom:2px;color:#0B1120;">${prop.propertyName}</div>
-              <div style="font-size:11px;color:#5A7091;margin-bottom:10px;">${addrForPopup}</div>
+              <div style="font-weight:700;font-size:14px;margin-bottom:2px;color:#151b2b;">${prop.propertyName}</div>
+              <div style="font-size:11px;color:#585e70;margin-bottom:10px;">${addrForPopup}</div>
               ${price || capRate || gla ? `
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
-                  ${price ? `<div><div style="font-size:9px;color:#8899B0;text-transform:uppercase;font-weight:600;">Price</div><div style="font-size:13px;font-weight:700;">${fmt$(price)}</div></div>` : ""}
-                  ${capRate ? `<div><div style="font-size:9px;color:#8899B0;text-transform:uppercase;font-weight:600;">Cap Rate</div><div style="font-size:13px;font-weight:700;">${Number(capRate).toFixed(2)}%</div></div>` : ""}
-                  ${gla ? `<div><div style="font-size:9px;color:#8899B0;text-transform:uppercase;font-weight:600;">GLA</div><div style="font-size:13px;font-weight:700;">${Math.round(Number(gla)).toLocaleString()} SF</div></div>` : ""}
-                  ${noi ? `<div><div style="font-size:9px;color:#8899B0;text-transform:uppercase;font-weight:600;">NOI</div><div style="font-size:13px;font-weight:700;">${fmt$(noi)}</div></div>` : ""}
+                  ${price ? `<div><div style="font-size:9px;color:#585e70;text-transform:uppercase;font-weight:600;">Price</div><div style="font-size:13px;font-weight:700;">${fmt$(price)}</div></div>` : ""}
+                  ${capRate ? `<div><div style="font-size:9px;color:#585e70;text-transform:uppercase;font-weight:600;">Cap Rate</div><div style="font-size:13px;font-weight:700;">${Number(capRate).toFixed(2)}%</div></div>` : ""}
+                  ${gla ? `<div><div style="font-size:9px;color:#585e70;text-transform:uppercase;font-weight:600;">GLA</div><div style="font-size:13px;font-weight:700;">${Math.round(Number(gla)).toLocaleString()} SF</div></div>` : ""}
+                  ${noi ? `<div><div style="font-size:9px;color:#585e70;text-transform:uppercase;font-weight:600;">NOI</div><div style="font-size:13px;font-weight:700;">${fmt$(noi)}</div></div>` : ""}
                 </div>
               ` : ""}
-              ${signal ? `<div style="font-size:11px;margin-bottom:8px;color:#253352;">${signal}</div>` : ""}
-              <a href="/workspace/properties/${prop.id}" style="display:inline-block;padding:6px 16px;background:#DC2626;color:#fff;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600;">View Property</a>
+              ${signal ? `<div style="font-size:11px;margin-bottom:8px;color:#151b2b;">${signal}</div>` : ""}
+              <a href="/workspace/properties/${prop.id}" style="display:inline-block;padding:6px 16px;background:#b9172f;color:#fff;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600;">View Property</a>
             </div>
           `;
 
@@ -260,10 +261,22 @@ export default function MapPage() {
 
   return (
     <div style={{ height: "calc(100vh - 88px)", display: "flex", flexDirection: "column" }}>
-      <div style={{ padding: "12px 20px", background: "#fff", borderBottom: "1px solid #EDF0F5", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ padding: "12px 20px", background: "#fff", borderBottom: "1px solid rgba(227, 190, 189, 0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Property Map{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}</h1>
-          <p style={{ fontSize: 12, color: "#8899B0", margin: "2px 0 0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Property Map{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}</h1>
+            {activeWorkspace?.analysisType && (
+              <span style={{
+                display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 4,
+                background: `${ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType]}15`,
+                color: ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType],
+                fontSize: 11, fontWeight: 600, letterSpacing: 0.3,
+              }}>
+                {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}
+              </span>
+            )}
+          </div>
+          <p style={{ fontSize: 12, color: "#585e70", margin: "2px 0 0" }}>
             {plotting
               ? `Plotting properties... (${plotted}/${properties.length}${failed > 0 ? `, ${failed} failed` : ""})`
               : properties.length > 0

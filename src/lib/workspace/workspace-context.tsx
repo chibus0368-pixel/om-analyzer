@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import type { Workspace } from "./types";
+import type { Workspace, AnalysisType } from "./types";
 import { toSlug } from "./types";
 
 /**
@@ -16,7 +16,7 @@ interface WorkspaceContextValue {
   activeWorkspace: Workspace | null;
   loading: boolean;
   switchWorkspace: (id: string) => void;
-  addWorkspace: (name: string) => Promise<Workspace>;
+  addWorkspace: (name: string, analysisType?: AnalysisType) => Promise<Workspace>;
   renameWorkspace: (id: string, newName: string) => void;
   deleteWorkspace: (id: string) => void;
   clearWorkspaceData: (id: string) => Promise<void>;
@@ -47,13 +47,20 @@ function generateId(): string {
   return "ws_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
-/** Ensure every workspace has a slug (migration for pre-slug workspaces) */
+/** Ensure every workspace has a slug and analysisType (migration for pre-slug/pre-analysisType workspaces) */
 function ensureSlugs(workspaces: Workspace[]): Workspace[] {
   let changed = false;
   const slugged = workspaces.map(ws => {
-    if (ws.slug) return ws;
-    changed = true;
-    return { ...ws, slug: ws.id === DEFAULT_WS_ID ? "default" : toSlug(ws.name) };
+    const updated = { ...ws };
+    if (!ws.slug) {
+      changed = true;
+      updated.slug = ws.id === DEFAULT_WS_ID ? "default" : toSlug(ws.name);
+    }
+    if (!ws.analysisType) {
+      changed = true;
+      updated.analysisType = "retail";
+    }
+    return updated;
   });
   // Deduplicate slugs by appending index
   const seen = new Map<string, number>();
@@ -82,6 +89,7 @@ function getStoredWorkspaces(): Workspace[] {
     userId: "",
     name: "Default Workspace",
     slug: "default",
+    analysisType: "retail",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -99,43 +107,49 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Synchronous lazy initializers — read localStorage on first render so
-  // the active workspace is correct before any useEffect fires.
-  const [workspaces, setWorkspaces] = useState<Workspace[]>(() => {
-    if (typeof window === "undefined") return [];
-    const all = getStoredWorkspaces();
-    return all.map(ws => ({ ...ws, userId }));
-  });
+  // SSR-safe initialization — start with empty defaults to avoid hydration mismatch,
+  // then hydrate from localStorage in useEffect below.
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true); // true until first client-side hydration
+  const [mounted, setMounted] = useState(false);
 
-  const [activeId, setActiveId] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    const all = getStoredWorkspaces();
-
-    // Check URL for ?ws= slug first (deep-link)
-    const urlSlug = new URLSearchParams(window.location.search).get("ws");
-    if (urlSlug) {
-      const match = all.find(ws => ws.slug === urlSlug || ws.id === urlSlug);
-      if (match) {
-        localStorage.setItem(ACTIVE_WS_KEY, match.id);
-        return match.id;
-      }
-    }
-
-    // Fall back to localStorage
-    const savedId = localStorage.getItem(ACTIVE_WS_KEY);
-    const valid = savedId && all.some(ws => ws.id === savedId);
-    return valid ? savedId! : all[0]?.id || DEFAULT_WS_ID;
-  });
-
-  const [loading, setLoading] = useState(false);
-
-  // Keep workspaces in sync if userId changes (rare)
+  // Hydrate from localStorage on mount (client-only, after hydration)
   useEffect(() => {
     const all = getStoredWorkspaces();
     const withUser = all.map(ws => ({ ...ws, userId }));
     setWorkspaces(withUser);
     saveWorkspaces(withUser);
-  }, [userId]);
+
+    // Determine active workspace: URL ?ws= slug > localStorage > first workspace
+    const urlSlug = new URLSearchParams(window.location.search).get("ws");
+    let resolvedId: string = all[0]?.id || DEFAULT_WS_ID;
+
+    if (urlSlug) {
+      const match = all.find(ws => ws.slug === urlSlug || ws.id === urlSlug);
+      if (match) {
+        localStorage.setItem(ACTIVE_WS_KEY, match.id);
+        resolvedId = match.id;
+      }
+    } else {
+      const savedId = localStorage.getItem(ACTIVE_WS_KEY);
+      const valid = savedId && all.some(ws => ws.id === savedId);
+      if (valid) resolvedId = savedId!;
+    }
+
+    setActiveId(resolvedId);
+    setLoading(false);
+    setMounted(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep workspaces in sync if userId changes (rare)
+  useEffect(() => {
+    if (!mounted) return;
+    const all = getStoredWorkspaces();
+    const withUser = all.map(ws => ({ ...ws, userId }));
+    setWorkspaces(withUser);
+    saveWorkspaces(withUser);
+  }, [userId, mounted]);
 
   // Sync URL ?ws= param when workspace changes
   const activeWorkspace = workspaces.find(ws => ws.id === activeId) || null;
@@ -143,6 +157,8 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
 
   useEffect(() => {
     if (!activeWorkspace?.slug) return;
+    // Skip ws param sync on login page — login doesn't need workspace context in URL
+    if (pathname === "/workspace/login") return;
     const currentSlug = searchParams.get("ws");
     if (currentSlug !== activeWorkspace.slug) {
       isUrlSyncRef.current = true; // flag so URL watcher skips this update
@@ -175,7 +191,7 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
     window.dispatchEvent(new Event("workspace-changed"));
   }, []);
 
-  const addWorkspace = useCallback(async (name: string): Promise<Workspace> => {
+  const addWorkspace = useCallback(async (name: string, analysisType: AnalysisType = "retail"): Promise<Workspace> => {
     const id = generateId();
     const slug = toSlug(name);
     const ws: Workspace = {
@@ -183,6 +199,7 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
       userId,
       name,
       slug,
+      analysisType,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

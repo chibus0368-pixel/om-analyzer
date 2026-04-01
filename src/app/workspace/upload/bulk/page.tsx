@@ -9,6 +9,7 @@ import { createProperty, createDocument } from "@/lib/workspace/firestore";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import { extractTextFromFiles } from "@/lib/workspace/file-reader";
 import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
+import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS, ANALYSIS_TYPE_ICONS } from "@/lib/workspace/types";
 
 const ACCEPTED_EXT = ".pdf,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.webp";
 const MAX_PROPERTIES = 10;
@@ -226,9 +227,21 @@ export default function BulkUploadPage() {
           Single Upload
         </a>
       </div>
-      <h1 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 6px" }}>
-        Bulk Upload{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}
-      </h1>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>
+          Bulk Upload{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}
+        </h1>
+        {activeWorkspace?.analysisType && (
+          <span style={{
+            display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 4,
+            background: `${ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType]}15`,
+            color: ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType],
+            fontSize: 11, fontWeight: 600, letterSpacing: 0.3,
+          }}>
+            {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}
+          </span>
+        )}
+      </div>
       <p style={{ fontSize: 13, color: "#5A7091", marginBottom: 20, lineHeight: 1.5 }}>
         Upload up to {MAX_PROPERTIES} OMs at once — one file per property. Each OM becomes its own property with full analysis.
       </p>
@@ -266,10 +279,10 @@ export default function BulkUploadPage() {
             onDrop={handleDrop}
             onClick={() => fileRef.current?.click()}
             style={{
-              border: `2px dashed ${isDragging ? "#C49A3C" : "#D8DFE9"}`,
-              borderRadius: 10, padding: hasItems ? "20px 16px" : "40px 16px", textAlign: "center",
+              border: `2px dashed ${isDragging ? "#b9172f" : "#D8DFE9"}`,
+              borderRadius: 6, padding: hasItems ? "20px 16px" : "40px 16px", textAlign: "center",
               cursor: items.length >= MAX_PROPERTIES ? "not-allowed" : "pointer",
-              background: isDragging ? "#FFF9EE" : "#FAFBFC", transition: "all 0.15s",
+              background: isDragging ? "rgba(185, 23, 47, 0.03)" : "#ffffff", transition: "all 0.15s",
               marginBottom: 14, opacity: items.length >= MAX_PROPERTIES ? 0.5 : 1,
             }}
           >
