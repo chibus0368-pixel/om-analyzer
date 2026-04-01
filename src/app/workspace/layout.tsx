@@ -31,9 +31,9 @@ const BOTTOM_NAV = [
   { href: "/workspace/profile", label: "Account Profile", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" },
 ];
 
-function SidebarIcon({ d }: { d: string }) {
+function SidebarIcon({ d, size = 18 }: { d: string; size?: number }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
       <path d={d} />
     </svg>
   );
@@ -45,18 +45,26 @@ function NavLink({ href, label, icon, active, collapsed }: { href: string; label
       href={href}
       className="ws-nav"
       style={{
-        display: "flex", alignItems: "center", gap: 10,
-        padding: "9px 14px", borderRadius: 0,
-        borderLeft: active ? "3px solid #b9172f" : "3px solid transparent",
-        color: active ? "#b9172f" : "#585e70",
-        background: "transparent",
-        textDecoration: "none", fontSize: 13, fontWeight: active ? 600 : 400,
-        letterSpacing: 0.3, textTransform: "uppercase" as const,
+        display: "flex", alignItems: "center", gap: collapsed ? 0 : 10,
+        padding: collapsed ? "10px 0" : "9px 14px",
+        justifyContent: collapsed ? "center" : "flex-start",
+        borderRadius: 10,
+        color: active ? "#b9172f" : "#64748b",
+        background: active ? "rgba(185, 23, 47, 0.06)" : "transparent",
+        textDecoration: "none", fontSize: 13, fontWeight: active ? 600 : 500,
         transition: "all 0.15s",
+        position: "relative",
       }}
       title={collapsed ? label : undefined}
     >
-      <SidebarIcon d={icon} />
+      <div style={{
+        width: 34, height: 34, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center",
+        background: active ? "rgba(185, 23, 47, 0.08)" : "transparent",
+        transition: "background 0.15s",
+        flexShrink: 0,
+      }}>
+        <SidebarIcon d={icon} />
+      </div>
       {!collapsed && <span style={{ whiteSpace: "nowrap" }}>{label}</span>}
     </Link>
   );
@@ -99,15 +107,15 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600;1,700&display=swap');
         /* Sidebar nav hover */
-        .ws-nav:hover { background: rgba(185, 23, 47, 0.04) !important; color: #b9172f !important; }
+        .ws-nav:hover { background: #f8fafc !important; color: #b9172f !important; }
         .ws-header-nav:hover { color: #b9172f !important; }
         .ws-new-analysis:hover { background: rgba(185, 23, 47, 0.06) !important; }
-        .ws-prop-link:hover { background: rgba(185, 23, 47, 0.04) !important; color: #151b2b !important; }
-        .ws-add-prop:hover { border-color: rgba(185, 23, 47, 0.2) !important; color: #585e70 !important; }
+        .ws-prop-link:hover { background: #f8fafc !important; color: #1e293b !important; }
+        .ws-add-prop:hover { border-color: #e2e8f0 !important; background: #f8fafc !important; }
         .ws-props-scroll::-webkit-scrollbar { width: 4px; }
         .ws-props-scroll::-webkit-scrollbar-track { background: transparent; }
-        .ws-props-scroll::-webkit-scrollbar-thumb { background: rgba(88,94,112,0.2); border-radius: 4px; }
-        .ws-props-scroll::-webkit-scrollbar-thumb:hover { background: rgba(88,94,112,0.35); }
+        .ws-props-scroll::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.3); border-radius: 4px; }
+        .ws-props-scroll::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.5); }
         /* Primary buttons */
         .ws-btn-gold { transition: all 0.15s ease; }
         .ws-btn-gold:hover { filter: brightness(1.1); box-shadow: 0 2px 8px rgba(220,38,38,0.35); transform: translateY(-1px); }
@@ -414,12 +422,12 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", background: "#faf8ff" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", background: "#f8fafc" }}>
       {/* ===== TOP HEADER BAR — Deal Signals ===== */}
       <header style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "0 24px", height: 56, minHeight: 56,
-        background: "#ffffff", boxShadow: "0 1px 3px rgba(21, 27, 43, 0.04)",
+        background: "#ffffff", borderBottom: "1px solid #e2e8f0",
         zIndex: 60,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
@@ -433,18 +441,18 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             <button
               onClick={() => setShowUpgrade(true)}
               style={{
-                padding: "8px 18px", background: "#b9172f", color: "#fff", borderRadius: 6,
-                fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer",
-                fontFamily: "'Inter', sans-serif",
+                padding: "8px 20px", background: "#b9172f", color: "#fff", borderRadius: 50,
+                fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer",
+                fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
               }}
             >
               Upgrade to Pro
             </button>
           ) : (
             <Link href="/workspace/profile?tab=account" style={{
-              padding: "8px 18px", background: "transparent", color: "#b9172f",
-              border: "1px solid rgba(185, 23, 47, 0.25)", borderRadius: 6,
-              fontSize: 12, fontWeight: 600, textDecoration: "none", fontFamily: "'Inter', sans-serif",
+              padding: "8px 20px", background: "transparent", color: "#b9172f",
+              border: "1.5px solid #e2e8f0", borderRadius: 50,
+              fontSize: 12, fontWeight: 700, textDecoration: "none", fontFamily: "'Inter', sans-serif",
             }}>
               {userTier === "pro" ? "Pro Plan" : userTier === "pro_plus" ? "Pro+" : "My Plan"}
             </Link>
@@ -464,21 +472,22 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
       {/* Sidebar */}
       <aside style={{
-        width: collapsed ? 68 : 280, minWidth: collapsed ? 68 : 280,
-        background: "transparent", color: "#151b2b", display: "flex", flexDirection: "column",
+        width: collapsed ? 68 : 260, minWidth: collapsed ? 68 : 260,
+        background: "#ffffff", color: "#1e293b", display: "flex", flexDirection: "column",
         transition: "width 0.2s, min-width 0.2s", zIndex: 50,
-        paddingTop: 16, overflow: "hidden",
+        paddingTop: 12, overflow: "hidden",
+        borderRight: "1px solid #e2e8f0",
       }}>
         {/* Workspace info */}
         {!collapsed && (
-          <div style={{ padding: "0 16px 12px" }}>
+          <div style={{ padding: "0 12px 8px" }}>
             <SidebarWorkspaceSwitcher collapsed={collapsed} onAddNew={() => setShowNewWs(true)} />
           </div>
         )}
         {collapsed && <SidebarWorkspaceSwitcher collapsed={collapsed} onAddNew={() => setShowNewWs(true)} />}
 
         {/* Main nav */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 2, padding: "0 8px" }}>
           {SIDEBAR_NAV.map(item => (
             <NavLink key={item.href} {...item} active={isActive(item.href)} collapsed={collapsed} />
           ))}
@@ -487,58 +496,73 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         {/* Properties List */}
         {!collapsed && (
           <div className="ws-props-scroll" style={{ flex: 1, overflow: "auto", padding: "8px 8px", marginTop: 4, minHeight: 0 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 12px 8px", marginBottom: 2, position: "sticky", top: 0, background: "#faf8f4", zIndex: 2 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#585e70" }}>Properties{properties.length > 0 ? ` (${properties.length})` : ""}</span>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 8px 8px", marginBottom: 2, position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: "#94a3b8" }}>Properties{properties.length > 0 ? ` (${properties.length})` : ""}</span>
             </div>
 
             {loadingProps ? (
-              <div style={{ padding: "12px", color: "#585e70", fontSize: 11 }}>Loading...</div>
+              <div style={{ padding: "12px 8px", color: "#94a3b8", fontSize: 11 }}>Loading...</div>
             ) : properties.length === 0 ? (
-              <div style={{ padding: "8px 12px", color: "#585e70", fontSize: 11 }}>No properties yet</div>
+              <div style={{ padding: "8px", color: "#94a3b8", fontSize: 11 }}>No properties yet</div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                {properties.map(prop => (
-                  <Link
-                    key={prop.id}
-                    href={`/workspace/properties/${prop.id}`}
-                    className="ws-prop-link"
-                    style={{
-                      display: "flex", alignItems: "center", gap: 8, padding: "6px 8px",
-                      fontSize: 12, color: pathname.includes(prop.id) ? "#b9172f" : "#585e70",
-                      textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis",
-                      whiteSpace: "nowrap", borderRadius: 4,
-                      background: pathname === `/workspace/properties/${prop.id}` ? "rgba(185, 23, 47, 0.06)" : "transparent",
-                      fontWeight: pathname.includes(prop.id) ? 600 : 400,
-                    }}
-                    title={`${prop.propertyName}${prop.city ? " - " + prop.city : ""}`}
-                  >
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#585e70" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                    <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{prop.propertyName}</span>
-                  </Link>
-                ))}
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {properties.map(prop => {
+                  const isPropertyActive = pathname === `/workspace/properties/${prop.id}`;
+                  return (
+                    <Link
+                      key={prop.id}
+                      href={`/workspace/properties/${prop.id}`}
+                      className="ws-prop-link"
+                      style={{
+                        display: "flex", alignItems: "center", gap: 10, padding: "8px 10px",
+                        fontSize: 12, color: isPropertyActive ? "#b9172f" : "#64748b",
+                        textDecoration: "none", overflow: "hidden",
+                        whiteSpace: "nowrap", borderRadius: 8,
+                        background: isPropertyActive ? "rgba(185, 23, 47, 0.06)" : "transparent",
+                        fontWeight: isPropertyActive ? 600 : 500,
+                        transition: "all 0.15s",
+                      }}
+                      title={`${prop.propertyName}${prop.city ? " - " + prop.city : ""}`}
+                    >
+                      <div style={{
+                        width: 28, height: 28, borderRadius: 8,
+                        background: isPropertyActive ? "rgba(185, 23, 47, 0.08)" : "#f1f5f9",
+                        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                      }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={isPropertyActive ? "#b9172f" : "#94a3b8"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                      </div>
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{prop.propertyName}</span>
+                    </Link>
+                  );
+                })}
               </div>
             )}
 
             {/* Add New Property button — below properties list */}
             <Link href="/workspace/upload" className="ws-add-prop" style={{
-              display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", marginTop: 8,
-              border: "1px solid rgba(227, 190, 189, 0.15)", borderRadius: 6, color: "#585e70",
-              fontSize: 11, fontWeight: 600, textDecoration: "none",
+              display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", marginTop: 8,
+              border: "1.5px dashed #e2e8f0", borderRadius: 10, color: "#94a3b8",
+              fontSize: 12, fontWeight: 600, textDecoration: "none",
               transition: "all 0.15s",
             }}>
-              <span style={{ fontSize: 14, lineHeight: 1, color: "#b9172f" }}>+</span>
-              <span>Add New Property</span>
+              <div style={{
+                width: 28, height: 28, borderRadius: 8, background: "#f8fafc",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <span style={{ fontSize: 16, lineHeight: 1, color: "#b9172f", fontWeight: 700 }}>+</span>
+              </div>
+              <span>Add Property</span>
             </Link>
           </div>
         )}
 
         {/* Divider */}
         {!collapsed && (
-          <div style={{ margin: "4px 16px 4px", borderTop: "1px solid rgba(227, 190, 189, 0.15)" }} />
+          <div style={{ margin: "4px 12px 4px", borderTop: "1px solid #f1f5f9" }} />
         )}
 
         {/* Bottom nav */}
-        <div style={{ padding: "4px 8px 8px", display: "flex", flexDirection: "column", gap: 1 }}>
+        <div style={{ padding: "4px 8px 8px", display: "flex", flexDirection: "column", gap: 2 }}>
           {BOTTOM_NAV.map(item => (
             <NavLink key={item.href} {...item} active={isActive(item.href)} collapsed={collapsed} />
           ))}
@@ -546,15 +570,22 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             onClick={() => setCollapsed(!collapsed)}
             className="ws-collapse"
             style={{
-              display: "flex", alignItems: "center", gap: 10, padding: "8px 12px",
-              background: "none", border: "none", color: "#585e70",
-              cursor: "pointer", fontSize: 11, width: "100%", borderRadius: 6, fontFamily: "inherit",
+              display: "flex", alignItems: "center", gap: collapsed ? 0 : 10,
+              justifyContent: collapsed ? "center" : "flex-start",
+              padding: collapsed ? "10px 0" : "9px 14px",
+              background: "none", border: "none", color: "#94a3b8",
+              cursor: "pointer", fontSize: 12, fontWeight: 500, width: "100%", borderRadius: 10, fontFamily: "inherit",
               transition: "all 0.15s",
             }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-              {collapsed ? <path d="M13 5l7 7-7 7M5 5l7 7-7 7" /> : <path d="M11 19l-7-7 7-7M19 19l-7-7 7-7" />}
-            </svg>
+            <div style={{
+              width: 34, height: 34, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+                {collapsed ? <path d="M13 5l7 7-7 7M5 5l7 7-7 7" /> : <path d="M11 19l-7-7 7-7M19 19l-7-7 7-7" />}
+              </svg>
+            </div>
             {!collapsed && <span>Collapse</span>}
           </button>
         </div>
