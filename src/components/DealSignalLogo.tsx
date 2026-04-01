@@ -3,10 +3,11 @@
 import React from "react";
 
 interface DealSignalLogoProps {
-  size?: number;        // icon size in px (default 32)
-  fontSize?: number;    // text size in px (default 20)
-  gap?: number;         // gap between icon and text (default 10)
-  showText?: boolean;   // show "Deal Signal" text (default true)
+  size?: number;
+  fontSize?: number;
+  gap?: number;
+  showText?: boolean;
+  light?: boolean; // for dark backgrounds
   style?: React.CSSProperties;
 }
 
@@ -15,10 +16,9 @@ export default function DealSignalLogo({
   fontSize = 20,
   gap = 10,
   showText = true,
+  light = false,
   style,
 }: DealSignalLogoProps) {
-  const iconRadius = size * 0.21875; // ~7/32 ratio
-
   return (
     <span
       style={{
@@ -29,49 +29,58 @@ export default function DealSignalLogo({
         ...style,
       }}
     >
-      {/* Orange rounded-square icon with trending-up arrow */}
+      {/* Modern mark: rounded square with signal pulse */}
       <svg
         width={size}
         height={size}
-        viewBox="0 0 32 32"
+        viewBox="0 0 36 36"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <rect width="32" height="32" rx="7" fill="#b9172f" />
-        {/* Trending-up arrow polyline */}
+        <defs>
+          <linearGradient id="ds-mark-bg" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#b9172f" />
+            <stop offset="100%" stopColor="#8B0D1F" />
+          </linearGradient>
+        </defs>
+        <rect width="36" height="36" rx="9" fill="url(#ds-mark-bg)" />
+        {/* Signal pulse line */}
         <polyline
-          points="7,22 13,15 17,19 25,10"
+          points="6,22 11,22 14,14 18,26 22,10 25,22 30,22"
           stroke="#FFFFFF"
-          strokeWidth="2.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-        {/* Arrowhead */}
-        <polyline
-          points="20,10 25,10 25,15"
-          stroke="#FFFFFF"
-          strokeWidth="2.6"
+          strokeWidth="2.4"
           strokeLinecap="round"
           strokeLinejoin="round"
           fill="none"
         />
       </svg>
 
-      {/* "Deal Signal" text */}
       {showText && (
-        <span
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            fontWeight: 700,
-            fontSize,
-            letterSpacing: "-0.025em",
-            color: "#111827",
-            lineHeight: 1,
-            whiteSpace: "nowrap",
-          }}
-        >
-          Deal Signal
+        <span style={{ display: "inline-flex", alignItems: "baseline", gap: 3, whiteSpace: "nowrap" }}>
+          <span
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 800,
+              fontSize,
+              letterSpacing: "-0.03em",
+              color: light ? "#ffffff" : "#0B1120",
+              lineHeight: 1,
+            }}
+          >
+            Deal
+          </span>
+          <span
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 800,
+              fontSize,
+              letterSpacing: "-0.03em",
+              color: "#b9172f",
+              lineHeight: 1,
+            }}
+          >
+            Signal
+          </span>
         </span>
       )}
     </span>
