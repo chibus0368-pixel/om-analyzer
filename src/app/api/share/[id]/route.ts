@@ -121,6 +121,14 @@ export async function GET(
         contactPhone: shareData.contactPhone || "",
       },
       properties: propertiesWithFields,
+      _debug: {
+        shareUserId: shareData.userId,
+        shareWorkspaceId: shareData.workspaceId,
+        initialQueryCount: propsSnap.size,
+        allPropsCount: allProps.length,
+        filteredCount: properties.length,
+        sampleWorkspaceIds: allProps.slice(0, 5).map((p: any) => p.workspaceId),
+      },
     });
   } catch (err: any) {
     console.error("[share/[id]] GET error:", err);
