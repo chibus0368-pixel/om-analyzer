@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import Providers from "./Providers";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://dealsignals.app"),
@@ -61,7 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <GoogleAnalytics />
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
