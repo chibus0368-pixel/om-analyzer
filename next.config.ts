@@ -31,8 +31,6 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 31536000,
   },
 
-  // Enable SSR for Firebase Hosting
-  output: "standalone",
 
   // Experimental features (optimizeCss requires 'critters' package)
   // experimental: {
