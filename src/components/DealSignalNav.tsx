@@ -44,7 +44,9 @@ export default function DealSignalNav() {
   return (
     <header style={{
       position: "sticky", top: 0, zIndex: 100,
-      background: "#fff",
+      background: "rgba(255,255,255,0.92)",
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
       borderBottom: "1px solid #f1f5f9",
     }}>
       <div style={{
@@ -52,7 +54,7 @@ export default function DealSignalNav() {
         maxWidth: 1160, margin: "0 auto", padding: "0 32px", height: 68,
       }}>
         <Link href="/om-analyzer" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <DealSignalLogo size={30} fontSize={17} gap={8} />
+          <DealSignalLogo size={34} fontSize={20} gap={9} />
         </Link>
 
         <nav className="ds-nav-links" style={{ display: "flex", alignItems: "center", gap: 36 }}>
