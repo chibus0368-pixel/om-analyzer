@@ -59,8 +59,8 @@ export default function DealSignalNav() {
 
         <nav className="ds-nav-links" style={{ display: "flex", alignItems: "center", gap: 36 }}>
           <Link href="/om-analyzer#how-it-works" style={linkStyle("/om-analyzer#how-it-works")}>How it works</Link>
-          <Link href="/pricing" style={linkStyle("/pricing")}>Pricing</Link>
-          <Link href="/try-pro" style={linkStyle("/try-pro")}>Try Pro</Link>
+          <Link href="/om-analyzer#pricing" style={linkStyle("/om-analyzer#pricing")}>Pricing</Link>
+          <Link href="/om-analyzer#demo" style={linkStyle("/om-analyzer#demo")}>Try Pro</Link>
         </nav>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

@@ -24,7 +24,6 @@ const SIDEBAR_NAV = [
 
 const BOTTOM_NAV = [
   { href: "/workspace/manage", label: "Workspaces", icon: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" },
-  { href: "/workspace/profile", label: "Account Profile", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" },
 ];
 
 function SidebarIcon({ d, size = 18 }: { d: string; size?: number }) {
@@ -67,6 +66,135 @@ function NavLink({ href, label, icon, active, collapsed, compact = false }: { hr
       </div>
       {!collapsed && <span style={{ whiteSpace: "nowrap" }}>{label}</span>}
     </Link>
+  );
+}
+
+/** Sidebar user account card — shows avatar, name, email, plan & usage */
+function SidebarUserCard({ user, collapsed, userTier, onUpgradeClick }: {
+  user: import("firebase/auth").User | null;
+  collapsed: boolean;
+  userTier: string;
+  onUpgradeClick: () => void;
+}) {
+  const [usage, setUsage] = useState<{ uploadsUsed: number; uploadLimit: number } | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    async function fetchUsage() {
+      try {
+        const token = await user!.getIdToken();
+        const res = await fetch("/api/workspace/usage", { headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok && !cancelled) {
+          const data = await res.json();
+          setUsage({ uploadsUsed: data.uploadsUsed || 0, uploadLimit: data.uploadLimit || 5 });
+        }
+      } catch { /* non-blocking */ }
+    }
+    fetchUsage();
+    const handler = () => fetchUsage();
+    window.addEventListener("usage-updated", handler);
+    window.addEventListener("workspace-properties-changed", handler);
+    return () => { cancelled = true; window.removeEventListener("usage-updated", handler); window.removeEventListener("workspace-properties-changed", handler); };
+  }, [user]);
+
+  if (!user) return null;
+
+  const displayName = user.displayName || user.email?.split("@")[0] || "User";
+  const email = user.email || "";
+  const initials = displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  const usagePct = usage ? Math.min(Math.round((usage.uploadsUsed / usage.uploadLimit) * 100), 100) : 0;
+  const tierLabel = userTier === "pro_plus" ? "Pro+" : userTier === "pro" ? "Pro" : "Free";
+  const tierSuffix = userTier === "free" ? "" : " Monthly";
+
+  if (collapsed) {
+    return (
+      <div
+        style={{ padding: "6px 0", display: "flex", justifyContent: "center", cursor: "pointer" }}
+        onClick={() => router.push("/workspace/profile")}
+        title={`${displayName}\n${email}`}
+      >
+        <div style={{
+          width: 34, height: 34, borderRadius: "50%", background: "#b9172f",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0,
+        }}>
+          {initials}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: "6px 10px 8px" }}>
+      {/* User info row */}
+      <Link
+        href="/workspace/profile"
+        className="ws-nav"
+        style={{
+          display: "flex", alignItems: "center", gap: 10,
+          padding: "8px 8px", borderRadius: 10, textDecoration: "none",
+          transition: "background 0.15s",
+        }}
+      >
+        <div style={{
+          width: 36, height: 36, borderRadius: "50%", background: "#b9172f",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 13, fontWeight: 700, color: "#fff", flexShrink: 0,
+        }}>
+          {initials}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {displayName}
+          </div>
+          <div style={{ fontSize: 11, color: "#94a3b8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.3 }}>
+            {email}
+          </div>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+          <path d="M9 18l6-6-6-6" />
+        </svg>
+      </Link>
+
+      {/* Plan & usage bar */}
+      <div style={{ padding: "6px 8px 0" }}>
+        <div style={{
+          height: 4, borderRadius: 4, background: "#e2e8f0", overflow: "hidden", marginBottom: 6,
+        }}>
+          <div style={{
+            height: "100%", borderRadius: 4,
+            width: `${usagePct}%`,
+            background: usagePct >= 90 ? "#EF4444" : usagePct >= 70 ? "#F59E0B" : "#b9172f",
+            transition: "width 0.4s ease",
+          }} />
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>
+            {tierLabel}{tierSuffix}
+          </span>
+          <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600 }}>
+            {usage ? `${usagePct}% usage` : "..."}
+          </span>
+        </div>
+        {userTier === "free" && usage && usagePct >= 80 && (
+          <button
+            onClick={(e) => { e.preventDefault(); onUpgradeClick(); }}
+            style={{
+              width: "100%", marginTop: 6, padding: "5px 0",
+              background: "none", border: "1px solid #e2e8f0", borderRadius: 6,
+              fontSize: 11, fontWeight: 600, color: "#b9172f", cursor: "pointer",
+              fontFamily: "inherit", transition: "all 0.15s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(185,23,47,0.04)"; e.currentTarget.style.borderColor = "#b9172f"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.borderColor = "#e2e8f0"; }}
+          >
+            Upgrade Plan
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -547,7 +675,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start",
           padding: collapsed ? "0" : "0 20px",
           transition: "width 0.2s, min-width 0.2s",
-          borderRight: "1px solid #e2e8f0", height: "100%",
+          height: "100%",
         }}>
           <Link href="/workspace" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
             <DealSignalLogo size={26} fontSize={16} gap={7} showText={!collapsed} />
@@ -716,10 +844,20 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         )}
 
         {/* Bottom nav — compact */}
-        <div style={{ padding: "2px 8px 6px", display: "flex", flexDirection: "column", gap: 0 }}>
+        <div style={{ padding: "2px 8px 0", display: "flex", flexDirection: "column", gap: 0 }}>
           {BOTTOM_NAV.map(item => (
             <NavLink key={item.href} {...item} active={isActive(item.href)} collapsed={collapsed} compact />
           ))}
+        </div>
+
+        {/* User account card */}
+        {!collapsed && (
+          <div style={{ margin: "0 12px 0", borderTop: "1px solid #f1f5f9" }} />
+        )}
+        <SidebarUserCard user={user} collapsed={collapsed} userTier={userTier} onUpgradeClick={() => setShowUpgrade(true)} />
+
+        {/* Collapse toggle */}
+        <div style={{ padding: "0 8px 6px" }}>
           <button
             onClick={() => setCollapsed(!collapsed)}
             className="ws-collapse"

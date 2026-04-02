@@ -1087,99 +1087,365 @@ export default function OmAnalyzerPage() {
             </div>
           </div>
 
-          {/* ── 7. PRO WORKSPACE PREVIEW ── */}
-          <div style={{ maxWidth: 1000, margin: "0 auto", padding: "88px 32px 0" }}>
+          {/* ── 7. PRO WORKSPACE PREVIEW (DEMO) ── */}
+          <div id="demo" style={{ maxWidth: 1000, margin: "0 auto", padding: "88px 32px 0" }}>
+            <div style={{ textAlign: "center", marginBottom: 48 }}>
+              <h2 style={{ fontSize: 34, fontWeight: 800, color: "#1e293b", marginBottom: 10 }}>
+                Your full deal <span style={{ color: "#b9172f" }}>workspace</span>
+              </h2>
+              <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7 }}>
+                Deep research on tenant credit, location intel, comp analysis, and everything the OM doesn&apos;t mention.
+              </p>
+            </div>
+
+            {/* Workspace preview container */}
             <div style={{
-              background: "#0f172a", borderRadius: 28, padding: "52px 44px",
-              display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center",
-              position: "relative", overflow: "hidden",
-            }} className="ds-pro-grid">
-              <div style={{ position: "relative", zIndex: 1 }}>
-                <h3 style={{ fontSize: 28, fontWeight: 800, color: "#fff", marginBottom: 14, lineHeight: 1.25 }}>
-                  Your full deal workspace
-                </h3>
-                <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.75, margin: "0 0 28px" }}>
-                  Deep research on tenant credit, location intel, comp analysis, and everything the OM doesn&apos;t mention. Save, track, and compare every deal.
-                </p>
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <Link href="/workspace" className="ds-btn ds-btn-primary" style={{ fontSize: 14, padding: "12px 28px" }}>
-                    Try Pro Free
-                  </Link>
-                  <Link href="/pricing" className="ds-btn" style={{ fontSize: 14, padding: "12px 28px", border: "1.5px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.7)" }}>
-                    See Plans
-                  </Link>
+              borderRadius: 16, overflow: "hidden", border: "1px solid #e2e8f0",
+              boxShadow: "0 20px 60px rgba(15,23,42,0.08)", marginBottom: 28,
+              background: "#fff",
+            }}>
+              {/* Header bar */}
+              <div style={{
+                height: 56, background: "#fff", borderBottom: "1px solid #e2e8f0",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "0 20px",
+              }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#1e293b" }}>Deal Signals</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ padding: "6px 16px", borderRadius: 50, fontSize: 11, fontWeight: 700, background: "#b9172f", color: "#fff" }}>Upgrade to Pro</span>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #b9172f, #8B0D1F)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff" }}>B</div>
                 </div>
               </div>
-              <div style={{
-                height: 280, borderRadius: 20, overflow: "hidden",
-                background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 13, color: "rgba(255,255,255,0.2)", fontWeight: 500,
-              }}>
-                Pro Workspace Screenshot
+
+              {/* Main workspace body */}
+              <div style={{ display: "flex", minHeight: 500 }}>
+                {/* Sidebar */}
+                <aside style={{ width: 260, background: "#fff", borderRight: "1px solid #e2e8f0", padding: "12px 8px", display: "flex", flexDirection: "column" }}>
+                  <div style={{ padding: "10px 14px 8px" }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#b9172f" }}>My Workspace</div>
+                  </div>
+                  <nav style={{ padding: "4px 8px", display: "flex", flexDirection: "column", gap: 1 }}>
+                    {[
+                      { label: "Dashboard", icon: "M3 3h7v7H3z" },
+                      { label: "Scoreboard", icon: "M18 20V10M12 20V4M6 20v-6" },
+                      { label: "Upload Property", icon: "M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5" },
+                    ].map(item => (
+                      <div key={item.label} style={{
+                        display: "flex", alignItems: "center", gap: 8, padding: "7px 14px", borderRadius: 8,
+                        color: item.label === "Upload Property" ? "#b9172f" : "#64748b",
+                        background: item.label === "Upload Property" ? "rgba(185,23,47,0.06)" : "transparent",
+                        fontSize: 13, fontWeight: item.label === "Upload Property" ? 600 : 500, cursor: "pointer",
+                      }}>
+                        <div style={{ width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: item.label === "Upload Property" ? "rgba(185,23,47,0.08)" : "transparent", fontSize: 12 }}>
+                          {item.label === "Dashboard" ? "📊" : item.label === "Scoreboard" ? "📈" : "📤"}
+                        </div>
+                        {item.label}
+                      </div>
+                    ))}
+                  </nav>
+
+                  {/* Properties */}
+                  <div style={{ flex: 1, overflow: "auto", padding: "8px 8px", marginTop: 4 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: "#94a3b8", padding: "6px 8px 8px" }}>
+                      Properties (2)
+                    </div>
+                    {[
+                      { name: "Walgreens — Cedar Park, TX", score: 74, type: "retail" },
+                      { name: "Flex Industrial — Schaumburg, IL", score: 68, type: "industrial" },
+                    ].map((d, i) => (
+                      <div key={d.name} style={{
+                        display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 8,
+                        color: i === 0 ? "#b9172f" : "#64748b",
+                        background: i === 0 ? "rgba(185,23,47,0.06)" : "transparent",
+                        fontWeight: i === 0 ? 600 : 500, fontSize: 12, cursor: "pointer",
+                      }}>
+                        <div style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0, background: i === 0 ? "rgba(185,23,47,0.08)" : "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>
+                          {d.type === "retail" ? "🏪" : "🏭"}
+                        </div>
+                        <div style={{ minWidth: 0, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {d.name}
+                        </div>
+                        <span style={{ padding: "2px 7px", borderRadius: 6, fontSize: 11, fontWeight: 800, flexShrink: 0, background: "rgba(5,150,105,0.1)", color: "#059669" }}>
+                          {d.score}
+                        </span>
+                      </div>
+                    ))}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", marginTop: 8, border: "1.5px dashed #e2e8f0", borderRadius: 10, color: "#94a3b8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                      <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> Add Property
+                    </div>
+                  </div>
+
+                  {/* Bottom nav */}
+                  <div style={{ borderTop: "1px solid #f1f5f9", padding: "6px 8px 10px" }}>
+                    {["Workspaces", "Settings"].map(label => (
+                      <div key={label} style={{
+                        display: "flex", alignItems: "center", gap: 8, padding: "5px 12px", borderRadius: 8,
+                        color: "#64748b", fontSize: 11, fontWeight: 500, cursor: "pointer",
+                      }}>
+                        {label}
+                      </div>
+                    ))}
+                  </div>
+                </aside>
+
+                {/* Main content */}
+                <main style={{ flex: 1, background: "#f8fafc", padding: "20px", overflow: "auto" }}>
+                  <div style={{ maxWidth: 700 }}>
+                    {/* Property header card */}
+                    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", padding: 0, marginBottom: 20, overflow: "hidden" }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", minHeight: 160 }}>
+                        {/* Image placeholder */}
+                        <div style={{ background: "linear-gradient(135deg, #f1f5f9, #e2e8f0)", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 6, borderRight: "1px solid #e2e8f0" }}>
+                          <div style={{ fontSize: 36, opacity: 0.3 }}>📍</div>
+                          <div style={{ fontSize: 9, color: "#94a3b8", fontWeight: 500 }}>Cedar Park, TX</div>
+                        </div>
+
+                        {/* Property info */}
+                        <div style={{ padding: "18px 22px" }}>
+                          <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between", marginBottom: 8 }}>
+                            <div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                                <h2 style={{ fontSize: 18, fontWeight: 800, color: "#1e293b", margin: 0 }}>
+                                  Walgreens NNN
+                                </h2>
+                                <span style={{ padding: "3px 10px", borderRadius: 6, fontSize: 9, fontWeight: 700, background: "rgba(185,23,47,0.06)", color: "#b9172f", textTransform: "uppercase", letterSpacing: 0.5 }}>Retail</span>
+                              </div>
+                              <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>1301 E Whitestone Blvd</p>
+                            </div>
+                            {/* Score ring */}
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
+                              <div style={{ position: "relative", width: 56, height: 56 }}>
+                                <svg width="56" height="56" viewBox="0 0 56 56" style={{ transform: "rotate(-90deg)" }}>
+                                  <circle cx="28" cy="28" r="24" fill="none" stroke="#e2e8f0" strokeWidth="4" />
+                                  <circle cx="28" cy="28" r="24" fill="none" stroke="#059669" strokeWidth="4" strokeDasharray={`${2 * Math.PI * 24 * 0.74} ${2 * Math.PI * 24}`} strokeLinecap="round" />
+                                </svg>
+                                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                                  <span style={{ fontSize: 16, fontWeight: 800, color: "#1e293b", lineHeight: 1 }}>74</span>
+                                </div>
+                              </div>
+                              <span style={{ marginTop: 4, fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "#059669", padding: "2px 8px", borderRadius: 3, background: "rgba(5,150,105,0.1)" }}>Buy</span>
+                            </div>
+                          </div>
+
+                          {/* Key metrics */}
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, marginTop: 10 }}>
+                            {[
+                              { label: "Price", value: "$7.05M" },
+                              { label: "Cap Rate", value: "5.85%" },
+                              { label: "NOI", value: "$412K" },
+                              { label: "DSCR", value: "1.42x" },
+                            ].map(m => (
+                              <div key={m.label} style={{ padding: "8px 10px", background: "#f8fafc", borderRadius: 8, border: "1px solid #f1f5f9" }}>
+                                <div style={{ fontSize: 8, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase" }}>{m.label}</div>
+                                <div style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", marginTop: 2 }}>{m.value}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Score breakdown */}
+                    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", padding: 20 }}>
+                      <h3 style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", margin: "0 0 12px", display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ width: 3, height: 14, background: "#b9172f", borderRadius: 1 }} />
+                        Score Breakdown
+                      </h3>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        {[
+                          { name: "Pricing", score: 62 },
+                          { name: "Cashflow", score: 78 },
+                          { name: "Tenant", score: 82 },
+                          { name: "Location", score: 78 },
+                        ].map(cat => {
+                          const barColor = cat.score >= 70 ? "#059669" : cat.score >= 50 ? "#D97706" : "#DC2626";
+                          return (
+                            <div key={cat.name} style={{ padding: "10px 12px", background: "#f8fafc", borderRadius: 8 }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+                                <span style={{ fontSize: 11, fontWeight: 700, color: "#1e293b" }}>{cat.name}</span>
+                                <span style={{ fontSize: 11, fontWeight: 800, color: barColor }}>{cat.score}</span>
+                              </div>
+                              <div style={{ height: 4, background: "#e2e8f0", borderRadius: 2, overflow: "hidden" }}>
+                                <div style={{ width: `${cat.score}%`, height: "100%", background: barColor, borderRadius: 2 }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </main>
               </div>
             </div>
 
-            <div className="ds-pro-features" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginTop: 20 }}>
-              {[
-                { icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z", title: "Location Intel", desc: "Demographics, walk scores, pipeline" },
-                { icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", title: "Tenant Research", desc: "Credit, expansion, performance" },
-                { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", title: "Comp Analysis", desc: "Sales, listings, pricing trends" },
-                { icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z", title: "Deal Pipeline", desc: "Save, organize, share deals" },
-              ].map(f => (
-                <div key={f.title} style={{ padding: "18px 16px", borderRadius: 16, background: "#f8fafc", border: "1px solid #f1f5f9" }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 8 }}><path d={f.icon} /></svg>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", marginBottom: 3 }}>{f.title}</div>
-                  <div style={{ fontSize: 11, color: "#64748b", lineHeight: 1.4 }}>{f.desc}</div>
-                </div>
-              ))}
+            {/* CTA */}
+            <div style={{ textAlign: "center" }}>
+              <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+                <Link href="/workspace" className="ds-btn ds-btn-primary" style={{ fontSize: 14, padding: "12px 28px" }}>
+                  Try Pro Free
+                </Link>
+                <Link href="/#pricing" className="ds-btn" style={{ fontSize: 14, padding: "12px 28px" }}>
+                  See Plans
+                </Link>
+              </div>
             </div>
           </div>
 
           {/* ── 8. PRICING ── */}
-          <div style={{ maxWidth: 800, margin: "0 auto", padding: "88px 32px 0" }}>
-            <h2 style={{ fontSize: 34, fontWeight: 800, color: "#1e293b", marginBottom: 48, textAlign: "center" }}>
-              Simple, transparent pricing
-            </h2>
-            <div className="ds-pricing-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-              <div style={{ padding: "32px 28px", borderRadius: 24, background: "#f8fafc", border: "1px solid #f1f5f9" }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>Free</div>
-                <div style={{ marginBottom: 16 }}>
-                  <span style={{ fontSize: 36, fontWeight: 800, color: "#1e293b" }}>$0</span>
-                  <span style={{ fontSize: 14, color: "#94a3b8" }}>/month</span>
+          <div id="pricing" style={{ maxWidth: 1000, margin: "0 auto", padding: "88px 32px 0" }}>
+            <div style={{ textAlign: "center", marginBottom: 56 }}>
+              <h2 style={{ fontSize: 34, fontWeight: 800, color: "#1e293b", marginBottom: 10 }}>
+                Simple pricing for serious underwriting
+              </h2>
+              <p style={{ fontSize: 14, color: "#5A7091", lineHeight: 1.7, maxWidth: 500, margin: "0 auto" }}>
+                Start free. Upgrade when your deal flow demands it. No contracts, cancel anytime.
+              </p>
+            </div>
+
+            {/* 3-tier pricing grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 60 }}>
+              {[
+                {
+                  name: "Free",
+                  price: "0",
+                  period: "",
+                  desc: "For independent analysts and students evaluating deals.",
+                  features: [
+                    { text: "2 Deal Analyses", included: true },
+                    { text: "Standard PDF extraction", included: true },
+                    { text: "Basic Deal Signals score", included: true },
+                    { text: "First-pass brief download", included: true },
+                    { text: "Save & organize deals", included: false },
+                    { text: "AI scoring models", included: false },
+                    { text: "Full Excel exports", included: false },
+                    { text: "Workspace & history", included: false },
+                  ],
+                  cta: "Get Started Free",
+                  ctaLink: "/om-analyzer",
+                  highlight: false,
+                },
+                {
+                  name: "Pro",
+                  price: "40",
+                  period: "/mo",
+                  desc: "For active investors and small acquisition teams.",
+                  features: [
+                    { text: "Up to 40 deals/month", included: true },
+                    { text: "Save & organize deals", included: true },
+                    { text: "Deal Signals scoring", included: true },
+                    { text: "Full Excel workbooks (6 sheets)", included: true },
+                    { text: "Pro workspace with history", included: true },
+                    { text: "Interactive property map", included: true },
+                    { text: "Deal comparison scoreboard", included: true },
+                    { text: "Shareable client links", included: true },
+                  ],
+                  cta: "Start Pro",
+                  ctaLink: "/workspace/login?upgrade=pro",
+                  highlight: true,
+                },
+                {
+                  name: "Pro+",
+                  price: "100",
+                  period: "/mo",
+                  desc: "For power users and teams with high deal flow.",
+                  features: [
+                    { text: "Up to 200 deals/month", included: true },
+                    { text: "Everything in Pro", included: true },
+                    { text: "Location Intelligence", included: true },
+                    { text: "Advanced exports", included: true },
+                    { text: "Priority processing", included: true },
+                    { text: "Bulk portfolio uploads", included: true },
+                    { text: "White-label shareable links", included: true },
+                    { text: "Priority support", included: true },
+                  ],
+                  cta: "Start Pro+",
+                  ctaLink: "/workspace/login?upgrade=pro_plus",
+                  highlight: false,
+                  bestValue: true,
+                },
+              ].map(tier => (
+                <div key={tier.name} style={{
+                  background: tier.highlight ? "#0B1120" : "#fff",
+                  borderRadius: 16, border: tier.highlight ? "2px solid #DC2626" : "1px solid #E8ECF2",
+                  padding: "36px 28px", position: "relative", overflow: "hidden",
+                  transition: "all 0.2s ease",
+                }}>
+                  {tier.highlight && (
+                    <div style={{ position: "absolute", top: 0, right: 0, background: "#DC2626", color: "#fff", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                      Most Popular
+                    </div>
+                  )}
+                  {(tier as any).bestValue && (
+                    <div style={{ position: "absolute", top: 0, right: 0, background: "#DC2626", color: "#fff", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                      Best Value
+                    </div>
+                  )}
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: tier.highlight ? "#DC2626" : "#8899B0", marginBottom: 10 }}>
+                    {tier.name}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 4 }}>
+                    <span style={{ fontSize: 16, fontWeight: 600, color: tier.highlight ? "rgba(255,255,255,0.5)" : "#8899B0" }}>$</span>
+                    <span style={{ fontSize: 40, fontWeight: 800, color: tier.highlight ? "#fff" : "#0B1120", letterSpacing: -1 }}>{tier.price}</span>
+                    {tier.period && <span style={{ fontSize: 14, color: tier.highlight ? "rgba(255,255,255,0.5)" : "#8899B0" }}>{tier.period}</span>}
+                  </div>
+                  <p style={{ fontSize: 13, color: tier.highlight ? "#8899B0" : "#5A7091", marginBottom: 28, lineHeight: 1.5 }}>{tier.desc}</p>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
+                    {tier.features.map(f => (
+                      <div key={f.text} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: f.included ? (tier.highlight ? "#E2E8F0" : "#253352") : (tier.highlight ? "rgba(255,255,255,0.25)" : "#B4C1D1") }}>
+                        {f.included ? (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2.5"><path d="M5 13l4 4L19 7" /></svg>
+                        ) : (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={tier.highlight ? "rgba(255,255,255,0.15)" : "#D8DFE9"} strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                        )}
+                        <span>{f.text}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Link href={tier.ctaLink} style={{
+                    display: "block", width: "100%", padding: "12px", textAlign: "center",
+                    background: tier.highlight ? "#DC2626" : "#fff",
+                    color: tier.highlight ? "#fff" : "#0B1120",
+                    border: tier.highlight ? "none" : "1.5px solid #D8DFE9",
+                    borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: "none", fontFamily: "inherit",
+                    boxSizing: "border-box", transition: "all 0.2s ease",
+                  }}>
+                    {tier.cta}
+                  </Link>
                 </div>
-                <p style={{ fontSize: 13, color: "#64748b", marginBottom: 20 }}>Perfect for getting started</p>
-                <ul style={{ margin: "0 0 24px", padding: 0, listStyle: "none" }}>
-                  {["2 analyses/month", "Basic scoring", "XLSX export", "No signup"].map(f => (
-                    <li key={f} style={{ fontSize: 13, color: "#475569", padding: "7px 0", display: "flex", alignItems: "center", gap: 10 }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round"><path d="M5 13l4 4L19 7" /></svg>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="ds-btn ds-btn-outline" style={{ width: "100%", fontSize: 14, padding: "12px 24px" }}>
-                  Start now
-                </button>
-              </div>
-              <div style={{ padding: "32px 28px", borderRadius: 24, background: "#0f172a", position: "relative" }}>
-                <div style={{ position: "absolute", top: 14, right: 14, padding: "4px 12px", borderRadius: 50, background: "rgba(185,23,47,0.15)", fontSize: 10, fontWeight: 700, color: "#f87171", textTransform: "uppercase", letterSpacing: 1 }}>Popular</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>Pro</div>
-                <div style={{ marginBottom: 16 }}>
-                  <span style={{ fontSize: 36, fontWeight: 800, color: "#fff" }}>$40</span>
-                  <span style={{ fontSize: 14, color: "rgba(255,255,255,0.4)" }}>/month</span>
-                </div>
-                <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 20 }}>For serious deal flow</p>
-                <ul style={{ margin: "0 0 24px", padding: 0, listStyle: "none" }}>
-                  {["40+ analyses/month", "Deep research tools", "Full scoring model", "Shareable links", "Priority support"].map(f => (
-                    <li key={f} style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", padding: "7px 0", display: "flex", alignItems: "center", gap: 10 }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="2.5" strokeLinecap="round"><path d="M5 13l4 4L19 7" /></svg>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/try-pro" className="ds-btn ds-btn-primary" style={{ display: "block", width: "100%", fontSize: 14, padding: "12px 24px", textAlign: "center" }}>
-                  Start free trial
-                </Link>
+              ))}
+            </div>
+
+            {/* Why upgrade to Pro */}
+            <div style={{ marginBottom: 60 }}>
+              <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: 30, fontWeight: 800, color: "#0B1120", marginBottom: 8, textAlign: "center", letterSpacing: -0.5 }}>
+                Why upgrade to Pro?
+              </h2>
+              <p style={{ fontSize: 14, color: "#5A7091", lineHeight: 1.7, marginBottom: 40, textAlign: "center", maxWidth: 560, margin: "0 auto 40px" }}>
+                Free gives you a taste. Pro gives you the full institutional toolkit.
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                {[
+                  { icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z", title: "Side-by-Side Scoring", desc: "Compare every deal in your pipeline on a single scoreboard with AI-generated risk ratings." },
+                  { icon: "M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7", title: "Interactive Property Map", desc: "View your entire portfolio on a map with satellite imagery, market data overlays, and traffic counts." },
+                  { icon: "M13 10V3L4 14h7v7l9-11h-7z", title: "AI That Gets Smarter", desc: "Our models learn from every OM you upload. The more you analyze, the more accurate your underwriting becomes." },
+                  { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", title: "Full Excel Workbooks", desc: "Download 6-sheet institutional-grade Excel workbooks with inputs, rent roll, operating statement, debt & returns, breakeven, and cap scenarios." },
+                ].map(u => (
+                  <div key={u.title} style={{
+                    background: "#fff", borderRadius: 12, border: "1px solid #E8ECF2", padding: "28px 24px",
+                    transition: "all 0.2s ease",
+                  }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 10, background: "#FEF2F2",
+                      display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16,
+                    }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={u.icon} /></svg>
+                    </div>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "#0B1120", marginBottom: 6 }}>{u.title}</h3>
+                    <p style={{ fontSize: 13, color: "#5A7091", lineHeight: 1.6, margin: 0 }}>{u.desc}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

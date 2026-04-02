@@ -110,6 +110,17 @@ export interface Property {
   isMismatch?: boolean;
   scoringModelVersion?: string;
   extractionSchemaVersion?: string;
+  // Hero + gallery images
+  heroImageUrl?: string;
+  galleryImages?: GalleryImage[];
+}
+
+export interface GalleryImage {
+  url: string;
+  storagePath: string;
+  filename: string;
+  caption?: string;
+  uploadedAt: string;
 }
 
 export interface ProjectDocument {
