@@ -27,7 +27,7 @@ interface SharedProperty {
   occupancyPct?: number;
   heroImageUrl?: string;
   extractedFields: ExtractedField[];
-  documents: { id: string; originalFilename: string; docCategory: string; fileExt: string }[];
+  documents: { id: string; originalFilename: string; docCategory: string; fileExt: string; storagePath?: string; fileSizeBytes?: number }[];
 }
 
 interface ShareConfig {
@@ -843,18 +843,50 @@ function PropertyDetail({
             <div style={sectionTitle}>Source Documents</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {prop.documents.map(doc => (
-                <div key={doc.id} style={{
-                  display: "flex", alignItems: "center", gap: 8, padding: "8px 12px",
-                  background: "#f8fafc", borderRadius: 6, fontSize: 12, color: "#585e70",
-                }}>
+                <button key={doc.id}
+                  onClick={async () => {
+                    if (!doc.storagePath) return;
+                    try {
+                      const res = await fetch(`/api/share/${shareId}/download?doc=${doc.id}`);
+                      const data = await res.json();
+                      if (data.url) {
+                        window.open(data.url, "_blank");
+                      } else {
+                        alert(data.error || "Could not download file.");
+                      }
+                    } catch { alert("Download failed."); }
+                  }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8, padding: "10px 14px",
+                    background: "#f8fafc", borderRadius: 6, fontSize: 12, color: "#585e70",
+                    border: "1px solid #e2e8f0", cursor: doc.storagePath ? "pointer" : "default",
+                    fontFamily: "inherit", textAlign: "left", width: "100%",
+                    transition: "background 0.15s",
+                  }}
+                  onMouseEnter={e => { if (doc.storagePath) (e.currentTarget as HTMLElement).style.background = "#eef2f7"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#f8fafc"; }}
+                >
                   <span style={{
                     fontSize: 9, fontWeight: 700, textTransform: "uppercase",
                     padding: "2px 6px", background: "#e2e8f0", borderRadius: 3, color: "#475569",
+                    flexShrink: 0,
                   }}>
                     {doc.fileExt}
                   </span>
-                  {doc.originalFilename}
-                </div>
+                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {doc.originalFilename}
+                  </span>
+                  {doc.fileSizeBytes ? (
+                    <span style={{ fontSize: 10, color: "#94a3b8", flexShrink: 0 }}>
+                      {(doc.fileSizeBytes / 1024 / 1024).toFixed(1)} MB
+                    </span>
+                  ) : null}
+                  {doc.storagePath && (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                  )}
+                </button>
               ))}
             </div>
           </div>

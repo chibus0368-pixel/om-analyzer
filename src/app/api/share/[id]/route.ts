@@ -89,6 +89,8 @@ export async function GET(
             originalFilename: d.data().originalFilename,
             docCategory: d.data().docCategory,
             fileExt: d.data().fileExt,
+            storagePath: d.data().storagePath || "",
+            fileSizeBytes: d.data().fileSizeBytes || 0,
           }));
         } catch { /* skip */ }
       }
