@@ -666,7 +666,7 @@ export default function OmAnalyzerPage() {
                 animation: "fadeInUp 0.5s ease-out 0.1s both",
               }}>
                 <div style={{ textAlign: "center", marginBottom: 18 }}>
-                  <div style={{ fontSize: 17, fontWeight: 700, color: "#1e293b" }}>Analyze a Deal</div>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: "#1e293b" }}>Analyze CRE Deal</div>
                   <div style={{ fontSize: 13, color: "#94a3b8", marginTop: 4 }}>Drop any CRE document to get started</div>
                 </div>
 
