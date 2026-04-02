@@ -388,6 +388,23 @@ export default function OmAnalyzerPage() {
         @keyframes scoreFill { from { stroke-dashoffset: 126; } to { stroke-dashoffset: var(--score-offset); } }
         @keyframes metricBar { from { width: 0; } to { width: var(--bar-w); } }
         @keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: 200px 0; } }
+        @keyframes omPulse {
+          0% { box-shadow: inset 0 0 10px rgba(185,23,47,0.4), 0 0 20px rgba(185,23,47,0.15), 0 0 40px rgba(185,23,47,0.08); }
+          50% { box-shadow: inset 0 0 20px rgba(185,23,47,0.5), 0 0 35px rgba(185,23,47,0.25), 0 0 60px rgba(185,23,47,0.12); }
+          100% { box-shadow: inset 0 0 10px rgba(185,23,47,0.4), 0 0 20px rgba(185,23,47,0.15), 0 0 40px rgba(185,23,47,0.08); }
+        }
+        @keyframes omCardFadeIn { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes omProcessDot { 0% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0.3; transform: scale(0.8); } }
+        @keyframes omFlowLine { from { stroke-dashoffset: 40; } to { stroke-dashoffset: 0; } }
+        @keyframes omScanLine { 0% { top: 10%; opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { top: 85%; opacity: 0; } }
+        .om-insight-card { opacity: 0; animation: omCardFadeIn 0.5s ease-out forwards; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .om-insight-card:hover { transform: translateY(-3px) !important; box-shadow: 0 12px 32px rgba(0,0,0,0.08) !important; }
+        @media (max-width: 900px) {
+          .om-insight-grid { grid-template-columns: 1fr !important; }
+          .om-insight-circle { width: 160px !important; height: 160px !important; }
+          .om-insight-outputs { grid-template-columns: 1fr !important; }
+          .om-insight-arrow { display: none !important; }
+        }
         .ds-process-strip { opacity: 1; }
         .ds-process-step { opacity: 0; animation: stepFadeIn 0.5s ease-out forwards; }
         .ds-process-connector { position: relative; height: 2px; flex: 1; min-width: 32px; background: #e2e8f0; overflow: hidden; border-radius: 1px; align-self: center; }
@@ -637,13 +654,13 @@ export default function OmAnalyzerPage() {
                   fontSize: 48, fontWeight: 800, color: "#1e293b", lineHeight: 1.15,
                   marginBottom: 20, letterSpacing: -1,
                 }}>
-                  Analyze Any Property<br />With <span style={{ color: "#b9172f" }}>One Upload</span>.
+                  Analyze Any <span style={{ color: "#b9172f" }}>Commercial</span><br />Property With One Upload.
                 </h1>
                 <p style={{
                   fontSize: 17, color: "#64748b", lineHeight: 1.75,
                   maxWidth: 480, marginBottom: 36,
                 }}>
-                  PropScore AI turns complex Offering Memorandums into actionable investment intelligence. Scoring, pro formas, and insights—delivered in seconds.
+                  Deal Signals turns complex Offering Memorandums into actionable investment intelligence. Scoring, pro formas, and insights, delivered in seconds.
                 </p>
                 <div className="ds-hero-btns" style={{ display: "flex", gap: 12 }}>
                   <button onClick={() => fileRef.current?.click()} className="ds-btn ds-btn-primary" style={{
@@ -802,61 +819,139 @@ export default function OmAnalyzerPage() {
             </div>
           </div>
 
-          {/* ── 2. FEATURE CARDS (3-col) ── */}
-          <div style={{ padding: "64px 32px 80px", background: "#fff" }}>
-            <div className="ds-features-3" style={{ maxWidth: 1000, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
-              {[
-                { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
-                  title: "All-in-one Analysis", desc: "Deal Signals extracts financials, scores the deal, flags risks, and generates a buy/hold/pass recommendation — all from a single document upload." },
-                { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
-                  title: "Free to start", desc: "Our free tier gives you 2 analyses per month with no signup, no credit card. Upgrade to Pro when you're ready for more." },
-                { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>,
-                  title: "Deal Signals Score", desc: "Every analysis includes a weighted 0-100 score across pricing, cashflow, tenant, rollover, location, and upside factors." },
-              ].map((f, i) => (
-                <div key={i} style={{
-                  background: "#f8fafc", borderRadius: 20, padding: "32px 28px",
-                  border: "1px solid #f1f5f9",
-                }}>
-                  <div style={{
-                    width: 52, height: 52, borderRadius: 14, background: "#fff",
-                    border: "1px solid #f1f5f9",
-                    display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18,
-                  }}>
-                    {f.icon}
-                  </div>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, color: "#1e293b", marginBottom: 8 }}>{f.title}</h3>
-                  <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.65, margin: 0 }}>{f.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* ── 2. FROM OM TO INSIGHT IN SECONDS ── */}
+          <div id="how-it-works" style={{ padding: "88px 32px 96px", background: "#fff" }}>
+            <div style={{ maxWidth: 1120, margin: "0 auto" }}>
 
-          {/* ── 3. HOW IT WORKS ── */}
-          <div id="how-it-works" style={{ background: "#f8fafc", padding: "88px 32px", borderTop: "1px solid #f1f5f9" }}>
-            <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
-              <h2 style={{ fontSize: 36, fontWeight: 800, color: "#1e293b", marginBottom: 10 }}>
-                How <span style={{ color: "#b9172f" }}>Deal Signals</span> works
-              </h2>
-              <p style={{ fontSize: 16, color: "#64748b", marginBottom: 56, lineHeight: 1.7 }}>
-                Deal Signals answers the urgent demand for fast and accurate CRE deal screening
-              </p>
-              <div className="ds-steps-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 28 }}>
-                {[
-                  { num: "[1]", title: "Upload document", desc: "Drop a PDF, flyer, or rent roll. Any CRE document works — the AI handles the rest." },
-                  { num: "[2]", title: "AI extracts data", desc: "47+ data points extracted in seconds: cap rate, NOI, DSCR, lease terms, and more." },
-                  { num: "[3]", title: "Get your signal", desc: "Receive a Deal Signals score, risk flags, and a buy/hold/pass recommendation." },
-                ].map((s, i) => (
-                  <div key={i} style={{
-                    background: "#fff", borderRadius: 20, padding: "32px 24px",
-                    border: "1px solid #f1f5f9", boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
-                    textAlign: "center",
-                  }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "#b9172f", marginBottom: 16, fontFamily: "monospace" }}>{s.num}</div>
-                    <h3 style={{ fontSize: 16, fontWeight: 700, color: "#1e293b", marginBottom: 8 }}>{s.title}</h3>
-                    <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6, margin: 0 }}>{s.desc}</p>
-                  </div>
-                ))}
+              {/* Section header */}
+              <div style={{ textAlign: "center", marginBottom: 48 }}>
+                <div style={{
+                  display: "inline-flex", alignItems: "center", padding: "8px 18px",
+                  borderRadius: 50, background: "rgba(185,23,47,0.06)", color: "#b9172f",
+                  fontSize: 13, fontWeight: 600, marginBottom: 16, gap: 6,
+                }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
+                  One-Click Intelligence
+                </div>
+                <h2 style={{ fontSize: 40, fontWeight: 800, color: "#1e293b", marginBottom: 12, letterSpacing: -0.5, lineHeight: 1.15 }}>
+                  From OM to Insight in Seconds
+                </h2>
+                <p style={{ fontSize: 17, color: "#64748b", lineHeight: 1.7, maxWidth: 560, margin: "0 auto" }}>
+                  Upload a single Offering Memorandum and let our AI engine generate everything you need to make a decision.
+                </p>
               </div>
+
+              {/* Main flow card */}
+              <div style={{
+                background: "#fff", borderRadius: 28, padding: "48px 40px",
+                boxShadow: "0 8px 60px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04)",
+                overflow: "hidden",
+              }}>
+                <div className="om-insight-grid" style={{
+                  display: "grid", gridTemplateColumns: "280px 80px 1fr", gap: 0, alignItems: "center",
+                }}>
+
+                  {/* LEFT — Upload circle */}
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                    <div className="om-insight-circle" style={{
+                      width: 200, height: 200, borderRadius: "50%",
+                      background: "linear-gradient(135deg, #b9172f 0%, #8B0D1F 100%)",
+                      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                      color: "#fff", cursor: "pointer", position: "relative",
+                      animation: "omPulse 3s ease-in-out infinite",
+                    }}
+                    onClick={() => fileRef.current?.click()}
+                    >
+                      {/* Scan line animation */}
+                      <div style={{
+                        position: "absolute", left: "15%", right: "15%", height: 2,
+                        background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)",
+                        borderRadius: 1, animation: "omScanLine 2.5s ease-in-out infinite",
+                      }} />
+                      {/* Upload icon */}
+                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 10, opacity: 0.95 }}>
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="12" y1="18" x2="12" y2="12" />
+                        <polyline points="9 15 12 12 15 15" />
+                      </svg>
+                      <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: -0.3 }}>Upload OM</div>
+                      <div style={{ fontSize: 12, opacity: 0.7, marginTop: 2 }}>PDF, Docx, or Link</div>
+                    </div>
+
+                    {/* File type badges */}
+                    <div style={{ display: "flex", gap: 6, marginTop: 16 }}>
+                      {["PDF", "DOCX", "XLS"].map(ext => (
+                        <span key={ext} style={{
+                          fontSize: 10, fontWeight: 700, color: "#94a3b8", background: "#f1f5f9",
+                          padding: "3px 10px", borderRadius: 6, letterSpacing: 0.5,
+                        }}>{ext}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* CENTER — Animated arrow / processing indicator */}
+                  <div className="om-insight-arrow" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                      {[0, 1, 2].map(i => (
+                        <div key={i} style={{
+                          width: 6, height: 6, borderRadius: "50%", background: "#b9172f",
+                          animation: `omProcessDot 1.2s ease-in-out ${i * 0.2}s infinite`,
+                        }} />
+                      ))}
+                    </div>
+                    <svg width="32" height="12" viewBox="0 0 32 12" fill="none">
+                      <path d="M0 6h26m0 0l-4-4m4 4l-4 4" stroke="#b9172f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                        strokeDasharray="40" style={{ animation: "omFlowLine 1.5s ease-in-out infinite" }} />
+                    </svg>
+                    <div style={{ fontSize: 9, fontWeight: 700, color: "#b9172f", textTransform: "uppercase", letterSpacing: 1, whiteSpace: "nowrap" }}>AI Engine</div>
+                  </div>
+
+                  {/* RIGHT — Output cards grid */}
+                  <div className="om-insight-outputs" style={{
+                    display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12,
+                  }}>
+                    {[
+                      { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>,
+                        title: "PropScore Rating", desc: "Weighted 0–100 investment score across 6 factors", delay: "0.2s" },
+                      { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg>,
+                        title: "Deal Summary", desc: "Clean overview with all key deal metrics extracted", delay: "0.4s" },
+                      { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
+                        title: "Pro Forma", desc: "Projected cash flows, NOI, and return scenarios", delay: "0.6s" },
+                      { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>,
+                        title: "Location Intel", desc: "Demographics, traffic, and market comps", delay: "0.8s" },
+                      { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" /></svg>,
+                        title: "Tenant Analysis", desc: "Credit ratings, lease terms, and rollover risk", delay: "1.0s" },
+                      { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>,
+                        title: "Shareable Report", desc: "Send branded deal packages to clients instantly", delay: "1.2s" },
+                      { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
+                        title: "Risk Signals", desc: "AI-flagged red flags and opportunities", delay: "1.4s" },
+                      { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>,
+                        title: "Comparables", desc: "Side-by-side benchmarking across your portfolio", delay: "1.6s" },
+                    ].map((card, i) => (
+                      <div key={i} className="om-insight-card" style={{
+                        background: "#f8fafc", borderRadius: 16, padding: "18px 16px",
+                        border: "1px solid #f1f5f9", display: "flex", alignItems: "flex-start", gap: 12,
+                        animationDelay: card.delay,
+                      }}>
+                        <div style={{
+                          width: 40, height: 40, borderRadius: 10, background: "#fff",
+                          border: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "center",
+                          flexShrink: 0,
+                        }}>
+                          {card.icon}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", marginBottom: 2, lineHeight: 1.3 }}>{card.title}</div>
+                          <div style={{ fontSize: 11.5, color: "#64748b", lineHeight: 1.5 }}>{card.desc}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                </div>
+              </div>
+
             </div>
           </div>
 
