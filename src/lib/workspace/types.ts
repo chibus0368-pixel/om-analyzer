@@ -413,7 +413,7 @@ export const STATUS_COLORS: Record<ProjectStatus, string> = {
 export const SCORE_BAND_LABELS: Record<ScoreBand, string> = {
   strong_buy: "Strong Buy",
   buy: "Buy",
-  hold: "Hold",
+  hold: "Neutral",
   pass: "Pass",
   strong_reject: "Strong Reject",
 };

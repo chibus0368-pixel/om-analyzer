@@ -72,7 +72,7 @@ function getRecommendation(band: string, score: number, fields: Record<string, a
   const bandLabel: Record<string, string> = {
     strong_buy: "Strong Buy",
     buy: "Buy",
-    hold: "Hold",
+    hold: "Neutral",
     pass: "Pass",
     strong_reject: "Strong Reject",
   };
@@ -88,7 +88,7 @@ function getRecommendation(band: string, score: number, fields: Record<string, a
     switch (band) {
       case "strong_buy": return `${label} (${score}) — Compelling fundamentals across pricing, cash flow, and tenancy.`;
       case "buy": return `${label} (${score}) — Sound fundamentals with manageable risk.`;
-      case "hold": return `${label} (${score}) — Mixed signals; further diligence recommended.`;
+      case "hold": return `${label} (${score}) — Mixed signals. Further diligence recommended.`;
       case "pass": return `${label} (${score}) — Risk factors outweigh current pricing.`;
       case "strong_reject": return `${label} (${score}) — Does not meet investment criteria.`;
       default: return `${label} (${score})`;

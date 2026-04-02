@@ -88,7 +88,7 @@ function PropertyCard({ property, docCount }: { property: Property; docCount: nu
   const bandColors: Record<string, { bg: string; text: string; label: string }> = {
     strong_buy: { bg: "#D1FAE5", text: "#059669", label: "Strong Buy" },
     buy: { bg: "#D1FAE5", text: "#0A7E5A", label: "Buy" },
-    hold: { bg: "#FEF3C7", text: "#D97706", label: "Hold" },
+    hold: { bg: "#FEF3C7", text: "#D97706", label: "Neutral" },
     pass: { bg: "#FDE8EA", text: "#DC2626", label: "Pass" },
     strong_reject: { bg: "#FDE8EA", text: "#991B1B", label: "Strong Reject" },
   };

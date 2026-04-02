@@ -357,7 +357,7 @@ function getRecommendation(band: string, score: number, fields: Record<string, a
     else if (dscr < 1.2) concerns.push(`tight ${Number(dscr).toFixed(2)}x DSCR`);
   }
 
-  const bandLabel: Record<string, string> = { strong_buy: "Strong Buy", buy: "Buy", hold: "Hold", pass: "Pass", strong_reject: "Strong Reject" };
+  const bandLabel: Record<string, string> = { strong_buy: "Strong Buy", buy: "Buy", hold: "Neutral", pass: "Pass", strong_reject: "Strong Reject" };
   const label = bandLabel[band] || band;
 
   let rec = `${label} — Score ${score}/100.`;

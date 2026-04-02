@@ -100,7 +100,7 @@ const SAMPLE_DEALS = [
     score: {
       totalScore: 68,
       scoreBand: "hold",
-      recommendation: "Hold — Score 68/100. Strengths: strong 7.65% cap rate, 1.58x DSCR, competitive $101/SF basis. Concerns: 3.8-year WALE, 8% vacancy, building age (1998).",
+      recommendation: "Neutral — Score 68/100. Strengths: strong 7.65% cap rate, 1.58x DSCR, competitive $101/SF basis. Concerns: 3.8-year WALE, 8% vacancy, building age (1998).",
       categories: [
         { name: "pricing", weight: 15, score: 82, explanation: "Cap rate 7.65%, $101/SF — strong value basis" },
         { name: "income_quality", weight: 15, score: 72, explanation: "DSCR 1.58x, 11.8% debt yield — solid cashflow" },

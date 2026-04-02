@@ -57,7 +57,7 @@ function ScoreBandDiagram() {
   const bands = [
     { label: "Strong Buy", range: "85–100", color: "#059669", bg: "#D1FAE5" },
     { label: "Buy", range: "70–84", color: "#2563EB", bg: "#DBEAFE" },
-    { label: "Hold", range: "50–69", color: C.tertiary, bg: "#FFF9EE" },
+    { label: "Neutral", range: "50–69", color: C.tertiary, bg: "#FFF9EE" },
     { label: "Pass", range: "30–49", color: "#EA580C", bg: "#FFF1E6" },
     { label: "Reject", range: "0–29", color: C.primary, bg: "#FEE2E2" },
   ];
@@ -286,12 +286,12 @@ const HELP_TOPICS: HelpTopic[] = [
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Property Cards</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          Each property appears as a card with: the property name, hero image (auto-extracted from the first page of your PDF), city/state location, score ring showing the investment score (0–100), score band label (Strong Buy, Buy, Hold, Pass, Reject), parse status, and document count. Click any card to open the full property detail page.
+          Each property appears as a card with: the property name, hero image (auto-extracted from the first page of your PDF), city/state location, score ring showing the investment score (0–100), score band label (Strong Buy, Buy, Neutral, Pass, Reject), parse status, and document count. Click any card to open the full property detail page.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Score Ring</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          The colored circular gauge on each card shows the deal score at a glance. Green (85+) for Strong Buy, blue (70–84) for Buy, gold (50–69) for Hold, orange (30–49) for Pass, and red (below 30) for Reject. The score updates automatically whenever you add documents or re-analyze.
+          The colored circular gauge on each card shows the deal score at a glance. Green (85+) for Strong Buy, blue (70–84) for Buy, gold (50–69) for Neutral, orange (30–49) for Pass, and red (below 30) for Reject. The score updates automatically whenever you add documents or re-analyze.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Parse Status</h4>

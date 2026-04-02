@@ -116,7 +116,7 @@ interface PropertyData {
 const BAND_CONFIG: Record<string, { label: string; color: string; bg: string; barColor: string }> = {
   strong_buy:    { label: "Strong Buy",    color: "#059669", bg: "#ECFDF5", barColor: "#10B981" },
   buy:           { label: "Buy",           color: "#0A7E5A", bg: "#ECFDF5", barColor: "#34D399" },
-  hold:          { label: "Hold",          color: "#D97706", bg: "#FFFBEB", barColor: "#FBBF24" },
+  hold:          { label: "Neutral",       color: "#D97706", bg: "#FFFBEB", barColor: "#FBBF24" },
   pass:          { label: "Pass",          color: "#DC2626", bg: "#FEF2F2", barColor: "#F87171" },
   strong_reject: { label: "Strong Reject", color: "#991B1B", bg: "#FEF2F2", barColor: "#EF4444" },
 };
@@ -145,7 +145,7 @@ function ScoreDistribution({ data }: { data: PropertyData[] }) {
   // Bucket into bands
   const buckets = { "85-100": 0, "70-84": 0, "50-69": 0, "30-49": 0, "0-29": 0 };
   const bucketColors = { "85-100": "#10B981", "70-84": "#34D399", "50-69": "#FBBF24", "30-49": "#F87171", "0-29": "#EF4444" };
-  const bucketLabels = { "85-100": "Strong Buy", "70-84": "Buy", "50-69": "Hold", "30-49": "Pass", "0-29": "Reject" };
+  const bucketLabels = { "85-100": "Strong Buy", "70-84": "Buy", "50-69": "Neutral", "30-49": "Pass", "0-29": "Reject" };
 
   scored.forEach(d => {
     const s = (d.property as any).scoreTotal || 0;

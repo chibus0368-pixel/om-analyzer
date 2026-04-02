@@ -1592,7 +1592,7 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
                 background: scoreBand === "strong_buy" || scoreBand === "buy" ? "rgba(5,150,105,0.1)" : scoreBand === "hold" ? "rgba(196,154,60,0.1)" : "rgba(185,23,47,0.1)",
                 color: scoreBand === "strong_buy" || scoreBand === "buy" ? "#059669" : scoreBand === "hold" ? "#C49A3C" : "#b9172f",
                 textTransform: "uppercase",
-              }}>{scoreBand.replace("_", " ")}</span>
+              }}>{scoreBand === "hold" ? "neutral" : scoreBand.replace("_", " ")}</span>
             </div>
           </div>
           {scoreRecommendation && (
