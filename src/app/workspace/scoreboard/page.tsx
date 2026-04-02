@@ -865,7 +865,6 @@ export default function ScoreboardPage() {
               <StatPill label="Top Score" value={stats.topScore > 0 ? `${stats.topScore}` : "--"}
                 color={stats.topScore >= 70 ? "#059669" : stats.topScore >= 50 ? "#D97706" : stats.topScore > 0 ? "#DC2626" : undefined}
               />
-              <StatPill label="Portfolio" value={stats.totalValue > 0 ? formatValue("asking_price", String(stats.totalValue)) : "--"} />
               <StatPill label="Avg Cap" value={stats.avgCap ? `${stats.avgCap}%` : "--"}
                 color={stats.avgCap && Number(stats.avgCap) >= 7 ? "#059669" : undefined}
               />
