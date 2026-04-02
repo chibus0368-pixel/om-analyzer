@@ -16,18 +16,14 @@ import UpgradeModal from "@/components/billing/UpgradeModal";
 
 /* Sidebar nav — matches Deal Signals design */
 const SIDEBAR_NAV = [
-  { href: "/workspace", label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4" },
   { href: "/workspace/scoreboard", label: "Scoreboard", icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
   { href: "/workspace/upload", label: "Upload Property", icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" },
   { href: "/workspace/map", label: "Map", icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" },
   { href: "/workspace/share", label: "Shareable Links", icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" },
 ];
 
-/* Top header nav links — removed per design: sidebar handles all nav inside the app */
-
 const BOTTOM_NAV = [
   { href: "/workspace/manage", label: "Workspaces", icon: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" },
-  { href: "/workspace/settings", label: "Settings", icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" },
   { href: "/workspace/profile", label: "Account Profile", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" },
 ];
 
@@ -272,6 +268,116 @@ function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean;
   );
 }
 
+/** Workspace dropdown — used in top header bar */
+function HeaderWorkspaceSwitcher({ onAddNew }: { onAddNew: () => void }) {
+  const { workspaces, activeWorkspace, switchWorkspace } = useWorkspace();
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={dropdownRef} style={{ position: "relative" }}>
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          display: "flex", alignItems: "center", gap: 8,
+          background: "none", border: "1.5px solid #e2e8f0", borderRadius: 10,
+          cursor: "pointer", padding: "6px 14px",
+          fontFamily: "inherit", transition: "all 0.15s",
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = "#cbd5e1"; e.currentTarget.style.background = "#f8fafc"; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.background = "none"; }}
+      >
+        <span style={{
+          fontSize: 13, fontWeight: 700, color: "#1e293b",
+          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+          maxWidth: 180,
+        }}>
+          {activeWorkspace?.name || "Loading..."}
+        </span>
+        {activeWorkspace && (
+          <span style={{
+            display: "inline-flex", alignItems: "center",
+            padding: "2px 7px", borderRadius: 4,
+            background: `${ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType || "retail"]}20`,
+            color: ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType || "retail"],
+            fontSize: 10, fontWeight: 700, flexShrink: 0, letterSpacing: 0.2,
+          }}>
+            {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType || "retail"]}
+          </span>
+        )}
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5" style={{ flexShrink: 0, transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s" }}>
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 6px)", left: 0, minWidth: 260,
+          background: "#ffffff", borderRadius: 12, zIndex: 200,
+          boxShadow: "0 20px 48px rgba(21, 27, 43, 0.18)",
+          overflow: "hidden", border: "1px solid #e2e8f0",
+          padding: 6,
+        }}>
+          {workspaces.map(ws => (
+            <button
+              key={ws.id}
+              onClick={() => { switchWorkspace(ws.id); setOpen(false); }}
+              className="ws-nav"
+              style={{
+                display: "flex", alignItems: "center", gap: 10, width: "100%",
+                padding: "10px 14px", background: ws.id === activeWorkspace?.id ? "rgba(185, 23, 47, 0.06)" : "transparent",
+                border: "none", cursor: "pointer", fontSize: 13, color: ws.id === activeWorkspace?.id ? "#b9172f" : "#475569",
+                fontWeight: ws.id === activeWorkspace?.id ? 700 : 500, fontFamily: "inherit",
+                textAlign: "left", borderRadius: 8,
+              }}
+            >
+              {ws.id === activeWorkspace?.id && <span style={{ color: "#b9172f", fontSize: 13 }}>✓</span>}
+              {ws.id !== activeWorkspace?.id && <span style={{ width: 13 }} />}
+              <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ws.name}</span>
+              <span style={{
+                display: "inline-flex", alignItems: "center",
+                padding: "2px 7px", borderRadius: 5,
+                background: `${ANALYSIS_TYPE_COLORS[ws.analysisType || "retail"]}20`,
+                color: ANALYSIS_TYPE_COLORS[ws.analysisType || "retail"],
+                fontSize: 10, fontWeight: 600,
+              }}>
+                {ANALYSIS_TYPE_LABELS[ws.analysisType || "retail"]}
+              </span>
+            </button>
+          ))}
+          <div style={{ margin: "4px 0 0", borderTop: "1px solid #f1f5f9", paddingTop: 4 }}>
+            <button
+              onClick={() => { setOpen(false); onAddNew(); }}
+              className="ws-nav"
+              style={{
+                display: "flex", alignItems: "center", gap: 10, width: "100%",
+                padding: "10px 14px", background: "transparent",
+                border: "none", cursor: "pointer", fontSize: 13,
+                color: "#64748b", fontWeight: 600, fontFamily: "inherit",
+                textAlign: "left", borderRadius: 8,
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = "#b9172f")}
+              onMouseLeave={e => (e.currentTarget.style.color = "#64748b")}
+            >
+              <span style={{ fontSize: 14, lineHeight: 1 }}>+</span>
+              <span>Add New Workspace</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; user: import("firebase/auth").User | null }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -431,22 +537,58 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
       {/* ===== TOP HEADER BAR — Deal Signals ===== */}
       <header style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0 24px", height: 56, minHeight: 56,
+        padding: "0 20px", height: 56, minHeight: 56,
         background: "#ffffff", borderBottom: "1px solid #e2e8f0",
         zIndex: 60,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+        {/* Left: Logo + Workspace Dropdown + Nav */}
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <Link href="/workspace" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
-            <DealSignalLogo size={28} fontSize={17} gap={8} />
+            <DealSignalLogo size={26} fontSize={16} gap={7} />
           </Link>
+
+          {/* Divider */}
+          <div style={{ width: 1, height: 28, background: "#e2e8f0" }} />
+
+          {/* Workspace dropdown */}
+          <HeaderWorkspaceSwitcher onAddNew={() => setShowNewWs(true)} />
+
+          {/* Top nav links */}
+          <nav style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            {[
+              { href: "/workspace", label: "Dashboard" },
+              { href: "/workspace/settings", label: "Settings" },
+            ].map(item => {
+              const active = item.href === "/workspace"
+                ? pathname === "/workspace"
+                : pathname.startsWith(item.href);
+              return (
+                <Link key={item.href} href={item.href} style={{
+                  padding: "6px 14px", borderRadius: 8,
+                  fontSize: 13, fontWeight: active ? 700 : 500,
+                  color: active ? "#b9172f" : "#64748b",
+                  background: active ? "rgba(185,23,47,0.06)" : "transparent",
+                  textDecoration: "none", transition: "all 0.15s",
+                  fontFamily: "'Inter', sans-serif",
+                }}
+                  onMouseEnter={e => { if (!active) { e.currentTarget.style.color = "#1e293b"; e.currentTarget.style.background = "#f8fafc"; } }}
+                  onMouseLeave={e => { if (!active) { e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "transparent"; } }}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+
+        {/* Right: Trial, Upgrade, Help, Profile */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <TrialStatusBar onUpgradeClick={() => setShowUpgrade(true)} />
           {userTier === "free" ? (
             <button
               onClick={() => setShowUpgrade(true)}
               style={{
-                padding: "8px 20px", background: "#b9172f", color: "#fff", borderRadius: 50,
+                padding: "7px 18px", background: "#b9172f", color: "#fff", borderRadius: 50,
                 fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer",
                 fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
               }}
@@ -455,7 +597,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             </button>
           ) : (
             <Link href="/workspace/profile?tab=account" style={{
-              padding: "8px 20px", background: "transparent", color: "#b9172f",
+              padding: "7px 18px", background: "transparent", color: "#b9172f",
               border: "1.5px solid #e2e8f0", borderRadius: 50,
               fontSize: 12, fontWeight: 700, textDecoration: "none", fontFamily: "'Inter', sans-serif",
             }}>
@@ -466,13 +608,13 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             background: "none", border: "none", cursor: "pointer", color: "#585e70", padding: 4,
             display: "flex", alignItems: "center", borderRadius: 6, transition: "color 0.15s",
           }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
           </Link>
           <Link href="/workspace/profile" className="ws-header-nav" title="Account Profile" style={{
             background: "none", border: "none", cursor: "pointer", color: "#585e70", padding: 4,
             display: "flex", alignItems: "center", borderRadius: 6, transition: "color 0.15s, background 0.15s",
           }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
           </Link>
         </div>
       </header>
@@ -486,14 +628,6 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         paddingTop: 12, overflow: "hidden",
         borderRight: "1px solid #e2e8f0",
       }}>
-        {/* Workspace info */}
-        {!collapsed && (
-          <div style={{ padding: "0 12px 8px" }}>
-            <SidebarWorkspaceSwitcher collapsed={collapsed} onAddNew={() => setShowNewWs(true)} />
-          </div>
-        )}
-        {collapsed && <SidebarWorkspaceSwitcher collapsed={collapsed} onAddNew={() => setShowNewWs(true)} />}
-
         {/* Main nav */}
         <div style={{ display: "flex", flexDirection: "column", gap: 1, padding: "0 8px" }}>
           {SIDEBAR_NAV.map(item => (
