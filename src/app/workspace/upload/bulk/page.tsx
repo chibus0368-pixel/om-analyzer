@@ -178,15 +178,13 @@ export default function BulkUploadPage() {
             const parsedState = p.state || data.fields?.property_basics?.state?.value;
 
             if (parsedName && parsedName !== "Unknown Property") {
-              const fullName = parsedAddress && parsedAddress !== "Unknown Address"
-                ? `${parsedName} — ${parsedAddress}`
-                : parsedCity && parsedCity !== "Unknown City"
-                  ? `${parsedName} — ${parsedCity}, ${parsedState || ""}`
-                  : parsedName;
-              setItems(prev => prev.map(i => i.id === item.id ? { ...i, propertyName: fullName } : i));
+              // Smart name: strip address duplication, keep it short
+              const { buildSmartPropertyName } = await import("@/lib/workspace/propertyNameUtils");
+              const smartName = buildSmartPropertyName(parsedName, parsedAddress, parsedCity, parsedState);
+              setItems(prev => prev.map(i => i.id === item.id ? { ...i, propertyName: smartName } : i));
               try {
                 const { updateProperty } = await import("@/lib/workspace/firestore");
-                await updateProperty(propertyId, { propertyName: fullName } as any);
+                await updateProperty(propertyId, { propertyName: smartName } as any);
               } catch { /* non-blocking */ }
             }
 

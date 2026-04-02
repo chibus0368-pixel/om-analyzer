@@ -81,7 +81,7 @@ export default function TermsPage() {
             },
             {
               title: "Contact",
-              content: "For questions about these terms, contact us at contact@nnntriplenet.com."
+              content: "For questions about these terms, contact us at support@dealsignals.app."
             },
           ].map((section) => (
             <div key={section.title} style={{ marginBottom: 32 }}>

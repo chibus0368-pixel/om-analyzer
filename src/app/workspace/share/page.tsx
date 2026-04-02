@@ -34,7 +34,7 @@ const C = {
   radius: 6,
 };
 
-const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://www.nnntriplenet.com";
+const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://www.dealsignals.app";
 
 export default function ShareLinksPage() {
   const { user } = useAuth();

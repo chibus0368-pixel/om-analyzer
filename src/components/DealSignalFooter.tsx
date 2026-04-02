@@ -17,7 +17,7 @@ export default function DealSignalFooter() {
         {[
           { label: "Privacy", href: "/privacy" },
           { label: "Terms", href: "/terms" },
-          { label: "Support", href: "/contact" },
+          { label: "Support", href: "mailto:support@dealsignals.app" },
         ].map(link => (
           <Link key={link.label} href={link.href} style={{
             fontSize: 11, fontWeight: 500, color: "#585e70", textDecoration: "none",

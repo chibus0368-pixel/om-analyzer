@@ -6,6 +6,7 @@ import { getWorkspaceProperties, getPropertyExtractedFields } from "@/lib/worksp
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import type { Property, ExtractedField } from "@/lib/workspace/types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
+import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -299,7 +300,7 @@ function LeaderboardRow({ pd, rank, totalCount, maxScore, expanded, onToggle }: 
                 overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
               }}
             >
-              {pd.property.propertyName}
+              {cleanDisplayName(pd.property.propertyName, pd.property.address1, pd.property.city, pd.property.state)}
             </Link>
           </div>
           {location && (
@@ -495,7 +496,7 @@ async function exportToXlsx(propertyData: PropertyData[], workspaceName: string)
     const fileSaverMod = await import("file-saver");
     const saveAs = fileSaverMod.saveAs || fileSaverMod.default?.saveAs;
     const wb = new ExcelJS.Workbook();
-    wb.creator = "NNNTripleNet OM Analyzer";
+    wb.creator = "Deal Signals";
     const ws = wb.addWorksheet("Deal Scoreboard", { views: [{ state: "frozen", xSplit: 1, ySplit: 2 }] });
     const propCount = propertyData.length;
 
@@ -946,7 +947,7 @@ export default function ScoreboardPage() {
                           </div>
                         )}
                         <Link href={`/workspace/properties/${pd.property.id}`} style={{ color: "#fff", textDecoration: "none", fontSize: 12 }}>
-                          {pd.property.propertyName}
+                          {cleanDisplayName(pd.property.propertyName, pd.property.address1, pd.property.city, pd.property.state)}
                         </Link>
                         {pd.property.city && (
                           <div style={{ fontSize: 10, fontWeight: 400, color: "#585e70" }}>

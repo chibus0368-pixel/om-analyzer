@@ -45,7 +45,7 @@ function getResend(): any {
  */
 const DEFAULT_FROM = process.env.EMAIL_FROM_ADDRESS || 'Deal Signals <onboarding@resend.dev>';
 const COMPANY_NAME = 'Deal Signals';
-const UNSUBSCRIBE_DOMAIN = process.env.UNSUBSCRIBE_DOMAIN || 'https://nnntriplenet.com';
+const UNSUBSCRIBE_DOMAIN = process.env.UNSUBSCRIBE_DOMAIN || 'https://dealsignals.app';
 const PHYSICAL_ADDRESS = 'Mequon, Wisconsin';
 
 /**

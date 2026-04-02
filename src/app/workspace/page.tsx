@@ -8,6 +8,7 @@ import { collection, query, where, getDocs, writeBatch, doc, updateDoc } from "f
 import { db } from "@/lib/firebase";
 import type { Property, ProjectDocument } from "@/lib/workspace/types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
+import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -82,6 +83,7 @@ function PropertyCard({ property, docCount }: { property: Property; docCount: nu
   const scoreBand = (property as any).scoreBand;
   const heroUrl = (property as any).heroImageUrl;
   const location = [property.city, property.state].filter(Boolean).join(", ");
+  const displayName = cleanDisplayName(property.propertyName, property.address1, property.city, property.state);
 
   const bandColors: Record<string, { bg: string; text: string; label: string }> = {
     strong_buy: { bg: "#D1FAE5", text: "#059669", label: "Strong Buy" },
@@ -109,7 +111,7 @@ function PropertyCard({ property, docCount }: { property: Property; docCount: nu
         overflow: "hidden", position: "relative",
       }}>
         {heroUrl ? (
-          <img src={heroUrl} alt={property.propertyName}
+          <img src={heroUrl} alt={displayName}
             style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center" }}
           />
         ) : (
@@ -142,7 +144,7 @@ function PropertyCard({ property, docCount }: { property: Property; docCount: nu
       {/* Card body */}
       <div style={{ padding: "14px 16px", flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: "#151b2b", lineHeight: 1.3, fontFamily: "'Playfair Display', Georgia, serif" }}>
-          {property.propertyName}
+          {displayName}
         </div>
         {location && (
           <div style={{ fontSize: 12, color: "#585e70" }}>{location}</div>

@@ -4,16 +4,16 @@ import DealSignalFooter from "@/components/DealSignalFooter";
 
 export const metadata: Metadata = {
   title: "Unsubscribe",
-  description: "Unsubscribe from NNNTripleNet emails.",
+  description: "Unsubscribe from Deal Signals emails.",
   openGraph: {
     title: "Unsubscribe",
     description:
-      "Unsubscribe from NNNTripleNet emails.",
+      "Unsubscribe from Deal Signals emails.",
   },
   twitter: {
     title: "Unsubscribe",
     description:
-      "Unsubscribe from NNNTripleNet emails.",
+      "Unsubscribe from Deal Signals emails.",
   },
 };
 

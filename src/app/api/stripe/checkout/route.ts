@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
       // User already has a subscription — redirect to portal instead
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: customerId,
-        return_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.nnntriplenet.com"}/workspace`,
+        return_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/workspace`,
       });
       return NextResponse.json({ url: portalSession.url, type: "portal" });
     }
@@ -70,8 +70,8 @@ export async function POST(req: NextRequest) {
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [{ price: planConfig.stripePriceId, quantity: 1 }],
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.nnntriplenet.com"}/workspace?upgraded=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.nnntriplenet.com"}/pricing`,
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/workspace?upgraded=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/pricing`,
       subscription_data: {
         metadata: { firebaseUid: uid, plan: planConfig.id },
       },

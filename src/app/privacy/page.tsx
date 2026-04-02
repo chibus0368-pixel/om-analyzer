@@ -49,7 +49,7 @@ export default function PrivacyPage() {
             },
             {
               title: "Email Communications",
-              content: "You may receive daily briefs, weekly digests, and occasional product updates based on your subscription preferences. Every email includes a one-click unsubscribe link. You can also manage your preferences or unsubscribe entirely at any time by contacting us at contact@nnntriplenet.com."
+              content: "You may receive daily briefs, weekly digests, and occasional product updates based on your subscription preferences. Every email includes a one-click unsubscribe link. You can also manage your preferences or unsubscribe entirely at any time by contacting us at support@dealsignals.app."
             },
             {
               title: "Cookies & Analytics",
@@ -65,7 +65,7 @@ export default function PrivacyPage() {
             },
             {
               title: "Your Rights",
-              content: "You have the right to access, correct, or delete your personal information at any time. To exercise these rights, contact us at contact@nnntriplenet.com. We will respond to requests within 30 days. California residents have additional rights under the CCPA."
+              content: "You have the right to access, correct, or delete your personal information at any time. To exercise these rights, contact us at support@dealsignals.app. We will respond to requests within 30 days. California residents have additional rights under the CCPA."
             },
             {
               title: "Changes to This Policy",
@@ -73,7 +73,7 @@ export default function PrivacyPage() {
             },
             {
               title: "Contact",
-              content: "For privacy-related questions or concerns, contact us at contact@nnntriplenet.com."
+              content: "For privacy-related questions or concerns, contact us at support@dealsignals.app."
             },
           ].map((section) => (
             <div key={section.title} style={{ marginBottom: 32 }}>

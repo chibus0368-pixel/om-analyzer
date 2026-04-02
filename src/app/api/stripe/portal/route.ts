@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     const stripe = getStripe();
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.nnntriplenet.com"}/workspace`,
+      return_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/workspace`,
     });
 
     return NextResponse.json({ url: session.url });

@@ -116,7 +116,7 @@ async function tryNominatim(query: string): Promise<{ lat: number; lng: number; 
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=us&limit=1`,
       {
-        headers: { "User-Agent": "NNNTripleNet-OMAnalyzer/1.0 (contact@nnntriplenet.com)" },
+        headers: { "User-Agent": "DealSignals/1.0 (support@dealsignals.app)" },
         signal: AbortSignal.timeout(5000),
       }
     );
@@ -153,7 +153,7 @@ async function tryNominatimStructured(address: string): Promise<{ lat: number; l
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?${params}`,
       {
-        headers: { "User-Agent": "NNNTripleNet-OMAnalyzer/1.0 (contact@nnntriplenet.com)" },
+        headers: { "User-Agent": "DealSignals/1.0 (support@dealsignals.app)" },
         signal: AbortSignal.timeout(5000),
       }
     );

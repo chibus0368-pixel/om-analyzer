@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Try Pro Free — Deal Signals",
     description: "Explore sample CRE deals with full Pro scoring, analysis, and risk signals.",
-    url: "https://www.nnntriplenet.com/try-pro",
+    url: "https://www.dealsignals.app/try-pro",
   },
   twitter: {
     card: "summary_large_image",

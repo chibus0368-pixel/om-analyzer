@@ -11,6 +11,7 @@ import { extractTextFromFiles } from "@/lib/workspace/file-reader";
 import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
 import type { Property, DocCategory, AnalysisType } from "@/lib/workspace/types";
 import { DOC_CATEGORY_LABELS, ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS, ANALYSIS_TYPE_ICONS } from "@/lib/workspace/types";
+import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import UpgradeModal from "@/components/billing/UpgradeModal";
 
 const ACCEPTED_EXT = ".pdf,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.webp";
@@ -678,7 +679,7 @@ export default function UploadPage() {
                 <option value="">Select existing property...</option>
                 {properties.map(p => (
                   <option key={p.id} value={p.id}>
-                    {p.propertyName}{p.city ? ` — ${p.city}, ${p.state}` : ""}
+                    {cleanDisplayName(p.propertyName, p.address1, p.city, p.state)}{p.city ? ` — ${p.city}, ${p.state}` : ""}
                   </option>
                 ))}
               </select>

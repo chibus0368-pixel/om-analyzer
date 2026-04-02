@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     // Resolve base URL for internal API calls
     // Priority: explicit env var > production domain > Vercel deployment URL > localhost
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
-      || (process.env.VERCEL_ENV === "production" ? "https://www.nnntriplenet.com" : null)
+      || (process.env.VERCEL_ENV === "production" ? "https://www.dealsignals.app" : null)
       || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
       || "http://localhost:3000";
     console.log("[process] baseUrl:", baseUrl, "VERCEL_ENV:", process.env.VERCEL_ENV);
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
         fieldsExtracted = parseData.fieldsExtracted || 0;
         parsedData = parseData.fields;
 
-        // Update property name if parsed
+        // Update property name if parsed — use smart naming (no address in title)
         if (parsedData) {
           const p = parsedData.property || {};
           const parsedName = p.name || p.property_name
@@ -76,15 +76,13 @@ export async function POST(req: NextRequest) {
           const parsedState = p.state || parsedData.property_basics?.state?.value;
 
           if (parsedName && parsedName !== "Unknown Property") {
-            const fullName = parsedAddress && parsedAddress !== "Unknown Address"
-              ? `${parsedName} — ${parsedAddress}`
-              : parsedCity && parsedCity !== "Unknown City"
-                ? `${parsedName} — ${parsedCity}, ${parsedState || ""}`
-                : parsedName;
+            // Smart name: strip address duplication, keep it short
+            const { buildSmartPropertyName } = await import("@/lib/workspace/propertyNameUtils");
+            const smartName = buildSmartPropertyName(parsedName, parsedAddress, parsedCity, parsedState);
 
             try {
               await db.collection("workspace_properties").doc(propertyId).set({
-                propertyName: fullName,
+                propertyName: smartName,
                 processingStatus: "scoring",
                 updatedAt: new Date().toISOString(),
               }, { merge: true });

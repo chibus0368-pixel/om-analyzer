@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import DealSignalLogo from "@/components/DealSignalLogo";
+import DealSignalNav from "@/components/DealSignalNav";
+import DealSignalFooter from "@/components/DealSignalFooter";
 
 const TIERS = [
   {
@@ -96,25 +97,7 @@ export default function PricingPage() {
         .faq-btn:hover { background: #F6F8FB !important; }
       `}</style>
 
-      {/* Header */}
-      <header style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        maxWidth: 1280, margin: "0 auto", padding: "18px 40px",
-      }}>
-        <Link href="/om-analyzer" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
-          <DealSignalLogo size={34} fontSize={19} gap={9} />
-        </Link>
-        <nav style={{ display: "flex", alignItems: "center", gap: 28 }}>
-          <Link href="/om-analyzer#how-it-works" style={{ fontSize: 12, fontWeight: 600, color: "#585e70", textDecoration: "none", textTransform: "uppercase", letterSpacing: 1 }}>How it works</Link>
-          <Link href="/pricing" style={{ fontSize: 12, fontWeight: 600, color: "#b9172f", textDecoration: "none", textTransform: "uppercase", letterSpacing: 1 }}>Pricing</Link>
-          <Link href="/workspace/login" style={{ fontSize: 12, fontWeight: 600, color: "#585e70", textDecoration: "none", textTransform: "uppercase", letterSpacing: 1 }}>Login</Link>
-          <Link href="/try-pro" style={{
-            fontSize: 12, fontWeight: 700, color: "#fff", textDecoration: "none",
-            background: "linear-gradient(135deg, #b9172f, #dc3545)", borderRadius: 6, padding: "8px 20px",
-            textTransform: "uppercase", letterSpacing: 0.5,
-          }}>Free Pro Trial</Link>
-        </nav>
-      </header>
+      <DealSignalNav />
 
       <section style={{ background: "#FAFBFD", minHeight: "100vh" }}>
         {/* Hero */}
@@ -264,29 +247,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer style={{
-        borderTop: "1px solid #EDF0F5", padding: "28px 40px",
-        maxWidth: 1280, margin: "0 auto",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-      }}>
-        <DealSignalLogo size={22} fontSize={13} gap={7} />
-        <div style={{ display: "flex", gap: 24 }}>
-          {[
-            { label: "Privacy", href: "/privacy" },
-            { label: "Terms", href: "/terms" },
-            { label: "Support", href: "/contact" },
-          ].map(link => (
-            <Link key={link.label} href={link.href} style={{
-              fontSize: 11, fontWeight: 500, color: "#585e70", textDecoration: "none",
-              textTransform: "uppercase", letterSpacing: 0.5,
-            }}>{link.label}</Link>
-          ))}
-        </div>
-        <span style={{ fontSize: 10, color: "#B4C1D1" }}>
-          &copy; 2026 Deal Signals
-        </span>
-      </footer>
+      <DealSignalFooter />
     </>
   );
 }

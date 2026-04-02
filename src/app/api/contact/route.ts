@@ -76,7 +76,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const docRef = await addDoc(messagesRef, messageDoc);
 
     // Send notification email to admin
-    const adminEmail = process.env.ADMIN_EMAIL_ADDRESS || 'contact@nnntriplenet.com';
+    const adminEmail = process.env.ADMIN_EMAIL_ADDRESS || 'support@dealsignals.app';
     const adminNotificationHtml = generateAdminNotificationEmail(
       sanitizedName,
       sanitizedEmail,

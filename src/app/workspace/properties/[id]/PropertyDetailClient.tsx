@@ -16,6 +16,7 @@ import { extractTextFromFiles } from "@/lib/workspace/file-reader";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import Link from "next/link";
 import AskDealPanel from "@/components/AskDealPanel";
+import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 
 /* ── Design tokens ─────────────────────────────────────── */
 const C = {
@@ -844,7 +845,7 @@ function PropertyDetailInner({
           <div style={{ flex: 1, padding: "24px 28px 20px" }}>
             {/* Title */}
             <EditablePropertyName
-              name={property.propertyName}
+              name={cleanDisplayName(property.propertyName, property.address1, property.city, property.state)}
               propertyId={propertyId}
               onSave={(newName: string) => setProperty((prev: Property | null) => prev ? { ...prev, propertyName: newName } : prev)}
             />

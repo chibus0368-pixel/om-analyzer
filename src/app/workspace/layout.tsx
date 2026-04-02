@@ -7,6 +7,7 @@ import { WorkspaceProvider, useWorkspace } from "@/lib/workspace/workspace-conte
 import { useWorkspaceAuth } from "@/lib/workspace/auth";
 import type { Property, AnalysisType } from "@/lib/workspace/types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_ICONS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
+import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import Link from "next/link";
 import DealSignalLogo from "@/components/DealSignalLogo";
 import TrialStatusBar from "@/components/billing/TrialStatusBar";
@@ -529,7 +530,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                         fontWeight: isPropertyActive ? 600 : 500,
                         transition: "all 0.15s",
                       }}
-                      title={`${prop.propertyName}${prop.city ? " - " + prop.city : ""}`}
+                      title={`${cleanDisplayName(prop.propertyName, prop.address1, prop.city, prop.state)}${prop.city ? " - " + prop.city : ""}`}
                     >
                       <div style={{
                         width: 28, height: 28, borderRadius: 8,
@@ -538,7 +539,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                       }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={isPropertyActive ? "#b9172f" : "#94a3b8"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                       </div>
-                      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{prop.propertyName}</span>
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{cleanDisplayName(prop.propertyName, prop.address1, prop.city, prop.state)}</span>
                     </Link>
                   );
                 })}
@@ -622,7 +623,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           }}>
             <div>
               <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 14, color: "#151b2b", display: "block", marginBottom: 6 }}>Deal Signals</span>
-              <span style={{ color: "#585e70", fontSize: 10 }}>&copy; 2026 NNNTripleNet. All rights reserved.</span>
+              <span style={{ color: "#585e70", fontSize: 10 }}>&copy; 2026 Deal Signals. All rights reserved.</span>
             </div>
             <div style={{ display: "flex", gap: 24 }}>
               <a href="/terms" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Terms</a>

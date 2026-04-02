@@ -60,7 +60,7 @@ function emailWrapper(content: string): string {
  * Get the base app URL for links in emails
  */
 function getAppUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://nnntriplenet.com';
+  return process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://dealsignals.app';
 }
 
 /**

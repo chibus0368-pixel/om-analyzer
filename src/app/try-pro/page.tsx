@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import DealSignalLogo from "@/components/DealSignalLogo";
+import DealSignalNav from "@/components/DealSignalNav";
+import DealSignalFooter from "@/components/DealSignalFooter";
 
 /* ===========================================================================
    SAMPLE DEAL DATA — two realistic CRE properties with full scoring
@@ -187,25 +188,7 @@ export default function TryProPage() {
         }
       `}</style>
 
-      {/* ── Header ── */}
-      <header style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "16px 32px", background: "#fff", borderBottom: "1px solid #e2e8f0",
-        position: "sticky", top: 0, zIndex: 100,
-      }}>
-        <Link href="/om-analyzer" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <DealSignalLogo size={30} fontSize={17} gap={8} />
-        </Link>
-        <nav style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <Link href="/om-analyzer" style={{ fontSize: 13, fontWeight: 600, color: "#64748b", textDecoration: "none" }}>Home</Link>
-          <Link href="/pricing" style={{ fontSize: 13, fontWeight: 600, color: "#64748b", textDecoration: "none" }}>Pricing</Link>
-          <Link href="/workspace/login" className="tp-cta-btn" style={{
-            fontSize: 13, padding: "9px 22px", background: "#b9172f", color: "#fff",
-          }}>
-            Start Free Trial
-          </Link>
-        </nav>
-      </header>
+      <DealSignalNav />
 
       <div style={{ display: "flex", minHeight: "calc(100vh - 60px)" }}>
 
@@ -625,25 +608,7 @@ export default function TryProPage() {
         </main>
       </div>
 
-      {/* Footer */}
-      <footer style={{
-        padding: "20px 32px", borderTop: "1px solid #e2e8f0", background: "#fff",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-      }}>
-        <DealSignalLogo size={22} fontSize={13} gap={7} />
-        <div style={{ display: "flex", gap: 20 }}>
-          {[
-            { label: "Privacy", href: "/privacy" },
-            { label: "Terms", href: "/terms" },
-            { label: "Support", href: "/contact" },
-          ].map(link => (
-            <Link key={link.label} href={link.href} style={{
-              fontSize: 11, fontWeight: 500, color: "#94a3b8", textDecoration: "none",
-            }}>{link.label}</Link>
-          ))}
-        </div>
-        <span style={{ fontSize: 10, color: "#cbd5e1" }}>&copy; 2026 Deal Signals</span>
-      </footer>
+      <DealSignalFooter />
     </>
   );
 }

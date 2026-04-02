@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       id: ref.id,
       ...doc,
-      url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.nnntriplenet.com"}/share/${shareId}`,
+      url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/share/${shareId}`,
     });
   } catch (err: any) {
     console.error("[share] POST error:", err);

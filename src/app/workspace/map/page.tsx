@@ -6,6 +6,7 @@ import { getWorkspaceProperties, getPropertyExtractedFields, updateProperty } fr
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import type { Property, ExtractedField } from "@/lib/workspace/types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
+import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 
 function gf(fields: ExtractedField[], group: string, name: string): any {
   const f = fields.find(x => x.fieldGroup === group && x.fieldName === name);
@@ -225,7 +226,7 @@ export default function MapPage() {
 
           const popupHtml = `
             <div style="min-width:220px;font-family:Inter,system-ui,sans-serif;padding:4px 0;">
-              <div style="font-weight:700;font-size:14px;margin-bottom:2px;color:#151b2b;">${prop.propertyName}</div>
+              <div style="font-weight:700;font-size:14px;margin-bottom:2px;color:#151b2b;">${cleanDisplayName(prop.propertyName, prop.address1, prop.city, prop.state)}</div>
               <div style="font-size:11px;color:#585e70;margin-bottom:10px;">${addrForPopup}</div>
               ${price || capRate || gla ? `
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
