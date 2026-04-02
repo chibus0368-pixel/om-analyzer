@@ -99,6 +99,18 @@ export default function UploadPage() {
     getWorkspaceProperties(user.uid, activeWorkspace.id).then(setProperties).catch(() => {});
   }, [user, activeWorkspace]);
 
+  // Warn user before leaving during processing
+  useEffect(() => {
+    if (step !== "processing") return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "Upload is still in progress. If you leave now, your property may not be fully processed.";
+      return e.returnValue;
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [step]);
+
   const addFiles = useCallback((newFiles: FileList | File[]) => {
     const items = Array.from(newFiles).map(file => ({
       file,
@@ -605,15 +617,14 @@ export default function UploadPage() {
           <div style={{ textAlign: "center" }}>
             <p style={{ fontSize: 14, fontWeight: 600, color: C.onSurface, margin: "0 0 4px" }}>{statusMsg}</p>
             <p style={{ fontSize: 12, color: C.secondary, margin: "0 0 4px" }}>
-              {statusMsg.includes("safely navigate") ? "AI analysis, scoring, and output generation are running on the server." :
-               statusMsg.includes("Analyzing") ? "AI is extracting property data and calculating underwriting (30-60 seconds)" :
+              {statusMsg.includes("Analyzing") ? "AI is extracting property data and calculating underwriting (30-60 seconds)" :
                statusMsg.includes("Reading") ? "Extracting text from your document (5-15 seconds)" :
                statusMsg.includes("image") ? "Capturing property image from PDF (5 seconds)" :
                statusMsg.includes("Detecting") ? "Classifying property type..." :
                "Processing your files..."}
             </p>
-            <p style={{ fontSize: 11, fontWeight: 600, color: "#059669", margin: 0 }}>
-              You can safely navigate away — processing continues in the background.
+            <p style={{ fontSize: 11, fontWeight: 600, color: "#D97706", margin: 0 }}>
+              Please stay on this page until processing is complete.
             </p>
           </div>
 
