@@ -4,6 +4,13 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // Let the Firebase auth handler proxy through WITHOUT any custom headers.
+  // The /__/auth/* rewrite proxies to firebaseapp.com and needs full control
+  // of its own headers (scripts, cookies, postMessage) for OAuth to work.
+  if (pathname.startsWith('/__/auth')) {
+    return NextResponse.next();
+  }
+
   // Create response with security and CORS headers
   const response = NextResponse.next();
 
