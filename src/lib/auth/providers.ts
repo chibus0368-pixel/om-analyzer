@@ -4,6 +4,7 @@ import {
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
+  signInWithCredential,
   sendEmailVerification,
   sendPasswordResetEmail,
   confirmPasswordReset,
@@ -25,24 +26,141 @@ export async function loginWithEmail(email: string, password: string): Promise<U
   return signInWithEmailAndPassword(auth, email, password);
 }
 
+/* ─────────────────────────────────────────────────────────────
+   Google Identity Services (GIS) — direct sign-in
+
+   This bypasses Firebase's auth handler entirely.  Instead of
+   opening a popup to firebaseapp.com/__/auth/handler, we open
+   Google's own OAuth consent screen directly.  The consent
+   screen shows the app name ("Deal Signals") and origin domain
+   ("dealsignals.app") — no Firebase domain visible anywhere.
+
+   Flow:
+   1. Load the GIS client script
+   2. Open Google's OAuth token popup
+   3. Get access_token back from Google
+   4. Create a Firebase credential from it
+   5. Sign into Firebase with signInWithCredential
+   ───────────────────────────────────────────────────────────── */
+
+// Cache the GIS script load
+let gisLoaded = false;
+let gisLoadPromise: Promise<void> | null = null;
+
+function loadGisScript(): Promise<void> {
+  if (gisLoaded) return Promise.resolve();
+  if (gisLoadPromise) return gisLoadPromise;
+
+  gisLoadPromise = new Promise((resolve, reject) => {
+    if (document.querySelector('script[src*="accounts.google.com/gsi/client"]')) {
+      gisLoaded = true;
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => { gisLoaded = true; resolve(); };
+    script.onerror = () => reject(new Error('Failed to load Google Identity Services'));
+    document.head.appendChild(script);
+  });
+
+  return gisLoadPromise;
+}
+
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        oauth2: {
+          initTokenClient: (config: {
+            client_id: string;
+            scope: string;
+            callback: (response: { access_token?: string; error?: string }) => void;
+            error_callback?: (error: { type: string }) => void;
+          }) => {
+            requestAccessToken: (opts?: { prompt?: string }) => void;
+          };
+        };
+      };
+    };
+  }
+}
+
 /**
- * Try popup first — fall back to redirect if popup is blocked or fails.
- * Common failures: auth/popup-blocked, auth/unauthorized-domain, browser restrictions.
+ * Sign in with Google using GIS (Google Identity Services).
+ * Shows "Deal Signals" and "dealsignals.app" on the consent screen.
+ * Falls back to the legacy Firebase popup flow if GIS client ID is not set.
  */
 export async function loginWithGoogle(): Promise<UserCredential> {
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
+  // If no GIS client ID configured, fall back to legacy Firebase popup flow
+  if (!clientId) {
+    console.warn('[auth] NEXT_PUBLIC_GOOGLE_CLIENT_ID not set — falling back to Firebase popup');
+    return loginWithGoogleLegacy();
+  }
+
+  try {
+    await loadGisScript();
+  } catch {
+    console.warn('[auth] GIS script load failed — falling back to Firebase popup');
+    return loginWithGoogleLegacy();
+  }
+
+  if (!window.google?.accounts?.oauth2) {
+    console.warn('[auth] GIS not available — falling back to Firebase popup');
+    return loginWithGoogleLegacy();
+  }
+
+  return new Promise<UserCredential>((resolve, reject) => {
+    const client = window.google!.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: 'openid email profile',
+      callback: async (response) => {
+        if (response.error || !response.access_token) {
+          reject(new Error(response.error || 'No access token received'));
+          return;
+        }
+        try {
+          // Create Firebase credential from Google access token
+          const credential = GoogleAuthProvider.credential(null, response.access_token);
+          const result = await signInWithCredential(auth, credential);
+          resolve(result);
+        } catch (err) {
+          reject(err);
+        }
+      },
+      error_callback: (error) => {
+        // User closed the popup or other non-fatal error
+        if (error.type === 'popup_closed') {
+          reject({ code: 'auth/popup-closed-by-user', message: 'Popup closed' });
+        } else {
+          reject(new Error(`Google sign-in error: ${error.type}`));
+        }
+      },
+    });
+
+    client.requestAccessToken({ prompt: 'select_account' });
+  });
+}
+
+/**
+ * Legacy Firebase popup/redirect flow.
+ * Shows hacktheprompt-8051e.firebaseapp.com on the consent screen.
+ */
+async function loginWithGoogleLegacy(): Promise<UserCredential> {
   try {
     return await signInWithPopup(auth, googleProvider);
   } catch (err: any) {
     const code = err?.code || '';
-    // If popup was blocked or cancelled, try redirect flow
     if (
       code === 'auth/popup-blocked' ||
       code === 'auth/cancelled-popup-request' ||
       code === 'auth/operation-not-supported-in-this-environment'
     ) {
-      // Redirect flow — page will reload, result picked up by checkGoogleRedirect()
       await signInWithRedirect(auth, googleProvider);
-      // This line won't execute (page redirects), but TS needs a return
       return null as any;
     }
     throw err;
