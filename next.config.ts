@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-// NNNTripleNet — Next.js configuration
+// Deal Signals — Next.js configuration
 const nextConfig: NextConfig = {
   // Disable ESLint during builds (fix lint issues separately)
   eslint: {
@@ -219,10 +219,15 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Rewrites configuration (if needed)
+  // Rewrites: proxy Firebase auth handler so custom authDomain works
   async rewrites() {
     return {
-      beforeFiles: [],
+      beforeFiles: [
+        {
+          source: "/__/auth/:path*",
+          destination: "https://hacktheprompt-8051e.firebaseapp.com/__/auth/:path*",
+        },
+      ],
       afterFiles: [],
       fallback: [],
     };
