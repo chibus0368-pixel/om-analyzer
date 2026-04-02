@@ -637,19 +637,19 @@ export default function OmAnalyzerPage() {
                   fontSize: 48, fontWeight: 800, color: "#1e293b", lineHeight: 1.15,
                   marginBottom: 20, letterSpacing: -1,
                 }}>
-                  Increase your deal flow<br />success with <span style={{ color: "#b9172f" }}>Deal Signals</span>
+                  Analyze Any Property<br />With <span style={{ color: "#b9172f" }}>One Upload</span>.
                 </h1>
                 <p style={{
                   fontSize: 17, color: "#64748b", lineHeight: 1.75,
                   maxWidth: 480, marginBottom: 36,
                 }}>
-                  Deal Signals allows you to underwrite any CRE deal in 60 seconds, extract 47+ data points, and get a buy/hold/pass recommendation from one document upload.
+                  PropScore AI turns complex Offering Memorandums into actionable investment intelligence. Scoring, pro formas, and insights—delivered in seconds.
                 </p>
                 <div className="ds-hero-btns" style={{ display: "flex", gap: 12 }}>
                   <button onClick={() => fileRef.current?.click()} className="ds-btn ds-btn-primary" style={{
                     fontSize: 15, padding: "14px 32px",
                   }}>
-                    Get it Now
+                    Analyze CRE Deal
                   </button>
                   <button onClick={() => { setData(generateDemoResult("Walgreens-NNN-Texas")); setView("result"); }} className="ds-btn ds-btn-outline" style={{
                     fontSize: 15, padding: "14px 32px",
