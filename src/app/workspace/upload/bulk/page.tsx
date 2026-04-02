@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
@@ -43,6 +43,18 @@ export default function BulkUploadPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [completedCount, setCompletedCount] = useState(0);
+
+  // Warn user before leaving while uploads are in flight
+  useEffect(() => {
+    if (!processing) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "Uploads are still in progress. If you leave now, remaining properties won't be uploaded.";
+      return e.returnValue;
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [processing]);
 
   const addFiles = useCallback((newFiles: FileList | File[]) => {
     const arr = Array.from(newFiles);
@@ -150,52 +162,37 @@ export default function BulkUploadPage() {
           } catch { /* non-blocking */ }
         }
 
-        // Analyze
+        // Extract text client-side, then hand off full pipeline to server
         setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: "analyzing", progress: 100 } : i));
 
         try {
           const extractedText = await extractTextFromFiles([file]);
-          const res = await fetch("/api/workspace/parse", {
+
+          // Fire the full server-side pipeline: parse → generate → score
+          // This runs as a single server-side request, so even if the user
+          // navigates away, Vercel will continue processing to completion.
+          const res = await fetch("/api/workspace/process", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              projectId: "workspace-default",
               propertyId,
               userId: user.uid,
               documentText: extractedText,
+              analysisType: activeWorkspace?.analysisType || "retail",
             }),
           });
           const data = await res.json();
 
+          // Update displayed name from server-parsed data
           if (data.success && data.fieldsExtracted > 0) {
-            // Update property name from parsed data
-            const p = data.fields?.property || {};
-            const parsedName = p.name || p.property_name
-              || data.fields?.property_basics?.property_name?.value;
-            const parsedAddress = p.address
-              || data.fields?.property_basics?.address?.value;
-            const parsedCity = p.city || data.fields?.property_basics?.city?.value;
-            const parsedState = p.state || data.fields?.property_basics?.state?.value;
-
-            if (parsedName && parsedName !== "Unknown Property") {
-              // Smart name: strip address duplication, keep it short
-              const { buildSmartPropertyName } = await import("@/lib/workspace/propertyNameUtils");
-              const smartName = buildSmartPropertyName(parsedName, parsedAddress, parsedCity, parsedState);
-              setItems(prev => prev.map(i => i.id === item.id ? { ...i, propertyName: smartName } : i));
-              try {
-                const { updateProperty } = await import("@/lib/workspace/firestore");
-                await updateProperty(propertyId, { propertyName: smartName } as any);
-              } catch { /* non-blocking */ }
-            }
-
-            // Generate output files
             try {
-              await fetch("/api/workspace/generate", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ propertyId, userId: user.uid, parsedData: data.fields }),
-              });
-            } catch { /* non-blocking */ }
+              // Fetch the updated property name from Firestore (server already set it)
+              const { getProperty } = await import("@/lib/workspace/firestore");
+              const updatedProp = await getProperty(propertyId);
+              if (updatedProp?.propertyName) {
+                setItems(prev => prev.map(i => i.id === item.id ? { ...i, propertyName: updatedProp.propertyName } : i));
+              }
+            } catch { /* non-blocking — name will update on next page load */ }
           }
         } catch { /* non-blocking */ }
 
@@ -362,6 +359,20 @@ export default function BulkUploadPage() {
         <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EDF0F5", padding: 24 }}>
           <style>{`@keyframes spin { to { transform: rotate(360deg) } }
             @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.5 } }`}</style>
+
+
+          {/* Stay on page warning */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10, padding: "12px 16px",
+            background: "#FFF8E1", border: "1px solid #FFD54F", borderRadius: 10, marginBottom: 16,
+          }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#78590B" }}>
+              Please stay on this page until all uploads are complete. Leaving will stop remaining uploads.
+            </span>
+          </div>
 
           <div style={{ textAlign: "center", marginBottom: 20 }}>
             <p style={{ fontSize: 15, fontWeight: 700, color: "#253352", margin: "0 0 4px" }}>
