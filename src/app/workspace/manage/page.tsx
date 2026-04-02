@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
-import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
+import type { AnalysisType } from "@/lib/workspace/types";
+import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS, ANALYSIS_TYPE_ICONS } from "@/lib/workspace/types";
 
 export default function ManageWorkspacesPage() {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function ManageWorkspacesPage() {
   const [editName, setEditName] = useState("");
   const [newName, setNewName] = useState("");
   const [showAdd, setShowAdd] = useState(false);
+  const [newType, setNewType] = useState<AnalysisType>("retail");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [confirmClearId, setConfirmClearId] = useState<string | null>(null);
   const [clearing, setClearing] = useState(false);
@@ -31,8 +33,9 @@ export default function ManageWorkspacesPage() {
   const handleAdd = async () => {
     const name = newName.trim();
     if (!name) return;
-    await addWorkspace(name);
+    await addWorkspace(name, newType);
     setNewName("");
+    setNewType("retail");
     setShowAdd(false);
     router.push("/workspace");
   };
@@ -80,39 +83,71 @@ export default function ManageWorkspacesPage() {
         </button>
       </div>
 
-      {/* Add workspace inline form */}
+      {/* Add workspace form */}
       {showAdd && (
         <div style={{
-          background: "#fff", borderRadius: 10, padding: "16px 20px", marginBottom: 12,
-          border: "1px solid #E5E9F0", display: "flex", gap: 10, alignItems: "center",
+          background: "#fff", borderRadius: 12, padding: "24px 28px", marginBottom: 16,
+          border: "1px solid #E5E9F0", boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
         }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#151b2b", marginBottom: 8 }}>Workspace Name</label>
           <input
             autoFocus
             value={newName}
             onChange={e => setNewName(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter") handleAdd(); if (e.key === "Escape") setShowAdd(false); }}
-            placeholder="Workspace name..."
+            onKeyDown={e => { if (e.key === "Enter") handleAdd(); if (e.key === "Escape") { setShowAdd(false); setNewType("retail"); } }}
+            placeholder="e.g. Q2 Pipeline, Client Portfolio"
             style={{
-              flex: 1, padding: "9px 12px", fontSize: 14, borderRadius: 6,
-              border: "1px solid #D8DFE9", outline: "none", fontFamily: "inherit",
+              width: "100%", padding: "10px 12px", fontSize: 14, borderRadius: 8,
+              border: "1px solid #e2e8f0", outline: "none", fontFamily: "inherit",
+              boxSizing: "border-box", marginBottom: 18,
             }}
           />
-          <button
-            onClick={handleAdd}
-            disabled={!newName.trim()}
-            style={{
-              padding: "9px 18px", background: newName.trim() ? "#DC2626" : "#D8DFE9", color: "#fff",
-              border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: newName.trim() ? "pointer" : "default", fontFamily: "inherit",
-            }}
-          >
-            Create
-          </button>
-          <button
-            onClick={() => { setShowAdd(false); setNewName(""); }}
-            style={{ padding: "9px 14px", background: "transparent", border: "1px solid #D8DFE9", borderRadius: 6, fontSize: 13, cursor: "pointer", color: "#5A7091", fontFamily: "inherit" }}
-          >
-            Cancel
-          </button>
+
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#151b2b", marginBottom: 10 }}>Property Type</label>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10, marginBottom: 20 }}>
+            {(["retail", "industrial", "office", "land"] as AnalysisType[]).map(type => (
+              <button
+                key={type}
+                onClick={() => setNewType(type)}
+                style={{
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+                  padding: "12px 8px", borderRadius: 10,
+                  border: newType === type ? `2px solid ${ANALYSIS_TYPE_COLORS[type]}` : "1px solid #e2e8f0",
+                  background: newType === type ? `${ANALYSIS_TYPE_COLORS[type]}10` : "#fff",
+                  cursor: "pointer", fontFamily: "inherit",
+                  transition: "all 0.15s",
+                }}
+              >
+                <span style={{ fontSize: 22 }}>{ANALYSIS_TYPE_ICONS[type]}</span>
+                <span style={{
+                  fontSize: 12, fontWeight: 600,
+                  color: newType === type ? ANALYSIS_TYPE_COLORS[type] : "#585e70",
+                }}>
+                  {ANALYSIS_TYPE_LABELS[type]}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+            <button
+              onClick={() => { setShowAdd(false); setNewName(""); setNewType("retail"); }}
+              style={{ padding: "9px 16px", background: "transparent", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, cursor: "pointer", color: "#585e70", fontFamily: "inherit" }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleAdd}
+              disabled={!newName.trim()}
+              style={{
+                padding: "9px 22px", background: newName.trim() ? "#b9172f" : "#D8DFE9", color: "#fff",
+                border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600,
+                cursor: newName.trim() ? "pointer" : "default", fontFamily: "inherit",
+              }}
+            >
+              Create Workspace
+            </button>
+          </div>
         </div>
       )}
 
