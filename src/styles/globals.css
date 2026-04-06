@@ -51,7 +51,7 @@
 body {
   font-family: var(--font-sans);
   color: var(--navy-900);
-  background: var(--white);
+  background: #0d0d14;
   -webkit-font-smoothing: antialiased;
   line-height: 1.6;
 }

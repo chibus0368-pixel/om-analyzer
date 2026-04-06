@@ -453,7 +453,6 @@ export default function OmAnalyzerPage() {
           .ds-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
           .ds-nav-links { display: none !important; }
           .ds-pro-features { grid-template-columns: 1fr 1fr !important; }
-          .ds-testimonials { grid-template-columns: 1fr !important; }
           .ds-workflow-steps { grid-template-columns: repeat(2, 1fr) !important; }
           .ds-process-strip { transform: scale(0.85); transform-origin: left center; }
         }
@@ -669,8 +668,8 @@ export default function OmAnalyzerPage() {
                 </div>
 
                 <h1 style={{
-                  fontSize: 48, fontWeight: 800, color: "#ffffff", lineHeight: 1.15,
-                  marginBottom: 20, letterSpacing: -1,
+                  fontSize: 56, fontWeight: 800, color: "#ffffff", lineHeight: 1.1,
+                  marginBottom: 20, letterSpacing: -1.5,
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                 }}>
                   Analyze Any <span style={{ color: "#c8ff00" }}>Commercial</span><br />Property With One Upload.
@@ -1040,43 +1039,7 @@ export default function OmAnalyzerPage() {
             </div>
           </div>
 
-          {/* ── 5. TESTIMONIALS ── */}
-          <div style={{ padding: "80px 32px", background: "#0d0d14", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-            <div style={{ maxWidth: 900, margin: "0 auto" }}>
-              <h2 style={{ fontSize: 34, fontWeight: 800, color: "#ffffff", marginBottom: 10, textAlign: "center" }}>
-                What our clients <span style={{ color: "#c8ff00" }}>say about us</span>
-              </h2>
-              <p style={{ fontSize: 15, color: "#9ca3af", marginBottom: 48, textAlign: "center", lineHeight: 1.7 }}>
-                CRE professionals trust Deal Signals for fast, reliable deal screening
-              </p>
-              <div className="ds-testimonials" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
-                {[
-                  { quote: "Cuts our deal screening time by 75%. We use it on every listing now.", author: "Marcus Chen", title: "Investor, Los Angeles", color: "#c8ff00" },
-                  { quote: "I send a Deal Signals report with every offer. Buyers love the clarity it provides.", author: "Jennifer Patel", title: "Broker, Chicago", color: "#3B82F6" },
-                  { quote: "Underwriting starts with this. Gets the hard metrics out of the way instantly.", author: "David Rogers", title: "Analyst, Dallas", color: "#059669" },
-                ].map((t, i) => (
-                  <div key={i} style={{
-                    background: "#16161f", borderRadius: 20, padding: "28px 24px",
-                    border: "1px solid #f1f5f9", boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
-                  }}>
-                    <div style={{ fontSize: 28, color: "#e2e8f0", marginBottom: 12 }}>&ldquo;&ldquo;</div>
-                    <p style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.65, margin: "0 0 16px" }}>{t.quote}</p>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{
-                        width: 36, height: 36, borderRadius: "50%", background: t.color,
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 13, fontWeight: 700, color: "#fff",
-                      }}>{t.author[0]}</div>
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: "#ffffff" }}>{t.author}</div>
-                        <div style={{ fontSize: 11, color: "#9ca3af" }}>{t.title}</div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          {/* testimonials section removed */}
 
           {/* ── 6. FEATURES GRID (detailed) ── */}
           <div id="features" style={{ maxWidth: 1000, margin: "0 auto", padding: "120px 32px 80px" }}>
@@ -1650,62 +1613,49 @@ export default function OmAnalyzerPage() {
 
       {/* ===== FOOTER ===== */}
       <footer style={{
-        background: "#1e1e28", padding: "56px 32px 32px",
-        borderTop: "1px solid rgba(255,255,255,0.06)",
+        background: "rgba(22,22,31,0.2)", padding: "48px 32px 32px",
+        borderTop: "1px solid rgba(255,255,255,0.05)",
       }}>
-        <div className="ds-footer-grid" style={{ maxWidth: 1080, margin: "0 auto", display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr 1fr", gap: 48, marginBottom: 48 }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", gap: 48, marginBottom: 48 }}>
           <div>
-            <DealSignalLogo size={28} fontSize={16} gap={8} />
-            <p style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.7, marginTop: 16, maxWidth: 280 }}>
-              AI-powered CRE underwriting and deal management. Built for investors, brokers, and analysts who move fast.
+            <DealSignalLogo size={24} fontSize={15} gap={7} />
+            <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.7, marginTop: 14, maxWidth: 260 }}>
+              Analyze CRE deals with AI-powered intelligence. Get real signals, not guesses.
             </p>
           </div>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>Product</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "#ffffff", marginBottom: 16 }}>Product</div>
             {[
-              { label: "OM Analyzer", href: "/" },
-              { label: "Pro DealBoard", href: "/workspace" },
-              { label: "Pricing", href: "/pricing" },
+              { label: "How it works", href: "/#how-it-works" },
+              { label: "Features", href: "/#features" },
+              { label: "Pricing", href: "/#pricing" },
+              { label: "FAQ", href: "/#faq" },
             ].map(link => (
               <Link key={link.label} href={link.href} style={{
-                display: "block", fontSize: 13, color: "#9ca3af", textDecoration: "none", marginBottom: 10,
+                display: "block", fontSize: 14, color: "#6b7280", textDecoration: "none", marginBottom: 10,
               }}>{link.label}</Link>
             ))}
           </div>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>Company</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "#ffffff", marginBottom: 16 }}>Legal</div>
             {[
-              { label: "About", href: "/about" },
-              { label: "Contact", href: "/contact" },
-              { label: "Support", href: "/contact" },
-            ].map(link => (
-              <Link key={link.label} href={link.href} style={{
-                display: "block", fontSize: 13, color: "#9ca3af", textDecoration: "none", marginBottom: 10,
-              }}>{link.label}</Link>
-            ))}
-          </div>
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>Legal</div>
-            {[
+              { label: "Contact", href: "mailto:support@dealsignals.app" },
+              { label: "Terms of Use", href: "/terms" },
               { label: "Privacy Policy", href: "/privacy" },
-              { label: "Terms of Service", href: "/terms" },
+              { label: "Login", href: "/workspace/login" },
             ].map(link => (
               <Link key={link.label} href={link.href} style={{
-                display: "block", fontSize: 13, color: "#9ca3af", textDecoration: "none", marginBottom: 10,
+                display: "block", fontSize: 14, color: "#6b7280", textDecoration: "none", marginBottom: 10,
               }}>{link.label}</Link>
             ))}
           </div>
         </div>
         <div style={{
-          maxWidth: 1080, margin: "0 auto", paddingTop: 24,
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
+          maxWidth: 1100, margin: "0 auto", paddingTop: 24,
+          borderTop: "1px solid rgba(255,255,255,0.05)",
         }}>
-          <span style={{ fontSize: 12, color: "#9ca3af" }}>
-            &copy; 2026 Deal Signals. All rights reserved.
-          </span>
-          <span style={{ fontSize: 12, color: "#6b7280" }}>
-            dealsignals.app
+          <span style={{ fontSize: 13, color: "#4b5563" }}>
+            Copyright &copy; 2026 Deal Signals - All rights reserved
           </span>
         </div>
       </footer>
