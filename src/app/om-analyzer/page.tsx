@@ -151,6 +151,8 @@ export default function OmAnalyzerPage() {
   const [data, setData] = useState<AnalysisData>(null);
   const [heroImageUrl, setHeroImageUrl] = useState<string>("");
   const [dragging, setDragging] = useState(false);
+  const [globalDragging, setGlobalDragging] = useState(false);
+  const dragCounter = useRef(0);
   const [selectedAssetType, setSelectedAssetType] = useState<string>("auto");
   const [scoreResult, setScoreResult] = useState<any>(null);
   const [usageData, setUsageData] = useState<{ uploadsUsed: number; uploadLimit: number } | null>(null);
@@ -373,7 +375,33 @@ export default function OmAnalyzerPage() {
   }, [heroImageUrl]);
 
   return (
-    <div className="ds-page-wrapper">
+    <div className="ds-page-wrapper"
+      onDragEnter={e => { e.preventDefault(); dragCounter.current++; if (view === "upload") setGlobalDragging(true); }}
+      onDragOver={e => { e.preventDefault(); }}
+      onDragLeave={e => { e.preventDefault(); dragCounter.current--; if (dragCounter.current === 0) setGlobalDragging(false); }}
+      onDrop={e => { e.preventDefault(); dragCounter.current = 0; setGlobalDragging(false); setDragging(false); if (view === "upload" && e.dataTransfer.files?.length) handleFile(e.dataTransfer.files[0]); }}
+    >
+      {/* Global drag overlay */}
+      {globalDragging && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9998,
+          background: "rgba(13,13,20,0.85)", backdropFilter: "blur(8px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          pointerEvents: "none",
+        }}>
+          <div style={{
+            padding: "48px 64px", borderRadius: 20,
+            border: "2px dashed #c8ff00", background: "rgba(200,255,0,0.05)",
+            textAlign: "center",
+          }}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c8ff00" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }}>
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", marginBottom: 6 }}>Drop your file anywhere</div>
+            <div style={{ fontSize: 14, color: "#9ca3af" }}>PDF, Word, or Excel — we&apos;ll analyze it instantly</div>
+          </div>
+        </div>
+      )}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
         html { scroll-behavior: smooth; }
@@ -675,8 +703,8 @@ export default function OmAnalyzerPage() {
                   Analyze Any <span style={{ color: "#c8ff00" }}>Commercial</span><br />Property With One Upload.
                 </h1>
                 <p style={{
-                  fontSize: 17, color: "#9ca3af", lineHeight: 1.75,
-                  maxWidth: 480, marginBottom: 36,
+                  fontSize: 19, color: "#9ca3af", lineHeight: 1.7,
+                  maxWidth: 500, marginBottom: 36,
                 }}>
                   Deal Signals turns complex Offering Memorandums into actionable investment intelligence. Scoring, pro formas, and insights, delivered in seconds.
                 </p>
@@ -999,10 +1027,7 @@ export default function OmAnalyzerPage() {
               {/* Workflow image */}
               <div style={{
                 position: "relative", maxWidth: 1060, margin: "0 auto",
-                borderRadius: 20, overflow: "hidden",
-                background: "linear-gradient(135deg, #1e1e28 0%, #252532 50%, #16161f 100%)",
-                boxShadow: "0 8px 40px rgba(0,0,0,0.3), 0 0 30px rgba(200,255,0,0.08)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                overflow: "hidden",
               }}>
                 <img
                   src="/images/deal-signals-workflow.png"
