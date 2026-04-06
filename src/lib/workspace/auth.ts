@@ -45,9 +45,11 @@ export function useWorkspaceAuth(): WorkspaceAuthState {
     await firebaseSignOut(auth);
   }
 
+  const ADMIN_EMAIL = "chibus0368@gmail.com";
+
   return {
     user,
-    isAdmin: false, // Admin check can be added later if needed
+    isAdmin: !!user && user.email === ADMIN_EMAIL,
     loading,
     signIn,
     signOut,
