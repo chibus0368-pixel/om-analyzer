@@ -1509,7 +1509,7 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 9. FAQ ── */}
-          <div style={{ maxWidth: 680, margin: "0 auto", padding: "120px 32px 80px" }}>
+          <div id="faq" style={{ maxWidth: 680, margin: "0 auto", padding: "120px 32px 80px" }}>
             {/* Section divider */}
             <div style={{
               height: 1,
