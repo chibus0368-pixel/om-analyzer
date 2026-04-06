@@ -14,18 +14,15 @@ import TrialStatusBar from "@/components/billing/TrialStatusBar";
 
 import UpgradeModal from "@/components/billing/UpgradeModal";
 
-/* Sidebar nav — matches Deal Signals design */
+/* Sidebar nav — matches Deal Signals design — NO "DealBoard" link */
 const SIDEBAR_NAV = [
-  { href: "/workspace", label: "DealBoard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1" },
   { href: "/workspace/scoreboard", label: "Scoreboard", icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
   { href: "/workspace/upload", label: "Upload Deal", icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" },
   { href: "/workspace/map", label: "Map", icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" },
   { href: "/workspace/share", label: "Shareable Links", icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" },
 ];
 
-const BOTTOM_NAV = [
-  { href: "/workspace/manage", label: "DealBoards", icon: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" },
-];
+/* BOTTOM_NAV removed — no longer used in new layout */
 
 function SidebarIcon({ d, size = 18 }: { d: string; size?: number }) {
   return (
@@ -683,79 +680,97 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           </Link>
         </div>
 
-        {/* Content zone — workspace dropdown + nav + right controls */}
+        {/* Content zone — nav links + right controls */}
         <div style={{
           flex: 1, display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "0 20px", height: "100%",
         }}>
-          {/* Left: Workspace Dropdown + Nav */}
+          {/* Left: Top nav links (All DealBoards, Upload History) */}
+          <nav style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            {[
+              { href: "/workspace/manage", label: "All DealBoards" },
+              { href: "/workspace/upload/history", label: "Upload History" },
+            ].map(item => {
+              const active = pathname.startsWith(item.href);
+              return (
+                <Link key={item.href} href={item.href} style={{
+                  padding: "6px 14px", borderRadius: 8,
+                  fontSize: 13, fontWeight: active ? 700 : 500,
+                  color: active ? "#b9172f" : "#64748b",
+                  background: active ? "rgba(185,23,47,0.06)" : "transparent",
+                  textDecoration: "none", transition: "all 0.15s",
+                  fontFamily: "'Inter', sans-serif",
+                }}
+                  onMouseEnter={e => { if (!active) { e.currentTarget.style.color = "#1e293b"; e.currentTarget.style.background = "#f8fafc"; } }}
+                  onMouseLeave={e => { if (!active) { e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "transparent"; } }}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Right: Plan button + User info + Settings icon */}
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            {/* Workspace dropdown */}
-            <HeaderWorkspaceSwitcher onAddNew={() => setShowNewWs(true)} />
-
-            {/* Top nav links */}
-            <nav style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              {[
-                { href: "/workspace", label: "DealBoard" },
-                { href: "/workspace/manage", label: "All DealBoards" },
-                { href: "/workspace/settings", label: "Settings" },
-              ].map(item => {
-                const active = item.href === "/workspace"
-                  ? pathname === "/workspace"
-                  : pathname.startsWith(item.href);
-                return (
-                  <Link key={item.href} href={item.href} style={{
-                    padding: "6px 14px", borderRadius: 8,
-                    fontSize: 13, fontWeight: active ? 700 : 500,
-                    color: active ? "#b9172f" : "#64748b",
-                    background: active ? "rgba(185,23,47,0.06)" : "transparent",
-                    textDecoration: "none", transition: "all 0.15s",
-                    fontFamily: "'Inter', sans-serif",
-                  }}
-                    onMouseEnter={e => { if (!active) { e.currentTarget.style.color = "#1e293b"; e.currentTarget.style.background = "#f8fafc"; } }}
-                    onMouseLeave={e => { if (!active) { e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "transparent"; } }}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-
-          {/* Right: Trial, Upgrade, Help, Profile */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <TrialStatusBar onUpgradeClick={() => setShowUpgrade(true)} />
             {userTier === "free" ? (
               <button
                 onClick={() => setShowUpgrade(true)}
                 style={{
-                  padding: "7px 18px", background: "#b9172f", color: "#fff", borderRadius: 50,
-                  fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer",
+                  padding: "7px 18px", background: "transparent", color: "#b9172f",
+                  border: "1.5px solid #b9172f", borderRadius: 50,
+                  fontSize: 12, fontWeight: 700, cursor: "pointer",
                   fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
                 }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(185,23,47,0.04)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
               >
                 Upgrade to Pro
               </button>
             ) : (
               <Link href="/workspace/profile?tab=account" style={{
-                padding: "7px 18px", background: "transparent", color: "#b9172f",
-                border: "1.5px solid #e2e8f0", borderRadius: 50,
+                padding: "7px 18px", background: "#b9172f", color: "#fff",
+                borderRadius: 50,
                 fontSize: 12, fontWeight: 700, textDecoration: "none", fontFamily: "'Inter', sans-serif",
+                transition: "all 0.15s",
               }}>
                 {userTier === "pro" ? "Pro Plan" : userTier === "pro_plus" ? "Pro+" : "My Plan"}
               </Link>
             )}
-            <Link href="/workspace/help" className="ws-header-nav" title="Help" style={{
-              background: "none", border: "none", cursor: "pointer", color: "#585e70", padding: 4,
+
+            {/* User name + organization display with avatar */}
+            {user && (
+              <Link href="/workspace/profile" style={{
+                display: "flex", alignItems: "center", gap: 10,
+                padding: "6px 12px", borderRadius: 8,
+                textDecoration: "none", transition: "background 0.15s",
+              }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#f8fafc"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+              >
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", lineHeight: 1.2 }}>
+                    {user.displayName || user.email?.split("@")[0] || "User"}
+                  </div>
+                  <div style={{ fontSize: 11, color: "#94a3b8", lineHeight: 1.2 }}>
+                    {user.email || ""}
+                  </div>
+                </div>
+                <div style={{
+                  width: 36, height: 36, borderRadius: "50%", background: "#b9172f",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 13, fontWeight: 700, color: "#fff", flexShrink: 0,
+                }}>
+                  {user.displayName ? user.displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : (user.email?.split("@")[0] || "U").substring(0, 2).toUpperCase()}
+                </div>
+              </Link>
+            )}
+
+            {/* Settings/grid icon */}
+            <Link href="/workspace/settings" className="ws-header-nav" title="Settings" style={{
+              background: "none", border: "none", cursor: "pointer", color: "#585e70", padding: 6,
               display: "flex", alignItems: "center", borderRadius: 6, transition: "color 0.15s",
             }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
-            </Link>
-            <Link href="/workspace/profile" className="ws-header-nav" title="Account Profile" style={{
-              background: "none", border: "none", cursor: "pointer", color: "#585e70", padding: 4,
-              display: "flex", alignItems: "center", borderRadius: 6, transition: "color 0.15s, background 0.15s",
-            }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
             </Link>
           </div>
         </div>
@@ -770,6 +785,9 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         paddingTop: 8, overflow: "hidden",
         borderRight: "1px solid #e2e8f0",
       }}>
+        {/* Workspace Switcher at top */}
+        <SidebarWorkspaceSwitcher collapsed={collapsed} onAddNew={() => setShowNewWs(true)} />
+
         {/* Main nav */}
         <div style={{ display: "flex", flexDirection: "column", gap: 1, padding: "0 8px" }}>
           {SIDEBAR_NAV.map(item => (
@@ -781,7 +799,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         {!collapsed && (
           <div className="ws-props-scroll" style={{ flex: 1, overflow: "auto", padding: "8px 8px", marginTop: 4, minHeight: 0 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 8px 8px", marginBottom: 2, position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: "#94a3b8" }}>Deals{properties.length > 0 ? ` (${properties.length})` : ""}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: "#94a3b8" }}>PROPERTIES{properties.length > 0 ? ` (${properties.length})` : ""}</span>
             </div>
 
             {loadingProps ? (
@@ -813,7 +831,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                         background: isPropertyActive ? "rgba(185, 23, 47, 0.08)" : "#f1f5f9",
                         display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                       }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={isPropertyActive ? "#b9172f" : "#94a3b8"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={isPropertyActive ? "#b9172f" : "#94a3b8"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /></svg>
                       </div>
                       <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{cleanDisplayName(prop.propertyName, prop.address1, prop.city, prop.state)}</span>
                     </Link>
@@ -839,24 +857,6 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             </Link>
           </div>
         )}
-
-        {/* Divider */}
-        {!collapsed && (
-          <div style={{ margin: "2px 12px 2px", borderTop: "1px solid #f1f5f9" }} />
-        )}
-
-        {/* Bottom nav — compact */}
-        <div style={{ padding: "2px 8px 0", display: "flex", flexDirection: "column", gap: 0 }}>
-          {BOTTOM_NAV.map(item => (
-            <NavLink key={item.href} {...item} active={isActive(item.href)} collapsed={collapsed} compact />
-          ))}
-        </div>
-
-        {/* User account card */}
-        {!collapsed && (
-          <div style={{ margin: "0 12px 0", borderTop: "1px solid #f1f5f9" }} />
-        )}
-        <SidebarUserCard user={user} collapsed={collapsed} userTier={userTier} onUpgradeClick={() => setShowUpgrade(true)} />
 
         {/* Collapse toggle */}
         <div style={{ padding: "0 8px 6px" }}>

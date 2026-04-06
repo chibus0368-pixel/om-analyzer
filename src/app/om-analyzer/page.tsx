@@ -443,6 +443,7 @@ export default function OmAnalyzerPage() {
           .ds-nav-links { display: none !important; }
           .ds-pro-features { grid-template-columns: 1fr 1fr !important; }
           .ds-testimonials { grid-template-columns: 1fr !important; }
+          .ds-workflow-steps { grid-template-columns: repeat(2, 1fr) !important; }
           .ds-process-strip { transform: scale(0.85); transform-origin: left center; }
         }
         @media (max-width: 480px) {
@@ -956,56 +957,63 @@ export default function OmAnalyzerPage() {
             </div>
           </div>
 
-          {/* ── 4. DEMO / SCREENSHOT SECTION ── */}
-          <div style={{ padding: "88px 32px", background: "#fff" }}>
-            <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
-              <h2 style={{ fontSize: 34, fontWeight: 800, color: "#1e293b", marginBottom: 10, lineHeight: 1.2 }}>
-                We offer an advanced<br />deal analysis platform
-              </h2>
-              <p style={{ fontSize: 16, color: "#64748b", marginBottom: 20, lineHeight: 1.7, maxWidth: 520, margin: "0 auto 24px" }}>
-                With Deal Signals, you can increase your deal screening speed by 75% and ensure every investment decision is backed by data.
-              </p>
-              <button onClick={() => fileRef.current?.click()} className="ds-btn ds-btn-outline" style={{
-                fontSize: 14, padding: "12px 28px", marginBottom: 56,
-              }}>
-                Learn more
-              </button>
-
-              {/* App mockup placeholder */}
+          {/* ── 4. HOW IT WORKS — WORKFLOW VISUAL ── */}
+          <div id="how-it-works" style={{ padding: "88px 32px 72px", background: "#fff" }}>
+            <div style={{ maxWidth: 1100, margin: "0 auto", textAlign: "center" }}>
               <div style={{
-                position: "relative", maxWidth: 800, margin: "0 auto",
-                borderRadius: 24, overflow: "hidden",
-                background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
-                boxShadow: "0 32px 64px rgba(0,0,0,0.15)",
-                aspectRatio: "16 / 9",
+                display: "inline-block", padding: "5px 14px", borderRadius: 20,
+                background: "rgba(185,23,47,0.06)", color: "#b9172f",
+                fontSize: 12, fontWeight: 700, letterSpacing: 0.5, marginBottom: 16,
+                textTransform: "uppercase",
               }}>
-                {/* Browser chrome */}
-                <div style={{
-                  position: "absolute", top: 0, left: 0, right: 0, height: 40,
-                  background: "rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.06)",
-                  display: "flex", alignItems: "center", gap: 6, paddingLeft: 16,
-                }}>
-                  {[0, 1, 2].map(i => (
-                    <div key={i} style={{ width: 10, height: 10, borderRadius: "50%",
-                      background: i === 0 ? "#ef4444" : i === 1 ? "#eab308" : "#22c55e", opacity: 0.6,
-                    }} />
-                  ))}
-                  <div style={{ marginLeft: 16, padding: "4px 16px", borderRadius: 6, background: "rgba(255,255,255,0.06)", fontSize: 11, color: "rgba(255,255,255,0.3)" }}>dealsignals.app/workspace</div>
-                </div>
-                <div style={{
-                  position: "absolute", inset: 0, display: "flex", flexDirection: "column",
-                  alignItems: "center", justifyContent: "center", gap: 12, paddingTop: 40,
-                }}>
-                  <div style={{ width: 64, height: 64, borderRadius: "50%",
-                    background: "rgba(185,23,47,0.15)", border: "2px solid rgba(185,23,47,0.3)",
-                    display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-                  }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#b9172f" stroke="none">
-                      <polygon points="5 3 19 12 5 21 5 3" />
-                    </svg>
+                How It Works
+              </div>
+              <h2 style={{ fontSize: 34, fontWeight: 800, color: "#1e293b", marginBottom: 12, lineHeight: 1.2 }}>
+                From offering memo to<br /><span style={{ color: "#b9172f" }}>scored deal</span> in seconds
+              </h2>
+              <p style={{ fontSize: 16, color: "#64748b", marginBottom: 48, lineHeight: 1.7, maxWidth: 580, margin: "0 auto 48px" }}>
+                Upload any OM, rent roll, or broker package. Deal Signals extracts every key metric, scores the deal, and delivers it straight to your DealBoard.
+              </p>
+
+              {/* Workflow image */}
+              <div style={{
+                position: "relative", maxWidth: 1060, margin: "0 auto",
+                borderRadius: 20, overflow: "hidden",
+                background: "linear-gradient(135deg, #f8f9fc 0%, #eef1f8 50%, #f0f4ff 100%)",
+                boxShadow: "0 8px 40px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
+                border: "1px solid #e8ecf2",
+              }}>
+                <img
+                  src="/images/deal-signals-workflow.png"
+                  alt="Deal Signals workflow — from OM upload to scored deal on your DealBoard"
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+
+              {/* Step indicators below */}
+              <div className="ds-workflow-steps" style={{
+                display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24,
+                maxWidth: 900, margin: "48px auto 0",
+              }}>
+                {[
+                  { num: "1", title: "Upload", desc: "Drop in an OM, rent roll, or broker flyer — PDF, DOCX, or XLS." },
+                  { num: "2", title: "Extract", desc: "AI parses cap rate, NOI, tenant, lease terms, price & 40+ fields." },
+                  { num: "3", title: "Score", desc: "Weighted Deal Score (0–100) with buy/hold/pass recommendation." },
+                  { num: "4", title: "Act", desc: "View on your DealBoard, share with investors, or export reports." },
+                ].map(step => (
+                  <div key={step.num} style={{ textAlign: "center" }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: "50%",
+                      background: "#b9172f", color: "#fff",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 16, fontWeight: 800, margin: "0 auto 12px",
+                    }}>
+                      {step.num}
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#1e293b", marginBottom: 4 }}>{step.title}</div>
+                    <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.5 }}>{step.desc}</div>
                   </div>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.4)" }}>Product demo — 60 seconds</span>
-                </div>
+                ))}
               </div>
             </div>
           </div>
