@@ -664,6 +664,12 @@ export default function PropertyDetailClient() {
           overflow: "auto", flexShrink: 0,
         }}>
           <div style={{ padding: "14px 14px 8px", borderBottom: "1px solid #F0F2F5" }}>
+            <Link href={`/workspace?ws=${activeWorkspace?.slug || "default-dealboard"}`} style={{
+              fontSize: 13, fontWeight: 700, color: "#111827", textDecoration: "none",
+              display: "block", marginBottom: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            }}>
+              {activeWorkspace?.name || "DealBoard"}
+            </Link>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.08em" }}>
               Properties ({siblingProps.length})
             </div>
@@ -975,6 +981,10 @@ function PropertyDetailInner({
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div style={{ fontSize: 12, color: C.secondary }}>
           <Link href="/workspace" style={{ color: C.secondary, textDecoration: "none" }}>Dashboard</Link>
+          <span style={{ margin: "0 6px", opacity: 0.4 }}>/</span>
+          <Link href={`/workspace?ws=${activeWorkspace?.slug || "default-dealboard"}`} style={{ color: C.secondary, textDecoration: "none" }}>
+            Dealboard: {activeWorkspace?.name || "DealBoard"}
+          </Link>
           <span style={{ margin: "0 6px", opacity: 0.4 }}>/</span>
           <span style={{ color: C.onSurface, fontWeight: 500 }}>{property.propertyName}</span>
         </div>
