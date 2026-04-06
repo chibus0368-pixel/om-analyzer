@@ -175,6 +175,69 @@ function MetricTooltip({ text }: { text: string }) {
   );
 }
 
+/* ── Inline price editor for metrics strip ─────────────── */
+function PurchasePriceInline({ priceState }: { priceState: ReturnType<typeof usePurchasePriceOverride> }) {
+  const { activePrice, omPrice, isOverridden, setPrice, reset } = priceState;
+  const [editing, setEditing] = useState(false);
+  const [inputVal, setInputVal] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { if (editing && inputRef.current) inputRef.current.focus(); }, [editing]);
+
+  function startEdit() {
+    setInputVal(activePrice ? String(activePrice) : "");
+    setEditing(true);
+  }
+  function commitEdit() {
+    const n = Number(inputVal.replace(/[^0-9.]/g, ""));
+    if (n > 0) setPrice(n);
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        <span style={{ fontSize: 18, fontWeight: 700, color: "#84CC16" }}>$</span>
+        <input
+          ref={inputRef}
+          value={inputVal}
+          onChange={e => setInputVal(e.target.value)}
+          onBlur={commitEdit}
+          onKeyDown={e => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") setEditing(false); }}
+          placeholder="e.g. 14650000"
+          style={{
+            fontSize: 18, fontWeight: 700, color: "#0F172A", background: "rgba(132,204,22,0.06)",
+            border: "1px solid rgba(132,204,22,0.3)", borderRadius: 6, padding: "2px 8px",
+            outline: "none", width: "100%", fontFamily: "'Inter', sans-serif",
+            fontVariantNumeric: "tabular-nums",
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <div onClick={startEdit} style={{ cursor: "pointer", display: "flex", alignItems: "baseline", gap: 4 }}>
+        <span style={{ fontSize: 18, fontWeight: 700, color: isOverridden ? "#3B82F6" : "#0F172A", fontVariantNumeric: "tabular-nums" }}>
+          {fmt$(activePrice)}
+        </span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5, flexShrink: 0 }}>
+          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+        </svg>
+      </div>
+      {isOverridden && (
+        <button onClick={reset} style={{
+          fontSize: 9, color: "#3B82F6", background: "none", border: "none",
+          cursor: "pointer", fontWeight: 600, fontFamily: "inherit", padding: 0,
+          textDecoration: "underline",
+        }}>reset</button>
+      )}
+    </div>
+  );
+}
+
 /* ── Score badge (Deal Signals) ─────────────────────────── */
 function DealSignalBadge({ score, band }: { score: number | null; band: string }) {
   if (!score) return null;
@@ -847,108 +910,108 @@ function PropertyDetailInner({
       )}
 
       {/* ═══════════════════════════════════════════════════ */}
-      {/*  1. PROPERTY HEADER + IMAGE                         */}
+      {/*  1. PROPERTY HEADER                                  */}
       {/* ═══════════════════════════════════════════════════ */}
-      <div style={{
-        display: "flex", gap: 24, marginBottom: 24, alignItems: "stretch",
-      }}>
-        {/* Left: Property Image */}
-        <div style={{
-          width: 320, minWidth: 260, flexShrink: 0,
-          borderRadius: C.radius, overflow: "hidden",
-          border: `1px solid ${C.ghost}`,
-          background: C.surfLow,
-        }}>
-          <PropertyImage
-            heroImageUrl={(property as any).heroImageUrl}
-            location={location}
-            encodedAddress={encodedAddress}
-            propertyName={property.propertyName}
+      <div style={{ marginBottom: 20 }}>
+        {/* Top row: name + download buttons */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 4 }}>
+          <EditablePropertyName
+            name={cleanDisplayName(property.propertyName, property.address1, property.city, property.state)}
+            propertyId={propertyId}
+            onSave={(newName: string) => setProperty((prev: Property | null) => prev ? { ...prev, propertyName: newName } : prev)}
           />
-        </div>
-
-        {/* Right: Property Name + Location + Download Buttons */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          {/* Top row: name + download buttons */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
-            <EditablePropertyName
-              name={cleanDisplayName(property.propertyName, property.address1, property.city, property.state)}
-              propertyId={propertyId}
-              onSave={(newName: string) => setProperty((prev: Property | null) => prev ? { ...prev, propertyName: newName } : prev)}
-            />
-            {hasData && (
-              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                <button
-                  onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
-                  className="dl-btn"
-                  style={{
-                    padding: "6px 14px", borderRadius: 8,
-                    border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
-                    color: C.onSurface, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                    display: "inline-flex", alignItems: "center", gap: 6,
-                  }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0A7E5A" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
-                  Workbook
-                  <span style={{ padding: "1px 5px", background: "#D1FAE5", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#0A7E5A" }}>XLSX</span>
-                </button>
-                <button
-                  onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType)}
-                  className="dl-btn"
-                  style={{
-                    padding: "6px 14px", borderRadius: 8,
-                    border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
-                    color: C.onSurface, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                    display: "inline-flex", alignItems: "center", gap: 6,
-                  }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
-                  Brief
-                  <span style={{ padding: "1px 5px", background: "#DBEAFE", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#2563EB" }}>DOC</span>
-                </button>
-              </div>
-            )}
-          </div>
-          {location && (
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 6 }}>
-              <p style={{ fontSize: 14, color: C.secondary, margin: 0 }}>{location}</p>
-              <a href={`https://www.google.com/maps/search/${encodedAddress}`} target="_blank" rel="noopener noreferrer"
-                style={{ fontSize: 11, color: C.secondary, textDecoration: "none", padding: "3px 10px", background: C.surfLow, borderRadius: 6, fontWeight: 500, border: `1px solid ${C.ghostBorder}` }}>
-                Map &rarr;
-              </a>
+          {hasData && (
+            <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+              <button
+                onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
+                className="dl-btn"
+                style={{
+                  padding: "6px 14px", borderRadius: 8,
+                  border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
+                  color: C.onSurface, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0A7E5A" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+                Workbook
+                <span style={{ padding: "1px 5px", background: "#D1FAE5", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#0A7E5A" }}>XLSX</span>
+              </button>
+              <button
+                onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType)}
+                className="dl-btn"
+                style={{
+                  padding: "6px 14px", borderRadius: 8,
+                  border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
+                  color: C.onSurface, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+                Brief
+                <span style={{ padding: "1px 5px", background: "#DBEAFE", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#2563EB" }}>DOC</span>
+              </button>
             </div>
           )}
         </div>
+        {location && (
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <p style={{ fontSize: 14, color: C.secondary, margin: 0 }}>{location}</p>
+            <a href={`https://www.google.com/maps/search/${encodedAddress}`} target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: 11, color: C.secondary, textDecoration: "none", padding: "3px 10px", background: C.surfLow, borderRadius: 6, fontWeight: 500, border: `1px solid ${C.ghostBorder}` }}>
+              Map &rarr;
+            </a>
+          </div>
+        )}
       </div>
 
       {/* ═══════════════════════════════════════════════════ */}
-      {/*  2. DEAL SUMMARY + DEAL SCORE (COMBINED)              */}
+      {/*  2. DEAL SUMMARY + IMAGE + SCORE (COMBINED CARD)     */}
       {/* ═══════════════════════════════════════════════════ */}
       {(brief || scoreTotal) && (
         <div style={{
           background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
-          boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: "24px 28px",
-          display: "flex", justifyContent: "space-between", gap: 32, marginBottom: 24,
+          boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
+          display: "flex", overflow: "hidden", marginBottom: 24,
         }}>
-          {/* Left: Our Take */}
-          {brief ? (
-            <div style={{ flex: 1, maxWidth: 640 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>DEAL SUMMARY</div>
-              <div style={{ fontSize: 15, color: "#0F172A", lineHeight: 1.8 }}>
-                {brief.split("\n").filter((p: string) => p.trim()).slice(0, 4).map((p: string, i: number) => (
-                  <p key={i} style={{ margin: "0 0 8px" }}>{p}</p>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div style={{ flex: 1 }} />
-          )}
+          {/* Left: Deal Summary text */}
+          <div style={{ flex: 1, padding: "24px 28px" }}>
+            {brief ? (
+              <>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>DEAL SUMMARY</div>
+                <div style={{ fontSize: 15, color: "#0F172A", lineHeight: 1.8 }}>
+                  {brief.split("\n").filter((p: string) => p.trim()).slice(0, 4).map((p: string, i: number) => (
+                    <p key={i} style={{ margin: "0 0 8px" }}>{p}</p>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div style={{ flex: 1 }} />
+            )}
+          </div>
 
-          {/* Right: Deal Score */}
-          {scoreTotal && (
-            <div style={{ textAlign: "right", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", justifyContent: "center" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.secondary, marginBottom: 4 }}>DEAL SCORE</div>
-              <DealSignalBadge score={scoreTotal} band={scoreBand} />
+          {/* Right: Image + Score stacked */}
+          <div style={{
+            width: 240, flexShrink: 0, display: "flex", flexDirection: "column",
+            borderLeft: "1px solid rgba(0,0,0,0.05)",
+          }}>
+            {/* Property Image */}
+            <div style={{ height: 160, overflow: "hidden", background: C.surfLow }}>
+              <PropertyImage
+                heroImageUrl={(property as any).heroImageUrl}
+                location={location}
+                encodedAddress={encodedAddress}
+                propertyName={property.propertyName}
+              />
             </div>
-          )}
+            {/* Deal Score */}
+            {scoreTotal && (
+              <div style={{
+                flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                padding: "16px 12px", borderTop: "1px solid rgba(0,0,0,0.05)",
+              }}>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.secondary, marginBottom: 6 }}>DEAL SCORE</div>
+                <DealSignalBadge score={scoreTotal} band={scoreBand} />
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -956,8 +1019,7 @@ function PropertyDetailInner({
       {/*  3. METRICS STRIP (INLINE, NOT CARDS)               */}
       {/* ═══════════════════════════════════════════════════ */}
       {hasData && wsType !== "land" && (() => {
-        const metrics = [
-          { label: "Price", value: priceState.overriddenPrice ? fmt$(priceState.overriddenPrice) : fmt$(priceState.omPrice), isEditable: true },
+        const readOnlyMetrics = [
           { label: "Cap Rate", value: calc?.capRate ? `${calc.capRate.toFixed(2)}%` : "--" },
           { label: "NOI", value: fmt$(noiOm) },
           { label: "DSCR", value: calc?.dscr ? `${calc.dscr.toFixed(2)}x` : "--" },
@@ -970,10 +1032,25 @@ function PropertyDetailInner({
             background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
             overflow: "hidden",
           }}>
-            {metrics.map((m, i) => (
+            {/* Editable Price Cell */}
+            <div style={{
+              flex: 1, padding: "16px 20px",
+              borderRight: "1px solid rgba(0,0,0,0.05)",
+            }}>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+                Price
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.7 }}>
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+                {isOverridden && <span style={{ fontSize: 8, fontWeight: 700, background: "#DBEAFE", color: "#1E40AF", padding: "1px 5px", borderRadius: 3 }}>ADJUSTED</span>}
+              </div>
+              <PurchasePriceInline priceState={priceState} />
+            </div>
+            {readOnlyMetrics.map((m, i) => (
               <div key={m.label} style={{
                 flex: 1, padding: "16px 20px",
-                borderRight: i < metrics.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+                borderRight: i < readOnlyMetrics.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
               }}>
                 <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280", marginBottom: 4 }}>
                   {m.label}
@@ -1032,27 +1109,77 @@ function PropertyDetailInner({
       )}
 
       {/* ═══════════════════════════════════════════════════ */}
-      {/*  3. PRICE SENSITIVITY MINI                         */}
+      {/*  3. PRICE SENSITIVITY PANEL                        */}
       {/* ═══════════════════════════════════════════════════ */}
-      {priceSensitivity && isOverridden && wsType !== "land" && (
-        <div style={{
-          background: "#F8FAFC", borderRadius: 10, padding: "12px 18px",
-          border: `1px solid ${C.ghostBorder}`, marginBottom: 16,
-          display: "flex", gap: 24, alignItems: "center", fontSize: 12,
-        }}>
-          <span style={{ color: C.secondary, fontWeight: 500 }}>
-            At OM price: <strong style={{ color: C.onSurface }}>{priceSensitivity.omCap.toFixed(2)}% cap</strong>
-          </span>
-          <span style={{ color: "#3B82F6", fontWeight: 600 }}>
-            At adjusted price: <strong>{priceSensitivity.curCap.toFixed(2)}% cap</strong>
-          </span>
-          {priceSensitivity.per100k && (
-            <span style={{ color: "#6B7280", fontSize: 11 }}>
-              Every $100K lower &rarr; ~{priceSensitivity.per100k.toFixed(2)}% cap
-            </span>
-          )}
-        </div>
-      )}
+      {hasData && wsType !== "land" && activePrice && noiOm > 0 && (() => {
+        const omPrice = priceState.omPrice || activePrice;
+        const steps = [-0.10, -0.05, 0, 0.05, 0.10];
+        const rows = steps.map(pct => {
+          const price = Math.round(omPrice * (1 + pct));
+          const capRate = noiOm > 0 ? (noiOm / price) * 100 : 0;
+          const loanAmt = price * ltvPct;
+          const downPayment = price * (1 - ltvPct);
+          const closingCosts = price * closingPct;
+          const totalEquity = downPayment + closingCosts;
+          const mRate = (intRate / 100) / 12;
+          const annualDS = loanAmt > 0 ? (loanAmt * mRate) / (1 - Math.pow(1 + mRate, -12 * amortYrs)) * 12 : 0;
+          const dscr = annualDS > 0 && noiOm > 0 ? noiOm / annualDS : 0;
+          const cashOnCash = totalEquity > 0 && noiOm > 0 ? ((noiOm - annualDS) / totalEquity) * 100 : 0;
+          const isActive = Math.abs(price - activePrice) < 1000;
+          const isOm = pct === 0;
+          return { pct, price, capRate, dscr, cashOnCash, isActive, isOm };
+        });
+        return (
+          <div style={{
+            background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
+            overflow: "hidden", marginBottom: 24,
+          }}>
+            <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0,0,0,0.04)", background: "#F9FAFB", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
+                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Price Sensitivity</h3>
+              </div>
+              <span style={{ fontSize: 11, color: C.secondary }}>See how purchase price impacts returns</span>
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: "'Inter', sans-serif" }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                    {["Scenario", "Purchase Price", "Cap Rate", "DSCR", "Cash-on-Cash"].map(h => (
+                      <th key={h} style={{ padding: "10px 16px", textAlign: h === "Scenario" ? "left" : "right", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280" }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map(r => (
+                    <tr key={r.pct} style={{
+                      borderBottom: "1px solid rgba(0,0,0,0.03)",
+                      background: r.isActive ? "rgba(132,204,22,0.06)" : r.isOm ? "rgba(59,130,246,0.04)" : "transparent",
+                    }}>
+                      <td style={{ padding: "10px 16px", fontWeight: r.isActive ? 700 : 500, color: r.isActive ? "#84CC16" : r.isOm ? "#3B82F6" : C.onSurface }}>
+                        {r.pct === 0 ? "OM Price" : `${r.pct > 0 ? "+" : ""}${(r.pct * 100).toFixed(0)}%`}
+                        {r.isActive && !r.isOm && <span style={{ fontSize: 9, marginLeft: 6, padding: "1px 5px", background: "rgba(132,204,22,0.15)", borderRadius: 3, fontWeight: 700, color: "#84CC16" }}>CURRENT</span>}
+                        {r.isActive && r.isOm && <span style={{ fontSize: 9, marginLeft: 6, padding: "1px 5px", background: "rgba(132,204,22,0.15)", borderRadius: 3, fontWeight: 700, color: "#84CC16" }}>CURRENT</span>}
+                      </td>
+                      <td style={{ padding: "10px 16px", textAlign: "right", fontWeight: 700, color: C.onSurface, fontVariantNumeric: "tabular-nums" }}>{fmt$(r.price)}</td>
+                      <td style={{ padding: "10px 16px", textAlign: "right", fontWeight: 600, color: r.capRate >= 7 ? "#059669" : r.capRate >= 5.5 ? "#D97706" : "#DC2626", fontVariantNumeric: "tabular-nums" }}>{r.capRate.toFixed(2)}%</td>
+                      <td style={{ padding: "10px 16px", textAlign: "right", fontWeight: 600, color: r.dscr >= 1.25 ? "#059669" : r.dscr >= 1.0 ? "#D97706" : "#DC2626", fontVariantNumeric: "tabular-nums" }}>{r.dscr.toFixed(2)}x</td>
+                      <td style={{ padding: "10px 16px", textAlign: "right", fontWeight: 600, color: r.cashOnCash >= 8 ? "#059669" : r.cashOnCash >= 5 ? "#D97706" : "#DC2626", fontVariantNumeric: "tabular-nums" }}>{r.cashOnCash.toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {priceSensitivity?.per100k && (
+              <div style={{ padding: "10px 20px", borderTop: "1px solid rgba(0,0,0,0.04)", background: "#F9FAFB" }}>
+                <span style={{ fontSize: 11, color: "#6B7280" }}>
+                  Every $100K lower in price &rarr; ~{priceSensitivity.per100k.toFixed(2)}% cap rate
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  4. WHAT TO DOUBLE CHECK (Review Panel)            */}
