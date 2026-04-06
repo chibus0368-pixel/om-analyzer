@@ -61,7 +61,7 @@ export default function DealSignalNav() {
       <nav style={{
         position: "relative",
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        maxWidth: 1280, margin: "0 auto", padding: "0 128px", height: 64,
+        maxWidth: 1100, margin: "0 auto", padding: "0 32px", height: 64,
         fontFamily: "'Plus Jakarta Sans', sans-serif",
       }}>
         {/* Logo */}
