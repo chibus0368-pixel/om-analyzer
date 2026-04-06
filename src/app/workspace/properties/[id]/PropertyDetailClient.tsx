@@ -801,10 +801,23 @@ function PropertyDetailInner({
       `}</style>
 
       {/* ── Breadcrumb ──────────────────────────────────── */}
-      <div style={{ fontSize: 12, color: C.secondary, marginBottom: 16 }}>
-        <Link href="/workspace" style={{ color: C.secondary, textDecoration: "none" }}>Dashboard</Link>
-        <span style={{ margin: "0 6px", opacity: 0.4 }}>/</span>
-        <span style={{ color: C.onSurface, fontWeight: 500 }}>{property.propertyName}</span>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div style={{ fontSize: 12, color: C.secondary }}>
+          <Link href="/workspace" style={{ color: C.secondary, textDecoration: "none" }}>Dashboard</Link>
+          <span style={{ margin: "0 6px", opacity: 0.4 }}>/</span>
+          <span style={{ color: C.onSurface, fontWeight: 500 }}>{property.propertyName}</span>
+        </div>
+        <Link href={`/workspace/share?ws=${activeWorkspace?.slug || "default-dealboard"}`} style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "7px 16px", borderRadius: 8,
+          background: "rgba(185,23,47,0.06)", color: "#b9172f",
+          fontSize: 12, fontWeight: 600, textDecoration: "none",
+          border: "1px solid rgba(185,23,47,0.12)",
+          transition: "all 0.15s",
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          Share DealBoard
+        </Link>
       </div>
 
       {/* ── Processing Status Banner ─────────────────────── */}

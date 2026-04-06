@@ -775,7 +775,18 @@ export default function ScoreboardPage() {
           </p>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <Link href={`/workspace/share?ws=${activeWorkspace?.slug || "default-dealboard"}`} style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "7px 16px", borderRadius: 8,
+            background: "rgba(185,23,47,0.06)", color: "#b9172f",
+            fontSize: 12, fontWeight: 600, textDecoration: "none",
+            border: "1px solid rgba(185,23,47,0.12)",
+            transition: "all 0.15s",
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            Share DealBoard
+          </Link>
           {/* View toggle */}
           <div style={{ display: "flex", background: "#F0F2F5", borderRadius: 8, padding: 2 }}>
             {(["leaderboard", "comparison"] as ViewMode[]).map(v => (

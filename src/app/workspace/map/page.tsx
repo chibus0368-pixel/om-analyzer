@@ -7,6 +7,7 @@ import { useWorkspace } from "@/lib/workspace/workspace-context";
 import type { Property, ExtractedField } from "@/lib/workspace/types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
+import Link from "next/link";
 
 function gf(fields: ExtractedField[], group: string, name: string): any {
   const f = fields.find(x => x.fieldGroup === group && x.fieldName === name);
@@ -294,7 +295,18 @@ export default function MapPage() {
                 : "No properties yet \u2014 upload OMs to see them on the map"}
           </p>
         </div>
-        <div style={{ display: "flex", gap: 12, alignItems: "center", fontSize: 11 }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", fontSize: 11, flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <Link href={`/workspace/share?ws=${activeWorkspace?.slug || "default-dealboard"}`} style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "7px 16px", borderRadius: 8,
+            background: "rgba(185,23,47,0.06)", color: "#b9172f",
+            fontSize: 12, fontWeight: 600, textDecoration: "none",
+            border: "1px solid rgba(185,23,47,0.12)",
+            transition: "all 0.15s",
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            Share DealBoard
+          </Link>
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#059669", display: "inline-block" }} /> Strong Buy (85+)
           </span>

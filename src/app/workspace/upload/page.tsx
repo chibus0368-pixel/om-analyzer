@@ -13,6 +13,7 @@ import type { Property, DocCategory, AnalysisType } from "@/lib/workspace/types"
 import { DOC_CATEGORY_LABELS, ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS, ANALYSIS_TYPE_ICONS } from "@/lib/workspace/types";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import UpgradeModal from "@/components/billing/UpgradeModal";
+import Link from "next/link";
 
 const ACCEPTED_EXT = ".pdf,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.webp";
 
@@ -424,20 +425,33 @@ export default function UploadPage() {
 
   return (
     <div style={{ maxWidth: 680, margin: "0 auto" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Playfair Display', Georgia, serif" }}>
-          Upload Deal{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}
-        </h1>
-        {activeWorkspace?.analysisType && (
-          <span style={{
-            display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: C.radius,
-            background: `${ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType]}15`,
-            color: ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType],
-            fontSize: 11, fontWeight: 600, letterSpacing: 0.3,
-          }}>
-            {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}
-          </span>
-        )}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Playfair Display', Georgia, serif" }}>
+            Upload Deal{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}
+          </h1>
+          {activeWorkspace?.analysisType && (
+            <span style={{
+              display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: C.radius,
+              background: `${ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType]}15`,
+              color: ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType],
+              fontSize: 11, fontWeight: 600, letterSpacing: 0.3,
+            }}>
+              {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}
+            </span>
+          )}
+        </div>
+        <Link href={`/workspace/share?ws=${activeWorkspace?.slug || "default-dealboard"}`} style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "7px 16px", borderRadius: 8,
+          background: "rgba(185,23,47,0.06)", color: "#b9172f",
+          fontSize: 12, fontWeight: 600, textDecoration: "none",
+          border: "1px solid rgba(185,23,47,0.12)",
+          transition: "all 0.15s",
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          Share DealBoard
+        </Link>
       </div>
       <p style={{ fontSize: 14, color: C.secondary, marginBottom: 20, lineHeight: 1.5, fontFamily: "'Inter', sans-serif" }}>
         One property at a time. A single OM is enough to get started — you can always add more files later.
