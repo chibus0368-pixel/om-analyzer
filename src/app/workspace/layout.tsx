@@ -519,9 +519,11 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   const [newWsType, setNewWsType] = useState<AnalysisType>("retail");
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [userTier, setUserTier] = useState<string>("free");
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const prevWsIdRef = useRef<string | null>(null);
   const upgradeHandledRef = useRef(false);
   const wsDropdownRef = useRef<HTMLDivElement>(null);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
 
   // ── Close workspace dropdown on outside click ──
   useEffect(() => {
@@ -534,6 +536,18 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [showWsDropdown]);
+
+  // ── Close more menu on outside click ──
+  useEffect(() => {
+    if (!showMoreMenu) return;
+    const handler = (e: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+        setShowMoreMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showMoreMenu]);
 
   // ── Auth gate: redirect to login if not authenticated ──
   // Skip redirect if already on the login page to prevent redirect loops.
@@ -860,13 +874,49 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             </Link>
           )}
 
-          {/* Settings icon */}
-          <Link href="/workspace/settings" title="Settings" style={{
-            background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)", padding: 4,
-            display: "flex", alignItems: "center", borderRadius: 6, transition: "color 0.15s",
-          }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
-          </Link>
+          {/* More menu (three dots) */}
+          <div ref={moreMenuRef} style={{ position: "relative" }}>
+            <button
+              onClick={() => setShowMoreMenu(v => !v)}
+              style={{
+                background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)", padding: 4,
+                display: "flex", alignItems: "center", borderRadius: 6, transition: "color 0.15s",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.4)"; }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
+            </button>
+            {showMoreMenu && (
+              <div style={{
+                position: "absolute", top: "calc(100% + 8px)", right: 0, width: 220,
+                background: "#fff", borderRadius: 10, boxShadow: "0 8px 30px rgba(0,0,0,0.15)",
+                border: "1px solid rgba(0,0,0,0.08)", overflow: "hidden", zIndex: 999,
+              }}>
+                {[
+                  { href: "/workspace/manage", label: "Manage Dealboards", icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg> },
+                  { href: "/workspace/profile", label: "Account & Profile", icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg> },
+                  { href: "/workspace/help", label: "Support", icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg> },
+                ].map(item => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setShowMoreMenu(false)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 10,
+                      padding: "11px 16px", fontSize: 13, fontWeight: 500,
+                      color: "#374151", textDecoration: "none", transition: "background 0.12s",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "#F9FAFB"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                  >
+                    <span style={{ color: "#9CA3AF", display: "flex" }}>{item.icon}</span>
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
