@@ -501,6 +501,44 @@ const HELP_TOPICS: HelpTopic[] = [
     ),
   },
   {
+    id: "sharing",
+    title: "Sharing",
+    icon: "M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13",
+    content: (
+      <div>
+        <p style={{ fontSize: 14, color: C.secondary, lineHeight: 1.7 }}>
+          Sharing lets you generate a read-only link to your DealBoard that anyone can view — no account required. It's designed for quickly getting deal analysis in front of decision-makers.
+        </p>
+
+        <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>How It Works</h4>
+        <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
+          Click <strong>Share DealBoard</strong> in the navigation bar to open the sharing panel. From there you can generate a unique shareable link for the active DealBoard. Anyone with the link can view property scores, financial metrics, AI analysis, and the scoreboard — but they cannot edit data, upload files, or change scores.
+        </p>
+
+        <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>What Recipients See</h4>
+        <div style={{ background: C.surfLow, borderRadius: C.radius, padding: 16, fontSize: 13, color: C.secondary, lineHeight: 1.7 }}>
+          <strong style={{ color: C.onSurface }}>Property cards</strong> — Name, location, score ring, and analysis status for each deal.
+          <br /><br />
+          <strong style={{ color: C.onSurface }}>Scoreboard</strong> — The full comparative table with scores, pricing, cap rates, NOI, and signal ratings.
+          <br /><br />
+          <strong style={{ color: C.onSurface }}>Deal detail</strong> — Financial metrics, AI-generated deal summary, strengths and risks, and the investment recommendation.
+          <br /><br />
+          <strong style={{ color: C.onSurface }}>Map view</strong> — Property locations plotted on an interactive map.
+        </div>
+
+        <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Use Cases</h4>
+        <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
+          Send to your investment committee for deal review. Share a curated pipeline with a client or capital partner. Give your broker a quick look at how a deal scores. Distribute to team members who don't need full platform access.
+        </p>
+
+        <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Privacy & Control</h4>
+        <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
+          Shared links are read-only and can be revoked at any time from the sharing panel. You control exactly which DealBoard is shared. Sharing one DealBoard does not expose any other DealBoards or account data.
+        </p>
+      </div>
+    ),
+  },
+  {
     id: "compare",
     title: "Compare Deals",
     icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
