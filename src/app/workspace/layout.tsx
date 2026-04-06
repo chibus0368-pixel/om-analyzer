@@ -697,6 +697,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             <nav style={{ display: "flex", alignItems: "center", gap: 4 }}>
               {[
                 { href: "/workspace", label: "DealBoard" },
+                { href: "/workspace/manage", label: "All DealBoards" },
                 { href: "/workspace/settings", label: "Settings" },
               ].map(item => {
                 const active = item.href === "/workspace"

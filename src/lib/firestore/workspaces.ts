@@ -27,7 +27,7 @@ export async function createDefaultWorkspace(uid: string, email: string): Promis
   const workspace: WorkspaceDoc = {
     id: workspaceId,
     uid,
-    name: 'Default Workspace',
+    name: 'Default DealBoard',
     slug,
     analysisType: 'retail',
     isDefault: true,
