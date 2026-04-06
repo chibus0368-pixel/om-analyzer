@@ -669,82 +669,110 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         zIndex: 60,
         padding: "0 32px",
       }}>
-        {/* Logo + DealBoard selector on left */}
-        <Link href="/workspace" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
-          <DealSignalLogo size={26} fontSize={16} gap={7} showText={true} />
-        </Link>
+        {/* Left: Logo + DealBoard selector */}
+        <div style={{ display: "flex", alignItems: "center", gap: 48 }}>
+          <Link href="/workspace" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8 }}>
+            {/* Logo mark: green rounded square with pulse */}
+            <div style={{ background: "#84CC16", padding: 6, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: 20, height: 20, color: "#000" }}>
+                <path d="M3 12h3l3-9 6 18 3-9h3" />
+              </svg>
+            </div>
+            <span style={{ fontSize: 20, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", fontFamily: "'Inter', sans-serif" }}>
+              Deal <span style={{ color: "#84CC16" }}>Signals</span>
+            </span>
+          </Link>
 
-        {/* Divider */}
-        <div style={{
-          width: 1, height: 32, background: "rgba(255,255,255,0.1)",
-          margin: "0 24px",
-        }} />
+          {/* DealBoard selector — separated by border */}
+          <button
+            onClick={() => setShowNewWs(true)}
+            style={{
+              display: "flex", alignItems: "center", gap: 12,
+              paddingLeft: 24, borderLeft: "1px solid rgba(255,255,255,0.1)", marginLeft: 8,
+              background: "none", border: "none", borderLeftStyle: "solid", borderLeftWidth: 1, borderLeftColor: "rgba(255,255,255,0.1)",
+              cursor: "pointer", transition: "opacity 0.15s",
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.025em" }}>
+                  {activeWorkspace?.name || "Default Dealboard"}
+                </span>
+                <span style={{
+                  background: "rgba(132,204,22,0.1)", color: "#84CC16",
+                  fontSize: 9, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em",
+                  padding: "2px 6px", borderRadius: 4, border: "1px solid rgba(132,204,22,0.2)",
+                }}>
+                  {ANALYSIS_TYPE_LABELS[activeWorkspace?.analysisType || "retail"] || "Retail"}
+                </span>
+              </div>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Select Dealboard
+              </span>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+          </button>
+        </div>
 
-        {/* DealBoard selector button */}
-        <HeaderWorkspaceSwitcher onAddNew={() => setShowNewWs(true)} />
-
-        {/* Right side: Pro Plan pill + user info + settings icon */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginLeft: "auto" }}>
+        {/* Right: Pro Plan pill + user info + settings */}
+        <div style={{ display: "flex", alignItems: "center", gap: 24, marginLeft: "auto" }}>
           {userTier === "free" ? (
             <button
               onClick={() => setShowUpgrade(true)}
               style={{
-                padding: "7px 18px", background: "transparent", color: "#84CC16",
-                border: "1.5px solid #84CC16", borderRadius: 50,
-                fontSize: 12, fontWeight: 700, cursor: "pointer",
-                fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
+                padding: "6px 16px", background: "rgba(132,204,22,0.2)", color: "#84CC16",
+                border: "1px solid rgba(132,204,22,0.3)", borderRadius: 9999,
+                fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+                cursor: "pointer", fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.1)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.3)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(132,204,22,0.2)"; }}
             >
               Upgrade to Pro
             </button>
           ) : (
             <Link href="/workspace/profile?tab=account" style={{
-              padding: "7px 20px", background: "transparent", color: "#84CC16",
-              border: "1.5px solid #84CC16", borderRadius: 50,
-              fontSize: 11, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase",
-              textDecoration: "none", fontFamily: "'Inter', sans-serif",
-              transition: "all 0.15s",
+              padding: "6px 16px", background: "rgba(132,204,22,0.2)", color: "#84CC16",
+              border: "1px solid rgba(132,204,22,0.3)", borderRadius: 9999,
+              fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+              textDecoration: "none", fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.1)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.3)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(132,204,22,0.2)"; }}
             >
               {userTier === "pro" ? "Pro Plan" : userTier === "pro_plus" ? "Pro+" : "My Plan"}
             </Link>
           )}
 
-          {/* User name + organization display with avatar */}
+          {/* User section — border-left divider */}
           {user && (
             <Link href="/workspace/profile" style={{
-              display: "flex", alignItems: "center", gap: 10,
-              padding: "6px 12px", borderRadius: 8,
-              textDecoration: "none", transition: "background 0.15s",
-            }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
-            >
+              display: "flex", alignItems: "center", gap: 12,
+              paddingLeft: 16, borderLeft: "1px solid rgba(255,255,255,0.1)",
+              textDecoration: "none", transition: "opacity 0.15s",
+            }}>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", lineHeight: 1.2, letterSpacing: 0.3, textTransform: "uppercase" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", lineHeight: 1.2, letterSpacing: "0.05em", textTransform: "uppercase" }}>
                   {user.displayName || user.email?.split("@")[0] || "User"}
                 </div>
-                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", lineHeight: 1.3 }}>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", lineHeight: 1.3 }}>
                   {user.email || ""}
                 </div>
               </div>
               <div style={{
                 width: 36, height: 36, borderRadius: "50%", background: "#84CC16",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 13, fontWeight: 700, color: "#0F172A", flexShrink: 0,
+                fontSize: 12, fontWeight: 700, color: "#000", flexShrink: 0,
+                border: "2px solid rgba(255,255,255,0.1)",
               }}>
                 {user.displayName ? user.displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : (user.email?.split("@")[0] || "U").substring(0, 2).toUpperCase()}
               </div>
             </Link>
           )}
 
-          {/* Settings/grid icon */}
-          <Link href="/workspace/settings" className="ws-header-nav" title="Settings" style={{
-            background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)", padding: 6,
+          {/* Settings icon */}
+          <Link href="/workspace/settings" title="Settings" style={{
+            background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)", padding: 4,
             display: "flex", alignItems: "center", borderRadius: 6, transition: "color 0.15s",
           }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
@@ -780,7 +808,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                 fontFamily: "'Inter', sans-serif",
                 transition: "all 0.15s",
               }}
-                onMouseEnter={e => { if (!active) { e.currentTarget.style.color = "#6B7280"; } }}
+                onMouseEnter={e => { if (!active) { e.currentTarget.style.color = "#111827"; } }}
                 onMouseLeave={e => { if (!active) { e.currentTarget.style.color = "#9CA3AF"; } }}
               >
                 {tab.label}
@@ -790,18 +818,20 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         </div>
 
         {/* Right: Share DealBoard button */}
-        <button
+        <Link href={`/workspace/share${activeWorkspace?.slug ? "?ws=" + activeWorkspace.slug : ""}`}
           style={{
-            padding: "8px 18px", background: "transparent", color: "#84CC16",
-            border: "1.5px solid #84CC16", borderRadius: 8,
-            fontSize: 12, fontWeight: 600, cursor: "pointer",
-            fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
+            display: "inline-flex", alignItems: "center", gap: 8,
+            padding: "8px 16px", background: "rgba(132,204,22,0.1)", color: "#84CC16",
+            border: "1px solid rgba(132,204,22,0.2)", borderRadius: 6,
+            fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase",
+            cursor: "pointer", fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
+            textDecoration: "none",
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.1)"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+          onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.2)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "rgba(132,204,22,0.1)"; }}
         >
           Share DealBoard
-        </button>
+        </Link>
       </nav>
 
       {/* Main Content — full width */}

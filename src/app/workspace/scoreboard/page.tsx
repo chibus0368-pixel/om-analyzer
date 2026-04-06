@@ -752,79 +752,80 @@ export default function ScoreboardPage() {
     );
   }
 
+  // Get signal/recommendation for a property
+  const getSignal = (pd: PropertyData) => {
+    const recommendation = (pd.property as any).recommendation || pd.values.get("ai_summary") || "";
+    if (!recommendation) return { label: "No Data", color: "#9CA3AF", bg: "#F3F4F6" };
+
+    const rec = recommendation.toLowerCase();
+    if (rec.includes("strong buy") || rec.includes("strong_buy")) {
+      return { label: "Strong Buy", color: "#059669", bg: "rgba(5,150,105,0.1)" };
+    }
+    if (rec.includes("buy")) {
+      return { label: "Buy", color: "#059669", bg: "rgba(5,150,105,0.1)" };
+    }
+    if (rec.includes("neutral") || rec.includes("hold")) {
+      return { label: "Neutral", color: "#D97706", bg: "rgba(217,119,6,0.1)" };
+    }
+    if (rec.includes("pass") || rec.includes("reject")) {
+      return { label: "Pass", color: "#DC2626", bg: "rgba(220,38,38,0.1)" };
+    }
+    return { label: "Neutral", color: "#9CA3AF", bg: "#F3F4F6" };
+  };
+
   return (
-    <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
       <style>{`@keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
 
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: "#151b2b", fontFamily: "'Playfair Display', Georgia, serif" }}>Deal Scoreboard</h1>
-            {activeWorkspace?.analysisType && (
-              <span style={{
-                display: "inline-flex", padding: "3px 10px", borderRadius: 4,
-                background: `${ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType]}15`,
-                color: ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType],
-                fontSize: 11, fontWeight: 600, letterSpacing: 0.3,
-              }}>{ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}</span>
-            )}
-          </div>
-          <p style={{ fontSize: 13, color: "#585e70", marginTop: 4, marginBottom: 0 }}>
-            {propertyData.length} propert{propertyData.length !== 1 ? "ies" : "y"} ranked by deal score
+      {/* HEADING AREA */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ marginBottom: 4 }}>
+          <h1 style={{ fontSize: 30, fontWeight: 700, margin: 0, color: "#111827", letterSpacing: -0.5 }}>
+            Portfolio Scoreboard
+          </h1>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <p style={{ fontSize: 14, fontWeight: 500, color: "#9CA3AF", margin: 0 }}>
+            Comparative analysis and algorithmic rankings for all dealboard assets.
           </p>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <Link href={`/workspace/share?ws=${activeWorkspace?.slug || "default-dealboard"}`} style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            padding: "7px 16px", borderRadius: 8,
-            background: "rgba(132,204,22,0.1)", color: "#84CC16",
-            fontSize: 12, fontWeight: 600, textDecoration: "none",
-            border: "1px solid rgba(132,204,22,0.2)",
-            transition: "all 0.15s",
-          }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-            Share DealBoard
-          </Link>
-          {/* View toggle */}
-          <div style={{ display: "flex", background: "#F0F2F5", borderRadius: 8, padding: 2 }}>
-            {(["leaderboard", "comparison"] as ViewMode[]).map(v => (
-              <button key={v} onClick={() => setView(v)} style={{
-                padding: "6px 12px", borderRadius: 6, border: "none", cursor: "pointer",
-                background: view === v ? "#fff" : "transparent",
-                boxShadow: view === v ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
-                color: view === v ? "#151b2b" : "#585e70", fontSize: 11, fontWeight: 600,
-                fontFamily: "inherit", textTransform: "capitalize",
-              }}>{v === "leaderboard" ? "Leaderboard" : "Comparison"}</button>
-            ))}
+          <div style={{ display: "flex", gap: 12 }}>
+            <button onClick={() => exportToXlsx(sortedData, activeWorkspace?.name || "")} style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              padding: "8px 14px", background: "#fff", border: "1px solid rgba(0,0,0,0.05)",
+              borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: "pointer",
+              textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280", fontFamily: "inherit",
+            }} disabled={propertyData.length === 0}>
+              Export CSV
+            </button>
+            <button style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              padding: "8px 14px", background: "#84CC16", color: "#000",
+              borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: "pointer",
+              textTransform: "uppercase", letterSpacing: 0.8, border: "none", fontFamily: "inherit",
+            }} onClick={() => window.location.reload()}>
+              Refresh Data
+            </button>
           </div>
-
-          <select value={sortBy} onChange={e => setSortBy(e.target.value as SortKey)} style={{
-            padding: "7px 12px", borderRadius: 8, border: "1px solid #E0E4EA", fontSize: 12,
-            fontWeight: 600, color: "#585e70", background: "#fff", cursor: "pointer", fontFamily: "inherit",
-          }}>
-            <option value="score">Sort: Deal Score</option>
-            <option value="name">Sort: Name</option>
-            <option value="price">Sort: Price</option>
-            <option value="cap_rate">Sort: Cap Rate</option>
-          </select>
-
-          {propertyData.length > 0 && (
-            <>
-              <button onClick={() => exportToXlsx(sortedData, activeWorkspace?.name || "")} style={{
-                display: "flex", alignItems: "center", gap: 6, padding: "7px 14px",
-                background: "#16A34A", color: "#fff", borderRadius: 8, fontSize: 12,
-                fontWeight: 600, cursor: "pointer", border: "none", fontFamily: "inherit",
-              }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
-                </svg>
-                Export XLS
-              </button>
-            </>
-          )}
         </div>
+      </div>
+
+      {/* FILTERS ROW */}
+      <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 24 }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: "#6B7280" }}>Filters</span>
+        <button style={{
+          padding: "6px 12px", background: "#fff", border: "1px solid rgba(0,0,0,0.05)",
+          borderRadius: 6, fontSize: 12, fontWeight: 600, color: "#6B7280", cursor: "pointer",
+          fontFamily: "inherit",
+        }}>
+          Asset Type
+        </button>
+        <button style={{
+          padding: "6px 12px", background: "#fff", border: "1px solid rgba(0,0,0,0.05)",
+          borderRadius: 6, fontSize: 12, fontWeight: 600, color: "#6B7280", cursor: "pointer",
+          fontFamily: "inherit",
+        }}>
+          Score Range
+        </button>
       </div>
 
 
@@ -835,9 +836,9 @@ export default function ScoreboardPage() {
           onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
           onDrop={e => { e.preventDefault(); e.stopPropagation(); router.push("/workspace/upload"); }}
           style={{
-            background: "#fff", borderRadius: 6, border: "2px dashed #D8DFE9",
+            background: "#fff", borderRadius: 12, border: "2px dashed #D8DFE9",
             padding: "48px 20px", textAlign: "center", cursor: "pointer",
-            boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
             transition: "all 0.2s",
           }}
         >
@@ -863,158 +864,195 @@ export default function ScoreboardPage() {
             Select File from Local
           </button>
         </div>
-      ) : view === "leaderboard" ? (
-        <>
-          {/* Stats row */}
-          {stats && (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 10, marginBottom: 16 }}>
-              <StatPill label="Scored" value={stats.scored > 0 ? `${stats.scored}` : "0"} sub={`/${stats.count}`} />
-              <StatPill label="Avg Score" value={stats.avgScore > 0 ? `${stats.avgScore}` : "--"}
-                color={stats.avgScore >= 70 ? "#059669" : stats.avgScore >= 50 ? "#D97706" : stats.avgScore > 0 ? "#DC2626" : undefined}
-                sub="/100"
-              />
-              <StatPill label="Top Score" value={stats.topScore > 0 ? `${stats.topScore}` : "--"}
-                color={stats.topScore >= 70 ? "#059669" : stats.topScore >= 50 ? "#D97706" : stats.topScore > 0 ? "#DC2626" : undefined}
-              />
-              <StatPill label="Avg Cap" value={stats.avgCap ? `${stats.avgCap}%` : "--"}
-                color={stats.avgCap && Number(stats.avgCap) >= 7 ? "#059669" : undefined}
-              />
-            </div>
-          )}
-
-          {/* Distribution chart */}
-          {/* Score Distribution removed */}
-
-          {/* Leaderboard */}
-          <div style={{
-            background: "#fff", borderRadius: 14, border: "1px solid rgba(227, 190, 189, 0.15)", overflow: "hidden",
-          }}>
-            {/* Column headers */}
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "26px 64px 1fr auto 28px",
-              gap: 12,
-              padding: "8px 16px",
-              background: "#151b2b",
-              color: "#585e70",
-              fontSize: 10,
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
-            }}>
-              <div>#</div>
-              <div style={{ textAlign: "center" }}>Score</div>
-              <div>Property</div>
-              <div style={{ textAlign: "right" }}>Price / Cap</div>
-              <div />
-            </div>
-
-            {/* Rows */}
-            {sortedData.map((pd, i) => (
-              <LeaderboardRow
-                key={pd.property.id}
-                pd={pd}
-                rank={i + 1}
-                totalCount={sortedData.length}
-                maxScore={maxScore}
-                expanded={expandedId === pd.property.id}
-                onToggle={() => setExpandedId(expandedId === pd.property.id ? null : pd.property.id)}
-              />
-            ))}
-          </div>
-        </>
       ) : (
-        /* ── Comparison Table View ── */
-        <div style={{
-          background: "#fff", borderRadius: 14, border: "1px solid rgba(227, 190, 189, 0.15)",
-          overflow: "auto", marginBottom: 32,
-        }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 600 }}>
-            <thead>
-              <tr style={{ background: "#151b2b" }}>
-                <th style={{
-                  padding: "12px 16px", textAlign: "left", color: "#585e70", fontWeight: 600,
-                  fontSize: 11, minWidth: 180, position: "sticky", left: 0, background: "#151b2b", zIndex: 2,
-                  textTransform: "uppercase", letterSpacing: 0.5,
-                }}>Metric</th>
-                {sortedData.map(pd => {
+        <>
+          {/* NEW SIMPLIFIED TABLE */}
+          <div style={{
+            background: "#fff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.05)", overflow: "hidden", marginBottom: 24,
+          }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ background: "#fff", borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
+                  <th style={{
+                    padding: "16px 24px", textAlign: "left", color: "#9CA3AF",
+                    fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2,
+                  }}>Property</th>
+                  <th style={{
+                    padding: "16px 24px", textAlign: "center", color: "#9CA3AF",
+                    fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2,
+                  }}>Deal Score</th>
+                  <th style={{
+                    padding: "16px 24px", textAlign: "right", color: "#9CA3AF",
+                    fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2,
+                  }}>Price</th>
+                  <th style={{
+                    padding: "16px 24px", textAlign: "right", color: "#9CA3AF",
+                    fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2,
+                  }}>Cap Rate</th>
+                  <th style={{
+                    padding: "16px 24px", textAlign: "right", color: "#9CA3AF",
+                    fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2,
+                  }}>NOI</th>
+                  <th style={{
+                    padding: "16px 24px", textAlign: "right", color: "#9CA3AF",
+                    fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2,
+                  }}>GLA</th>
+                  <th style={{
+                    padding: "16px 24px", textAlign: "center", color: "#9CA3AF",
+                    fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2,
+                  }}>Signal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedData.map((pd, idx) => {
                   const score = (pd.property as any).scoreTotal || 0;
                   const scoreBand = (pd.property as any).scoreBand || "";
-                  const config = BAND_CONFIG[scoreBand] || null;
+                  const bandConfig = BAND_CONFIG[scoreBand] || BAND_CONFIG.hold;
+
+                  const price = pd.values.get("asking_price");
+                  const capRate = pd.values.get("cap_rate");
+                  const noi = pd.values.get("noi");
+                  const gla = pd.values.get("building_sf");
+                  const signal = getSignal(pd);
+
+                  // SVG score ring
+                  const ringSize = 60;
+                  const strokeWidth = 3;
+                  const radius = (ringSize - strokeWidth) / 2;
+                  const circumference = 2 * Math.PI * radius;
+                  const progress = score > 0 ? Math.min(score / 100, 1) : 0;
+                  const dashOffset = circumference * (1 - progress);
+
+                  const propertyName = cleanDisplayName(pd.property.propertyName, pd.property.address1, pd.property.city, pd.property.state);
+                  const cityState = [pd.property.city, pd.property.state].filter(Boolean).join(", ");
+
                   return (
-                    <th key={pd.property.id} style={{
-                      padding: "10px 14px 12px", textAlign: "center", color: "#fff",
-                      fontWeight: 700, fontSize: 12, minWidth: 190, verticalAlign: "bottom",
-                    }}>
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                        {score > 0 && (
-                          <div style={{
-                            display: "inline-flex", alignItems: "center", gap: 5, padding: "2px 8px",
-                            borderRadius: 8, background: config ? `${config.color}22` : "transparent",
-                          }}>
-                            <span style={{ fontSize: 15, fontWeight: 800, color: config?.color || "#fff" }}>{score}</span>
-                            {config && <span style={{ fontSize: 9, fontWeight: 700, color: config.color, textTransform: "uppercase" }}>{config.label}</span>}
-                          </div>
-                        )}
-                        <Link href={`/workspace/properties/${pd.property.id}`} style={{ color: "#fff", textDecoration: "none", fontSize: 12 }}>
-                          {cleanDisplayName(pd.property.propertyName, pd.property.address1, pd.property.city, pd.property.state)}
+                    <tr key={pd.property.id} style={{
+                      borderBottom: "1px solid rgba(0,0,0,0.05)",
+                      transition: "background 0.15s",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "#FAFAFA"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}
+                    >
+                      {/* Property Name + City */}
+                      <td style={{
+                        padding: "16px 24px", color: "#111827", fontSize: 14, fontWeight: 700,
+                      }}>
+                        <Link href={`/workspace/properties/${pd.property.id}`} style={{
+                          textDecoration: "none", color: "#111827", cursor: "pointer",
+                        }}>
+                          {propertyName}
                         </Link>
-                        {pd.property.city && (
-                          <div style={{ fontSize: 10, fontWeight: 400, color: "#585e70" }}>
-                            {[pd.property.city, pd.property.state].filter(Boolean).join(", ")}
+                        {cityState && (
+                          <div style={{
+                            fontSize: 12, color: "#9CA3AF", marginTop: 2, fontWeight: 400,
+                          }}>
+                            {cityState}
                           </div>
                         )}
-                      </div>
-                    </th>
+                      </td>
+
+                      {/* Deal Score with circular badge */}
+                      <td style={{
+                        padding: "16px 24px", textAlign: "center",
+                      }}>
+                        <div style={{
+                          display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+                        }}>
+                          <div style={{ position: "relative", width: ringSize, height: ringSize }}>
+                            <svg width={ringSize} height={ringSize} style={{ transform: "rotate(-90deg)" }}>
+                              <circle cx={ringSize / 2} cy={ringSize / 2} r={radius}
+                                fill="none" stroke="#E5E7EB" strokeWidth={strokeWidth} />
+                              {score > 0 && (
+                                <circle cx={ringSize / 2} cy={ringSize / 2} r={radius}
+                                  fill="none" stroke={bandConfig.barColor} strokeWidth={strokeWidth}
+                                  strokeLinecap="round"
+                                  strokeDasharray={circumference}
+                                  strokeDashoffset={dashOffset}
+                                  style={{ transition: "stroke-dashoffset 0.6s ease" }}
+                                />
+                              )}
+                            </svg>
+                            <div style={{
+                              position: "absolute", inset: 0,
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              fontSize: 18, fontWeight: 900, color: score > 0 ? bandConfig.color : "#D1D5DB",
+                            }}>
+                              {score > 0 ? score : "--"}
+                            </div>
+                          </div>
+                          {score > 0 && (
+                            <div style={{
+                              fontSize: 10, fontWeight: 700, color: bandConfig.color,
+                              textTransform: "uppercase", letterSpacing: 0.5,
+                              whiteSpace: "nowrap",
+                            }}>
+                              {bandConfig.label}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Price */}
+                      <td style={{
+                        padding: "16px 24px", textAlign: "right", fontSize: 14,
+                        fontWeight: 700, color: "#111827", fontVariantNumeric: "tabular-nums",
+                      }}>
+                        {price ? formatValue("asking_price", price) : "--"}
+                      </td>
+
+                      {/* Cap Rate */}
+                      <td style={{
+                        padding: "16px 24px", textAlign: "right", fontSize: 14,
+                        fontWeight: 700, color: "#111827", fontVariantNumeric: "tabular-nums",
+                      }}>
+                        {capRate ? formatValue("cap_rate", capRate) : "--"}
+                      </td>
+
+                      {/* NOI */}
+                      <td style={{
+                        padding: "16px 24px", textAlign: "right", fontSize: 14,
+                        fontWeight: 700, color: "#111827", fontVariantNumeric: "tabular-nums",
+                      }}>
+                        {noi ? formatValue("noi", noi) : "--"}
+                      </td>
+
+                      {/* GLA */}
+                      <td style={{
+                        padding: "16px 24px", textAlign: "right", fontSize: 14,
+                        fontWeight: 500, color: "#4B5563", fontVariantNumeric: "tabular-nums",
+                      }}>
+                        {gla ? formatValue("building_sf", gla) : "--"}
+                      </td>
+
+                      {/* Signal Pill Badge */}
+                      <td style={{
+                        padding: "16px 24px", textAlign: "center",
+                      }}>
+                        <div style={{
+                          display: "inline-flex", alignItems: "center", justifyContent: "center",
+                          padding: "6px 12px", borderRadius: 6,
+                          background: signal.bg, color: signal.color,
+                          fontSize: 12, fontWeight: 700, textTransform: "capitalize",
+                        }}>
+                          {signal.label}
+                        </div>
+                      </td>
+                    </tr>
                   );
                 })}
-              </tr>
-            </thead>
-            <tbody>
-              {METRIC_SECTIONS.map(section => (
-                <Fragment key={`s-${section.section}`}>
-                  <tr style={{ background: "#F8F9FB" }}>
-                    <td colSpan={sortedData.length + 1} style={{
-                      padding: "8px 16px", fontWeight: 700, fontSize: 11, color: "#585e70",
-                      textTransform: "uppercase", letterSpacing: 0.5,
-                    }}>{section.section}</td>
-                  </tr>
-                  {section.rows.map(r => (
-                    <tr key={r.key} style={{ borderBottom: "1px solid #F4F5F7" }}>
-                      <td style={{
-                        padding: "9px 16px", fontWeight: 500, color: "#585e70", fontSize: 12,
-                        position: "sticky", left: 0, background: "#fff", zIndex: 1,
-                      }}>{r.label}</td>
-                      {sortedData.map(pd => {
-                        const rawVal = pd.values.get(r.key) || "";
-                        const val = rawVal ? formatValue(r.key, rawVal) : "--";
-                        const isSignal = section.section === "AI Analysis";
-                        const n = Number(rawVal);
-                        let valueColor = val === "--" ? "#D8DFE9" : isSignal ? "#151b2b" : "#151b2b";
-                        let bgColor = "transparent";
+              </tbody>
+            </table>
+          </div>
 
-                        if (val.includes("🟢")) { valueColor = "#059669"; bgColor = "rgba(16,185,129,0.06)"; }
-                        else if (val.includes("🟡")) { valueColor = "#D97706"; bgColor = "rgba(217,119,6,0.06)"; }
-                        else if (val.includes("🔴")) { valueColor = "#DC2626"; bgColor = "rgba(220,38,38,0.06)"; }
-
-                        const threshold = !isNaN(n) && val !== "--" ? getThresholdColor(r.key, n) : null;
-                        if (threshold) { valueColor = threshold.color; bgColor = threshold.bg; }
-
-                        return (
-                          <td key={pd.property.id} style={{
-                            padding: "9px 14px", textAlign: "center",
-                            fontWeight: isSignal ? 600 : 500,
-                            color: valueColor, background: bgColor, fontSize: 12,
-                          }}>{val}</td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
+          {/* FOOTER NOTE */}
+          <div style={{
+            textAlign: "center", fontSize: 12, color: "#9CA3AF", marginTop: 24,
+          }}>
+            Scores are calculated based on market comps, tenant credit, and lease structure.
+          </div>
+        </>
       )}
     </div>
   );
