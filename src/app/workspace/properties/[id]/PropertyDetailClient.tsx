@@ -181,7 +181,7 @@ function DealSignalBadge({ score, band }: { score: number | null; band: string }
   const b = band.toLowerCase().replace(/_/g, " ");
   const isGreen = b === "strong buy" || b === "buy" || b === "strong_buy";
   const isYellow = b === "hold" || b === "neutral";
-  const color = isGreen ? "#059669" : isYellow ? "#D97706" : C.primary;
+  const color = isGreen ? "#059669" : isYellow ? "#D97706" : "#DC2626";
   const bgColor = isGreen ? "#D1FAE5" : isYellow ? "#FEF3C7" : "#FDE8EA";
   const displayBand = band.replace(/_/g, " ");
   return (
