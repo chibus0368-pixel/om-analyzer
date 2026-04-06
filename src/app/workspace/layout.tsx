@@ -782,49 +782,6 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         </div>
       </header>
 
-      {/* ===== HORIZONTAL DEALBOARD NAV ===== */}
-      <div style={{
-        background: "#FFFFFF", borderBottom: "1px solid rgba(0,0,0,0.06)",
-        padding: "0 24px", height: 48, minHeight: 48,
-        display: "flex", alignItems: "center", gap: 6,
-        overflowX: "auto", overflowY: "hidden",
-        zIndex: 55,
-      }}>
-        {workspaces.map(ws => {
-          const isActive = ws.id === activeWorkspace?.id;
-          return (
-            <button
-              key={ws.id}
-              onClick={() => { switchWorkspace(ws.id); router.push("/workspace"); }}
-              className="ws-dealboard-tab"
-              style={{
-                padding: "6px 16px", borderRadius: 8,
-                fontSize: 13, fontWeight: isActive ? 600 : 400,
-                color: isActive ? "#0F172A" : "#6B7280",
-                background: isActive ? "rgba(132,204,22,0.1)" : "transparent",
-                border: "none", cursor: "pointer",
-                whiteSpace: "nowrap", fontFamily: "'Inter', sans-serif",
-                transition: "all 0.15s",
-              }}
-            >
-              {ws.name}
-            </button>
-          );
-        })}
-        <button
-          onClick={() => setShowNewWs(true)}
-          className="ws-dealboard-tab"
-          style={{
-            padding: "6px 12px", fontSize: 13, fontWeight: 400,
-            color: "#9CA3AF", background: "transparent",
-            border: "none", cursor: "pointer", whiteSpace: "nowrap",
-            fontFamily: "'Inter', sans-serif", transition: "color 0.15s",
-          }}
-        >
-          + New
-        </button>
-      </div>
-
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
       {/* Sidebar */}
       <aside style={{
