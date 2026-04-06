@@ -847,23 +847,43 @@ function PropertyDetailInner({
       )}
 
       {/* ═══════════════════════════════════════════════════ */}
-      {/*  1. PROPERTY HEADER                                 */}
+      {/*  1. PROPERTY HEADER + IMAGE                         */}
       {/* ═══════════════════════════════════════════════════ */}
-      <div style={{ marginBottom: 24 }}>
-        <EditablePropertyName
-          name={cleanDisplayName(property.propertyName, property.address1, property.city, property.state)}
-          propertyId={propertyId}
-          onSave={(newName: string) => setProperty((prev: Property | null) => prev ? { ...prev, propertyName: newName } : prev)}
-        />
-        {location && (
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 6 }}>
-            <p style={{ fontSize: 14, color: C.secondary, margin: 0 }}>{location}</p>
-            <a href={`https://www.google.com/maps/search/${encodedAddress}`} target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 11, color: C.secondary, textDecoration: "none", padding: "3px 10px", background: C.surfLow, borderRadius: 6, fontWeight: 500, border: `1px solid ${C.ghostBorder}` }}>
-              Map &rarr;
-            </a>
-          </div>
-        )}
+      <div style={{
+        display: "flex", gap: 24, marginBottom: 24, alignItems: "stretch",
+      }}>
+        {/* Left: Property Image */}
+        <div style={{
+          width: 320, minWidth: 260, flexShrink: 0,
+          borderRadius: C.radius, overflow: "hidden",
+          border: `1px solid ${C.ghost}`,
+          background: C.surfLow,
+        }}>
+          <PropertyImage
+            heroImageUrl={(property as any).heroImageUrl}
+            location={location}
+            encodedAddress={encodedAddress}
+            propertyName={property.propertyName}
+          />
+        </div>
+
+        {/* Right: Property Name + Location */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <EditablePropertyName
+            name={cleanDisplayName(property.propertyName, property.address1, property.city, property.state)}
+            propertyId={propertyId}
+            onSave={(newName: string) => setProperty((prev: Property | null) => prev ? { ...prev, propertyName: newName } : prev)}
+          />
+          {location && (
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 6 }}>
+              <p style={{ fontSize: 14, color: C.secondary, margin: 0 }}>{location}</p>
+              <a href={`https://www.google.com/maps/search/${encodedAddress}`} target="_blank" rel="noopener noreferrer"
+                style={{ fontSize: 11, color: C.secondary, textDecoration: "none", padding: "3px 10px", background: C.surfLow, borderRadius: 6, fontWeight: 500, border: `1px solid ${C.ghostBorder}` }}>
+                Map &rarr;
+              </a>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ═══════════════════════════════════════════════════ */}
