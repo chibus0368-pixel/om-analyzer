@@ -45,7 +45,7 @@ export default function DealSignalNav() {
   return (
     <header style={{
       position: "sticky", top: 0, zIndex: 100,
-      background: "rgba(0,0,0,0.85)",
+      background: "#000000",
       backdropFilter: "blur(20px)",
       WebkitBackdropFilter: "blur(20px)",
       borderBottom: "1px solid rgba(255,255,255,0.06)",

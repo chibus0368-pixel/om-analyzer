@@ -63,7 +63,7 @@ export default function DealSignalLogo({
               fontWeight: 800,
               fontSize,
               letterSpacing: "-0.03em",
-              color: light ? "#ffffff" : "#0B1120",
+              color: "#ffffff",
               lineHeight: 1,
             }}
           >
