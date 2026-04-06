@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, Fragment } from "react";
+import { useEffect, useState, useMemo, useRef, Fragment } from "react";
 import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
 import { getWorkspaceProperties, getPropertyExtractedFields } from "@/lib/workspace/firestore";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
@@ -614,7 +614,8 @@ async function exportToXlsx(propertyData: PropertyData[], workspaceName: string)
 // ══════════════════════════════════════════════════════════════
 // MAIN PAGE
 // ══════════════════════════════════════════════════════════════
-type SortKey = "score" | "name" | "price" | "cap_rate";
+type SortKey = "score" | "name" | "price" | "cap_rate" | "noi" | "gla" | "signal";
+type SortDir = "asc" | "desc";
 type ViewMode = "leaderboard" | "comparison";
 
 export default function ScoreboardPage() {
@@ -624,10 +625,36 @@ export default function ScoreboardPage() {
   const [propertyData, setPropertyData] = useState<PropertyData[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortKey>("score");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [view, setView] = useState<ViewMode>("leaderboard");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [rescoring, setRescoring] = useState(false);
   const [rescoreProgress, setRescoreProgress] = useState("");
+  const [filterAssetType, setFilterAssetType] = useState<string | null>(null);
+  const [filterScoreRange, setFilterScoreRange] = useState<string | null>(null);
+  const [showAssetTypeDropdown, setShowAssetTypeDropdown] = useState(false);
+  const [showScoreRangeDropdown, setShowScoreRangeDropdown] = useState(false);
+  const assetTypeRef = useRef<HTMLDivElement>(null);
+  const scoreRangeRef = useRef<HTMLDivElement>(null);
+
+  // Click-outside for filter dropdowns
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (assetTypeRef.current && !assetTypeRef.current.contains(e.target as Node)) setShowAssetTypeDropdown(false);
+      if (scoreRangeRef.current && !scoreRangeRef.current.contains(e.target as Node)) setShowScoreRangeDropdown(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleSort = (key: SortKey) => {
+    if (sortBy === key) {
+      setSortDir(d => d === "desc" ? "asc" : "desc");
+    } else {
+      setSortBy(key);
+      setSortDir(key === "name" ? "asc" : "desc");
+    }
+  };
 
   // Re-score properties that are missing scores
   const rescoreAll = async () => {
@@ -711,16 +738,68 @@ export default function ScoreboardPage() {
     }).catch(() => setLoading(false));
   }, [user, activeWorkspace]);
 
+  // Get unique asset types for filter
+  const assetTypes = useMemo(() => {
+    const types = new Set<string>();
+    propertyData.forEach(pd => {
+      const at = pd.values.get("asset_type") || (pd.property as any).analysisType || "";
+      if (at) types.add(at);
+    });
+    return Array.from(types).sort();
+  }, [propertyData]);
+
+  const SCORE_RANGES = [
+    { label: "Strong Buy (85-100)", min: 85, max: 100 },
+    { label: "Buy (70-84)", min: 70, max: 84 },
+    { label: "Neutral (50-69)", min: 50, max: 69 },
+    { label: "Pass (30-49)", min: 30, max: 49 },
+    { label: "Reject (0-29)", min: 0, max: 29 },
+  ];
+
   const sortedData = useMemo(() => {
-    const sorted = [...propertyData];
-    switch (sortBy) {
-      case "score": sorted.sort((a, b) => ((b.property as any).scoreTotal || 0) - ((a.property as any).scoreTotal || 0)); break;
-      case "name": sorted.sort((a, b) => a.property.propertyName.localeCompare(b.property.propertyName)); break;
-      case "price": sorted.sort((a, b) => (Number(b.values.get("asking_price")) || 0) - (Number(a.values.get("asking_price")) || 0)); break;
-      case "cap_rate": sorted.sort((a, b) => (Number(b.values.get("cap_rate")) || 0) - (Number(a.values.get("cap_rate")) || 0)); break;
+    let filtered = [...propertyData];
+
+    // Apply asset type filter
+    if (filterAssetType) {
+      filtered = filtered.filter(pd => {
+        const at = (pd.values.get("asset_type") || (pd.property as any).analysisType || "").toLowerCase();
+        return at === filterAssetType.toLowerCase();
+      });
     }
-    return sorted;
-  }, [propertyData, sortBy]);
+
+    // Apply score range filter
+    if (filterScoreRange) {
+      const range = SCORE_RANGES.find(r => r.label === filterScoreRange);
+      if (range) {
+        filtered = filtered.filter(pd => {
+          const s = (pd.property as any).scoreTotal || 0;
+          return s >= range.min && s <= range.max;
+        });
+      }
+    }
+
+    // Sort
+    const dir = sortDir === "desc" ? -1 : 1;
+    filtered.sort((a, b) => {
+      let cmp = 0;
+      switch (sortBy) {
+        case "score": cmp = ((a.property as any).scoreTotal || 0) - ((b.property as any).scoreTotal || 0); break;
+        case "name": cmp = a.property.propertyName.localeCompare(b.property.propertyName); break;
+        case "price": cmp = (Number(a.values.get("asking_price")) || 0) - (Number(b.values.get("asking_price")) || 0); break;
+        case "cap_rate": cmp = (Number(a.values.get("cap_rate")) || 0) - (Number(b.values.get("cap_rate")) || 0); break;
+        case "noi": cmp = (Number(a.values.get("noi")) || 0) - (Number(b.values.get("noi")) || 0); break;
+        case "gla": cmp = (Number(a.values.get("building_sf")) || 0) - (Number(b.values.get("building_sf")) || 0); break;
+        case "signal": {
+          const sa = (a.property as any).scoreTotal || 0;
+          const sb = (b.property as any).scoreTotal || 0;
+          cmp = sa - sb;
+          break;
+        }
+      }
+      return cmp * dir;
+    });
+    return filtered;
+  }, [propertyData, sortBy, sortDir, filterAssetType, filterScoreRange]);
 
   const maxScore = useMemo(() => Math.max(...propertyData.map(d => (d.property as any).scoreTotal || 0), 100), [propertyData]);
 
@@ -812,20 +891,128 @@ export default function ScoreboardPage() {
       {/* FILTERS ROW */}
       <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 24 }}>
         <span style={{ fontSize: 13, fontWeight: 600, color: "#6B7280" }}>Filters</span>
-        <button style={{
-          padding: "6px 12px", background: "#fff", border: "1px solid rgba(0,0,0,0.05)",
-          borderRadius: 6, fontSize: 12, fontWeight: 600, color: "#6B7280", cursor: "pointer",
-          fontFamily: "inherit",
-        }}>
-          Asset Type
-        </button>
-        <button style={{
-          padding: "6px 12px", background: "#fff", border: "1px solid rgba(0,0,0,0.05)",
-          borderRadius: 6, fontSize: 12, fontWeight: 600, color: "#6B7280", cursor: "pointer",
-          fontFamily: "inherit",
-        }}>
-          Score Range
-        </button>
+
+        {/* Asset Type filter */}
+        <div ref={assetTypeRef} style={{ position: "relative" }}>
+          <button
+            onClick={() => { setShowAssetTypeDropdown(v => !v); setShowScoreRangeDropdown(false); }}
+            style={{
+              padding: "6px 12px", background: filterAssetType ? "rgba(132,204,22,0.08)" : "#fff",
+              border: filterAssetType ? "1px solid rgba(132,204,22,0.3)" : "1px solid rgba(0,0,0,0.05)",
+              borderRadius: 6, fontSize: 12, fontWeight: 600,
+              color: filterAssetType ? "#84CC16" : "#6B7280",
+              cursor: "pointer", fontFamily: "inherit",
+              display: "flex", alignItems: "center", gap: 6,
+            }}
+          >
+            {filterAssetType || "Asset Type"}
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+          </button>
+          {showAssetTypeDropdown && (
+            <div style={{
+              position: "absolute", top: "calc(100% + 4px)", left: 0, minWidth: 180,
+              background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 8,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 100, overflow: "hidden",
+            }}>
+              <button
+                onClick={() => { setFilterAssetType(null); setShowAssetTypeDropdown(false); }}
+                style={{
+                  width: "100%", padding: "10px 14px", border: "none", background: !filterAssetType ? "#F9FAFB" : "#fff",
+                  fontSize: 12, fontWeight: 600, color: "#374151", cursor: "pointer", textAlign: "left",
+                  fontFamily: "inherit",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#F9FAFB"; }}
+                onMouseLeave={e => { if (!filterAssetType) return; e.currentTarget.style.background = "#fff"; }}
+              >
+                All Types
+              </button>
+              {assetTypes.map(at => (
+                <button
+                  key={at}
+                  onClick={() => { setFilterAssetType(at); setShowAssetTypeDropdown(false); }}
+                  style={{
+                    width: "100%", padding: "10px 14px", border: "none",
+                    background: filterAssetType === at ? "#F9FAFB" : "#fff",
+                    fontSize: 12, fontWeight: 600, color: "#374151", cursor: "pointer", textAlign: "left",
+                    textTransform: "capitalize", fontFamily: "inherit",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "#F9FAFB"; }}
+                  onMouseLeave={e => { if (filterAssetType === at) return; e.currentTarget.style.background = "#fff"; }}
+                >
+                  {at}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Score Range filter */}
+        <div ref={scoreRangeRef} style={{ position: "relative" }}>
+          <button
+            onClick={() => { setShowScoreRangeDropdown(v => !v); setShowAssetTypeDropdown(false); }}
+            style={{
+              padding: "6px 12px", background: filterScoreRange ? "rgba(132,204,22,0.08)" : "#fff",
+              border: filterScoreRange ? "1px solid rgba(132,204,22,0.3)" : "1px solid rgba(0,0,0,0.05)",
+              borderRadius: 6, fontSize: 12, fontWeight: 600,
+              color: filterScoreRange ? "#84CC16" : "#6B7280",
+              cursor: "pointer", fontFamily: "inherit",
+              display: "flex", alignItems: "center", gap: 6,
+            }}
+          >
+            {filterScoreRange || "Score Range"}
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+          </button>
+          {showScoreRangeDropdown && (
+            <div style={{
+              position: "absolute", top: "calc(100% + 4px)", left: 0, minWidth: 200,
+              background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 8,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 100, overflow: "hidden",
+            }}>
+              <button
+                onClick={() => { setFilterScoreRange(null); setShowScoreRangeDropdown(false); }}
+                style={{
+                  width: "100%", padding: "10px 14px", border: "none",
+                  background: !filterScoreRange ? "#F9FAFB" : "#fff",
+                  fontSize: 12, fontWeight: 600, color: "#374151", cursor: "pointer", textAlign: "left",
+                  fontFamily: "inherit",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#F9FAFB"; }}
+                onMouseLeave={e => { if (!filterScoreRange) return; e.currentTarget.style.background = "#fff"; }}
+              >
+                All Scores
+              </button>
+              {SCORE_RANGES.map(sr => (
+                <button
+                  key={sr.label}
+                  onClick={() => { setFilterScoreRange(sr.label); setShowScoreRangeDropdown(false); }}
+                  style={{
+                    width: "100%", padding: "10px 14px", border: "none",
+                    background: filterScoreRange === sr.label ? "#F9FAFB" : "#fff",
+                    fontSize: 12, fontWeight: 600, color: "#374151", cursor: "pointer", textAlign: "left",
+                    fontFamily: "inherit",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "#F9FAFB"; }}
+                  onMouseLeave={e => { if (filterScoreRange === sr.label) return; e.currentTarget.style.background = "#fff"; }}
+                >
+                  {sr.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Clear filters */}
+        {(filterAssetType || filterScoreRange) && (
+          <button
+            onClick={() => { setFilterAssetType(null); setFilterScoreRange(null); }}
+            style={{
+              padding: "6px 12px", background: "transparent", border: "none",
+              fontSize: 12, fontWeight: 600, color: "#DC2626", cursor: "pointer", fontFamily: "inherit",
+            }}
+          >
+            Clear filters
+          </button>
+        )}
       </div>
 
 
@@ -874,34 +1061,38 @@ export default function ScoreboardPage() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ background: "#fff", borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
-                  <th style={{
-                    padding: "16px 24px", textAlign: "left", color: "#9CA3AF",
-                    fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2,
-                  }}>Property</th>
-                  <th style={{
-                    padding: "16px 24px", textAlign: "center", color: "#9CA3AF",
-                    fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2,
-                  }}>Deal Score</th>
-                  <th style={{
-                    padding: "16px 24px", textAlign: "right", color: "#9CA3AF",
-                    fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2,
-                  }}>Price</th>
-                  <th style={{
-                    padding: "16px 24px", textAlign: "right", color: "#9CA3AF",
-                    fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2,
-                  }}>Cap Rate</th>
-                  <th style={{
-                    padding: "16px 24px", textAlign: "right", color: "#9CA3AF",
-                    fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2,
-                  }}>NOI</th>
-                  <th style={{
-                    padding: "16px 24px", textAlign: "right", color: "#9CA3AF",
-                    fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2,
-                  }}>GLA</th>
-                  <th style={{
-                    padding: "16px 24px", textAlign: "center", color: "#9CA3AF",
-                    fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2,
-                  }}>Signal</th>
+                  {([
+                    { key: "name" as SortKey, label: "Property", align: "left" as const },
+                    { key: "score" as SortKey, label: "Deal Score", align: "center" as const },
+                    { key: "price" as SortKey, label: "Price", align: "right" as const },
+                    { key: "cap_rate" as SortKey, label: "Cap Rate", align: "right" as const },
+                    { key: "noi" as SortKey, label: "NOI", align: "right" as const },
+                    { key: "gla" as SortKey, label: "GLA", align: "right" as const },
+                    { key: "signal" as SortKey, label: "Signal", align: "center" as const },
+                  ]).map(col => (
+                    <th
+                      key={col.key}
+                      onClick={() => handleSort(col.key)}
+                      style={{
+                        padding: "16px 24px", textAlign: col.align,
+                        color: sortBy === col.key ? "#111827" : "#9CA3AF",
+                        fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2,
+                        cursor: "pointer", userSelect: "none", whiteSpace: "nowrap",
+                        transition: "color 0.15s",
+                      }}
+                    >
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        {col.label}
+                        {sortBy === col.key && (
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+                            style={{ transform: sortDir === "asc" ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}
+                          >
+                            <path d="M6 9l6 6 6-6" />
+                          </svg>
+                        )}
+                      </span>
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>

@@ -514,12 +514,26 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   const [properties, setProperties] = useState<Property[]>([]);
   const [loadingProps, setLoadingProps] = useState(true);
   const [showNewWs, setShowNewWs] = useState(false);
+  const [showWsDropdown, setShowWsDropdown] = useState(false);
   const [newWsName, setNewWsName] = useState("");
   const [newWsType, setNewWsType] = useState<AnalysisType>("retail");
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [userTier, setUserTier] = useState<string>("free");
   const prevWsIdRef = useRef<string | null>(null);
   const upgradeHandledRef = useRef(false);
+  const wsDropdownRef = useRef<HTMLDivElement>(null);
+
+  // ── Close workspace dropdown on outside click ──
+  useEffect(() => {
+    if (!showWsDropdown) return;
+    const handler = (e: MouseEvent) => {
+      if (wsDropdownRef.current && !wsDropdownRef.current.contains(e.target as Node)) {
+        setShowWsDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showWsDropdown]);
 
   // ── Auth gate: redirect to login if not authenticated ──
   // Skip redirect if already on the login page to prevent redirect loops.
@@ -684,34 +698,110 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           </Link>
 
           {/* DealBoard selector — separated by border */}
-          <button
-            onClick={() => setShowNewWs(true)}
-            style={{
-              display: "flex", alignItems: "center", gap: 12,
-              paddingLeft: 24, borderLeft: "1px solid rgba(255,255,255,0.1)", marginLeft: 8,
-              background: "none", border: "none", borderLeftStyle: "solid", borderLeftWidth: 1, borderLeftColor: "rgba(255,255,255,0.1)",
-              cursor: "pointer", transition: "opacity 0.15s",
-            }}
-          >
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.025em" }}>
-                  {activeWorkspace?.name || "Default Dealboard"}
-                </span>
-                <span style={{
-                  background: "rgba(132,204,22,0.1)", color: "#84CC16",
-                  fontSize: 9, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em",
-                  padding: "2px 6px", borderRadius: 4, border: "1px solid rgba(132,204,22,0.2)",
-                }}>
-                  {ANALYSIS_TYPE_LABELS[activeWorkspace?.analysisType || "retail"] || "Retail"}
+          <div ref={wsDropdownRef} style={{ position: "relative" }}>
+            <button
+              onClick={() => setShowWsDropdown(v => !v)}
+              style={{
+                display: "flex", alignItems: "center", gap: 12,
+                paddingLeft: 24, borderLeft: "1px solid rgba(255,255,255,0.1)", marginLeft: 8,
+                background: "none", border: "none", borderLeftStyle: "solid", borderLeftWidth: 1, borderLeftColor: "rgba(255,255,255,0.1)",
+                cursor: "pointer", transition: "opacity 0.15s",
+              }}
+            >
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.025em" }}>
+                    {activeWorkspace?.name || "Default Dealboard"}
+                  </span>
+                  <span style={{
+                    background: "rgba(132,204,22,0.1)", color: "#84CC16",
+                    fontSize: 9, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em",
+                    padding: "2px 6px", borderRadius: 4, border: "1px solid rgba(132,204,22,0.2)",
+                  }}>
+                    {ANALYSIS_TYPE_LABELS[activeWorkspace?.analysisType || "retail"] || "Retail"}
+                  </span>
+                </div>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  Select Dealboard
                 </span>
               </div>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Select Dealboard
-              </span>
-            </div>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
-          </button>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: showWsDropdown ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+
+            {/* Workspace dropdown */}
+            {showWsDropdown && (
+              <div style={{
+                position: "absolute", top: "calc(100% + 8px)", left: 0, minWidth: 320,
+                background: "#151d2e", border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: 12, boxShadow: "0 16px 48px rgba(0,0,0,0.5)",
+                zIndex: 300, overflow: "hidden",
+              }}>
+                <div style={{ padding: "14px 16px 8px 16px", fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                  Your Dealboards
+                </div>
+                <div style={{ maxHeight: 280, overflowY: "auto", padding: "0 6px 4px" }}>
+                  {workspaces.map(ws => {
+                    const isActive = ws.id === activeWorkspace?.id;
+                    return (
+                      <button
+                        key={ws.id}
+                        onClick={() => {
+                          switchWorkspace(ws.id);
+                          setShowWsDropdown(false);
+                          router.push("/workspace");
+                        }}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 12, width: "100%",
+                          padding: "12px 10px", border: "none", cursor: "pointer", borderRadius: 8,
+                          background: isActive ? "rgba(132,204,22,0.08)" : "transparent",
+                          transition: "background 0.12s", textAlign: "left",
+                        }}
+                        onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+                        onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = isActive ? "rgba(132,204,22,0.08)" : "transparent"; }}
+                      >
+                        <div style={{
+                          width: 8, height: 8, borderRadius: 4,
+                          background: isActive ? "#84CC16" : "rgba(255,255,255,0.15)",
+                          flexShrink: 0,
+                        }} />
+                        <span style={{
+                          fontSize: 14, fontWeight: isActive ? 700 : 500, flex: 1, minWidth: 0,
+                          color: isActive ? "#FFFFFF" : "rgba(255,255,255,0.6)",
+                          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                        }}>
+                          {ws.name}
+                        </span>
+                        <span style={{
+                          fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em",
+                          padding: "3px 8px", borderRadius: 4, flexShrink: 0,
+                          background: isActive ? "rgba(132,204,22,0.15)" : "rgba(255,255,255,0.06)",
+                          color: isActive ? "#84CC16" : "rgba(255,255,255,0.35)",
+                          border: isActive ? "1px solid rgba(132,204,22,0.2)" : "1px solid rgba(255,255,255,0.06)",
+                        }}>
+                          {ANALYSIS_TYPE_LABELS[ws.analysisType || "retail"] || "Retail"}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: "6px 6px" }}>
+                  <button
+                    onClick={() => { setShowWsDropdown(false); setShowNewWs(true); }}
+                    style={{
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%",
+                      padding: "12px 14px", border: "none", borderRadius: 8,
+                      background: "transparent", cursor: "pointer", transition: "background 0.12s",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.06)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: "0.08em" }}>Add New Dealboard</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right: Pro Plan pill + user info + settings */}
