@@ -35,10 +35,11 @@ export async function GET(req: NextRequest) {
     const listResult = await auth.listUsers(1000);
 
     // Get all workspace data in parallel
-    const [workspacesSnap, propertiesSnap, subscriptionsSnap] = await Promise.all([
+    // Tier/subscription lives on the "users" collection (doc ID = uid), NOT a separate subscriptions collection
+    const [workspacesSnap, propertiesSnap, usersSnap] = await Promise.all([
       db.collection("workspaces").get(),
       db.collection("workspace_properties").get(),
-      db.collection("subscriptions").get(),
+      db.collection("users").get(),
     ]);
 
     // Build lookup maps
@@ -58,14 +59,17 @@ export async function GET(req: NextRequest) {
       if (uid) dealsByUser.set(uid, (dealsByUser.get(uid) || 0) + 1);
     });
 
-    subscriptionsSnap.docs.forEach(doc => {
+    usersSnap.docs.forEach(doc => {
       const d = doc.data();
-      const uid = doc.id; // subscription doc ID = user ID
+      const uid = doc.id;
       subsByUser.set(uid, {
-        tier: d.tier || d.plan || "free",
-        status: d.status || "active",
+        tier: d.tier || "free",
+        status: d.tierStatus || "active",
         stripeCustomerId: d.stripeCustomerId || null,
+        stripeSubscriptionId: d.stripeSubscriptionId || null,
         currentPeriodEnd: d.currentPeriodEnd || null,
+        uploadsUsed: d.uploadsUsed || 0,
+        uploadLimit: d.uploadLimit || 0,
       });
     });
 
