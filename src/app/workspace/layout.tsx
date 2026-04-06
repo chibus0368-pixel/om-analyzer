@@ -787,51 +787,61 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         background: "#FFFFFF", borderBottom: "1px solid rgba(0,0,0,0.06)",
         padding: "0 32px",
       }}>
-        {/* Left: Tabs */}
-        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+        {/* Left: Tabs with icons */}
+        <div style={{ display: "flex", alignItems: "center", gap: 32, height: "100%" }}>
           {[
-            { href: "/workspace", label: "Dealboard" },
-            { href: "/workspace/scoreboard", label: "Scorecard" },
-            { href: "/workspace/upload", label: "Upload" },
-            { href: "/workspace/map", label: "Map" },
+            { href: "/workspace", label: "Dealboard", icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h.01" /><path d="M3 12h.01" /><path d="M3 19h.01" /><path d="M8 5h13" /><path d="M8 12h13" /><path d="M8 19h13" /></svg> },
+            { href: "/workspace/scoreboard", label: "Scorecard", icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16" /><path d="M18 17V9" /><path d="M13 17V5" /><path d="M8 17v-3" /></svg> },
+            { href: "/workspace/upload", label: "Upload", icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 13v8" /><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="m8 17 4-4 4 4" /></svg> },
+            { href: "/workspace/map", label: "Map", icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" /><path d="M15 5.764v15" /><path d="M9 3.236v15" /></svg> },
           ].map(tab => {
             const active = tab.href === "/workspace" ? pathname === "/workspace" || pathname.startsWith("/workspace/properties") : pathname.startsWith(tab.href);
             return (
               <Link key={tab.href} href={`${tab.href}${activeWorkspace?.slug ? "?ws=" + activeWorkspace.slug : ""}`} style={{
-                display: "inline-flex", alignItems: "center",
+                display: "inline-flex", alignItems: "center", gap: 8,
                 height: "100%",
                 fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "2.2px",
                 color: active ? "#84CC16" : "#9CA3AF",
                 textDecoration: "none",
                 borderBottom: active ? "2px solid #84CC16" : "2px solid transparent",
-                padding: "4px 0",
+                paddingTop: 4,
                 fontFamily: "'Inter', sans-serif",
                 transition: "all 0.15s",
               }}
                 onMouseEnter={e => { if (!active) { e.currentTarget.style.color = "#111827"; } }}
                 onMouseLeave={e => { if (!active) { e.currentTarget.style.color = "#9CA3AF"; } }}
               >
+                <span style={{ display: "flex", opacity: active ? 1 : 0.7 }}>{tab.icon}</span>
                 {tab.label}
               </Link>
             );
           })}
         </div>
 
-        {/* Right: Share DealBoard button */}
-        <Link href={`/workspace/share${activeWorkspace?.slug ? "?ws=" + activeWorkspace.slug : ""}`}
-          style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            padding: "8px 16px", background: "rgba(132,204,22,0.1)", color: "#84CC16",
-            border: "1px solid rgba(132,204,22,0.2)", borderRadius: 6,
-            fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase",
-            cursor: "pointer", fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
-            textDecoration: "none",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.2)"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "rgba(132,204,22,0.1)"; }}
-        >
-          Share DealBoard
-        </Link>
+        {/* Right: Share DealBoard button + what is sharing link */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>
+          <Link href={`/workspace/share${activeWorkspace?.slug ? "?ws=" + activeWorkspace.slug : ""}`}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "8px 16px", background: "rgba(132,204,22,0.1)", color: "#84CC16",
+              border: "1px solid rgba(132,204,22,0.2)", borderRadius: 6,
+              fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase",
+              cursor: "pointer", fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
+              textDecoration: "none",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.2)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(132,204,22,0.1)"; }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
+            Share DealBoard
+          </Link>
+          <Link href="/workspace/help#sharing" style={{ fontSize: 10, color: "#9CA3AF", textDecoration: "none", fontFamily: "'Inter', sans-serif", transition: "color 0.15s" }}
+            onMouseEnter={e => { e.currentTarget.style.color = "#6B7280"; }}
+            onMouseLeave={e => { e.currentTarget.style.color = "#9CA3AF"; }}
+          >
+            What is sharing?
+          </Link>
+        </div>
       </nav>
 
       {/* Main Content — full width */}
