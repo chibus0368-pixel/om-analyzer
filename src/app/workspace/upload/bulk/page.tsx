@@ -215,7 +215,7 @@ export default function BulkUploadPage() {
   const hasItems = items.length > 0;
 
   return (
-    <div style={{ maxWidth: 680, margin: "0 auto" }}>
+    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
         <a href="/workspace/upload" style={{ color: "#5A7091", textDecoration: "none", fontSize: 13, display: "flex", alignItems: "center", gap: 4 }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>

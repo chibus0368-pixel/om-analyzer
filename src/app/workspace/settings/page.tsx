@@ -64,7 +64,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto" }}>
+    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
         <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Settings</h1>
         {activeWorkspace?.analysisType && (

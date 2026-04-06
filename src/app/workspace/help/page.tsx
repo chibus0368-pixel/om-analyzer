@@ -812,7 +812,7 @@ export default function HelpPage() {
       </div>
 
       {/* Right content area */}
-      <div style={{ flex: 1, padding: "20px 40px 60px", maxWidth: 800 }}>
+      <div style={{ flex: 1, padding: "20px 40px 60px", maxWidth: 1400 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
           <div style={{
             width: 40, height: 40, borderRadius: "50%", background: "rgba(185, 23, 47, 0.08)",

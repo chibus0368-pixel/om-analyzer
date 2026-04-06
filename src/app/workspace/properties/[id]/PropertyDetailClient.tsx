@@ -964,7 +964,7 @@ function PropertyDetailInner({
   /*  RENDER                                                 */
   /* ═══════════════════════════════════════════════════════ */
   return (
-    <div style={{ maxWidth: 960, margin: "0 auto" }}>
+    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
       <style>{`
         .card-hover { transition: all 0.2s cubic-bezier(0.4,0,0.2,1); }
         .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(21,27,43,0.08); }

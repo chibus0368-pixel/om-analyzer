@@ -451,7 +451,7 @@ export default function ProjectDetailPage() {
   );
 
   return (
-    <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
       {showAddProperty && (
         <AddPropertyModal
           projectId={projectId}

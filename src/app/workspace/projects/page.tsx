@@ -153,7 +153,7 @@ export default function ProjectsListPage() {
     });
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
       {showCreate && (
         <CreateProjectModal
           onClose={() => setShowCreate(false)}

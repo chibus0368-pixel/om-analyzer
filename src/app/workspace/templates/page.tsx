@@ -14,7 +14,7 @@ const templates = [
 
 export default function TemplatesPage() {
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto" }}>
+    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
       <h1 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 8px" }}>Output Templates</h1>
       <p style={{ fontSize: 14, color: "#5A7091", marginBottom: 24 }}>Manage report templates and export configurations.</p>
 

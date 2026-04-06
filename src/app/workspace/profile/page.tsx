@@ -438,7 +438,7 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto" }}>
+    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         .profile-input:focus { border-color: ${PRIMARY} !important; }

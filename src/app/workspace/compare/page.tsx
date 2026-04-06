@@ -51,7 +51,7 @@ export default function ComparePage() {
   if (loading) return <div style={{ padding: 40, textAlign: "center", color: "#585e70" }}>Loading...</div>;
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
       <h1 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 8px" }}>Compare Deals</h1>
       <p style={{ fontSize: 14, color: "#585e70", marginBottom: 20 }}>Select up to 5 projects to compare side by side.</p>
 
