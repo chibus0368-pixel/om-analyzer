@@ -60,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body>
+      <body style={{ fontFamily: "'Inter', sans-serif", margin: 0 }}>
         <GoogleAnalytics />
         <Providers>{children}</Providers>
       </body>

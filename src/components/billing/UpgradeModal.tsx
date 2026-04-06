@@ -61,7 +61,7 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
             background: "rgba(132, 204, 22, 0.08)", display: "flex", alignItems: "center", justifyContent: "center",
             margin: "0 auto 16px", fontSize: 24,
           }}>⭐</div>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "#0B1120", margin: "0 0 8px" }}>
+          <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 700, color: "#0B1120", margin: "0 0 8px" }}>
             You&apos;re on the {currentTier === "pro_plus" ? "Pro+" : "Pro"} Plan
           </h2>
           <p style={{ fontSize: 14, color: "#64748b", margin: "0 0 24px" }}>
@@ -162,7 +162,7 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
             background: "#FEE2E2", display: "flex", alignItems: "center", justifyContent: "center",
             margin: "0 auto 16px", fontSize: 24,
           }}>🔒</div>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 24, fontWeight: 700, color: "#0B1120", margin: "0 0 8px" }}>
+          <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: 24, fontWeight: 700, color: "#0B1120", margin: "0 0 8px" }}>
             {headline}
           </h2>
           <p style={{ fontSize: 14, color: "#64748b", margin: 0 }}>{subtitle}</p>

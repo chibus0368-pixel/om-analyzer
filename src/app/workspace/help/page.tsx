@@ -782,7 +782,7 @@ export default function HelpPage() {
       }}>
         <h2 style={{
           fontSize: 18, fontWeight: 700, color: C.onSurface, padding: "0 20px 16px",
-          fontFamily: "'Playfair Display', Georgia, serif", margin: 0,
+          fontFamily: "'Inter', sans-serif", margin: 0,
         }}>
           Help Center
         </h2>
@@ -824,7 +824,7 @@ export default function HelpPage() {
           </div>
           <h1 style={{
             fontSize: 24, fontWeight: 700, color: C.onSurface, margin: 0,
-            fontFamily: "'Playfair Display', Georgia, serif",
+            fontFamily: "'Inter', sans-serif",
           }}>
             {activeTopic.title}
           </h1>

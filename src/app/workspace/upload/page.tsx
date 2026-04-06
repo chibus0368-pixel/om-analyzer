@@ -427,7 +427,7 @@ export default function UploadPage() {
     <div style={{ maxWidth: 680, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Playfair Display', Georgia, serif" }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>
             Upload Deal{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}
           </h1>
           {activeWorkspace?.analysisType && (
@@ -727,7 +727,7 @@ export default function UploadPage() {
           <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#D1FAE5", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 24, marginBottom: 12 }}>
             {"\u2713"}
           </div>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: C.onSurface, margin: "0 0 6px", fontFamily: "'Playfair Display', Georgia, serif" }}>Property saved</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: C.onSurface, margin: "0 0 6px", fontFamily: "'Inter', sans-serif" }}>Property saved</h2>
           <p style={{ fontSize: 13, color: C.secondary, margin: "0 0 4px" }}>
             {files.length} file{files.length !== 1 ? "s" : ""} uploaded and analyzed.
           </p>
