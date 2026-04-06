@@ -79,6 +79,83 @@ async function extractPdfText(file: File): Promise<string> {
   ]);
 }
 
+// ── PDF-to-Image OCR fallback for scanned/image-heavy PDFs ──
+// Renders PDF pages to canvas, converts to JPEG base64, sends to GPT-4o Vision
+async function extractPdfViaVision(file: File): Promise<string> {
+  console.log(`[pdf-ocr] Starting vision extraction for: ${file.name}`);
+  const pdfjs = await loadPdfJS();
+  const buffer = await file.arrayBuffer();
+  const pdf = await pdfjs.getDocument({ data: buffer }).promise;
+  const totalPages = pdf.numPages;
+  const maxPages = Math.min(totalPages, 8); // Limit to 8 pages for Vision API cost
+
+  const imageBase64s: string[] = [];
+  for (let i = 1; i <= maxPages; i++) {
+    try {
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({ scale: 1.5 }); // 1.5x for readable resolution
+      const canvas = document.createElement("canvas");
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) continue;
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      const jpeg = canvas.toDataURL("image/jpeg", 0.75);
+      const base64 = jpeg.replace(/^data:image\/jpeg;base64,/, "");
+      imageBase64s.push(base64);
+      canvas.remove();
+    } catch (pageErr) {
+      console.warn(`[pdf-ocr] Failed to render page ${i}:`, pageErr);
+    }
+  }
+
+  if (imageBase64s.length === 0) {
+    console.warn(`[pdf-ocr] No pages rendered for ${file.name}`);
+    return "";
+  }
+
+  console.log(`[pdf-ocr] Rendered ${imageBase64s.length} pages, sending to Vision API`);
+
+  // Send to GPT-4o Vision for OCR
+  try {
+    const messages: any[] = [
+      {
+        role: "system",
+        content: "You are a document OCR specialist. Extract ALL text from these property document page images. Return the raw text content organized by page. Include all numbers, addresses, financial data, tenant names, and details exactly as shown."
+      },
+      {
+        role: "user",
+        content: [
+          { type: "text", text: `Extract all text from these ${imageBase64s.length} pages of a commercial real estate document. Return all content including numbers, names, addresses, and financial data.` },
+          ...imageBase64s.map((b64, idx) => ({
+            type: "image_url",
+            image_url: { url: `data:image/jpeg;base64,${b64}`, detail: "high" }
+          })),
+        ],
+      },
+    ];
+
+    const res = await fetch("/api/workspace/ocr", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const text = data.text || "";
+      console.log(`[pdf-ocr] Vision extracted ${text.length} chars from ${file.name}`);
+      return text;
+    } else {
+      console.warn(`[pdf-ocr] Vision API failed:`, res.status);
+      return "";
+    }
+  } catch (err) {
+    console.warn(`[pdf-ocr] Vision request failed:`, err);
+    return "";
+  }
+}
+
 async function extractExcelText(file: File): Promise<string> {
   const xlsx = await loadSheetJS();
   const buffer = await file.arrayBuffer();
@@ -119,16 +196,29 @@ export async function extractTextFromFile(file: File): Promise<string> {
       return `--- ${name} ---\n${text}`;
     }
 
-    // PDF files
+    // PDF files — try text extraction first, fall back to Vision OCR for scanned docs
     if (ext === "pdf") {
       console.log(`[file-reader] Starting PDF extraction for: ${name}`);
       const text = await extractPdfText(file);
-      if (text.trim()) {
-        console.log(`[file-reader] PDF extraction success: ${text.length} chars from ${name}`);
+      if (text.trim().length > 100) {
+        console.log(`[file-reader] PDF text extraction success: ${text.length} chars from ${name}`);
         return `--- ${name} ---\n${text}`;
       }
-      console.warn(`[file-reader] PDF extraction returned empty for: ${name}`);
-      // Fallback: use filename as context so GPT-4o at least knows the property
+      // Text extraction returned little/nothing — likely a scanned PDF
+      console.warn(`[file-reader] PDF text extraction got only ${text.trim().length} chars for: ${name}. Trying Vision OCR...`);
+      try {
+        const visionText = await extractPdfViaVision(file);
+        if (visionText.trim().length > 50) {
+          console.log(`[file-reader] Vision OCR success: ${visionText.length} chars from ${name}`);
+          return `--- ${name} (OCR extracted) ---\n${visionText}`;
+        }
+      } catch (ocrErr: any) {
+        console.warn(`[file-reader] Vision OCR failed for ${name}:`, ocrErr?.message);
+      }
+      // Final fallback
+      if (text.trim()) {
+        return `--- ${name} ---\n${text}`;
+      }
       return `--- ${name} (PDF file, ${(file.size / 1024).toFixed(0)}KB — text extraction returned empty. This may be a scanned or image-heavy PDF. Property name may be in filename: ${name}) ---`;
     }
 
