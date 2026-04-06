@@ -1332,7 +1332,7 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 8. PRICING ── */}
-          <div id="pricing" style={{ maxWidth: 1000, margin: "0 auto", padding: "120px 32px 80px", position: "relative", overflow: "hidden" }}>
+          <div id="pricing" style={{ maxWidth: 1000, margin: "0 auto", padding: "120px 32px 80px", position: "relative", overflow: "visible" }}>
             {/* Section divider */}
             <div style={{
               height: 1,
