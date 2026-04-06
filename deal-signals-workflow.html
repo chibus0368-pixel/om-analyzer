@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deal Signals Workflow</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0d0d14;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+  .canvas {
+    width: 1480px;
+    height: 740px;
+    position: relative;
+    overflow: visible;
+  }
+
+  .connectors {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0;
+  }
+  .connectors path, .connectors line { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 1.8; }
+  .connectors .dashed { stroke-dasharray: 6 4; stroke: rgba(255,255,255,0.12); stroke-width: 1.5; }
+  .connectors .active-path { stroke: #b9172f; stroke-width: 2; opacity: 0.4; }
+  .connectors .arrow-head { fill: rgba(255,255,255,0.15); stroke: none; }
+
+  .card {
+    position: absolute;
+    background: rgba(22,22,31,0.8);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    padding: 18px 20px;
+    z-index: 2;
+    backdrop-filter: blur(10px);
+  }
+  .card-sm { border-radius: 12px; padding: 14px 16px; }
+
+  .source { width: 240px; display: flex; align-items: center; gap: 14px; }
+  .source-icon {
+    width: 44px; height: 44px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .source-icon.email { background: rgba(239,68,68,0.12); }
+  .source-icon.pdf   { background: rgba(249,115,22,0.12); }
+  .source-icon.xls   { background: rgba(34,197,94,0.12); }
+  .source h4 { font-size: 13.5px; font-weight: 600; color: #ffffff; line-height: 1.35; }
+  .source p  { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+  .ds-badge {
+    position: absolute; width: 42px; height: 42px;
+    background: linear-gradient(135deg, #dc2626, #b9172f);
+    border-radius: 11px; display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 800; font-size: 12.5px; letter-spacing: -0.3px;
+    box-shadow: 0 4px 20px rgba(185,23,47,0.4), 0 0 40px rgba(185,23,47,0.15);
+    z-index: 5;
+  }
+
+  .doc-card { width: 320px; padding: 0; overflow: hidden; }
+  .doc-header {
+    background: rgba(30,30,40,0.9);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 16px 22px; display: flex; align-items: center; gap: 12px;
+  }
+  .doc-icon {
+    width: 34px; height: 34px; background: rgba(185,23,47,0.12);
+    border-radius: 9px; display: flex; align-items: center; justify-content: center;
+  }
+  .doc-header h3 { font-size: 14px; font-weight: 700; color: #ffffff; }
+  .doc-header span { font-size: 11px; color: #6b7280; margin-top: 1px; display: block; }
+  .doc-body { padding: 18px 22px; }
+  .field-row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+  .field-row:last-child { margin-bottom: 0; }
+  .field-line { flex: 1; height: 7px; background: rgba(255,255,255,0.06); border-radius: 4px; }
+  .field-tag {
+    padding: 4px 11px; border-radius: 6px; font-size: 10.5px;
+    font-weight: 700; letter-spacing: 0.2px; white-space: nowrap;
+  }
+  .tag-cap    { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+  .tag-noi    { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+  .tag-tenant { background: rgba(234,179,8,0.15); color: #facc15; border: 1px solid rgba(234,179,8,0.25); }
+  .tag-lease  { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.25); }
+  .tag-price  { background: rgba(236,72,153,0.15); color: #f472b6; border: 1px solid rgba(236,72,153,0.25); }
+
+  .score-card {
+    width: 190px; text-align: center; padding: 26px 20px 22px;
+    border: 1px solid rgba(185,23,47,0.2);
+    box-shadow: 0 0 30px rgba(185,23,47,0.08);
+  }
+  .score-ring-wrap { width: 94px; height: 94px; margin: 0 auto 14px; position: relative; }
+  .score-ring-wrap svg { width: 94px; height: 94px; }
+  .score-num {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 30px; font-weight: 800; color: #4ade80;
+  }
+  .score-label { font-size: 14px; font-weight: 700; color: #ffffff; margin-bottom: 6px; }
+  .score-band {
+    display: inline-block; padding: 4px 14px; border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+    background: rgba(34,197,94,0.15); color: #4ade80;
+    border: 1px solid rgba(34,197,94,0.25);
+  }
+
+  .action-card { width: 240px; display: flex; align-items: center; gap: 12px; }
+  .action-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .action-icon.green  { background: rgba(34,197,94,0.12); }
+  .action-icon.amber  { background: rgba(234,179,8,0.12); }
+  .action-icon.blue   { background: rgba(59,130,246,0.12); }
+  .action-card h4 { font-size: 13px; font-weight: 600; color: #ffffff; line-height: 1.3; }
+  .action-card p  { font-size: 10.5px; color: #6b7280; margin-top: 2px; }
+  .check-badge {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-left: auto; flex-shrink: 0;
+  }
+
+  .dashboard { width: 270px; padding: 0; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); }
+  .dash-header {
+    background: linear-gradient(135deg, #b9172f, #991b1b);
+    padding: 13px 18px; color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .dash-header h4 { font-size: 13px; font-weight: 700; letter-spacing: 0.2px; }
+  .dash-dots { display: flex; gap: 4px; }
+  .dash-dots span { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.25); }
+  .dash-dots span:first-child { background: rgba(255,255,255,0.65); }
+  .dash-body { padding: 16px 18px; }
+
+  .stat-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .stat-box {
+    flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 9px; padding: 10px 8px; text-align: center;
+  }
+  .stat-box .val { font-size: 20px; font-weight: 800; color: #ffffff; }
+  .stat-box .lbl { font-size: 8.5px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+
+  .map-preview {
+    width: 100%; height: 62px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 9px; margin-bottom: 12px;
+    position: relative; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .map-pin {
+    position: absolute; width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8.5px; font-weight: 800; color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .mini-chart { margin-bottom: 14px; }
+
+  .deal-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 0; border-top: 1px solid rgba(255,255,255,0.06); font-size: 11px;
+  }
+  .deal-row:first-child { border-top: none; }
+  .deal-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .deal-name { flex: 1; color: #9ca3af; font-weight: 500; }
+  .deal-score { font-weight: 700; font-size: 11.5px; }
+
+  .approval-section { width: 220px; padding: 16px 18px; }
+  .approval-title {
+    font-size: 10.5px; color: #6b7280; text-transform: uppercase;
+    letter-spacing: 0.5px; font-weight: 600; margin-bottom: 12px;
+  }
+  .approval-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .approval-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+  }
+  .approval-row .name { font-size: 12px; font-weight: 600; color: #ffffff; }
+  .approval-row .status { font-size: 10.5px; margin-top: 1px; }
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <svg class="connectors" viewBox="0 0 1480 740">
+    <path d="M 255 108 Q 300 108, 320 108 T 335 155" class="dashed"/>
+    <polygon points="335,162 331,153 339,153" class="arrow-head"/>
+    <path d="M 255 310 Q 295 310, 325 310 T 335 330" class="dashed"/>
+    <polygon points="335,337 331,328 339,328" class="arrow-head"/>
+    <path d="M 255 510 Q 295 510, 325 510 T 335 495" class="dashed"/>
+    <polygon points="335,488 331,497 339,497" class="arrow-head"/>
+    <path d="M 380 165 C 415 165, 425 220, 445 220" class="active-path"/>
+    <path d="M 380 340 C 415 340, 425 300, 445 300" class="active-path"/>
+    <path d="M 380 500 C 415 500, 425 380, 445 380" class="active-path"/>
+    <path d="M 770 280 C 820 280, 830 265, 860 265" class="active-path"/>
+    <path d="M 770 340 C 810 340, 820 420, 860 420" class="dashed"/>
+    <polygon points="860,420 852,416 852,424" class="arrow-head"/>
+    <path d="M 770 370 C 810 370, 820 520, 860 520" class="dashed"/>
+    <polygon points="860,520 852,516 852,524" class="arrow-head"/>
+    <path d="M 1055 265 C 1095 265, 1105 200, 1140 200" class="active-path"/>
+    <polygon points="1140,200 1132,196 1132,204" style="fill: rgba(185,23,47,0.4); stroke:none;"/>
+    <path d="M 1100 430 C 1120 430, 1120 590, 1140 590" class="dashed"/>
+  </svg>
+
+  <!-- SOURCE CARDS -->
+  <div class="card source" style="top: 74px; left: 15px;">
+    <div class="source-icon email">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+    </div>
+    <div><h4>New OM received</h4><p>broker@marcusmillichap.com</p></div>
+  </div>
+
+  <div class="card source" style="top: 276px; left: 15px;">
+    <div class="source-icon pdf">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    </div>
+    <div><h4>PDF uploaded to DealBoard</h4><p>Walgreens_NNN_Dallas.pdf</p></div>
+  </div>
+
+  <div class="card source" style="top: 478px; left: 15px;">
+    <div class="source-icon xls">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/></svg>
+    </div>
+    <div><h4>Rent roll imported</h4><p>Q1_2026_rent_roll.xlsx</p></div>
+  </div>
+
+  <!-- DS BADGES -->
+  <div class="ds-badge" style="top: 140px; left: 318px;">DS</div>
+  <div class="ds-badge" style="top: 315px; left: 318px;">DS</div>
+  <div class="ds-badge" style="top: 480px; left: 318px;">DS</div>
+
+  <!-- DOCUMENT CARD -->
+  <div class="card doc-card" style="top: 140px; left: 445px;">
+    <div class="doc-header">
+      <div class="doc-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b9172f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div><h3>Offering Memorandum</h3><span>Walgreens NNN &mdash; Dallas, TX</span></div>
+    </div>
+    <div class="doc-body">
+      <div class="field-row"><div class="field-line" style="width:50px;"></div><div class="field-tag tag-cap">cap_rate</div><div class="field-line"></div></div>
+      <div class="field-row"><div class="field-line"></div><div class="field-line" style="width:35px;"></div><div class="field-tag tag-noi">NOI</div></div>
+      <div class="field-row"><div class="field-tag tag-tenant">tenant</div><div class="field-line"></div><div class="field-line" style="width:28px;"></div></div>
+      <div class="field-row"><div class="field-line" style="width:65px;"></div><div class="field-tag tag-lease">lease_term</div><div class="field-line" style="width:40px;"></div></div>
+      <div class="field-row"><div class="field-line"></div><div class="field-tag tag-price">price</div><div class="field-line" style="width:55px;"></div></div>
+      <div class="field-row" style="margin-top:4px;"><div class="field-line"></div><div class="field-line" style="width:60px;"></div></div>
+      <div class="field-row"><div class="field-line" style="width:80px;"></div><div class="field-line"></div></div>
+    </div>
+  </div>
+
+  <!-- DEAL SCORE -->
+  <div class="card score-card" style="top: 155px; left: 860px;">
+    <div class="score-ring-wrap">
+      <svg viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="7"/>
+        <circle cx="50" cy="50" r="42" fill="none" stroke="#4ade80" stroke-width="7"
+          stroke-dasharray="230 264" stroke-dashoffset="-17"
+          stroke-linecap="round" transform="rotate(-90 50 50)"/>
+      </svg>
+      <span class="score-num">87</span>
+    </div>
+    <div class="score-label">Deal Score</div>
+    <div class="score-band">Strong Buy</div>
+  </div>
+
+  <!-- ACTION CARDS -->
+  <div class="card card-sm action-card" style="top: 390px; left: 860px;">
+    <div class="action-icon green">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    </div>
+    <div style="flex:1;"><h4>Deal added to DealBoard</h4><p style="color:#4ade80;font-weight:600;">#walgreens-dallas</p></div>
+    <div class="check-badge" style="background:rgba(34,197,94,0.15);">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+  </div>
+
+  <div class="card card-sm action-card" style="top: 488px; left: 860px;">
+    <div class="action-icon amber">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <div style="flex:1;"><h4>Missing rent roll data</h4><p style="color:#facc15;font-weight:600;">#alert-incomplete</p></div>
+    <div class="check-badge" style="background:rgba(234,179,8,0.12);">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+  </div>
+
+  <!-- Share DealBoard -->
+  <div class="card card-sm" style="top: 580px; left: 860px; width: 240px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="action-icon blue">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      </div>
+      <div><h4 style="font-size:13px;font-weight:600;color:#fff;">Share DealBoard</h4><p style="font-size:10.5px;color:#60a5fa;font-weight:600;">dealsignals.app/s/walg...</p></div>
+    </div>
+  </div>
+
+  <!-- APPROVAL -->
+  <div class="card approval-section" style="top: 530px; left: 1150px;">
+    <div class="approval-title">Shared with</div>
+    <div class="approval-row">
+      <div class="approval-avatar" style="background:linear-gradient(135deg,#6366f1,#4f46e5);">JR</div>
+      <div><div class="name">James Rodriguez</div><div class="status" style="color:#4ade80;font-weight:600;">Viewed 2h ago</div></div>
+    </div>
+    <div class="approval-row">
+      <div class="approval-avatar" style="background:linear-gradient(135deg,#ec4899,#db2777);">SK</div>
+      <div><div class="name">Sarah Kim</div><div class="status" style="color:#facc15;font-weight:600;">Pending</div></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="card dashboard" style="top: 50px; left: 1150px;">
+    <div class="dash-header"><h4>DealBoard</h4><div class="dash-dots"><span></span><span></span><span></span></div></div>
+    <div class="dash-body">
+      <div class="stat-row">
+        <div class="stat-box"><div class="val">12</div><div class="lbl">Deals</div></div>
+        <div class="stat-box"><div class="val">74</div><div class="lbl">Avg Score</div></div>
+        <div class="stat-box"><div class="val" style="color:#4ade80;">4</div><div class="lbl">Strong Buy</div></div>
+      </div>
+      <div class="map-preview">
+        <div class="map-pin" style="background:#059669;top:14px;left:30px;">87</div>
+        <div class="map-pin" style="background:#2563EB;top:30px;left:85px;">72</div>
+        <div class="map-pin" style="background:#D97706;top:10px;left:145px;">58</div>
+        <div class="map-pin" style="background:#059669;top:32px;left:190px;">91</div>
+        <div class="map-pin" style="background:#EA580C;top:20px;left:118px;">35</div>
+      </div>
+      <div class="mini-chart">
+        <svg width="100%" height="50" viewBox="0 0 234 50">
+          <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4ade80" stop-opacity="0.15"/><stop offset="100%" stop-color="#4ade80" stop-opacity="0"/></linearGradient></defs>
+          <path d="M0 38 Q30 32 58 26 T117 16 T175 10 T234 6 V50 H0Z" fill="url(#cg)"/>
+          <path d="M0 38 Q30 32 58 26 T117 16 T175 10 T234 6" fill="none" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="58" cy="26" r="3" fill="#0d0d14" stroke="#4ade80" stroke-width="2"/>
+          <circle cx="117" cy="16" r="3" fill="#0d0d14" stroke="#4ade80" stroke-width="2"/>
+          <circle cx="175" cy="10" r="3" fill="#0d0d14" stroke="#4ade80" stroke-width="2"/>
+          <circle cx="234" cy="6" r="3" fill="#0d0d14" stroke="#4ade80" stroke-width="2"/>
+        </svg>
+      </div>
+      <div>
+        <div class="deal-row"><div class="deal-dot" style="background:#059669;"></div><span class="deal-name">Walgreens NNN</span><span class="deal-score" style="color:#4ade80;">87</span></div>
+        <div class="deal-row"><div class="deal-dot" style="background:#2563EB;"></div><span class="deal-name">CVS Outparcel</span><span class="deal-score" style="color:#60a5fa;">76</span></div>
+        <div class="deal-row"><div class="deal-dot" style="background:#D97706;"></div><span class="deal-name">Dollar General</span><span class="deal-score" style="color:#facc15;">52</span></div>
+        <div class="deal-row"><div class="deal-dot" style="background:#059669;"></div><span class="deal-name">Chick-fil-A GL</span><span class="deal-score" style="color:#4ade80;">91</span></div>
+        <div class="deal-row"><div class="deal-dot" style="background:#EA580C;"></div><span class="deal-name">Family Dollar</span><span class="deal-score" style="color:#f87171;">35</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
