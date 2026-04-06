@@ -441,17 +441,6 @@ export default function UploadPage() {
             </span>
           )}
         </div>
-        <Link href={`/workspace/share?ws=${activeWorkspace?.slug || "default-dealboard"}`} style={{
-          display: "inline-flex", alignItems: "center", gap: 6,
-          padding: "7px 16px", borderRadius: 8,
-          background: "rgba(132,204,22,0.1)", color: "#84CC16",
-          fontSize: 12, fontWeight: 600, textDecoration: "none",
-          border: "1px solid rgba(132,204,22,0.2)",
-          transition: "all 0.15s",
-        }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-          Share DealBoard
-        </Link>
       </div>
       <p style={{ fontSize: 14, color: C.secondary, marginBottom: 20, lineHeight: 1.5, fontFamily: "'Inter', sans-serif" }}>
         One property at a time. A single OM is enough to get started — you can always add more files later.
