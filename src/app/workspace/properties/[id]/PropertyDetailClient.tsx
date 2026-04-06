@@ -867,13 +867,46 @@ function PropertyDetailInner({
           />
         </div>
 
-        {/* Right: Property Name + Location */}
+        {/* Right: Property Name + Location + Download Buttons */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <EditablePropertyName
-            name={cleanDisplayName(property.propertyName, property.address1, property.city, property.state)}
-            propertyId={propertyId}
-            onSave={(newName: string) => setProperty((prev: Property | null) => prev ? { ...prev, propertyName: newName } : prev)}
-          />
+          {/* Top row: name + download buttons */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+            <EditablePropertyName
+              name={cleanDisplayName(property.propertyName, property.address1, property.city, property.state)}
+              propertyId={propertyId}
+              onSave={(newName: string) => setProperty((prev: Property | null) => prev ? { ...prev, propertyName: newName } : prev)}
+            />
+            {hasData && (
+              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                <button
+                  onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
+                  className="dl-btn"
+                  style={{
+                    padding: "6px 14px", borderRadius: 8,
+                    border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
+                    color: C.onSurface, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                  }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0A7E5A" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+                  Workbook
+                  <span style={{ padding: "1px 5px", background: "#D1FAE5", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#0A7E5A" }}>XLSX</span>
+                </button>
+                <button
+                  onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType)}
+                  className="dl-btn"
+                  style={{
+                    padding: "6px 14px", borderRadius: 8,
+                    border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
+                    color: C.onSurface, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                  }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+                  Brief
+                  <span style={{ padding: "1px 5px", background: "#DBEAFE", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#2563EB" }}>DOC</span>
+                </button>
+              </div>
+            )}
+          </div>
           {location && (
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 6 }}>
               <p style={{ fontSize: 14, color: C.secondary, margin: 0 }}>{location}</p>
@@ -887,7 +920,7 @@ function PropertyDetailInner({
       </div>
 
       {/* ═══════════════════════════════════════════════════ */}
-      {/*  2. OUR TAKE + DEAL SCORE (COMBINED)                */}
+      {/*  2. DEAL SUMMARY + DEAL SCORE (COMBINED)              */}
       {/* ═══════════════════════════════════════════════════ */}
       {(brief || scoreTotal) && (
         <div style={{
@@ -898,7 +931,7 @@ function PropertyDetailInner({
           {/* Left: Our Take */}
           {brief ? (
             <div style={{ flex: 1, maxWidth: 640 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>OUR TAKE</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>DEAL SUMMARY</div>
               <div style={{ fontSize: 15, color: "#0F172A", lineHeight: 1.8 }}>
                 {brief.split("\n").filter((p: string) => p.trim()).slice(0, 4).map((p: string, i: number) => (
                   <p key={i} style={{ margin: "0 0 8px" }}>{p}</p>
@@ -981,35 +1014,9 @@ function PropertyDetailInner({
         );
       })()}
 
-      {/* Downloads + data counts */}
+      {/* Data counts */}
       {hasData && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button
-              onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
-              style={{
-                padding: "6px 14px", borderRadius: 8,
-                border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
-                color: C.onSurface, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                display: "inline-flex", alignItems: "center", gap: 6,
-              }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0A7E5A" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
-              Workbook
-              <span style={{ padding: "1px 5px", background: "#D1FAE5", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#0A7E5A" }}>XLSX</span>
-            </button>
-            <button
-              onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType)}
-              style={{
-                padding: "6px 14px", borderRadius: 8,
-                border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
-                color: C.onSurface, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                display: "inline-flex", alignItems: "center", gap: 6,
-              }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
-              Brief
-              <span style={{ padding: "1px 5px", background: "#DBEAFE", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#2563EB" }}>DOC</span>
-            </button>
-          </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
             <span style={{ fontSize: 11, color: "#4338CA", fontWeight: 600 }}>{pulledCount} pulled</span>
             <span style={{ fontSize: 11, color: C.secondary, margin: "0 8px", opacity: 0.4 }}>&middot;</span>
