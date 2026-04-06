@@ -286,7 +286,7 @@ export default function WorkspaceDashboard() {
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <EditableWorkspaceTitle
-              name={activeWorkspace?.name || "Dashboard"}
+              name={activeWorkspace?.name || "DealBoard"}
               workspaceId={activeWorkspace?.id || ""}
             />
             {activeWorkspace?.analysisType && (

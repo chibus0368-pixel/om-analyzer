@@ -1126,7 +1126,7 @@ export default function OmAnalyzerPage() {
                   </div>
                   <nav style={{ padding: "4px 8px", display: "flex", flexDirection: "column", gap: 1 }}>
                     {[
-                      { label: "Dashboard", icon: "M3 3h7v7H3z" },
+                      { label: "DealBoard", icon: "M3 3h7v7H3z" },
                       { label: "Scoreboard", icon: "M18 20V10M12 20V4M6 20v-6" },
                       { label: "Upload Deal", icon: "M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5" },
                     ].map(item => (
@@ -1137,7 +1137,7 @@ export default function OmAnalyzerPage() {
                         fontSize: 13, fontWeight: item.label === "Upload Deal" ? 600 : 500, cursor: "pointer",
                       }}>
                         <div style={{ width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: item.label === "Upload Deal" ? "rgba(185,23,47,0.08)" : "transparent", fontSize: 12 }}>
-                          {item.label === "Dashboard" ? "📊" : item.label === "Scoreboard" ? "📈" : "📤"}
+                          {item.label === "DealBoard" ? "📊" : item.label === "Scoreboard" ? "📈" : "📤"}
                         </div>
                         {item.label}
                       </div>

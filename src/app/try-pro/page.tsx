@@ -175,7 +175,7 @@ export default function TryProPage() {
   const bandBg = score.scoreBand === "buy" || score.scoreBand === "strong_buy" ? "#D1FAE5" : score.scoreBand === "hold" ? "#FEF3C7" : "#FDE8EA";
 
   const SIDEBAR_NAV = [
-    { icon: icons.dashboard, label: "Dashboard" },
+    { icon: icons.dashboard, label: "DealBoard" },
     { icon: icons.scoreboard, label: "Scoreboard" },
     { icon: icons.upload, label: "Upload Deal", active: true },
     { icon: icons.map, label: "Map" },
