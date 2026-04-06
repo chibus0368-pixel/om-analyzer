@@ -86,77 +86,110 @@ function PropertyCard({ property, docCount }: { property: Property; docCount: nu
   const displayName = cleanDisplayName(property.propertyName, property.address1, property.city, property.state);
 
   const bandColors: Record<string, { bg: string; text: string; label: string }> = {
-    strong_buy: { bg: "#D1FAE5", text: "#059669", label: "Strong Buy" },
-    buy: { bg: "#D1FAE5", text: "#0A7E5A", label: "Buy" },
-    hold: { bg: "#FEF3C7", text: "#D97706", label: "Neutral" },
-    pass: { bg: "#FDE8EA", text: "#DC2626", label: "Pass" },
-    strong_reject: { bg: "#FDE8EA", text: "#991B1B", label: "Strong Reject" },
+    strong_buy: { bg: "#F0FDF4", text: "#059669", label: "Strong Buy" },
+    buy: { bg: "#F0FDF4", text: "#059669", label: "Buy" },
+    hold: { bg: "#FFFBEB", text: "#D97706", label: "Neutral" },
+    pass: { bg: "#FEF2F2", text: "#EF4444", label: "Pass" },
+    strong_reject: { bg: "#FEF2F2", text: "#EF4444", label: "Strong Reject" },
   };
   const band = bandColors[scoreBand] || null;
 
   return (
     <div
+      data-property-card
       onClick={() => router.push(`/workspace/properties/${property.id}`)}
       style={{
-        background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.06)",
+        background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
         overflow: "hidden", cursor: "pointer", transition: "box-shadow 0.15s, transform 0.15s",
         display: "flex", flexDirection: "column",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
       }}
-      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 6px 20px rgba(0,0,0,0.06)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "none"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 10px 25px rgba(0,0,0,0.08)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.05)"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
     >
-      {/* Hero / Thumbnail */}
+      {/* Hero Image - 192px height */}
       <div style={{
-        height: 140, background: "linear-gradient(135deg, #F3F4F6, #E5E7EB)",
+        height: 192, background: "linear-gradient(135deg, #F3F4F6, #E5E7EB)",
         overflow: "hidden", position: "relative",
       }}>
         {heroUrl ? (
           <img src={heroUrl} alt={displayName}
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
           />
         ) : (
           <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontSize: 32 }}>📍</span>
+            <span style={{ fontSize: 56, opacity: 0.3 }}>📍</span>
           </div>
         )}
-        {/* Status badge */}
+
+        {/* Top-left: "Analyzed" or "Processing" badge */}
         <span style={{
-          position: "absolute", top: 8, left: 8,
-          padding: "3px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700,
-          color: status === "parsed" ? "#0A7E5A" : "#92400E",
-          background: status === "parsed" ? "rgba(209,250,229,0.9)" : "rgba(254,243,199,0.9)",
-          backdropFilter: "blur(4px)",
+          position: "absolute", top: 12, left: 12,
+          padding: "2.5px 10px", borderRadius: 4, fontSize: 10, fontWeight: 700,
+          color: "#FFFFFF", background: "rgba(132,204,22,0.9)",
+          letterSpacing: "0.05em",
+          textTransform: "uppercase",
         }}>
-          {status === "parsed" ? "Analyzed" : "Pending"}
+          {status === "parsed" ? "Analyzed" : "Processing"}
         </span>
-        {/* Score badge */}
+
+        {/* Top-right: Score badge */}
         {score != null && (
           <span style={{
-            position: "absolute", top: 8, right: 8,
-            padding: "3px 10px", borderRadius: 6, fontSize: 12, fontWeight: 800,
-            color: "#fff", background: "rgba(11,17,32,0.75)", backdropFilter: "blur(4px)",
+            position: "absolute", top: 12, right: 12,
+            padding: "4px 10px", borderRadius: 4, fontSize: 11, fontWeight: 700,
+            color: "#FFFFFF", background: "rgba(0,0,0,0.4)",
+            backdropFilter: "blur(8px)",
           }}>
             {Math.round(score)}/100
           </span>
         )}
       </div>
 
-      {/* Card body */}
-      <div style={{ padding: "14px 16px", flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", lineHeight: 1.3, fontFamily: "'Inter', sans-serif" }}>
+      {/* Content Area - 20px padding, space-y 16px */}
+      <div style={{ padding: "20px", flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
+        {/* Property name - truncated, turns lime on hover */}
+        <div
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#84CC16"; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#111827"; }}
+          style={{
+            fontSize: 16, fontWeight: 700, color: "#111827",
+            lineHeight: 1.2,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            transition: "color 0.2s",
+            cursor: "pointer",
+          }}>
           {displayName}
         </div>
+
+        {/* City/State */}
         {location && (
-          <div style={{ fontSize: 12, color: "#585e70" }}>{location}</div>
+          <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: -12 }}>
+            {location}
+          </div>
         )}
-        <div style={{ marginTop: "auto", paddingTop: 8, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 11, color: "#585e70" }}>
-            {docCount} file{docCount !== 1 ? "s" : ""}
+
+        {/* Bottom row - files count (left) and score band badge (right) */}
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingTop: 8,
+          marginTop: "auto",
+        }}>
+          {/* Files count */}
+          <span style={{ fontSize: 11, color: "#9CA3AF", fontWeight: 500 }}>
+            📎 {docCount} file{docCount !== 1 ? "s" : ""}
           </span>
+
+          {/* Score band badge */}
           {band && (
             <span style={{
-              padding: "2px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700,
+              padding: "4px 10px", borderRadius: 12, fontSize: 11, fontWeight: 700,
               color: band.text, background: band.bg,
+              border: `1px solid ${band.text}20`,
             }}>
               {band.label}
             </span>
@@ -164,8 +197,13 @@ function PropertyCard({ property, docCount }: { property: Property; docCount: nu
         </div>
       </div>
 
-      {/* Delete */}
-      <div style={{ padding: "0 16px 10px", display: "flex", justifyContent: "flex-end" }}>
+      {/* Delete row - border-top, padding-top 8px */}
+      <div style={{
+        borderTop: "1px solid rgba(0,0,0,0.05)",
+        padding: "8px 20px",
+        display: "flex",
+        justifyContent: "flex-end",
+      }}>
         <button
           onClick={async (e) => {
             e.stopPropagation();
@@ -189,7 +227,20 @@ function PropertyCard({ property, docCount }: { property: Property; docCount: nu
               alert("Failed to delete. Please try again.");
             }
           }}
-          style={{ background: "none", border: "none", color: "#C5CBD6", cursor: "pointer", fontSize: 11, padding: "2px 6px", transition: "opacity 0.2s" }}
+          style={{
+            background: "none",
+            border: "none",
+            color: "#D1D5DB",
+            cursor: "pointer",
+            fontSize: 10,
+            fontWeight: 700,
+            padding: 0,
+            letterSpacing: "0.05em",
+            textTransform: "uppercase",
+            transition: "color 0.2s",
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#EF4444"; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#D1D5DB"; }}
           title="Delete property"
         >
           Delete
@@ -225,25 +276,35 @@ function EditableWorkspaceTitle({ name, workspaceId }: { name: string; workspace
         onBlur={save}
         onKeyDown={e => { if (e.key === "Enter") save(); if (e.key === "Escape") { setEditing(false); setValue(name); } }}
         style={{
-          fontSize: 22, fontWeight: 700, color: "#0F172A", background: "#f2f3ff",
-          border: "1px solid rgba(0,0,0,0.06)", borderRadius: 8, padding: "2px 10px",
-          margin: 0, lineHeight: 1.2, outline: "none",
-          fontFamily: "'Playfair Display', Georgia, serif", minWidth: 200,
+          fontSize: 30,
+          fontWeight: 700,
+          color: "#111827",
+          background: "#f3f4f6",
+          border: "2px solid #84CC16",
+          borderRadius: 8,
+          padding: "4px 12px",
+          margin: 0,
+          lineHeight: 1.2,
+          outline: "none",
+          fontFamily: "inherit",
+          minWidth: 300,
         }}
       />
     );
   }
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={() => setEditing(true)}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0F172A", margin: 0, fontFamily: "'Playfair Display', Georgia, serif" }}>
-        {name}
-      </h1>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#585e70" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4, flexShrink: 0 }}>
-        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-      </svg>
-    </div>
+    <div
+      data-editable-title
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        cursor: "pointer",
+      }}
+      onClick={() => setEditing(true)}
+      title="Click to edit workspace name"
+    />
   );
 }
 
@@ -280,49 +341,122 @@ export default function WorkspaceDashboard() {
   }
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px" }}>
+      {/* Header Section - New Design */}
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        marginBottom: 32,
+        paddingTop: 20,
+      }}>
+        {/* Left side: Heading + Badge + Count */}
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <EditableWorkspaceTitle
-              name={activeWorkspace?.name || "DealBoard"}
-              workspaceId={activeWorkspace?.id || ""}
-            />
+          {/* Workspace name + Edit icon + Type badge */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+            <h1 style={{
+              fontSize: 30,
+              fontWeight: 700,
+              color: "#111827",
+              margin: 0,
+              lineHeight: 1.2,
+            }}>
+              {activeWorkspace?.name || "Default Dealboard"}
+            </h1>
+
+            {/* Edit icon button */}
+            <button
+              onClick={() => {
+                const titleEl = document.querySelector("[data-editable-title]");
+                if (titleEl) (titleEl as HTMLElement).click();
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "4px 8px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#9CA3AF",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#6B7280"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#9CA3AF"; }}
+              title="Edit workspace name"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+            </button>
+
+            {/* Analysis type badge - green for Retail */}
             {activeWorkspace?.analysisType && (
               <span style={{
-                display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 4,
-                background: `${ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType]}15`,
-                color: ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType],
-                fontSize: 11, fontWeight: 600, letterSpacing: 0.3,
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "5px 12px",
+                borderRadius: 20,
+                background: "#f0f9e8",
+                color: "#84CC16",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                border: "1px solid rgba(132,204,22,0.1)",
               }}>
                 {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}
               </span>
             )}
           </div>
-          <p style={{ fontSize: 13, color: "#585e70", marginTop: 2 }}>
+
+          {/* Properties count */}
+          <p style={{
+            fontSize: 14,
+            color: "#9CA3AF",
+            margin: 0,
+            fontWeight: 500,
+          }}>
             {properties.length} {properties.length === 1 ? "property" : "properties"}
           </p>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
-          <Link href={`/workspace/share?ws=${activeWorkspace?.slug || "default-dealboard"}`} style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            padding: "7px 16px", borderRadius: 8,
-            background: "rgba(132,204,22,0.1)", color: "#84CC16",
-            fontSize: 12, fontWeight: 600, textDecoration: "none",
-            border: "1px solid rgba(132,204,22,0.2)",
-            transition: "all 0.15s",
-          }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-            Share DealBoard
-          </Link>
-          <Link href="/workspace/upload" style={{
-            padding: "8px 18px", background: "#84CC16", border: "none", borderRadius: 6,
-            fontSize: 13, fontWeight: 600, color: "#0F172A", textDecoration: "none",
-          }}>
-            + Add Property
-          </Link>
-        </div>
+
+        {/* Right side: Add Property button */}
+        <Link href="/workspace/upload" style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "10px 18px",
+          background: "#84CC16",
+          border: "none",
+          borderRadius: 6,
+          fontSize: 11,
+          fontWeight: 900,
+          color: "#000000",
+          textDecoration: "none",
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          transition: "all 0.2s",
+          cursor: "pointer",
+        }}
+          onMouseEnter={e => {
+            const el = e.currentTarget as HTMLElement;
+            el.style.background = "#7EC616";
+            el.style.transform = "translateY(-1px)";
+          }}
+          onMouseLeave={e => {
+            const el = e.currentTarget as HTMLElement;
+            el.style.background = "#84CC16";
+            el.style.transform = "none";
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Add Property
+        </Link>
       </div>
 
       {/* Property Cards Grid */}
@@ -363,8 +497,9 @@ export default function WorkspaceDashboard() {
       ) : (
         <div style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-          gap: 16, marginBottom: 24,
+          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+          gap: 24,
+          marginBottom: 24,
         }}>
           {properties.map(p => (
             <PropertyCard key={p.id} property={p} docCount={docCounts[p.id] || 0} />

@@ -664,272 +664,149 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
       {/* ===== TOP HEADER BAR — Deal Signals ===== */}
       <header style={{
         display: "flex", alignItems: "center",
-        height: 56, minHeight: 56,
-        background: "#0B0F1A", borderBottom: "1px solid rgba(255,255,255,0.1)",
+        height: 64, minHeight: 64,
+        background: "#0b1326", borderBottom: "1px solid rgba(255,255,255,0.1)",
         zIndex: 60,
+        padding: "0 32px",
       }}>
-        {/* Logo zone — matches sidebar width */}
-        <div style={{
-          width: collapsed ? 68 : 260, minWidth: collapsed ? 68 : 260,
-          display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start",
-          padding: collapsed ? "0" : "0 20px",
-          transition: "width 0.2s, min-width 0.2s",
-          height: "100%",
-        }}>
-          <Link href="/workspace" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
-            <DealSignalLogo size={26} fontSize={16} gap={7} showText={!collapsed} />
-          </Link>
-        </div>
+        {/* Logo + DealBoard selector on left */}
+        <Link href="/workspace" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
+          <DealSignalLogo size={26} fontSize={16} gap={7} showText={true} />
+        </Link>
 
-        {/* Content zone — nav links + right controls */}
+        {/* Divider */}
         <div style={{
-          flex: 1, display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "0 20px", height: "100%",
-        }}>
-          {/* Left: Top nav links */}
-          <nav style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {[
-              { href: "/workspace/manage", label: "All DealBoards" },
-              { href: "/workspace/upload/history", label: "Upload History" },
-            ].map(item => {
-              const active = pathname.startsWith(item.href);
-              return (
-                <Link key={item.href} href={item.href} style={{
-                  padding: "6px 16px", borderRadius: 8,
-                  fontSize: 13, fontWeight: active ? 600 : 500,
-                  letterSpacing: 0.5,
-                  color: active ? "#FFFFFF" : "rgba(255,255,255,0.6)",
-                  background: active ? "rgba(255,255,255,0.08)" : "transparent",
-                  textDecoration: "none", transition: "all 0.15s",
-                  fontFamily: "'Inter', sans-serif",
-                }}
-                  onMouseEnter={e => { if (!active) { e.currentTarget.style.color = "rgba(255,255,255,0.9)"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; } }}
-                  onMouseLeave={e => { if (!active) { e.currentTarget.style.color = "rgba(255,255,255,0.6)"; e.currentTarget.style.background = "transparent"; } }}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
+          width: 1, height: 32, background: "rgba(255,255,255,0.1)",
+          margin: "0 24px",
+        }} />
 
-          {/* Right: Plan button + User info + Settings icon */}
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            {userTier === "free" ? (
-              <button
-                onClick={() => setShowUpgrade(true)}
-                style={{
-                  padding: "7px 18px", background: "transparent", color: "#84CC16",
-                  border: "1.5px solid #84CC16", borderRadius: 50,
-                  fontSize: 12, fontWeight: 700, cursor: "pointer",
-                  fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.1)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
-              >
-                Upgrade to Pro
-              </button>
-            ) : (
-              <Link href="/workspace/profile?tab=account" style={{
-                padding: "7px 20px", background: "transparent", color: "#84CC16",
+        {/* DealBoard selector button */}
+        <HeaderWorkspaceSwitcher onAddNew={() => setShowNewWs(true)} />
+
+        {/* Right side: Pro Plan pill + user info + settings icon */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginLeft: "auto" }}>
+          {userTier === "free" ? (
+            <button
+              onClick={() => setShowUpgrade(true)}
+              style={{
+                padding: "7px 18px", background: "transparent", color: "#84CC16",
                 border: "1.5px solid #84CC16", borderRadius: 50,
-                fontSize: 11, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase",
-                textDecoration: "none", fontFamily: "'Inter', sans-serif",
-                transition: "all 0.15s",
+                fontSize: 12, fontWeight: 700, cursor: "pointer",
+                fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
               }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.1)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
-              >
-                {userTier === "pro" ? "Pro Plan" : userTier === "pro_plus" ? "Pro+" : "My Plan"}
-              </Link>
-            )}
-
-            {/* User name + organization display with avatar */}
-            {user && (
-              <Link href="/workspace/profile" style={{
-                display: "flex", alignItems: "center", gap: 10,
-                padding: "6px 12px", borderRadius: 8,
-                textDecoration: "none", transition: "background 0.15s",
-              }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
-              >
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", lineHeight: 1.2, letterSpacing: 0.3, textTransform: "uppercase" }}>
-                    {user.displayName || user.email?.split("@")[0] || "User"}
-                  </div>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", lineHeight: 1.3 }}>
-                    {user.email || ""}
-                  </div>
-                </div>
-                <div style={{
-                  width: 36, height: 36, borderRadius: "50%", background: "#84CC16",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 13, fontWeight: 700, color: "#0F172A", flexShrink: 0,
-                }}>
-                  {user.displayName ? user.displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : (user.email?.split("@")[0] || "U").substring(0, 2).toUpperCase()}
-                </div>
-              </Link>
-            )}
-
-            {/* Settings/grid icon */}
-            <Link href="/workspace/settings" className="ws-header-nav" title="Settings" style={{
-              background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)", padding: 6,
-              display: "flex", alignItems: "center", borderRadius: 6, transition: "color 0.15s",
-            }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.1)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+            >
+              Upgrade to Pro
+            </button>
+          ) : (
+            <Link href="/workspace/profile?tab=account" style={{
+              padding: "7px 20px", background: "transparent", color: "#84CC16",
+              border: "1.5px solid #84CC16", borderRadius: 50,
+              fontSize: 11, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase",
+              textDecoration: "none", fontFamily: "'Inter', sans-serif",
+              transition: "all 0.15s",
+            }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.1)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+            >
+              {userTier === "pro" ? "Pro Plan" : userTier === "pro_plus" ? "Pro+" : "My Plan"}
             </Link>
-          </div>
+          )}
+
+          {/* User name + organization display with avatar */}
+          {user && (
+            <Link href="/workspace/profile" style={{
+              display: "flex", alignItems: "center", gap: 10,
+              padding: "6px 12px", borderRadius: 8,
+              textDecoration: "none", transition: "background 0.15s",
+            }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+            >
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", lineHeight: 1.2, letterSpacing: 0.3, textTransform: "uppercase" }}>
+                  {user.displayName || user.email?.split("@")[0] || "User"}
+                </div>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", lineHeight: 1.3 }}>
+                  {user.email || ""}
+                </div>
+              </div>
+              <div style={{
+                width: 36, height: 36, borderRadius: "50%", background: "#84CC16",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 13, fontWeight: 700, color: "#0F172A", flexShrink: 0,
+              }}>
+                {user.displayName ? user.displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : (user.email?.split("@")[0] || "U").substring(0, 2).toUpperCase()}
+              </div>
+            </Link>
+          )}
+
+          {/* Settings/grid icon */}
+          <Link href="/workspace/settings" className="ws-header-nav" title="Settings" style={{
+            background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)", padding: 6,
+            display: "flex", alignItems: "center", borderRadius: 6, transition: "color 0.15s",
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
+          </Link>
         </div>
       </header>
 
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-      {/* Sidebar */}
-      <aside style={{
-        width: collapsed ? 68 : 260, minWidth: collapsed ? 68 : 260,
-        background: "#ffffff", color: "#1e293b", display: "flex", flexDirection: "column",
-        transition: "width 0.2s, min-width 0.2s", zIndex: 50,
-        paddingTop: 8, overflow: "hidden",
-        borderRight: "1px solid rgba(0,0,0,0.06)",
+      {/* ===== NAV BAR — Horizontal Tabs ===== */}
+      <nav style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        height: 56, minHeight: 56,
+        background: "#FFFFFF", borderBottom: "1px solid rgba(0,0,0,0.06)",
+        padding: "0 32px",
       }}>
-        {/* Workspace Switcher at top */}
-        <SidebarWorkspaceSwitcher collapsed={collapsed} onAddNew={() => setShowNewWs(true)} />
-
-        {/* Main nav */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 1, padding: "0 8px" }}>
-          {SIDEBAR_NAV.map(item => (
-            <NavLink key={item.href} {...item} active={isActive(item.href)} collapsed={collapsed} />
-          ))}
-        </div>
-
-        {/* Properties List */}
-        {!collapsed && (
-          <div className="ws-props-scroll" style={{ flex: 1, overflow: "auto", padding: "8px 8px", marginTop: 4, minHeight: 0 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 8px 8px", marginBottom: 2, position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: "#94a3b8" }}>PROPERTIES{properties.length > 0 ? ` (${properties.length})` : ""}</span>
-            </div>
-
-            {loadingProps ? (
-              <div style={{ padding: "12px 8px", color: "#94a3b8", fontSize: 11 }}>Loading...</div>
-            ) : properties.length === 0 ? (
-              <div style={{ padding: "8px", color: "#94a3b8", fontSize: 11 }}>No properties yet</div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {properties.map(prop => {
-                  const isPropertyActive = pathname === `/workspace/properties/${prop.id}`;
-                  return (
-                    <Link
-                      key={prop.id}
-                      href={`/workspace/properties/${prop.id}`}
-                      className="ws-prop-link"
-                      style={{
-                        display: "flex", alignItems: "center", gap: 10, padding: "8px 10px",
-                        fontSize: 12, color: isPropertyActive ? "#84CC16" : "#64748b",
-                        textDecoration: "none", overflow: "hidden",
-                        whiteSpace: "nowrap", borderRadius: 8,
-                        background: isPropertyActive ? "rgba(132, 204, 22, 0.1)" : "transparent",
-                        fontWeight: isPropertyActive ? 600 : 500,
-                        transition: "all 0.15s",
-                      }}
-                      title={`${cleanDisplayName(prop.propertyName, prop.address1, prop.city, prop.state)}${prop.city ? " - " + prop.city : ""}`}
-                    >
-                      <div style={{
-                        width: 28, height: 28, borderRadius: 8,
-                        background: isPropertyActive ? "rgba(132, 204, 22, 0.12)" : "#f1f5f9",
-                        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                      }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={isPropertyActive ? "#84CC16" : "#94a3b8"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /></svg>
-                      </div>
-                      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{cleanDisplayName(prop.propertyName, prop.address1, prop.city, prop.state)}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Add New Property button — below properties list */}
-            <Link href="/workspace/upload" className="ws-add-prop" style={{
-              display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", marginTop: 8,
-              border: "1.5px dashed #e2e8f0", borderRadius: 10, color: "#94a3b8",
-              fontSize: 12, fontWeight: 600, textDecoration: "none",
-              transition: "all 0.15s",
-            }}>
-              <div style={{
-                width: 28, height: 28, borderRadius: 8, background: "#f8fafc",
-                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-              }}>
-                <span style={{ fontSize: 16, lineHeight: 1, color: "#84CC16", fontWeight: 700 }}>+</span>
-              </div>
-              <span>Add Property</span>
-            </Link>
-          </div>
-        )}
-
-        {/* Collapse toggle */}
-        <div style={{ padding: "0 8px 6px" }}>
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="ws-collapse"
-            style={{
-              display: "flex", alignItems: "center", gap: collapsed ? 0 : 8,
-              justifyContent: collapsed ? "center" : "flex-start",
-              padding: collapsed ? "4px 0" : "4px 10px",
-              background: "none", border: "none", color: "#94a3b8",
-              cursor: "pointer", fontSize: 11, fontWeight: 500, width: "100%", borderRadius: 8, fontFamily: "inherit",
-              transition: "all 0.15s",
-            }}
-          >
-            <div style={{
-              width: 26, height: 26, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
-              flexShrink: 0,
-            }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-                {collapsed ? <path d="M13 5l7 7-7 7M5 5l7 7-7 7" /> : <path d="M11 19l-7-7 7-7M19 19l-7-7 7-7" />}
-              </svg>
-            </div>
-            {!collapsed && <span>Collapse</span>}
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
-        {/* ===== HORIZONTAL WORKSPACE NAV TABS ===== */}
-        <div style={{
-          display: "flex", alignItems: "center", gap: 0,
-          padding: "0 24px", height: 42, minHeight: 42,
-          background: "#FFFFFF", borderBottom: "1px solid rgba(0,0,0,0.06)",
-        }}>
+        {/* Left: Tabs */}
+        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
           {[
-            { href: "/workspace", label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
-            { href: "/workspace/scoreboard", label: "Scoreboard", icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
-            { href: "/workspace/upload", label: "Upload", icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" },
-            { href: "/workspace/map", label: "Map", icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" },
+            { href: "/workspace", label: "Dealboard" },
+            { href: "/workspace/scoreboard", label: "Scorecard" },
+            { href: "/workspace/upload", label: "Upload" },
+            { href: "/workspace/map", label: "Map" },
           ].map(tab => {
             const active = tab.href === "/workspace" ? pathname === "/workspace" || pathname.startsWith("/workspace/properties") : pathname.startsWith(tab.href);
             return (
               <Link key={tab.href} href={`${tab.href}${activeWorkspace?.slug ? "?ws=" + activeWorkspace.slug : ""}`} style={{
-                display: "inline-flex", alignItems: "center", gap: 6,
-                padding: "8px 16px", height: "100%",
-                fontSize: 12, fontWeight: 600, letterSpacing: 0.8, textTransform: "uppercase",
-                color: active ? "#0F172A" : "#9CA3AF",
+                display: "inline-flex", alignItems: "center",
+                height: "100%",
+                fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "2.2px",
+                color: active ? "#84CC16" : "#9CA3AF",
                 textDecoration: "none",
                 borderBottom: active ? "2px solid #84CC16" : "2px solid transparent",
+                padding: "4px 0",
                 fontFamily: "'Inter', sans-serif",
                 transition: "all 0.15s",
               }}
                 onMouseEnter={e => { if (!active) { e.currentTarget.style.color = "#6B7280"; } }}
                 onMouseLeave={e => { if (!active) { e.currentTarget.style.color = "#9CA3AF"; } }}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: active ? 1 : 0.5 }}>
-                  <path d={tab.icon} />
-                </svg>
                 {tab.label}
               </Link>
             );
           })}
         </div>
 
-        <div style={{ flex: 1, overflow: "auto", padding: 24, display: "flex", flexDirection: "column" }}>
+        {/* Right: Share DealBoard button */}
+        <button
+          style={{
+            padding: "8px 18px", background: "transparent", color: "#84CC16",
+            border: "1.5px solid #84CC16", borderRadius: 8,
+            fontSize: 12, fontWeight: 600, cursor: "pointer",
+            fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.1)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+        >
+          Share DealBoard
+        </button>
+      </nav>
+
+      {/* Main Content — full width */}
+      <main style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
+        <div style={{ flex: 1, overflow: "auto", padding: 32, display: "flex", flexDirection: "column" }}>
           {showUpgradeSuccess && (
             <div style={{
               display: "flex", alignItems: "center", gap: 10,
@@ -961,7 +838,6 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           </footer>
         </div>
       </main>
-      </div>
 
       {/* Upgrade Modal */}
       <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} reason="limit_reached" />
