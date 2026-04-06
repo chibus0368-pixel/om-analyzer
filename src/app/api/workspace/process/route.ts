@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { runParseEngine } from "@/lib/workspace/parse-engine";
+import { runScoreEngine } from "@/lib/workspace/score-engine";
+import { buildSmartPropertyName } from "@/lib/workspace/propertyNameUtils";
 
 /**
  * Background Processing Endpoint
@@ -7,36 +10,12 @@ import { getAdminDb } from "@/lib/firebase-admin";
  * Handles the full parse → score → generate pipeline server-side
  * so the client can safely navigate away after file upload.
  *
- * This runs as a single long-lived request. The client fires it
- * and does NOT need to await the response.
+ * ARCHITECTURE: Calls parse and score engines DIRECTLY as imported
+ * functions — no HTTP self-fetch. This is required for Vercel
+ * serverless where functions cannot reliably call other functions
+ * on the same deployment via HTTP.
  */
 export const maxDuration = 120; // 2 minutes for full pipeline
-
-/* ── Retry helper ── */
-async function fetchWithRetry(
-  url: string,
-  opts: RequestInit,
-  { retries = 2, label = "fetch" }: { retries?: number; label?: string } = {}
-): Promise<Response> {
-  let lastErr: any;
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      const res = await fetch(url, opts);
-      if (res.ok || res.status < 500) return res; // Don't retry 4xx
-      const body = await res.text().catch(() => "");
-      console.warn(`[process] ${label} attempt ${attempt + 1} returned ${res.status}: ${body.substring(0, 200)}`);
-      lastErr = new Error(`${res.status}: ${body.substring(0, 200)}`);
-    } catch (err: any) {
-      console.warn(`[process] ${label} attempt ${attempt + 1} threw:`, err?.message);
-      lastErr = err;
-    }
-    // Wait before retry (1s, then 2s)
-    if (attempt < retries) {
-      await new Promise(r => setTimeout(r, (attempt + 1) * 1000));
-    }
-  }
-  throw lastErr;
-}
 
 export async function POST(req: NextRequest) {
   let propertyId = "";
@@ -54,12 +33,7 @@ export async function POST(req: NextRequest) {
     }
 
     const db = getAdminDb();
-    // Resolve base URL for internal API calls
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
-      || (process.env.VERCEL_ENV === "production" ? "https://www.dealsignals.app" : null)
-      || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
-      || "http://localhost:3000";
-    console.log("[process] Starting pipeline for property:", propertyId, "baseUrl:", baseUrl, "textLen:", documentText.length);
+    console.log("[process] Starting pipeline for property:", propertyId, "textLen:", documentText.length, "type:", analysisType);
 
     // Mark property as processing
     await db.collection("workspace_properties").doc(propertyId).set({
@@ -71,45 +45,32 @@ export async function POST(req: NextRequest) {
     let parsedData: any = null;
     let parseError = "";
 
-    // ── Step 1: Parse (with retry) ──
+    // ── Step 1: Parse (direct function call — no HTTP) ──
     try {
-      console.log("[process] Step 1: Calling parse...");
-      const parseRes = await fetchWithRetry(
-        `${baseUrl}/api/workspace/parse`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            projectId: "workspace-default",
-            propertyId,
-            userId,
-            documentText,
-            analysisType,
-          }),
-        },
-        { retries: 2, label: "parse" }
-      );
+      console.log("[process] Step 1: Running parse engine directly...");
+      const parseResult = await runParseEngine({
+        projectId: "workspace-default",
+        propertyId,
+        userId,
+        documentText,
+        analysisType,
+      });
 
-      if (parseRes.ok) {
-        const parseData = await parseRes.json();
-        fieldsExtracted = parseData.fieldsExtracted || 0;
-        parsedData = parseData.fields;
-        console.log("[process] Parse success:", fieldsExtracted, "fields extracted");
+      if (parseResult.success) {
+        fieldsExtracted = parseResult.fieldsExtracted || 0;
+        parsedData = parseResult.fields;
+        console.log("[process] Parse success:", fieldsExtracted, "fields extracted, runId:", parseResult.runId);
 
         // Update property name if parsed
         if (parsedData) {
           const p = parsedData.property || {};
-          const parsedName = p.name || p.property_name
-            || parsedData.property_basics?.property_name?.value;
-          const parsedAddress = p.address
-            || parsedData.property_basics?.address?.value;
-          const parsedCity = p.city || parsedData.property_basics?.city?.value;
-          const parsedState = p.state || parsedData.property_basics?.state?.value;
+          const parsedName = p.name || p.property_name;
+          const parsedAddress = p.address;
+          const parsedCity = p.city;
+          const parsedState = p.state;
 
           if (parsedName && parsedName !== "Unknown Property") {
-            const { buildSmartPropertyName } = await import("@/lib/workspace/propertyNameUtils");
             const smartName = buildSmartPropertyName(parsedName, parsedAddress, parsedCity, parsedState);
-
             await db.collection("workspace_properties").doc(propertyId).set({
               propertyName: smartName,
               updatedAt: new Date().toISOString(),
@@ -117,33 +78,46 @@ export async function POST(req: NextRequest) {
           }
         }
       } else {
-        const errText = await parseRes.text().catch(() => "unknown");
-        parseError = `Parse returned ${parseRes.status}: ${errText.substring(0, 200)}`;
+        parseError = parseResult.error || "Parse returned success=false";
         console.error("[process] Parse failed:", parseError);
       }
     } catch (err: any) {
       parseError = err?.message || "Parse threw exception";
-      console.error("[process] Parse error after retries:", parseError);
+      console.error("[process] Parse error:", parseError);
     }
 
     // ── Step 2: Generate output files (only if we got fields) ──
     if (parsedData && fieldsExtracted > 0) {
       try {
-        console.log("[process] Step 2: Calling generate...");
+        console.log("[process] Step 2: Generating output records...");
         await db.collection("workspace_properties").doc(propertyId).set({
           processingStatus: "generating",
           updatedAt: new Date().toISOString(),
         }, { merge: true }).catch(() => {});
 
-        await fetchWithRetry(
-          `${baseUrl}/api/workspace/generate`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ propertyId, userId, parsedData }),
-          },
-          { retries: 1, label: "generate" }
-        );
+        // Generate is lightweight — just creates Firestore records
+        // We can call the generate route via internal fetch since it's simple,
+        // or inline it. For now, inline the essential logic.
+        const now = new Date().toISOString();
+        const propertyName = parsedData?.property?.name || "Property";
+
+        // Save brief as a note if it exists
+        if (parsedData?.brief) {
+          try {
+            await db.collection("workspace_notes").add({
+              projectId: "workspace-default",
+              propertyId,
+              userId,
+              noteType: "investment_thesis",
+              title: "First-Pass Investment Brief",
+              content: parsedData.brief,
+              isPinned: true,
+              createdAt: now,
+              updatedAt: now,
+            });
+          } catch { /* non-blocking */ }
+        }
+
         console.log("[process] Generate complete");
       } catch (err: any) {
         console.error("[process] Generate error (non-blocking):", err?.message);
@@ -154,31 +128,26 @@ export async function POST(req: NextRequest) {
 
     // ── Step 3: Score (ALWAYS runs, even if parse returned few fields) ──
     try {
-      console.log("[process] Step 3: Calling score...");
+      console.log("[process] Step 3: Running score engine directly...");
       await db.collection("workspace_properties").doc(propertyId).set({
         processingStatus: "scoring",
         updatedAt: new Date().toISOString(),
       }, { merge: true }).catch(() => {});
 
-      const scoreRes = await fetchWithRetry(
-        `${baseUrl}/api/workspace/score`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ propertyId, userId, analysisType }),
-        },
-        { retries: 2, label: "score" }
-      );
+      const scoreResult = await runScoreEngine({
+        propertyId,
+        projectId: "workspace-default",
+        userId,
+        analysisType,
+      });
 
-      if (scoreRes.ok) {
-        const scoreData = await scoreRes.json();
-        console.log("[process] Score complete:", scoreData.totalScore, scoreData.scoreBand);
+      if (scoreResult.success) {
+        console.log("[process] Score complete:", scoreResult.totalScore, scoreResult.scoreBand);
       } else {
-        const errText = await scoreRes.text().catch(() => "unknown");
-        console.error("[process] Score failed:", scoreRes.status, errText.substring(0, 200));
+        console.error("[process] Score failed:", scoreResult.error);
       }
     } catch (err: any) {
-      console.error("[process] Score error after retries:", err?.message);
+      console.error("[process] Score error:", err?.message);
     }
 
     // ── Done ──
