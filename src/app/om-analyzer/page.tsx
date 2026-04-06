@@ -158,6 +158,8 @@ export default function OmAnalyzerPage() {
   const [usageData, setUsageData] = useState<{ uploadsUsed: number; uploadLimit: number } | null>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [animateStrip, setAnimateStrip] = useState(false);
+  const stripRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // ===== ANONYMOUS USAGE TRACKING =====
@@ -198,6 +200,23 @@ export default function OmAnalyzerPage() {
 
   // Fetch usage on mount
   useEffect(() => { fetchUsage(); }, [fetchUsage]);
+
+  /* Intersection Observer: trigger process strip animation when visible */
+  useEffect(() => {
+    const el = stripRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setAnimateStrip(false);          // reset first (allows replay)
+          requestAnimationFrame(() => setAnimateStrip(true));
+        }
+      },
+      { threshold: 0.3 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // ===== FILE HANDLING =====
   const handleFile = useCallback((file: File) => {
@@ -446,9 +465,11 @@ export default function OmAnalyzerPage() {
           .om-insight-arrow { display: none !important; }
         }
         .ds-process-strip { opacity: 1; }
-        .ds-process-step { opacity: 0; animation: stepFadeIn 0.5s ease-out forwards; }
+        .ds-process-step { opacity: 0; }
+        .ds-strip-animate .ds-process-step { animation: stepFadeIn 0.5s ease-out forwards; }
         .ds-process-connector { position: relative; height: 2px; flex: 1; min-width: 32px; background: rgba(255,255,255,0.1); overflow: hidden; border-radius: 1px; align-self: center; }
-        .ds-process-connector::after { content: ''; position: absolute; left: 0; top: 0; height: 100%; background: #c8ff00; border-radius: 1px; animation: connectorGrow 0.6s ease-out forwards; }
+        .ds-process-connector::after { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 0; background: #c8ff00; border-radius: 1px; }
+        .ds-strip-animate .ds-process-connector::after { animation: connectorGrow 0.6s ease-out forwards; }
         .ds-card { transition: all 0.25s ease; border-radius: 20px; background: rgba(22,22,31,0.6); border: 1px solid rgba(255,255,255,0.06); backdropFilter: blur(10px); }
         .ds-card:hover { transform: translateY(-3px); box-shadow: 0 0 30px rgba(200,255,0,0.06); }
         .ds-btn { display: inline-flex; align-items: center; justify-content: center; font-weight: 700; border-radius: 50px; cursor: pointer; transition: all 0.2s ease; text-decoration: none; border: none; }
@@ -576,7 +597,7 @@ export default function OmAnalyzerPage() {
               <div className="ds-hero-left" style={{ animation: "fadeInUp 0.5s ease-out" }}>
 
                 {/* ── Animated 3-step process strip ── */}
-                <div className="ds-process-strip" style={{
+                <div ref={stripRef} className={`ds-process-strip${animateStrip ? " ds-strip-animate" : ""}`} style={{
                   display: "flex", alignItems: "center", gap: 0,
                   marginBottom: 28, padding: "14px 0",
                 }}>
@@ -606,18 +627,20 @@ export default function OmAnalyzerPage() {
                     <div style={{ display: "flex", flexDirection: "column", gap: 3, marginLeft: 2 }}>
                       <div style={{
                         width: 16, height: 10, borderRadius: 2, background: "rgba(200,255,0,0.3)",
-                        border: "1px solid rgba(200,255,0,0.5)", animation: "docSlide 0.4s ease-out 0.6s both",
+                        border: "1px solid rgba(200,255,0,0.5)", opacity: animateStrip ? undefined : 0,
+                        ...(animateStrip ? { animation: "docSlide 0.4s ease-out 0.6s both" } : {}),
                       }} />
                       <div style={{
                         width: 16, height: 10, borderRadius: 2, background: "rgba(16,185,129,0.3)",
-                        border: "1px solid rgba(16,185,129,0.5)", animation: "docSlide 0.4s ease-out 0.8s both",
+                        border: "1px solid rgba(16,185,129,0.5)", opacity: animateStrip ? undefined : 0,
+                        ...(animateStrip ? { animation: "docSlide 0.4s ease-out 0.8s both" } : {}),
                       }} />
                     </div>
                   </div>
 
                   {/* Connector 1→2 */}
                   <div className="ds-process-connector" style={{ animationDelay: "1s" }}>
-                    <div style={{ position: "absolute", left: 0, top: 0, height: "100%", background: "#c8ff00", borderRadius: 1, animation: "connectorGrow 0.6s ease-out 1.2s forwards", width: 0 }} />
+                    <div style={{ position: "absolute", left: 0, top: 0, height: "100%", background: "#c8ff00", borderRadius: 1, width: 0, ...(animateStrip ? { animation: "connectorGrow 0.6s ease-out 1.2s forwards" } : {}) }} />
                   </div>
 
                   {/* Step 2: Extract */}
@@ -648,11 +671,10 @@ export default function OmAnalyzerPage() {
                         <div key={i} style={{
                           height: 3, borderRadius: 2, background: `linear-gradient(90deg, rgba(255,255,255,0.1) 0%, #c8ff00 50%, rgba(255,255,255,0.1) 100%)`,
                           backgroundSize: "200px 100%",
-                          animation: `shimmer 1.5s linear infinite ${1.8 + i * 0.2}s`,
                           width: [24, 18, 20][i], opacity: 0,
-                          animationFillMode: "forwards",
+                          ...(animateStrip ? { animation: `shimmer 1.5s linear infinite ${1.8 + i * 0.2}s`, animationFillMode: "forwards" } : {}),
                         }}>
-                          <div style={{ width: "100%", height: "100%", borderRadius: 2, animation: `docSlide 0.3s ease-out ${1.8 + i * 0.15}s both` }} />
+                          <div style={{ width: "100%", height: "100%", borderRadius: 2, ...(animateStrip ? { animation: `docSlide 0.3s ease-out ${1.8 + i * 0.15}s both` } : {}) }} />
                         </div>
                       ))}
                     </div>
@@ -660,7 +682,7 @@ export default function OmAnalyzerPage() {
 
                   {/* Connector 2→3 */}
                   <div className="ds-process-connector">
-                    <div style={{ position: "absolute", left: 0, top: 0, height: "100%", background: "#c8ff00", borderRadius: 1, animation: "connectorGrow 0.6s ease-out 2.4s forwards", width: 0 }} />
+                    <div style={{ position: "absolute", left: 0, top: 0, height: "100%", background: "#c8ff00", borderRadius: 1, width: 0, ...(animateStrip ? { animation: "connectorGrow 0.6s ease-out 2.4s forwards" } : {}) }} />
                   </div>
 
                   {/* Step 3: Score */}
@@ -689,8 +711,8 @@ export default function OmAnalyzerPage() {
                       <circle cx="16" cy="16" r="12" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="3" />
                       <circle cx="16" cy="16" r="12" fill="none" stroke="#10b981" strokeWidth="3"
                         strokeDasharray="75.4" strokeDashoffset="75.4" strokeLinecap="round"
-                        style={{ transform: "rotate(-90deg)", transformOrigin: "center", animation: "scoreFill 1s ease-out 3.2s forwards", ["--score-offset" as string]: "22" }} />
-                      <text x="16" y="18" textAnchor="middle" fontSize="8" fontWeight="800" fill="#10b981" style={{ opacity: 0, animation: "docSlide 0.3s ease-out 3.6s forwards" }}>82</text>
+                        style={{ transform: "rotate(-90deg)", transformOrigin: "center", ["--score-offset" as string]: "22", ...(animateStrip ? { animation: "scoreFill 1s ease-out 3.2s forwards" } : {}) }} />
+                      <text x="16" y="18" textAnchor="middle" fontSize="8" fontWeight="800" fill="#10b981" style={{ opacity: 0, ...(animateStrip ? { animation: "docSlide 0.3s ease-out 3.6s forwards" } : {}) }}>82</text>
                     </svg>
                   </div>
                 </div>
@@ -712,7 +734,7 @@ export default function OmAnalyzerPage() {
                   <button onClick={() => fileRef.current?.click()} className="ds-btn ds-btn-primary" style={{
                     fontSize: 15, padding: "14px 32px",
                   }}>
-                    Analyze CRE Deal
+                    Try a CRE Deal - Free
                   </button>
                   <button onClick={() => { setData(generateDemoResult("Walgreens-NNN-Texas")); setView("result"); }} className="ds-btn ds-btn-outline" style={{
                     fontSize: 15, padding: "14px 32px",
@@ -730,7 +752,7 @@ export default function OmAnalyzerPage() {
                 border: "1px solid rgba(255,255,255,0.08)",
               }}>
                 <div style={{ textAlign: "center", marginBottom: 18 }}>
-                  <div style={{ fontSize: 17, fontWeight: 700, color: "#ffffff", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Analyze CRE Deal</div>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: "#ffffff", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Try a CRE Deal - Free</div>
                   <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 4 }}>Drop any CRE document to get started</div>
                 </div>
 
@@ -845,23 +867,6 @@ export default function OmAnalyzerPage() {
                   </div>
                 )}
 
-                {/* Sample deals */}
-                <div style={{ marginTop: 14, display: "flex", gap: 8, alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 11, color: "#9ca3af" }}>Or try:</span>
-                  {[
-                    { label: "Walgreens NNN", file: "Walgreens-NNN-Texas" },
-                    { label: "Strip Center", file: "Strip-Center-Illinois" },
-                  ].map(sample => (
-                    <button key={sample.file} onClick={() => { setData(generateDemoResult(sample.file)); setView("result"); }}
-                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px",
-                        background: "#1e1e28", border: "1.5px solid rgba(255,255,255,0.1)", borderRadius: 50,
-                        cursor: "pointer", fontSize: 11, fontWeight: 600, color: "#9ca3af", transition: "all 0.15s",
-                      }} className="om-feature-card">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#c8ff00" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
-                      {sample.label}
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
