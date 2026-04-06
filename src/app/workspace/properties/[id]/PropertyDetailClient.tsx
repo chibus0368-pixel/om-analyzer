@@ -847,185 +847,162 @@ function PropertyDetailInner({
       )}
 
       {/* ═══════════════════════════════════════════════════ */}
-      {/*  1. DEAL SCAN HEADER SUMMARY                       */}
+      {/*  1. PROPERTY HEADER                                 */}
       {/* ═══════════════════════════════════════════════════ */}
-      <div style={{
-        background: C.surfLowest, borderRadius: C.radius, border: `1px solid ${C.ghostBorder}`,
-        boxShadow: "0 2px 12px rgba(21,27,43,0.06)", marginBottom: 16, overflow: "hidden",
-      }}>
-        <div style={{ display: "flex", minHeight: 200 }}>
-          {/* Left: Property info */}
-          <div style={{ flex: 1, padding: "24px 28px 20px" }}>
-            {/* Title */}
-            <EditablePropertyName
-              name={cleanDisplayName(property.propertyName, property.address1, property.city, property.state)}
-              propertyId={propertyId}
-              onSave={(newName: string) => setProperty((prev: Property | null) => prev ? { ...prev, propertyName: newName } : prev)}
-            />
-
-            {/* Address */}
-            {location && <p style={{ fontSize: 14, color: C.secondary, margin: "6px 0 0" }}>{location}</p>}
-
-            {/* Map links */}
-            {location && (
-              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                <a href={`https://www.google.com/maps/search/${encodedAddress}`} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize: 11, color: C.secondary, textDecoration: "none", padding: "4px 12px", background: C.surfLow, borderRadius: 6, fontWeight: 500, border: `1px solid ${C.ghostBorder}` }}>
-                  Google Maps &rarr;
-                </a>
-              </div>
-            )}
-
-            {/* Counts row */}
-            {hasData && (
-              <div style={{ display: "flex", alignItems: "center", gap: 0, marginTop: 14 }}>
-                <span style={{ fontSize: 11, color: C.secondary, fontWeight: 600, marginRight: 8 }}>data fields:</span>
-                <span style={{ fontSize: 11, color: "#4338CA", fontWeight: 600 }}>
-                  {pulledCount} pulled from OM
-                </span>
-                <span style={{ fontSize: 11, color: C.secondary, margin: "0 8px", opacity: 0.4 }}>&middot;</span>
-                <span style={{ fontSize: 11, color: "#15803D", fontWeight: 600 }}>
-                  {calcCount} calculated
-                </span>
-                {reviewCount > 0 && (
-                  <>
-                    <span style={{ fontSize: 11, color: C.secondary, margin: "0 8px", opacity: 0.4 }}>&middot;</span>
-                    <span style={{ fontSize: 11, color: "#92400E", fontWeight: 600 }}>
-                      {reviewCount} need review
-                    </span>
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* Downloads */}
-            {hasData && (
-              <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-                <button
-                  onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
-                  style={{
-                    padding: "6px 14px", borderRadius: 8,
-                    border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
-                    color: C.onSurface, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                    display: "inline-flex", alignItems: "center", gap: 6,
-                  }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0A7E5A" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
-                  Generate Workbook
-                  <span style={{ padding: "1px 5px", background: "#D1FAE5", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#0A7E5A" }}>XLSX</span>
-                </button>
-                <button
-                  onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType)}
-                  style={{
-                    padding: "6px 14px", borderRadius: 8,
-                    border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
-                    color: C.onSurface, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                    display: "inline-flex", alignItems: "center", gap: 6,
-                  }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
-                  Generate Brief
-                  <span style={{ padding: "1px 5px", background: "#DBEAFE", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#2563EB" }}>DOC</span>
-                </button>
-              </div>
-            )}
+      <div style={{ marginBottom: 24 }}>
+        <EditablePropertyName
+          name={cleanDisplayName(property.propertyName, property.address1, property.city, property.state)}
+          propertyId={propertyId}
+          onSave={(newName: string) => setProperty((prev: Property | null) => prev ? { ...prev, propertyName: newName } : prev)}
+        />
+        {location && (
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 6 }}>
+            <p style={{ fontSize: 14, color: C.secondary, margin: 0 }}>{location}</p>
+            <a href={`https://www.google.com/maps/search/${encodedAddress}`} target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: 11, color: C.secondary, textDecoration: "none", padding: "3px 10px", background: C.surfLow, borderRadius: 6, fontWeight: 500, border: `1px solid ${C.ghostBorder}` }}>
+              Map &rarr;
+            </a>
           </div>
-
-          {/* Center: Deal Signals */}
-          {scoreTotal && (
-            <div style={{
-              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-              padding: "20px 24px", borderLeft: `1px solid ${C.ghostBorder}`, borderRight: `1px solid ${C.ghostBorder}`,
-              minWidth: 140,
-            }}>
-              <DealSignalBadge score={scoreTotal} band={scoreBand} />
-              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.secondary, marginTop: 8 }}>Deal Signals</span>
-            </div>
-          )}
-
-          {/* Right: Property Image */}
-          <div style={{ width: 300, flexShrink: 0, overflow: "hidden" }}>
-            <PropertyImage
-              heroImageUrl={(property as any).heroImageUrl}
-              location={location}
-              encodedAddress={encodedAddress}
-              propertyName={property.propertyName}
-            />
-          </div>
-        </div>
+        )}
       </div>
 
-      {/* First-pass framing */}
-      <p style={{ fontSize: 11, color: `${C.secondary}99`, textAlign: "center", margin: "0 0 16px", lineHeight: 1.5 }}>
-        This is a first-pass analysis. It combines values pulled from the OM with calculated metrics and flagged review items. Verify critical fields before relying on the output.
-      </p>
-
       {/* ═══════════════════════════════════════════════════ */}
-      {/*  2. PURCHASE PRICE + TOP-LINE METRICS               */}
+      {/*  2. OUR TAKE + DEAL SCORE (COMBINED)                */}
       {/* ═══════════════════════════════════════════════════ */}
-      {hasData && wsType !== "land" && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 16 }}>
-          {/* Purchase Price — spans 1 column */}
-          <PurchasePriceControl priceState={priceState} />
-
-          {/* Top-line metrics */}
-          {[
-            { label: "Cap Rate", value: calc?.capRate ? `${calc.capRate.toFixed(2)}%` : "--", priceAffected: true },
-            { label: "NOI", value: fmt$(noiOm), priceAffected: false },
-            { label: "DSCR", value: calc?.dscr ? `${calc.dscr.toFixed(2)}x` : "--", priceAffected: true },
-            { label: "Price / SF", value: calc?.priceSf ? `$${calc.priceSf.toFixed(0)}/SF` : "--", priceAffected: true },
-            { label: "Cash-on-Cash", value: calc?.cashOnCash ? `${calc.cashOnCash.toFixed(1)}%` : "--", priceAffected: true },
-          ].filter(m => m.value !== "--").slice(0, 5).map(m => (
-            <div key={m.label} style={{
-              background: C.surfLowest, borderRadius: 10, padding: "16px 20px",
-              border: `1px solid ${C.ghostBorder}`,
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.secondary }}>
-                  {m.label}
-                </span>
-                {m.priceAffected && isOverridden && (
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="#3B82F6" style={{ flexShrink: 0 }}>
-                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                  </svg>
-                )}
+      {(brief || scoreTotal) && (
+        <div style={{
+          background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
+          boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: "24px 28px",
+          display: "flex", justifyContent: "space-between", gap: 32, marginBottom: 24,
+        }}>
+          {/* Left: Our Take */}
+          {brief ? (
+            <div style={{ flex: 1, maxWidth: 640 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>OUR TAKE</div>
+              <div style={{ fontSize: 15, color: "#0F172A", lineHeight: 1.8 }}>
+                {brief.split("\n").filter((p: string) => p.trim()).slice(0, 4).map((p: string, i: number) => (
+                  <p key={i} style={{ margin: "0 0 8px" }}>{p}</p>
+                ))}
               </div>
-              <span style={{
-                fontSize: 24, fontWeight: 700, color: "#0F172A",
-                fontVariantNumeric: "tabular-nums", letterSpacing: -0.5, display: "block",
-              }}>
-                {m.value}
-              </span>
-              {m.priceAffected && (
-                <span style={{ fontSize: 9, color: "#6B7280", marginTop: 2, display: "block" }}>
-                  <SourceTag type="calculated" />
-                </span>
-              )}
             </div>
-          ))}
+          ) : (
+            <div style={{ flex: 1 }} />
+          )}
+
+          {/* Right: Deal Score */}
+          {scoreTotal && (
+            <div style={{ textAlign: "right", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", justifyContent: "center" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.secondary, marginBottom: 4 }}>DEAL SCORE</div>
+              <DealSignalBadge score={scoreTotal} band={scoreBand} />
+            </div>
+          )}
         </div>
       )}
 
-      {/* Land top metrics */}
+      {/* ═══════════════════════════════════════════════════ */}
+      {/*  3. METRICS STRIP (INLINE, NOT CARDS)               */}
+      {/* ═══════════════════════════════════════════════════ */}
+      {hasData && wsType !== "land" && (() => {
+        const metrics = [
+          { label: "Price", value: priceState.overriddenPrice ? fmt$(priceState.overriddenPrice) : fmt$(priceState.omPrice), isEditable: true },
+          { label: "Cap Rate", value: calc?.capRate ? `${calc.capRate.toFixed(2)}%` : "--" },
+          { label: "NOI", value: fmt$(noiOm) },
+          { label: "DSCR", value: calc?.dscr ? `${calc.dscr.toFixed(2)}x` : "--" },
+          { label: "Price / SF", value: calc?.priceSf ? `$${calc.priceSf.toFixed(0)}/SF` : "--" },
+          { label: "Cash-on-Cash", value: calc?.cashOnCash ? `${calc.cashOnCash.toFixed(1)}%` : "--" },
+        ].filter(m => m.value !== "--");
+        return (
+          <div style={{
+            display: "flex", gap: 0, marginBottom: 24,
+            background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
+            overflow: "hidden",
+          }}>
+            {metrics.map((m, i) => (
+              <div key={m.label} style={{
+                flex: 1, padding: "16px 20px",
+                borderRight: i < metrics.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+              }}>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280", marginBottom: 4 }}>
+                  {m.label}
+                </div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>
+                  {m.value}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
+      {/* Land metrics strip */}
       {hasData && wsType === "land" && (() => {
-        const landCards = [
+        const landMetrics = [
           { label: "Asking Price", value: fmt$(g("pricing_deal_terms", "asking_price")) },
           { label: "Price / Acre", value: g("pricing_deal_terms", "price_per_acre") ? fmt$(g("pricing_deal_terms", "price_per_acre")) : "--" },
           { label: "Acres", value: g("property_basics", "lot_acres") || "--" },
           { label: "Zoning", value: g("land_zoning", "current_zoning") || "--" },
         ].filter(c => c.value !== "--");
         return (
-          <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(landCards.length, 4)}, 1fr)`, gap: 12, marginBottom: 16 }}>
-            {landCards.map(c => (
-              <div key={c.label} style={{
-                background: C.surfLowest, borderRadius: 10, padding: "16px 20px",
-                border: `1px solid ${C.ghostBorder}`,
+          <div style={{
+            display: "flex", gap: 0, marginBottom: 24,
+            background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
+            overflow: "hidden",
+          }}>
+            {landMetrics.map((m, i) => (
+              <div key={m.label} style={{
+                flex: 1, padding: "16px 20px",
+                borderRight: i < landMetrics.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
               }}>
-                <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.secondary, display: "block", marginBottom: 4 }}>{c.label}</span>
-                <span style={{ fontSize: 24, fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums", display: "block" }}>{c.value}</span>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280", marginBottom: 4 }}>{m.label}</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{m.value}</div>
               </div>
             ))}
           </div>
         );
       })()}
+
+      {/* Downloads + data counts */}
+      {hasData && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
+              style={{
+                padding: "6px 14px", borderRadius: 8,
+                border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
+                color: C.onSurface, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                display: "inline-flex", alignItems: "center", gap: 6,
+              }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0A7E5A" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+              Workbook
+              <span style={{ padding: "1px 5px", background: "#D1FAE5", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#0A7E5A" }}>XLSX</span>
+            </button>
+            <button
+              onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType)}
+              style={{
+                padding: "6px 14px", borderRadius: 8,
+                border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
+                color: C.onSurface, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                display: "inline-flex", alignItems: "center", gap: 6,
+              }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+              Brief
+              <span style={{ padding: "1px 5px", background: "#DBEAFE", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#2563EB" }}>DOC</span>
+            </button>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+            <span style={{ fontSize: 11, color: "#4338CA", fontWeight: 600 }}>{pulledCount} pulled</span>
+            <span style={{ fontSize: 11, color: C.secondary, margin: "0 8px", opacity: 0.4 }}>&middot;</span>
+            <span style={{ fontSize: 11, color: "#15803D", fontWeight: 600 }}>{calcCount} calculated</span>
+            {reviewCount > 0 && (
+              <>
+                <span style={{ fontSize: 11, color: C.secondary, margin: "0 8px", opacity: 0.4 }}>&middot;</span>
+                <span style={{ fontSize: 11, color: "#92400E", fontWeight: 600 }}>{reviewCount} review</span>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  3. PRICE SENSITIVITY MINI                         */}
@@ -1086,31 +1063,7 @@ function PropertyDetailInner({
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════ */}
-      {/*  5. DEAL BRIEF (short narrative)                    */}
-      {/* ═══════════════════════════════════════════════════ */}
-      {brief && (
-        <section style={{ marginBottom: 20 }}>
-          <div style={{
-            background: "#FFFFFF", padding: "20px 24px", borderRadius: C.radius,
-            border: `1px solid rgba(0,0,0,0.06)`,
-            borderLeft: `4px solid #84CC16`,
-            boxShadow: "0 6px 24px rgba(0,0,0,0.06)",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "#84CC16", textTransform: "uppercase", letterSpacing: 0.5 }}>OUR TAKE</span>
-              <h2 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>
-                AI Insight
-              </h2>
-            </div>
-            <div style={{ fontSize: 14, color: C.onSurface, lineHeight: 1.85 }}>
-              {brief.split("\n").filter((p: string) => p.trim()).slice(0, 5).map((p: string, i: number) => (
-                <p key={i} style={{ margin: "0 0 10px" }}>{p}</p>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* (Deal Brief now shown in combined Our Take + Score block above) */}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  6A. PULLED FROM OM                                 */}
