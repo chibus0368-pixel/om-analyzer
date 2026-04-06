@@ -135,7 +135,7 @@ export default function SettingsPage() {
         <div style={{
           marginTop: 12, padding: "10px 16px", borderRadius: 8,
           background: rescoring ? "#f2f3ff" : "#ECFDF5",
-          border: `1px solid ${rescoring ? "rgba(185, 23, 47, 0.15)" : "rgba(5, 150, 105, 0.2)"}`,
+          border: `1px solid ${rescoring ? "rgba(132, 204, 22, 0.15)" : "rgba(5, 150, 105, 0.2)"}`,
           fontSize: 13, fontWeight: 600,
           color: rescoring ? "#84CC16" : "#059669",
           display: "flex", alignItems: "center", gap: 8,

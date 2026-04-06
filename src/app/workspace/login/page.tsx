@@ -375,7 +375,7 @@ export default function WorkspaceLoginPage() {
               marginTop: 2, fontFamily: "'Inter', sans-serif",
               transition: "all 0.2s",
             }}
-            onMouseEnter={e => { if (!loading) e.currentTarget.style.boxShadow = "0 8px 20px rgba(185, 23, 47, 0.3)"; }}
+            onMouseEnter={e => { if (!loading) e.currentTarget.style.boxShadow = "0 8px 20px rgba(132, 204, 22, 0.3)"; }}
             onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; }}
           >
             {loading

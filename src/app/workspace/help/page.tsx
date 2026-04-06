@@ -34,7 +34,7 @@ function UploadFlowDiagram() {
         <div key={s.label} style={{ display: "flex", alignItems: "center" }}>
           <div style={{ textAlign: "center", minWidth: 100 }}>
             <div style={{
-              width: 48, height: 48, borderRadius: "50%", background: "rgba(185, 23, 47, 0.08)",
+              width: 48, height: 48, borderRadius: "50%", background: "rgba(132, 204, 22, 0.08)",
               display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 8px",
             }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={s.icon} /></svg>
@@ -794,7 +794,7 @@ export default function HelpPage() {
               style={{
                 display: "flex", alignItems: "center", gap: 10,
                 padding: "9px 20px", border: "none", cursor: "pointer",
-                background: activeId === topic.id ? "rgba(185, 23, 47, 0.06)" : "transparent",
+                background: activeId === topic.id ? "rgba(132, 204, 22, 0.06)" : "transparent",
                 color: activeId === topic.id ? C.primary : C.secondary,
                 fontSize: 13, fontWeight: activeId === topic.id ? 600 : 400,
                 textAlign: "left", fontFamily: "'Inter', sans-serif",
@@ -815,7 +815,7 @@ export default function HelpPage() {
       <div style={{ flex: 1, padding: "20px 40px 60px", maxWidth: 1400 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
           <div style={{
-            width: 40, height: 40, borderRadius: "50%", background: "rgba(185, 23, 47, 0.08)",
+            width: 40, height: 40, borderRadius: "50%", background: "rgba(132, 204, 22, 0.08)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">

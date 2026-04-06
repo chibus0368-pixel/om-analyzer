@@ -520,6 +520,8 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [userTier, setUserTier] = useState<string>("free");
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [globalDrag, setGlobalDrag] = useState(false);
+  const globalDragCounter = useRef(0);
   const prevWsIdRef = useRef<string | null>(null);
   const upgradeHandledRef = useRef(false);
   const wsDropdownRef = useRef<HTMLDivElement>(null);
@@ -548,6 +550,48 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [showMoreMenu]);
+
+  // ── Global drag-and-drop overlay for file uploads ──
+  useEffect(() => {
+    const isUploadPage = () => window.location.pathname.includes("/workspace/upload");
+    const handleDragEnter = (e: DragEvent) => {
+      if (isUploadPage()) return; // upload page has its own handler
+      if (e.dataTransfer?.types?.includes("Files")) {
+        globalDragCounter.current++;
+        setGlobalDrag(true);
+      }
+    };
+    const handleDragLeave = () => {
+      globalDragCounter.current--;
+      if (globalDragCounter.current <= 0) { globalDragCounter.current = 0; setGlobalDrag(false); }
+    };
+    const handleDragOver = (e: DragEvent) => { if (globalDrag) e.preventDefault(); };
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault();
+      globalDragCounter.current = 0;
+      setGlobalDrag(false);
+      if (isUploadPage()) return;
+      if (e.dataTransfer?.files?.length) {
+        // Store files in sessionStorage so upload page can pick them up
+        const names = Array.from(e.dataTransfer.files).map(f => f.name);
+        sessionStorage.setItem("globalDropFiles", JSON.stringify(names));
+        // We can't pass File objects through sessionStorage, so redirect to upload
+        // The upload page already has its own drop zone — user just needs to re-drop or select
+        const ws = activeWorkspace?.slug || activeWorkspace?.id || "";
+        router.push(`/workspace/upload${ws ? `?ws=${ws}` : ""}`);
+      }
+    };
+    window.addEventListener("dragenter", handleDragEnter);
+    window.addEventListener("dragleave", handleDragLeave);
+    window.addEventListener("dragover", handleDragOver);
+    window.addEventListener("drop", handleDrop);
+    return () => {
+      window.removeEventListener("dragenter", handleDragEnter);
+      window.removeEventListener("dragleave", handleDragLeave);
+      window.removeEventListener("dragover", handleDragOver);
+      window.removeEventListener("drop", handleDrop);
+    };
+  }, [globalDrag, activeWorkspace, router]);
 
   // ── Auth gate: redirect to login if not authenticated ──
   // Skip redirect if already on the login page to prevent redirect loops.
@@ -723,7 +767,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               }}
             >
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, lineHeight: 1.4 }}>
                   <span style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.025em" }}>
                     {activeWorkspace?.name || "Default Dealboard"}
                   </span>
@@ -731,15 +775,18 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                     background: "rgba(132,204,22,0.1)", color: "#84CC16",
                     fontSize: 9, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em",
                     padding: "2px 6px", borderRadius: 4, border: "1px solid rgba(132,204,22,0.2)",
+                    flexShrink: 0,
                   }}>
                     {ANALYSIS_TYPE_LABELS[activeWorkspace?.analysisType || "retail"] || "Retail"}
                   </span>
                 </div>
-                <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  Select Dealboard
-                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                    Select Dealboard
+                  </span>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: showWsDropdown ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}><path d="M6 9l6 6 6-6" /></svg>
+                </div>
               </div>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: showWsDropdown ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}><path d="M6 9l6 6 6-6" /></svg>
             </button>
 
             {/* Workspace dropdown */}
@@ -1138,6 +1185,32 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                 Create Workspace
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Global drag-and-drop overlay */}
+      {globalDrag && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9999,
+          background: "rgba(132, 204, 22, 0.06)",
+          border: "3px dashed #84CC16",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          pointerEvents: "none",
+        }}>
+          <div style={{
+            background: "#fff", borderRadius: 12, padding: "32px 48px", textAlign: "center",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+          }}>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 12 }}>
+              <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            <p style={{ fontSize: 16, fontWeight: 700, color: "#151b2b", margin: "0 0 4px", fontFamily: "'Inter', sans-serif" }}>
+              Drop files to upload
+            </p>
+            <p style={{ fontSize: 13, color: "#585e70", margin: 0 }}>
+              PDF, Excel, or CSV
+            </p>
           </div>
         </div>
       )}

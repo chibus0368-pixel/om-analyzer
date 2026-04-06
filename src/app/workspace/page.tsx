@@ -4,9 +4,9 @@ import { useEffect, useState, useRef } from "react";
 import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
 import { getWorkspaceProperties, getProjectDocuments, deleteProperty } from "@/lib/workspace/firestore";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
-import { collection, query, where, getDocs, writeBatch, doc, updateDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, writeBatch, doc, updateDoc, getDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import type { Property, ProjectDocument } from "@/lib/workspace/types";
+import type { Property, ProjectDocument, Workspace } from "@/lib/workspace/types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import Link from "next/link";
@@ -76,8 +76,11 @@ function ClearAllButton({ onClear, workspaceId, workspaceName }: { onClear: () =
 }
 
 /* ========== Property Card ========== */
-function PropertyCard({ property, docCount }: { property: Property; docCount: number }) {
+function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { property: Property; docCount: number; workspaces: Workspace[]; activeWorkspaceId: string }) {
   const router = useRouter();
+  const [showDupMenu, setShowDupMenu] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
+  const dupRef = useRef<HTMLDivElement>(null);
   const parseStatus = (property as any).parseStatus || "pending";
   const processingStatus = (property as any).processingStatus || "";
   const isProcessing = processingStatus && processingStatus !== "complete";
@@ -96,6 +99,41 @@ function PropertyCard({ property, docCount }: { property: Property; docCount: nu
     strong_reject: { bg: "#FEF2F2", text: "#EF4444", label: "Strong Reject" },
   };
   const band = bandColors[scoreBand] || null;
+
+  // Close duplicate menu on outside click
+  useEffect(() => {
+    if (!showDupMenu) return;
+    function handleClick(e: MouseEvent) {
+      if (dupRef.current && !dupRef.current.contains(e.target as Node)) setShowDupMenu(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showDupMenu]);
+
+  async function handleDuplicate(targetWorkspaceId: string) {
+    setDuplicating(true);
+    setShowDupMenu(false);
+    try {
+      const snap = await getDoc(doc(db, "workspace_properties", property.id));
+      if (!snap.exists()) throw new Error("Property not found");
+      const data = snap.data();
+      // Remove ID fields and timestamps — create fresh copy
+      const { id, createdAt, updatedAt, ...rest } = data as any;
+      await addDoc(collection(db, "workspace_properties"), {
+        ...rest,
+        workspaceId: targetWorkspaceId,
+        propertyName: rest.propertyName + " (Copy)",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      window.dispatchEvent(new Event("workspace-properties-changed"));
+      window.location.reload();
+    } catch (err) {
+      console.error("[duplicate] Failed:", err);
+      alert("Failed to duplicate. Please try again.");
+    }
+    setDuplicating(false);
+  }
 
   return (
     <div
@@ -214,13 +252,75 @@ function PropertyCard({ property, docCount }: { property: Property; docCount: nu
         </div>
       </div>
 
-      {/* Delete row - border-top, padding-top 8px */}
+      {/* Action row - border-top */}
       <div style={{
         borderTop: "1px solid rgba(0,0,0,0.05)",
         padding: "8px 20px",
         display: "flex",
-        justifyContent: "flex-end",
+        justifyContent: "space-between",
+        alignItems: "center",
       }}>
+        {/* Duplicate button */}
+        <div ref={dupRef} style={{ position: "relative" }}>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (workspaces.length <= 1) {
+                handleDuplicate(activeWorkspaceId);
+              } else {
+                setShowDupMenu(!showDupMenu);
+              }
+            }}
+            disabled={duplicating}
+            style={{
+              background: "none", border: "none", color: "#D1D5DB", cursor: "pointer",
+              fontSize: 10, fontWeight: 700, padding: 0, letterSpacing: "0.05em",
+              textTransform: "uppercase", transition: "color 0.2s",
+              opacity: duplicating ? 0.5 : 1, display: "flex", alignItems: "center", gap: 4,
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#84CC16"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#D1D5DB"; }}
+            title="Duplicate to dealboard"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+            </svg>
+            {duplicating ? "Duplicating..." : "Duplicate"}
+          </button>
+          {showDupMenu && workspaces.length > 1 && (
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                position: "absolute", bottom: "100%", left: 0, marginBottom: 4,
+                background: "#fff", border: "1px solid #E5E7EB", borderRadius: 6,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)", minWidth: 180, zIndex: 50,
+                overflow: "hidden",
+              }}
+            >
+              <div style={{ padding: "6px 12px", fontSize: 10, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Duplicate to…
+              </div>
+              {workspaces.map(ws => (
+                <button
+                  key={ws.id}
+                  onClick={(e) => { e.stopPropagation(); handleDuplicate(ws.id); }}
+                  style={{
+                    display: "block", width: "100%", textAlign: "left", padding: "8px 12px",
+                    background: ws.id === activeWorkspaceId ? "#F3F4F6" : "transparent",
+                    border: "none", cursor: "pointer", fontSize: 12, color: "#374151",
+                    fontWeight: ws.id === activeWorkspaceId ? 600 : 400, transition: "background 0.1s",
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#F9FAFB"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = ws.id === activeWorkspaceId ? "#F3F4F6" : "transparent"; }}
+                >
+                  {ws.name}{ws.id === activeWorkspaceId ? " (current)" : ""}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Delete button */}
         <button
           onClick={async (e) => {
             e.stopPropagation();
@@ -231,7 +331,6 @@ function PropertyCard({ property, docCount }: { property: Property; docCount: nu
             btn.style.opacity = "0.5";
             try {
               await deleteProperty(property.id, property.projectId || "workspace-default");
-              // Remove card visually before reload
               const card = btn.closest("[data-property-card]") as HTMLElement;
               if (card) { card.style.opacity = "0"; card.style.transform = "scale(0.95)"; card.style.transition = "all 0.3s ease"; }
               window.dispatchEvent(new Event("workspace-properties-changed"));
@@ -245,16 +344,9 @@ function PropertyCard({ property, docCount }: { property: Property; docCount: nu
             }
           }}
           style={{
-            background: "none",
-            border: "none",
-            color: "#D1D5DB",
-            cursor: "pointer",
-            fontSize: 10,
-            fontWeight: 700,
-            padding: 0,
-            letterSpacing: "0.05em",
-            textTransform: "uppercase",
-            transition: "color 0.2s",
+            background: "none", border: "none", color: "#D1D5DB", cursor: "pointer",
+            fontSize: 10, fontWeight: 700, padding: 0, letterSpacing: "0.05em",
+            textTransform: "uppercase", transition: "color 0.2s",
           }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#EF4444"; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#D1D5DB"; }}
@@ -328,7 +420,7 @@ function EditableWorkspaceTitle({ name, workspaceId }: { name: string; workspace
 /* ========== Main Dashboard ========== */
 export default function WorkspaceDashboard() {
   const { user } = useAuth();
-  const { activeWorkspace } = useWorkspace();
+  const { activeWorkspace, workspaces } = useWorkspace();
   const router = useRouter();
   const [properties, setProperties] = useState<Property[]>([]);
   const [docCounts, setDocCounts] = useState<Record<string, number>>({});
@@ -520,7 +612,7 @@ export default function WorkspaceDashboard() {
           marginBottom: 24,
         }}>
           {properties.map(p => (
-            <PropertyCard key={p.id} property={p} docCount={docCounts[p.id] || 0} />
+            <PropertyCard key={p.id} property={p} docCount={docCounts[p.id] || 0} workspaces={workspaces} activeWorkspaceId={activeWorkspace?.id || ""} />
           ))}
         </div>
       )}

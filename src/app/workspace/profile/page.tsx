@@ -397,7 +397,7 @@ export default function ProfilePage() {
     return (
       <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center", padding: "60px 20px" }}>
         <div style={{
-          width: 64, height: 64, borderRadius: "50%", background: "rgba(185, 23, 47, 0.08)",
+          width: 64, height: 64, borderRadius: "50%", background: "rgba(132, 204, 22, 0.08)",
           display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 16,
         }}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={PRIMARY} strokeWidth="1.5">
@@ -454,7 +454,7 @@ export default function ProfilePage() {
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 6 }}>
         <div style={{
           width: 52, height: 52, borderRadius: "50%",
-          background: `linear-gradient(135deg, ${PRIMARY}, #dc3545)`,
+          background: PRIMARY,
           display: "flex", alignItems: "center", justifyContent: "center",
           color: "#fff", fontSize: 20, fontWeight: 700, fontFamily: "'Inter', sans-serif",
           flexShrink: 0,
@@ -472,7 +472,7 @@ export default function ProfilePage() {
             {profile?.tier && profile.tier !== "free" && (
               <span style={{
                 marginLeft: 8, padding: "2px 8px", borderRadius: 4,
-                background: "rgba(185, 23, 47, 0.08)", color: PRIMARY,
+                background: "rgba(132, 204, 22, 0.08)", color: PRIMARY,
                 fontSize: 11, fontWeight: 600, textTransform: "uppercase",
               }}>
                 {profile.tier}
@@ -827,7 +827,7 @@ export default function ProfilePage() {
                 <div style={{
                   width: 40, height: 40, borderRadius: 8,
                   background: (usageData?.tier || profile?.tier || "free") !== "free"
-                    ? "rgba(185, 23, 47, 0.08)" : "rgba(148, 163, 184, 0.1)",
+                    ? "rgba(132, 204, 22, 0.08)" : "rgba(148, 163, 184, 0.1)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none"

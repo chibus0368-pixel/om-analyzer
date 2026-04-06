@@ -277,7 +277,7 @@ export default function BulkUploadPage() {
               border: `2px dashed ${isDragging ? "#84CC16" : "#D8DFE9"}`,
               borderRadius: 6, padding: hasItems ? "20px 16px" : "40px 16px", textAlign: "center",
               cursor: items.length >= MAX_PROPERTIES ? "not-allowed" : "pointer",
-              background: isDragging ? "rgba(185, 23, 47, 0.03)" : "#ffffff", transition: "all 0.15s",
+              background: isDragging ? "rgba(132, 204, 22, 0.03)" : "#ffffff", transition: "all 0.15s",
               marginBottom: 14, opacity: items.length >= MAX_PROPERTIES ? 0.5 : 1,
             }}
           >

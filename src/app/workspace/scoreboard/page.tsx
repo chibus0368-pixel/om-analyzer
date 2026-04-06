@@ -626,7 +626,7 @@ export default function ScoreboardPage() {
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortKey>("score");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
-  const [view, setView] = useState<ViewMode>("leaderboard");
+  const [view, setView] = useState<ViewMode>("comparison");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [rescoring, setRescoring] = useState(false);
   const [rescoreProgress, setRescoreProgress] = useState("");
@@ -1086,7 +1086,7 @@ export default function ScoreboardPage() {
           }}
         >
           <div style={{
-            width: 56, height: 56, borderRadius: "50%", background: "rgba(185, 23, 47, 0.08)",
+            width: 56, height: 56, borderRadius: "50%", background: "rgba(132, 204, 22, 0.08)",
             display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
           }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

@@ -475,7 +475,7 @@ export default function UploadPage() {
           >
             {/* Building icon — same as landing page */}
             <div style={{
-              width: 56, height: 56, borderRadius: "50%", background: "rgba(185, 23, 47, 0.08)",
+              width: 56, height: 56, borderRadius: "50%", background: "rgba(132, 204, 22, 0.08)",
               display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
             }}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -596,7 +596,7 @@ export default function UploadPage() {
                   <div style={{
                     width: 36, height: 36, borderRadius: "50%", margin: "0 auto 6px",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    background: stage.done ? "#D1FAE5" : isCurrent ? "rgba(185, 23, 47, 0.08)" : C.surfLow,
+                    background: stage.done ? "#D1FAE5" : isCurrent ? "rgba(132, 204, 22, 0.08)" : C.surfLow,
                     border: isCurrent ? `2px solid ${C.primary}` : "2px solid transparent",
                     animation: isCurrent ? "pulse 1.5s ease-in-out infinite" : "none",
                   }}>
