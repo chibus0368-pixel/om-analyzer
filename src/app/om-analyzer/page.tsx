@@ -373,7 +373,7 @@ export default function OmAnalyzerPage() {
   }, [heroImageUrl]);
 
   return (
-    <>
+    <div className="ds-page-wrapper">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
         html { scroll-behavior: smooth; }
@@ -401,6 +401,16 @@ export default function OmAnalyzerPage() {
         @keyframes omScanLine { 0% { top: 10%; opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { top: 85%; opacity: 0; } }
         .om-insight-card { opacity: 0; animation: omCardFadeIn 0.5s ease-out forwards; transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .om-insight-card:hover { transform: translateY(-3px) !important; box-shadow: 0 12px 32px rgba(0,0,0,0.08) !important; }
+        /* Global grid overlay */
+        .ds-page-wrapper::before {
+          content: '';
+          position: fixed;
+          inset: 0;
+          backgroundImage: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+          backgroundSize: 60px 60px;
+          pointerEvents: none;
+          zIndex: 1;
+        }
         @media (max-width: 900px) {
           .om-insight-grid { grid-template-columns: 1fr !important; }
           .om-insight-circle { width: 160px !important; height: 160px !important; }
@@ -411,14 +421,14 @@ export default function OmAnalyzerPage() {
         .ds-process-step { opacity: 0; animation: stepFadeIn 0.5s ease-out forwards; }
         .ds-process-connector { position: relative; height: 2px; flex: 1; min-width: 32px; background: rgba(255,255,255,0.1); overflow: hidden; border-radius: 1px; align-self: center; }
         .ds-process-connector::after { content: ''; position: absolute; left: 0; top: 0; height: 100%; background: #b9172f; border-radius: 1px; animation: connectorGrow 0.6s ease-out forwards; }
-        .ds-card { transition: all 0.25s ease; border-radius: 20px; background: #16161f; border: 1px solid rgba(255,255,255,0.08); }
-        .ds-card:hover { transform: translateY(-3px); box-shadow: 0 0 30px rgba(185,23,47,0.08); }
+        .ds-card { transition: all 0.25s ease; border-radius: 20px; background: rgba(22,22,31,0.6); border: 1px solid rgba(255,255,255,0.06); backdropFilter: blur(10px); }
+        .ds-card:hover { transform: translateY(-3px); box-shadow: 0 0 30px rgba(185,23,47,0.06); }
         .ds-btn { display: inline-flex; align-items: center; justify-content: center; font-weight: 700; border-radius: 50px; cursor: pointer; transition: all 0.2s ease; text-decoration: none; border: none; }
         .ds-btn:hover { transform: translateY(-1px); }
-        .ds-btn-primary { background: #b9172f; color: #fff; box-shadow: 0 0 20px rgba(185,23,47,0.3); }
-        .ds-btn-primary:hover { box-shadow: 0 0 30px rgba(185,23,47,0.5); }
-        .ds-btn-outline { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.15); }
-        .ds-btn-outline:hover { border-color: #b9172f; color: #b9172f; }
+        .ds-btn-primary { background: #b9172f; color: #fff; box-shadow: 0 0 30px rgba(185,23,47,0.4), 0 0 60px rgba(185,23,47,0.15); }
+        .ds-btn-primary:hover { box-shadow: 0 0 30px rgba(185,23,47,0.4), 0 0 60px rgba(185,23,47,0.15); transform: translateY(-2px); }
+        .ds-btn-outline { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.12); }
+        .ds-btn-outline:hover { border-color: #b9172f; color: #b9172f; box-shadow: 0 0 20px rgba(185,23,47,0.15); }
         .om-upload-zone { transition: all 0.2s ease; }
         .om-upload-zone:hover { border-color: #b9172f !important; background: rgba(185,23,47,0.08) !important; }
         .dl-btn { transition: all 0.2s ease; }
@@ -526,10 +536,14 @@ export default function OmAnalyzerPage() {
         <section style={{ background: "#0d0d14" }}>
 
           {/* ── 1. HERO ── */}
-          <div style={{ padding: "72px 32px 88px", background: "#0d0d14" }}>
+          <div style={{ padding: "100px 32px 120px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
+            {/* Gradient orbs for hero depth */}
+            <div style={{ position: "absolute", top: -100, left: -200, width: 500, height: 500, borderRadius: "50%", background: "rgba(185,23,47,0.15)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
+            <div style={{ position: "absolute", bottom: -100, right: -150, width: 400, height: 400, borderRadius: "50%", background: "rgba(185,23,47,0.08)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
             <div className="ds-hero-grid" style={{
               maxWidth: 1100, margin: "0 auto",
               display: "grid", gridTemplateColumns: "1fr 420px", gap: 64, alignItems: "center",
+              position: "relative", zIndex: 1,
             }}>
               {/* Left */}
               <div className="ds-hero-left" style={{ animation: "fadeInUp 0.5s ease-out" }}>
@@ -826,8 +840,10 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 2. FROM OM TO INSIGHT IN SECONDS ── */}
-          <div id="how-it-works" style={{ padding: "88px 32px 96px", background: "#0d0d14" }}>
-            <div style={{ maxWidth: 1120, margin: "0 auto" }}>
+          <div id="how-it-works" style={{ padding: "120px 32px 120px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
+            {/* Gradient orb for how-it-works */}
+            <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 600, height: 600, borderRadius: "50%", background: "rgba(185,23,47,0.06)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
+            <div style={{ maxWidth: 1120, margin: "0 auto", position: "relative", zIndex: 1 }}>
 
               {/* Section header */}
               <div style={{ textAlign: "center", marginBottom: 48 }}>
@@ -1063,7 +1079,14 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 6. FEATURES GRID (detailed) ── */}
-          <div id="features" style={{ maxWidth: 1000, margin: "0 auto", padding: "88px 32px 0" }}>
+          <div id="features" style={{ maxWidth: 1000, margin: "0 auto", padding: "120px 32px 80px" }}>
+            {/* Section divider */}
+            <div style={{
+              height: 1,
+              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06) 50%, transparent)",
+              maxWidth: 600,
+              margin: "-100px auto 60px",
+            }} />
             <div style={{ textAlign: "center", marginBottom: 56 }}>
               <h2 style={{ fontSize: 34, fontWeight: 800, color: "#ffffff", marginBottom: 10 }}>
                 Everything in your <span style={{ color: "#b9172f" }}>Deal Signals</span> report
@@ -1071,18 +1094,21 @@ export default function OmAnalyzerPage() {
             </div>
             <div className="ds-features-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 20 }}>
               {[
-                { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", title: "Extracted Financials", desc: "Cap rate, NOI, DSCR, price/SF, rent/SF, occupancy, lease terms, and 40+ more fields.", color: "#b9172f", metrics: ["Cap Rate 6.25%", "NOI $412K", "DSCR 1.45x"] },
-                { icon: "M22 12h-4l-3 9L9 3l-3 9H2", title: "Deal Signals Score", desc: "A weighted 0-100 score across pricing, cashflow, tenant, rollover, location, and upside.", color: "#059669", metrics: ["Score 74", "Band BUY", "Confidence HIGH"] },
-                { icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z", title: "Risk Flags & Signals", desc: "Color-coded signals for cap rate, DSCR, occupancy, tenant quality, basis, and rollover risk.", color: "#D97706", metrics: ["Rollover YELLOW", "Tenant GREEN", "Basis RED"] },
-                { icon: "M4 6h16M4 10h16M4 14h16M4 18h16", title: "Investment Thesis", desc: "A concise buy/hold/pass recommendation with supporting rationale for your team.", color: "#6366F1", metrics: ["Summary", "Recommendation", "Key Risks"] },
+                { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", title: "Extracted Financials", desc: "Cap rate, NOI, DSCR, price/SF, rent/SF, occupancy, lease terms, and 40+ more fields.", color: "#b9172f", bgColor: "rgba(185,23,47,0.08)", metrics: ["Cap Rate 6.25%", "NOI $412K", "DSCR 1.45x"] },
+                { icon: "M22 12h-4l-3 9L9 3l-3 9H2", title: "Deal Signals Score", desc: "A weighted 0-100 score across pricing, cashflow, tenant, rollover, location, and upside.", color: "#059669", bgColor: "rgba(5,150,105,0.08)", metrics: ["Score 74", "Band BUY", "Confidence HIGH"] },
+                { icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z", title: "Risk Flags & Signals", desc: "Color-coded signals for cap rate, DSCR, occupancy, tenant quality, basis, and rollover risk.", color: "#D97706", bgColor: "rgba(217,119,6,0.08)", metrics: ["Rollover YELLOW", "Tenant GREEN", "Basis RED"] },
+                { icon: "M4 6h16M4 10h16M4 14h16M4 18h16", title: "Investment Thesis", desc: "A concise buy/hold/pass recommendation with supporting rationale for your team.", color: "#6366F1", bgColor: "rgba(99,102,241,0.08)", metrics: ["Summary", "Recommendation", "Key Risks"] },
               ].map(f => (
                 <div key={f.title} style={{
-                  background: "#1e1e28", borderRadius: 20, padding: "28px 24px",
-                  border: "1px solid #f1f5f9", display: "flex", gap: 18,
-                }}>
+                  background: "rgba(30,30,40,0.6)", borderRadius: 20, padding: "28px 24px",
+                  border: "1px solid rgba(255,255,255,0.06)", display: "flex", gap: 18,
+                  backdropFilter: "blur(10px)", transition: "all 0.25s ease",
+                  cursor: "pointer",
+                }}
+                className="om-feature-card">
                   <div style={{
                     width: 48, height: 48, borderRadius: 14, flexShrink: 0,
-                    background: "#16161f", border: "1px solid #f1f5f9",
+                    background: f.bgColor, border: `1px solid ${f.color}40`,
                     display: "flex", alignItems: "center", justifyContent: "center",
                   }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={f.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={f.icon} /></svg>
@@ -1092,7 +1118,7 @@ export default function OmAnalyzerPage() {
                     <p style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.6, margin: "0 0 10px" }}>{f.desc}</p>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                       {f.metrics.map(m => (
-                        <span key={m} style={{ fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 50, background: `${f.color}0A`, color: f.color }}>{m}</span>
+                        <span key={m} style={{ fontSize: 10, fontWeight: 600, padding: "4px 10px", borderRadius: 50, background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.08)" }}>{m}</span>
                       ))}
                     </div>
                   </div>
@@ -1102,7 +1128,14 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 7. PRO WORKSPACE PREVIEW (DEMO) ── */}
-          <div id="demo" style={{ maxWidth: 1000, margin: "0 auto", padding: "88px 32px 0" }}>
+          <div id="demo" style={{ maxWidth: 1000, margin: "0 auto", padding: "120px 32px 80px" }}>
+            {/* Section divider */}
+            <div style={{
+              height: 1,
+              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06) 50%, transparent)",
+              maxWidth: 600,
+              margin: "-100px auto 60px",
+            }} />
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <h2 style={{ fontSize: 34, fontWeight: 800, color: "#ffffff", marginBottom: 10 }}>
                 Your full deal <span style={{ color: "#b9172f" }}>DealBoard</span>
@@ -1116,7 +1149,7 @@ export default function OmAnalyzerPage() {
             <div style={{
               borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)",
               boxShadow: "0 20px 60px rgba(15,23,42,0.08)", marginBottom: 28,
-              background: "#16161f",
+              background: "rgba(22,22,31,0.6)", backdropFilter: "blur(10px)",
             }}>
               {/* Header bar */}
               <div style={{
@@ -1306,8 +1339,17 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 8. PRICING ── */}
-          <div id="pricing" style={{ maxWidth: 1000, margin: "0 auto", padding: "88px 32px 0" }}>
-            <div style={{ textAlign: "center", marginBottom: 56 }}>
+          <div id="pricing" style={{ maxWidth: 1000, margin: "0 auto", padding: "120px 32px 80px", position: "relative", overflow: "hidden" }}>
+            {/* Section divider */}
+            <div style={{
+              height: 1,
+              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06) 50%, transparent)",
+              maxWidth: 600,
+              margin: "-100px auto 60px",
+            }} />
+            {/* Gradient orb for pricing */}
+            <div style={{ position: "absolute", top: -200, right: -100, width: 500, height: 500, borderRadius: "50%", background: "rgba(185,23,47,0.1)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
+            <div style={{ textAlign: "center", marginBottom: 56, position: "relative", zIndex: 1 }}>
               <h2 style={{ fontSize: 34, fontWeight: 800, color: "#ffffff", marginBottom: 10 }}>
                 Simple pricing for serious underwriting
               </h2>
@@ -1379,38 +1421,39 @@ export default function OmAnalyzerPage() {
                 },
               ].map(tier => (
                 <div key={tier.name} style={{
-                  background: tier.highlight ? "#0B1120" : "#fff",
-                  borderRadius: 16, border: tier.highlight ? "2px solid #DC2626" : "1px solid #E8ECF2",
+                  background: "rgba(22,22,31,0.6)", backdropFilter: "blur(10px)",
+                  borderRadius: 16, border: tier.highlight ? "1px solid rgba(185,23,47,0.4)" : "1px solid rgba(255,255,255,0.06)",
                   padding: "36px 28px", position: "relative", overflow: "hidden",
-                  transition: "all 0.2s ease",
+                  transition: "all 0.25s ease",
+                  boxShadow: tier.highlight ? "0 0 40px rgba(185,23,47,0.1)" : "none",
                 }}>
                   {tier.highlight && (
-                    <div style={{ position: "absolute", top: 0, right: 0, background: "#DC2626", color: "#fff", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                    <div style={{ position: "absolute", top: 0, right: 0, background: "#b9172f", color: "#fff", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
                       Most Popular
                     </div>
                   )}
                   {(tier as any).bestValue && (
-                    <div style={{ position: "absolute", top: 0, right: 0, background: "#DC2626", color: "#fff", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                    <div style={{ position: "absolute", top: 0, right: 0, background: "#b9172f", color: "#fff", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
                       Best Value
                     </div>
                   )}
-                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: tier.highlight ? "#DC2626" : "#8899B0", marginBottom: 10 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: tier.highlight ? "#b9172f" : "#9ca3af", marginBottom: 10 }}>
                     {tier.name}
                   </div>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 4 }}>
-                    <span style={{ fontSize: 16, fontWeight: 600, color: tier.highlight ? "rgba(255,255,255,0.5)" : "#8899B0" }}>$</span>
-                    <span style={{ fontSize: 40, fontWeight: 800, color: tier.highlight ? "#fff" : "#0B1120", letterSpacing: -1 }}>{tier.price}</span>
-                    {tier.period && <span style={{ fontSize: 14, color: tier.highlight ? "rgba(255,255,255,0.5)" : "#8899B0" }}>{tier.period}</span>}
+                    <span style={{ fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>$</span>
+                    <span style={{ fontSize: 40, fontWeight: 800, color: "#ffffff", letterSpacing: -1 }}>{tier.price}</span>
+                    {tier.period && <span style={{ fontSize: 14, color: "rgba(255,255,255,0.5)" }}>{tier.period}</span>}
                   </div>
-                  <p style={{ fontSize: 13, color: tier.highlight ? "#8899B0" : "#5A7091", marginBottom: 28, lineHeight: 1.5 }}>{tier.desc}</p>
+                  <p style={{ fontSize: 13, color: "#9ca3af", marginBottom: 28, lineHeight: 1.5 }}>{tier.desc}</p>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
                     {tier.features.map(f => (
-                      <div key={f.text} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: f.included ? (tier.highlight ? "#E2E8F0" : "#253352") : (tier.highlight ? "rgba(255,255,255,0.25)" : "#B4C1D1") }}>
+                      <div key={f.text} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: f.included ? "#e2e8f0" : "rgba(255,255,255,0.3)" }}>
                         {f.included ? (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2.5"><path d="M5 13l4 4L19 7" /></svg>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="2.5"><path d="M5 13l4 4L19 7" /></svg>
                         ) : (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={tier.highlight ? "rgba(255,255,255,0.15)" : "#D8DFE9"} strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
                         )}
                         <span>{f.text}</span>
                       </div>
@@ -1419,9 +1462,9 @@ export default function OmAnalyzerPage() {
 
                   <Link href={tier.ctaLink} style={{
                     display: "block", width: "100%", padding: "12px", textAlign: "center",
-                    background: tier.highlight ? "#DC2626" : "#fff",
-                    color: tier.highlight ? "#fff" : "#0B1120",
-                    border: tier.highlight ? "none" : "1.5px solid #D8DFE9",
+                    background: tier.highlight ? "#b9172f" : "rgba(185,23,47,0.12)",
+                    color: tier.highlight ? "#fff" : "#b9172f",
+                    border: tier.highlight ? "none" : "1px solid rgba(185,23,47,0.3)",
                     borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: "none", fontFamily: "inherit",
                     boxSizing: "border-box", transition: "all 0.2s ease",
                   }}>
@@ -1432,11 +1475,11 @@ export default function OmAnalyzerPage() {
             </div>
 
             {/* Why upgrade to Pro */}
-            <div style={{ marginBottom: 60 }}>
-              <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 30, fontWeight: 800, color: "#0B1120", marginBottom: 8, textAlign: "center", letterSpacing: -0.5 }}>
+            <div style={{ marginBottom: 60, position: "relative", zIndex: 1 }}>
+              <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 30, fontWeight: 800, color: "#ffffff", marginBottom: 8, textAlign: "center", letterSpacing: -0.5 }}>
                 Why upgrade to Pro?
               </h2>
-              <p style={{ fontSize: 14, color: "#5A7091", lineHeight: 1.7, marginBottom: 40, textAlign: "center", maxWidth: 560, margin: "0 auto 40px" }}>
+              <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.7, marginBottom: 40, textAlign: "center", maxWidth: 560, margin: "0 auto 40px" }}>
                 Free gives you a taste. Pro gives you the full institutional toolkit.
               </p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
@@ -1447,17 +1490,18 @@ export default function OmAnalyzerPage() {
                   { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", title: "Full Excel Workbooks", desc: "Download 6-sheet institutional-grade Excel workbooks with inputs, rent roll, operating statement, debt & returns, breakeven, and cap scenarios." },
                 ].map(u => (
                   <div key={u.title} style={{
-                    background: "#16161f", borderRadius: 12, border: "1px solid #E8ECF2", padding: "28px 24px",
-                    transition: "all 0.2s ease",
+                    background: "rgba(30,30,40,0.6)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.06)", padding: "28px 24px",
+                    transition: "all 0.25s ease", backdropFilter: "blur(10px)",
                   }}>
                     <div style={{
-                      width: 40, height: 40, borderRadius: 10, background: "#FEF2F2",
+                      width: 40, height: 40, borderRadius: 10, background: "rgba(185,23,47,0.08)",
                       display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16,
+                      border: "1px solid rgba(185,23,47,0.2)",
                     }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={u.icon} /></svg>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={u.icon} /></svg>
                     </div>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "#0B1120", marginBottom: 6 }}>{u.title}</h3>
-                    <p style={{ fontSize: 13, color: "#5A7091", lineHeight: 1.6, margin: 0 }}>{u.desc}</p>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "#ffffff", marginBottom: 6 }}>{u.title}</h3>
+                    <p style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.6, margin: 0 }}>{u.desc}</p>
                   </div>
                 ))}
               </div>
@@ -1465,7 +1509,14 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 9. FAQ ── */}
-          <div style={{ maxWidth: 680, margin: "0 auto", padding: "88px 32px" }}>
+          <div style={{ maxWidth: 680, margin: "0 auto", padding: "120px 32px 80px" }}>
+            {/* Section divider */}
+            <div style={{
+              height: 1,
+              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06) 50%, transparent)",
+              maxWidth: 600,
+              margin: "-100px auto 60px",
+            }} />
             <h2 style={{ fontSize: 30, fontWeight: 800, color: "#ffffff", marginBottom: 48, textAlign: "center" }}>
               Frequently asked questions
             </h2>
@@ -1478,7 +1529,7 @@ export default function OmAnalyzerPage() {
                 { q: "What's included in Pro?", a: "Location intelligence, tenant research, comp analysis, deal pipeline, map view, shareable reports, and priority support." },
                 { q: "Is my data private?", a: "Yes. Documents are processed in real-time and not stored permanently. No tracking, no account required for free tier." },
               ].map((item, idx) => (
-                <div key={idx} style={{ borderBottom: idx < 5 ? "1px solid #f1f5f9" : "none" }}>
+                <div key={idx} style={{ borderBottom: idx < 5 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
                   <button onClick={() => setOpenFaq(openFaq === idx ? null : idx)} style={{
                     width: "100%", padding: "18px 0", background: "transparent",
                     border: "none", textAlign: "left", cursor: "pointer",
@@ -1500,8 +1551,10 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 10. FINAL CTA ── */}
-          <div style={{ background: "#1e1e28", padding: "72px 32px", textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-            <div style={{ maxWidth: 520, margin: "0 auto" }}>
+          <div style={{ background: "#0d0d14", padding: "100px 32px 120px", textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
+            {/* Gradient orb for CTA area */}
+            <div style={{ position: "absolute", bottom: -200, left: -100, width: 400, height: 400, borderRadius: "50%", background: "rgba(185,23,47,0.08)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
+            <div style={{ maxWidth: 520, margin: "0 auto", position: "relative", zIndex: 1 }}>
               <p style={{ fontSize: 13, color: "#9ca3af", marginBottom: 16, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>Get started today</p>
               <h2 style={{ fontSize: 28, fontWeight: 800, color: "#ffffff", marginBottom: 12, lineHeight: 1.3 }}>
                 Try the all-in-one deal analysis tool with AI-powered underwriting
@@ -1656,7 +1709,7 @@ export default function OmAnalyzerPage() {
           </span>
         </div>
       </footer>
-    </>
+    </div>
   );
 }
 
