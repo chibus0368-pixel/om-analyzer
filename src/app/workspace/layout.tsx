@@ -264,6 +264,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
         .ws-link:hover { opacity: 0.8; }
         /* Collapse button */
         .ws-collapse:hover { color: #585e70 !important; background: rgba(132, 204, 22, 0.08) !important; }
+        .ws-dealboard-tab:hover { color: #0F172A !important; background: rgba(0,0,0,0.04) !important; }
       `}</style>
       <WorkspaceLayoutInner user={user}>{children}</WorkspaceLayoutInner>
     </WorkspaceProvider>
@@ -508,7 +509,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { activeWorkspace, addWorkspace, loading: wsLoading } = useWorkspace();
+  const { workspaces, activeWorkspace, switchWorkspace, addWorkspace, loading: wsLoading } = useWorkspace();
   const [collapsed, setCollapsed] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loadingProps, setLoadingProps] = useState(true);
@@ -775,6 +776,49 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           </div>
         </div>
       </header>
+
+      {/* ===== HORIZONTAL DEALBOARD NAV ===== */}
+      <div style={{
+        background: "#FFFFFF", borderBottom: "1px solid rgba(0,0,0,0.06)",
+        padding: "0 24px", height: 48, minHeight: 48,
+        display: "flex", alignItems: "center", gap: 6,
+        overflowX: "auto", overflowY: "hidden",
+        zIndex: 55,
+      }}>
+        {workspaces.map(ws => {
+          const isActive = ws.id === activeWorkspace?.id;
+          return (
+            <button
+              key={ws.id}
+              onClick={() => { switchWorkspace(ws.id); router.push("/workspace"); }}
+              className="ws-dealboard-tab"
+              style={{
+                padding: "6px 16px", borderRadius: 8,
+                fontSize: 13, fontWeight: isActive ? 600 : 400,
+                color: isActive ? "#0F172A" : "#6B7280",
+                background: isActive ? "rgba(132,204,22,0.1)" : "transparent",
+                border: "none", cursor: "pointer",
+                whiteSpace: "nowrap", fontFamily: "'Inter', sans-serif",
+                transition: "all 0.15s",
+              }}
+            >
+              {ws.name}
+            </button>
+          );
+        })}
+        <button
+          onClick={() => setShowNewWs(true)}
+          className="ws-dealboard-tab"
+          style={{
+            padding: "6px 12px", fontSize: 13, fontWeight: 400,
+            color: "#9CA3AF", background: "transparent",
+            border: "none", cursor: "pointer", whiteSpace: "nowrap",
+            fontFamily: "'Inter', sans-serif", transition: "color 0.15s",
+          }}
+        >
+          + New
+        </button>
+      </div>
 
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
       {/* Sidebar */}
