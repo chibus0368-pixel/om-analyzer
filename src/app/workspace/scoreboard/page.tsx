@@ -677,8 +677,15 @@ export default function ScoreboardPage() {
             analysisType: activeWorkspace.analysisType || "retail",
           }),
         });
-        if (res.ok) successCount++;
-      } catch { /* continue to next */ }
+        if (res.ok) {
+          successCount++;
+        } else {
+          const errText = await res.text().catch(() => "");
+          console.warn(`[Scoreboard] Score failed for ${pd.property.propertyName}:`, res.status, errText);
+        }
+      } catch (err) {
+        console.warn(`[Scoreboard] Score request error for ${pd.property.propertyName}:`, err);
+      }
     }
     setRescoreProgress(`Done! ${successCount}/${targets.length} scored successfully.`);
     // Reload data
@@ -878,15 +885,40 @@ export default function ScoreboardPage() {
             </button>
             <button style={{
               display: "inline-flex", alignItems: "center", gap: 6,
-              padding: "8px 14px", background: "#84CC16", color: "#000",
-              borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: "pointer",
+              padding: "8px 14px", background: rescoring ? "#9CA3AF" : "#84CC16", color: "#000",
+              borderRadius: 6, fontSize: 11, fontWeight: 700,
+              cursor: rescoring ? "not-allowed" : "pointer",
               textTransform: "uppercase", letterSpacing: 0.8, border: "none", fontFamily: "inherit",
-            }} onClick={() => window.location.reload()}>
-              Refresh Data
+              opacity: rescoring ? 0.7 : 1, transition: "all 0.15s",
+            }} onClick={rescoreAll} disabled={rescoring || propertyData.length === 0}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                style={{ animation: rescoring ? "spin 1s linear infinite" : "none" }}>
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+              </svg>
+              {rescoring ? "Scoring..." : "Score All Deals"}
             </button>
           </div>
         </div>
       </div>
+
+      {/* SCORING PROGRESS BAR */}
+      {rescoreProgress && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: 10, padding: "10px 16px",
+          background: rescoring ? "rgba(132,204,22,0.06)" : (rescoreProgress.startsWith("Done") ? "rgba(5,150,105,0.06)" : "rgba(220,38,38,0.06)"),
+          border: `1px solid ${rescoring ? "rgba(132,204,22,0.15)" : (rescoreProgress.startsWith("Done") ? "rgba(5,150,105,0.15)" : "rgba(220,38,38,0.15)")}`,
+          borderRadius: 8, marginBottom: 16, fontSize: 13, fontWeight: 600,
+          color: rescoring ? "#84CC16" : (rescoreProgress.startsWith("Done") ? "#059669" : "#DC2626"),
+        }}>
+          {rescoring && (
+            <div style={{
+              width: 14, height: 14, border: "2px solid rgba(132,204,22,0.3)", borderTopColor: "#84CC16",
+              borderRadius: "50%", animation: "spin 0.8s linear infinite",
+            }} />
+          )}
+          {rescoreProgress}
+        </div>
+      )}
 
       {/* FILTERS ROW */}
       <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 24 }}>
@@ -1053,6 +1085,34 @@ export default function ScoreboardPage() {
         </div>
       ) : (
         <>
+          {/* Unscored deals banner */}
+          {propertyData.filter(d => !((d.property as any).scoreTotal > 0)).length > 0 && !rescoring && (
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "14px 20px", background: "rgba(217,119,6,0.06)",
+              border: "1px solid rgba(217,119,6,0.15)", borderRadius: 10, marginBottom: 16,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "#92400E" }}>
+                  {propertyData.filter(d => !((d.property as any).scoreTotal > 0)).length} of {propertyData.length} properties need scoring.
+                </span>
+              </div>
+              <button
+                onClick={rescoreAll}
+                style={{
+                  padding: "8px 16px", background: "#D97706", color: "#fff", border: "none",
+                  borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: "pointer",
+                  fontFamily: "inherit", letterSpacing: 0.3,
+                }}
+              >
+                Score Now
+              </button>
+            </div>
+          )}
+
           {/* NEW SIMPLIFIED TABLE */}
           <div style={{
             background: "#fff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
