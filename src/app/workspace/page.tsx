@@ -67,7 +67,7 @@ function ClearAllButton({ onClear, workspaceId, workspaceName }: { onClear: () =
   }
   return (
     <button onClick={handleClear} disabled={clearing} style={{
-      padding: "6px 14px", background: "rgba(185, 23, 47, 0.08)", color: "#b9172f", border: "1px solid #b9172f",
+      padding: "6px 14px", background: "rgba(132, 204, 22, 0.1)", color: "#84CC16", border: "1px solid #84CC16",
       borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: clearing ? "not-allowed" : "pointer", fontFamily: "inherit",
     }}>
       {clearing ? "Clearing..." : "Clear All Data"}
@@ -98,16 +98,16 @@ function PropertyCard({ property, docCount }: { property: Property; docCount: nu
     <div
       onClick={() => router.push(`/workspace/properties/${property.id}`)}
       style={{
-        background: "#fff", borderRadius: 12, border: "1px solid rgba(227, 190, 189, 0.15)",
+        background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.06)",
         overflow: "hidden", cursor: "pointer", transition: "box-shadow 0.15s, transform 0.15s",
         display: "flex", flexDirection: "column",
       }}
-      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 6px 20px rgba(0,0,0,0.06)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "none"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
     >
       {/* Hero / Thumbnail */}
       <div style={{
-        height: 140, background: "linear-gradient(135deg, #1a2744, #151b2b)",
+        height: 140, background: "linear-gradient(135deg, #F3F4F6, #E5E7EB)",
         overflow: "hidden", position: "relative",
       }}>
         {heroUrl ? (
@@ -143,7 +143,7 @@ function PropertyCard({ property, docCount }: { property: Property; docCount: nu
 
       {/* Card body */}
       <div style={{ padding: "14px 16px", flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: "#151b2b", lineHeight: 1.3, fontFamily: "'Playfair Display', Georgia, serif" }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", lineHeight: 1.3, fontFamily: "'Inter', sans-serif" }}>
           {displayName}
         </div>
         {location && (
@@ -225,8 +225,8 @@ function EditableWorkspaceTitle({ name, workspaceId }: { name: string; workspace
         onBlur={save}
         onKeyDown={e => { if (e.key === "Enter") save(); if (e.key === "Escape") { setEditing(false); setValue(name); } }}
         style={{
-          fontSize: 22, fontWeight: 700, color: "#151b2b", background: "#f2f3ff",
-          border: "1px solid rgba(227, 190, 189, 0.15)", borderRadius: 8, padding: "2px 10px",
+          fontSize: 22, fontWeight: 700, color: "#0F172A", background: "#f2f3ff",
+          border: "1px solid rgba(0,0,0,0.06)", borderRadius: 8, padding: "2px 10px",
           margin: 0, lineHeight: 1.2, outline: "none",
           fontFamily: "'Playfair Display', Georgia, serif", minWidth: 200,
         }}
@@ -236,7 +236,7 @@ function EditableWorkspaceTitle({ name, workspaceId }: { name: string; workspace
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={() => setEditing(true)}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: "#151b2b", margin: 0, fontFamily: "'Playfair Display', Georgia, serif" }}>
+      <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0F172A", margin: 0, fontFamily: "'Playfair Display', Georgia, serif" }}>
         {name}
       </h1>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#585e70" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4, flexShrink: 0 }}>
@@ -308,17 +308,17 @@ export default function WorkspaceDashboard() {
           <Link href={`/workspace/share?ws=${activeWorkspace?.slug || "default-dealboard"}`} style={{
             display: "inline-flex", alignItems: "center", gap: 6,
             padding: "7px 16px", borderRadius: 8,
-            background: "rgba(185,23,47,0.06)", color: "#b9172f",
+            background: "rgba(132,204,22,0.1)", color: "#84CC16",
             fontSize: 12, fontWeight: 600, textDecoration: "none",
-            border: "1px solid rgba(185,23,47,0.12)",
+            border: "1px solid rgba(132,204,22,0.2)",
             transition: "all 0.15s",
           }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
             Share DealBoard
           </Link>
           <Link href="/workspace/upload" style={{
-            padding: "8px 18px", background: "linear-gradient(135deg, #b9172f, #dc3545)", border: "none", borderRadius: 6,
-            fontSize: 13, fontWeight: 600, color: "#fff", textDecoration: "none",
+            padding: "8px 18px", background: "#84CC16", border: "none", borderRadius: 6,
+            fontSize: 13, fontWeight: 600, color: "#0F172A", textDecoration: "none",
           }}>
             + Add Property
           </Link>
@@ -332,21 +332,21 @@ export default function WorkspaceDashboard() {
           onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
           onDrop={e => { e.preventDefault(); e.stopPropagation(); router.push("/workspace/upload"); }}
           style={{
-            background: "#fff", borderRadius: 6, border: "2px dashed #D8DFE9",
+            background: "#FFFFFF", borderRadius: 6, border: "2px dashed #D8DFE9",
             padding: "48px 20px", textAlign: "center", cursor: "pointer",
-            boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
             transition: "all 0.2s",
           }}
         >
           <div style={{
-            width: 56, height: 56, borderRadius: "50%", background: "rgba(185, 23, 47, 0.08)",
+            width: 56, height: 56, borderRadius: "50%", background: "rgba(132, 204, 22, 0.1)",
             display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
           }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b9172f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9v.01M9 12v.01M9 15v.01M9 18v.01" />
             </svg>
           </div>
-          <p style={{ fontSize: 16, fontWeight: 600, color: "#151b2b", margin: "0 0 6px", fontFamily: "'Inter', sans-serif" }}>
+          <p style={{ fontSize: 16, fontWeight: 600, color: "#0F172A", margin: "0 0 6px", fontFamily: "'Inter', sans-serif" }}>
             Drop your OM or flyer here
           </p>
           <p style={{ fontSize: 13, color: "#585e70", margin: "0 0 16px" }}>
@@ -375,11 +375,11 @@ export default function WorkspaceDashboard() {
       {/* Danger Zone — collapsed */}
       {properties.length > 0 && (
         <div style={{
-          background: "#fff", borderRadius: 10, border: "1px solid rgba(227, 190, 189, 0.15)",
+          background: "#FFFFFF", borderRadius: 10, border: "1px solid rgba(0,0,0,0.06)",
           padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
           <div>
-            <span style={{ fontSize: 12, fontWeight: 600, color: "#b9172f" }}>Clear DealBoard</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#84CC16" }}>Clear DealBoard</span>
             <span style={{ fontSize: 11, color: "#585e70", marginLeft: 8 }}>Delete all properties in &ldquo;{activeWorkspace?.name}&rdquo;</span>
           </div>
           <ClearAllButton onClear={() => window.location.reload()} workspaceId={activeWorkspace?.id || ""} workspaceName={activeWorkspace?.name || "this DealBoard"} />

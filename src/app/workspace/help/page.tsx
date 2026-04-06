@@ -5,8 +5,8 @@ import Link from "next/link";
 
 /* ===== DESIGN.md Tokens ===== */
 const C = {
-  primary: "#b9172f",
-  primaryGradient: "linear-gradient(135deg, #b9172f, #dc3545)",
+  primary: "#84CC16",
+  primaryGradient: "#84CC16",
   onSurface: "#151b2b",
   secondary: "#585e70",
   tertiary: "#C49A3C",

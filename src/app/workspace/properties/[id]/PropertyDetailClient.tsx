@@ -20,17 +20,17 @@ import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 
 /* ── Design tokens ─────────────────────────────────────── */
 const C = {
-  primary: "#b9172f",
-  primaryContainer: "#dc3545",
-  onSurface: "#151b2b",
-  secondary: "#585e70",
+  primary: "#84CC16",
+  primaryContainer: "#84CC16",
+  onSurface: "#0F172A",
+  secondary: "#6B7280",
   tertiary: "#785800",
   gold: "#C49A3C",
-  bg: "#faf8ff",
-  surfLow: "#f2f3ff",
+  bg: "#F7F8FA",
+  surfLow: "#F3F4F6",
   surfLowest: "#ffffff",
-  ghost: "rgba(227, 190, 189, 0.15)",
-  ghostBorder: "rgba(227, 190, 189, 0.10)",
+  ghost: "rgba(0,0,0,0.06)",
+  ghostBorder: "rgba(0,0,0,0.04)",
   radius: 12,
 };
 
@@ -810,9 +810,9 @@ function PropertyDetailInner({
         <Link href={`/workspace/share?ws=${activeWorkspace?.slug || "default-dealboard"}`} style={{
           display: "inline-flex", alignItems: "center", gap: 6,
           padding: "7px 16px", borderRadius: 8,
-          background: "rgba(185,23,47,0.06)", color: "#b9172f",
+          background: "rgba(132, 204, 22, 0.1)", color: "#84CC16",
           fontSize: 12, fontWeight: 600, textDecoration: "none",
-          border: "1px solid rgba(185,23,47,0.12)",
+          border: "1px solid rgba(132, 204, 22, 0.2)",
           transition: "all 0.15s",
         }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
@@ -989,7 +989,7 @@ function PropertyDetailInner({
                 )}
               </div>
               <span style={{
-                fontSize: 24, fontWeight: 800, color: C.primary,
+                fontSize: 24, fontWeight: 700, color: "#0F172A",
                 fontVariantNumeric: "tabular-nums", letterSpacing: -0.5, display: "block",
               }}>
                 {m.value}
@@ -1020,7 +1020,7 @@ function PropertyDetailInner({
                 border: `1px solid ${C.ghostBorder}`,
               }}>
                 <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.secondary, display: "block", marginBottom: 4 }}>{c.label}</span>
-                <span style={{ fontSize: 24, fontWeight: 800, color: C.primary, fontVariantNumeric: "tabular-nums", display: "block" }}>{c.value}</span>
+                <span style={{ fontSize: 24, fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums", display: "block" }}>{c.value}</span>
               </div>
             ))}
           </div>
@@ -1092,12 +1092,15 @@ function PropertyDetailInner({
       {brief && (
         <section style={{ marginBottom: 20 }}>
           <div style={{
-            background: C.surfLow, padding: "20px 24px", borderRadius: C.radius,
-            borderLeft: `4px solid ${C.primary}`,
+            background: "#FFFFFF", padding: "20px 24px", borderRadius: C.radius,
+            border: `1px solid rgba(0,0,0,0.06)`,
+            borderLeft: `4px solid #84CC16`,
+            boxShadow: "0 6px 24px rgba(0,0,0,0.06)",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#84CC16", textTransform: "uppercase", letterSpacing: 0.5 }}>OUR TAKE</span>
               <h2 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>
-                Deal Brief
+                AI Insight
               </h2>
             </div>
             <div style={{ fontSize: 14, color: C.onSurface, lineHeight: 1.85 }}>
@@ -1114,10 +1117,10 @@ function PropertyDetailInner({
       {/* ═══════════════════════════════════════════════════ */}
       {hasData && pulledFields.length > 0 && (
         <div style={{
-          background: C.surfLowest, borderRadius: C.radius, overflow: "hidden",
-          border: `1px solid ${C.ghostBorder}`, marginBottom: 16,
+          background: "#FFFFFF", borderRadius: C.radius, overflow: "hidden",
+          border: `1px solid rgba(0,0,0,0.06)`, marginBottom: 16,
         }}>
-          <div style={{ padding: "12px 18px", borderBottom: `1px solid ${C.ghostBorder}`, background: C.surfLow }}>
+          <div style={{ padding: "12px 18px", borderBottom: `1px solid rgba(0,0,0,0.04)`, background: "#F9FAFB" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ width: 3, height: 14, background: "#4338CA", borderRadius: 2 }} />
               <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Pulled from OM</h3>
@@ -1129,7 +1132,7 @@ function PropertyDetailInner({
               <div key={f.key} className="section-row" style={{
                 display: "flex", justifyContent: "space-between", alignItems: "center",
                 padding: "10px 18px",
-                borderBottom: i < pulledFields.length - 1 ? `1px solid ${C.ghostBorder}` : "none",
+                borderBottom: i < pulledFields.length - 1 ? `1px solid rgba(0,0,0,0.04)` : "none",
               }}>
                 <span style={{ fontSize: 12, color: C.secondary, display: "flex", alignItems: "center", gap: 6 }}>
                   {f.label}
@@ -1151,10 +1154,10 @@ function PropertyDetailInner({
       {/* ═══════════════════════════════════════════════════ */}
       {calculatedFields.length > 0 && (
         <div style={{
-          background: C.surfLowest, borderRadius: C.radius, overflow: "hidden",
-          border: `1px solid ${C.ghostBorder}`, marginBottom: 16,
+          background: "#FFFFFF", borderRadius: C.radius, overflow: "hidden",
+          border: `1px solid rgba(0,0,0,0.06)`, marginBottom: 16,
         }}>
-          <div style={{ padding: "12px 18px", borderBottom: `1px solid ${C.ghostBorder}`, background: C.surfLow }}>
+          <div style={{ padding: "12px 18px", borderBottom: `1px solid rgba(0,0,0,0.04)`, background: "#F9FAFB" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ width: 3, height: 14, background: "#15803D", borderRadius: 2 }} />
               <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Calculated Values</h3>
@@ -1166,7 +1169,7 @@ function PropertyDetailInner({
               <div key={f.label} className="section-row" style={{
                 display: "flex", justifyContent: "space-between", alignItems: "center",
                 padding: "10px 18px",
-                borderBottom: i < calculatedFields.length - 1 ? `1px solid ${C.ghostBorder}` : "none",
+                borderBottom: i < calculatedFields.length - 1 ? `1px solid rgba(0,0,0,0.04)` : "none",
               }}>
                 <span style={{ fontSize: 12, color: C.secondary, display: "flex", alignItems: "center", gap: 6 }}>
                   {f.label}
@@ -1192,10 +1195,10 @@ function PropertyDetailInner({
       {/* ═══════════════════════════════════════════════════ */}
       {signals.length > 0 && (
         <div style={{
-          background: C.surfLowest, borderRadius: C.radius, overflow: "hidden",
-          border: `1px solid ${C.ghostBorder}`, marginBottom: 16,
+          background: "#FFFFFF", borderRadius: C.radius, overflow: "hidden",
+          border: `1px solid rgba(0,0,0,0.06)`, marginBottom: 16,
         }}>
-          <div style={{ padding: "12px 18px", borderBottom: `1px solid ${C.ghostBorder}`, background: C.surfLow, display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ padding: "12px 18px", borderBottom: `1px solid rgba(0,0,0,0.04)`, background: "#F9FAFB", display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ width: 3, height: 14, background: C.gold, borderRadius: 2 }} />
             <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Signal Assessment</h3>
           </div>
@@ -1204,12 +1207,12 @@ function PropertyDetailInner({
               const valStr = String(val);
               const hasGreen = valStr.includes("\u{1F7E2}") || valStr.toLowerCase().includes("green");
               const hasRed = valStr.includes("\u{1F534}") || valStr.toLowerCase().includes("red");
-              const color = hasGreen ? "#059669" : hasRed ? C.primary : "#D97706";
+              const color = hasGreen ? "#059669" : hasRed ? "#DC2626" : "#D97706";
               const bgColor = hasGreen ? "#F0FDF4" : hasRed ? "#FEF2F2" : "#FFFBEB";
               return (
                 <div key={String(label)} style={{
                   padding: "12px 18px",
-                  borderBottom: i < signals.length - 1 ? `1px solid ${C.ghostBorder}` : "none",
+                  borderBottom: i < signals.length - 1 ? `1px solid rgba(0,0,0,0.04)` : "none",
                   borderLeft: `3px solid ${color}`,
                   background: bgColor,
                 }}>
@@ -1234,15 +1237,15 @@ function PropertyDetailInner({
       {/* ═══════════════════════════════════════════════════ */}
       {wsType !== "land" && tenants.length > 0 && (
         <div style={{
-          background: C.surfLowest, borderRadius: C.radius, overflow: "hidden",
-          border: `1px solid ${C.ghostBorder}`, marginBottom: 16,
+          background: "#FFFFFF", borderRadius: C.radius, overflow: "hidden",
+          border: `1px solid rgba(0,0,0,0.06)`, marginBottom: 16,
         }}>
-          <div style={{ padding: "12px 18px", borderBottom: `1px solid ${C.ghostBorder}`, background: C.surfLow }}>
+          <div style={{ padding: "12px 18px", borderBottom: `1px solid rgba(0,0,0,0.04)`, background: "#F9FAFB" }}>
             <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Tenant Summary</h3>
           </div>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
-              <tr style={{ background: C.bg }}>
+              <tr style={{ background: "#F9FAFB" }}>
                 <th style={{ padding: "8px 16px", textAlign: "left", fontWeight: 600, color: C.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Tenant</th>
                 <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: C.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>SF</th>
                 <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: C.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Annual Rent</th>
@@ -1252,7 +1255,7 @@ function PropertyDetailInner({
             </thead>
             <tbody>
               {tenants.map((t: any, i: number) => (
-                <tr key={i} style={{ borderBottom: `1px solid ${C.ghostBorder}` }}>
+                <tr key={i} style={{ borderBottom: `1px solid rgba(0,0,0,0.04)`, background: "#FFFFFF" }}>
                   <td style={{ padding: "8px 16px", fontWeight: 600, color: C.onSurface }}>{t.name}</td>
                   <td style={{ padding: "8px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{t.sf ? Math.round(Number(t.sf)).toLocaleString() : "--"}</td>
                   <td style={{ padding: "8px 12px", textAlign: "right", fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>{fmt$(t.rent)}</td>
@@ -1266,7 +1269,7 @@ function PropertyDetailInner({
               const totalRent = tenants.reduce((sum: number, t: any) => sum + (Number(t.rent) || 0), 0);
               return (
                 <tfoot>
-                  <tr style={{ background: C.surfLow, borderTop: `2px solid ${C.ghostBorder}` }}>
+                  <tr style={{ background: "#F9FAFB", borderTop: `2px solid rgba(0,0,0,0.04)` }}>
                     <td style={{ padding: "8px 16px", fontWeight: 700, color: C.onSurface }}>Total ({tenants.length} tenants)</td>
                     <td style={{ padding: "8px 12px", textAlign: "right", fontWeight: 700, fontVariantNumeric: "tabular-nums", color: C.onSurface }}>{totalSf > 0 ? totalSf.toLocaleString() : "--"}</td>
                     <td style={{ padding: "8px 12px", textAlign: "right", fontWeight: 700, fontVariantNumeric: "tabular-nums", color: C.onSurface }}>{totalRent > 0 ? fmt$(totalRent) : "--"}</td>
@@ -1285,7 +1288,7 @@ function PropertyDetailInner({
       {/*  8. SOURCE DOCUMENTS                                */}
       {/* ═══════════════════════════════════════════════════ */}
       <div style={{
-        background: C.surfLowest, borderRadius: C.radius, border: `1px solid ${C.ghostBorder}`,
+        background: "#FFFFFF", borderRadius: C.radius, border: `1px solid rgba(0,0,0,0.06)`,
         padding: 20, marginBottom: 16,
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: documents.length > 0 ? 14 : 0 }}>
@@ -1296,7 +1299,7 @@ function PropertyDetailInner({
               </h3>
               <span style={{ fontSize: 11, color: C.secondary, fontWeight: 500 }}>({documents.length})</span>
               {(reparsing || reparseStatus) && (
-                <span style={{ fontSize: 11, color: reparseStatus.includes("failed") || reparseStatus.includes("Could not") ? C.primary : "#2563EB", fontWeight: 500 }}>
+                <span style={{ fontSize: 11, color: reparseStatus.includes("failed") || reparseStatus.includes("Could not") ? "#DC2626" : "#2563EB", fontWeight: 500 }}>
                   {reparseStatus || "Scanning..."}
                 </span>
               )}
@@ -1306,7 +1309,7 @@ function PropertyDetailInner({
             {/* Only show Re-analyze if: property has docs but no extracted fields (scan failed/incomplete) */}
             {documents.length > 0 && !hasData && (
               <button onClick={handleReAnalyze} style={{
-                padding: "8px 14px", background: C.surfLow, border: `1px solid ${C.ghostBorder}`,
+                padding: "8px 14px", background: C.surfLow, border: `1px solid rgba(0,0,0,0.06)`,
                 borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: reparsing ? "not-allowed" : "pointer",
                 fontFamily: "inherit", whiteSpace: "nowrap", color: C.secondary,
                 opacity: reparsing ? 0.5 : 1,
@@ -1315,10 +1318,10 @@ function PropertyDetailInner({
               </button>
             )}
             <button onClick={() => fileRef.current?.click()} style={{
-              padding: "8px 18px", background: `linear-gradient(135deg, ${C.primary}, ${C.primaryContainer})`,
-              color: "#fff", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600,
+              padding: "8px 18px", background: "#84CC16",
+              color: "#0F172A", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600,
               cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
-              boxShadow: `0 2px 8px ${C.primary}30`,
+              boxShadow: `0 2px 8px rgba(132, 204, 22, 0.3)`,
             }}>
               {uploading ? "Uploading..." : "+ Add Files"}
             </button>
@@ -1329,7 +1332,7 @@ function PropertyDetailInner({
 
         {/* Accepted file types hint */}
         {documents.length === 0 && (
-          <div style={{ padding: "12px 16px", background: C.surfLow, borderRadius: 8, marginBottom: 10, border: `1px solid ${C.ghostBorder}` }}>
+          <div style={{ padding: "12px 16px", background: "#F9FAFB", borderRadius: 8, marginBottom: 10, border: `1px solid rgba(0,0,0,0.04)` }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: C.onSurface, marginBottom: 6 }}>What to upload</div>
             <div style={{ fontSize: 11, color: C.secondary, lineHeight: 1.6 }}>
               <strong>Best:</strong> Offering Memorandum (PDF) — one complete OM is enough for a full analysis.
@@ -1339,7 +1342,7 @@ function PropertyDetailInner({
             </div>
             <div style={{ display: "flex", gap: 4, marginTop: 6 }}>
               {["PDF", "XLS", "XLSX", "DOCX", "CSV"].map(ext => (
-                <span key={ext} style={{ padding: "2px 6px", background: ext === "PDF" ? C.primary : C.surfLowest, color: ext === "PDF" ? "#fff" : C.secondary, borderRadius: 3, fontSize: 9, fontWeight: 700 }}>
+                <span key={ext} style={{ padding: "2px 6px", background: ext === "PDF" ? "#84CC16" : "#F3F4F6", color: ext === "PDF" ? "#0F172A" : C.secondary, borderRadius: 3, fontSize: 9, fontWeight: 700 }}>
                   {ext}
                 </span>
               ))}
@@ -1363,8 +1366,8 @@ function PropertyDetailInner({
                   }}
                   style={{
                     display: "flex", alignItems: "center", justifyContent: "space-between",
-                    padding: "10px 14px", background: C.bg, borderRadius: 8,
-                    border: `1px solid ${C.ghostBorder}`, cursor: "pointer", fontFamily: "inherit",
+                    padding: "10px 14px", background: "#F9FAFB", borderRadius: 8,
+                    border: `1px solid rgba(0,0,0,0.04)`, cursor: "pointer", fontFamily: "inherit",
                     width: "100%", textAlign: "left",
                   }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -1388,14 +1391,14 @@ function PropertyDetailInner({
       {/* ═══════════════════════════════════════════════════ */}
       {(
         <div style={{
-          background: C.surfLowest, borderRadius: C.radius, overflow: "hidden",
-          border: `1px solid ${C.ghostBorder}`, marginBottom: 16,
+          background: "#FFFFFF", borderRadius: C.radius, overflow: "hidden",
+          border: `1px solid rgba(0,0,0,0.06)`, marginBottom: 16,
         }}>
           {/* AI-generated data disclaimer */}
           <div style={{
             display: "flex", alignItems: "center", gap: 8,
             padding: "10px 24px", background: "rgba(67, 56, 202, 0.06)",
-            borderBottom: `1px solid ${C.ghostBorder}`,
+            borderBottom: `1px solid rgba(0,0,0,0.06)`,
           }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4338CA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
@@ -1443,7 +1446,7 @@ function PropertyDetailInner({
                     className="ws-btn-gold"
                     style={{
                       padding: "10px 24px",
-                      background: deepResearchLoading ? C.surfLow : `linear-gradient(135deg, ${C.primary}, ${C.primaryContainer})`,
+                      background: deepResearchLoading ? C.surfLow : "#6366F1",
                       color: deepResearchLoading ? C.secondary : "#fff", border: "none", borderRadius: 8,
                       fontSize: 13, fontWeight: 600, cursor: deepResearchLoading ? "not-allowed" : "pointer",
                       fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8,
@@ -1571,20 +1574,20 @@ function PropertyDetailInner({
       {/* ═══════════════════════════════════════════════════ */}
       {hasData && (
         <div style={{
-          background: C.surfLow, borderRadius: C.radius, padding: "16px 24px",
-          border: `1px solid ${C.ghostBorder}`, marginBottom: 16, textAlign: "center",
+          background: "#F3F4F6", borderRadius: C.radius, padding: "16px 24px",
+          border: `1px solid rgba(0,0,0,0.06)`, marginBottom: 16, textAlign: "center",
         }}>
           {!feedbackSent ? (
             <>
               <p style={{ fontSize: 13, fontWeight: 600, color: C.onSurface, margin: "0 0 10px" }}>Was this useful?</p>
               <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
                 <button onClick={() => setFeedbackSent(true)} style={{
-                  padding: "6px 20px", borderRadius: 6, border: `1px solid ${C.ghostBorder}`,
-                  background: C.surfLowest, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  padding: "6px 20px", borderRadius: 6, border: `1px solid rgba(0,0,0,0.06)`,
+                  background: "#FFFFFF", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
                 }}>Yes</button>
                 <button onClick={() => setFeedbackSent(true)} style={{
-                  padding: "6px 20px", borderRadius: 6, border: `1px solid ${C.ghostBorder}`,
-                  background: C.surfLowest, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  padding: "6px 20px", borderRadius: 6, border: `1px solid rgba(0,0,0,0.06)`,
+                  background: "#FFFFFF", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
                 }}>No</button>
               </div>
             </>
@@ -1599,7 +1602,7 @@ function PropertyDetailInner({
       {/* ═══════════════════════════════════════════════════ */}
       {!hasData && documents.length === 0 && (
         <div style={{
-          background: C.surfLowest, borderRadius: C.radius, border: `2px dashed #D8DFE9`,
+          background: "#FFFFFF", borderRadius: C.radius, border: `2px dashed #D8DFE9`,
           padding: 60, textAlign: "center",
         }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>📄</div>
@@ -1611,9 +1614,9 @@ function PropertyDetailInner({
             Also accepts: flyers, rent rolls (XLS), T-12s, leases, and property images.
           </p>
           <button onClick={() => fileRef.current?.click()} style={{
-            padding: "12px 28px", background: `linear-gradient(135deg, ${C.primary}, ${C.primaryContainer})`,
-            color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700,
-            cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 12px ${C.primary}30`,
+            padding: "12px 28px", background: "#84CC16",
+            color: "#0F172A", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700,
+            cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 12px rgba(132, 204, 22, 0.3)`,
           }}>
             Upload Documents
           </button>
@@ -1630,7 +1633,7 @@ function PropertyDetailInner({
       }}>
         <div>
           <div style={{ fontSize: 13, fontWeight: 700, color: "#991B1B", marginBottom: 2 }}>Delete Deal</div>
-          <div style={{ fontSize: 12, color: C.primary }}>Permanently remove this deal and all associated data.</div>
+          <div style={{ fontSize: 12, color: "#DC2626" }}>Permanently remove this deal and all associated data.</div>
         </div>
         <button onClick={async (e) => {
           if (!confirm(`Delete "${property.propertyName}"? This cannot be undone.`)) return;
@@ -1653,7 +1656,7 @@ function PropertyDetailInner({
             alert("Failed to delete deal. Please try again.");
           }
         }} style={{
-          padding: "8px 20px", background: C.primary, color: "#fff", border: "none",
+          padding: "8px 20px", background: "#DC2626", color: "#fff", border: "none",
           borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
           fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0,
           transition: "all 0.2s ease",

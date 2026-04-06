@@ -100,13 +100,13 @@ export default function TrialStatusBar({ onUpgradeClick }: TrialStatusBarProps) 
     : "Free Plan";
 
   const bgColor = atLimit
-    ? "rgba(185, 23, 47, 0.08)"
+    ? "rgba(132, 204, 22, 0.08)"
     : nearLimit
     ? "rgba(234, 179, 8, 0.08)"
     : "rgba(148, 163, 184, 0.06)";
 
-  const textColor = atLimit ? "#b9172f" : nearLimit ? "#92400e" : "#585e70";
-  const barFillColor = atLimit ? "#b9172f" : nearLimit ? "#eab308" : "#10b981";
+  const textColor = atLimit ? "#84CC16" : nearLimit ? "#92400e" : "#585e70";
+  const barFillColor = atLimit ? "#84CC16" : nearLimit ? "#eab308" : "#10b981";
 
   const pct = Math.min(100, Math.round((uploadsUsed / uploadLimit) * 100));
 
@@ -159,8 +159,8 @@ export default function TrialStatusBar({ onUpgradeClick }: TrialStatusBarProps) 
           onClick={onUpgradeClick}
           style={{
             padding: "4px 12px",
-            background: "#b9172f",
-            color: "#fff",
+            background: "#84CC16",
+            color: "#0F172A",
             border: "none",
             borderRadius: 4,
             fontSize: 11,

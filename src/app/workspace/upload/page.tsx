@@ -19,8 +19,8 @@ const ACCEPTED_EXT = ".pdf,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.webp";
 
 /* ===== DESIGN.md Tokens ===== */
 const C = {
-  primary: "#b9172f",
-  primaryGradient: "linear-gradient(135deg, #b9172f, #dc3545)",
+  primary: "#84CC16",
+  primaryGradient: "#84CC16",
   onSurface: "#151b2b",
   secondary: "#585e70",
   tertiary: "#C49A3C",
@@ -444,9 +444,9 @@ export default function UploadPage() {
         <Link href={`/workspace/share?ws=${activeWorkspace?.slug || "default-dealboard"}`} style={{
           display: "inline-flex", alignItems: "center", gap: 6,
           padding: "7px 16px", borderRadius: 8,
-          background: "rgba(185,23,47,0.06)", color: "#b9172f",
+          background: "rgba(132,204,22,0.1)", color: "#84CC16",
           fontSize: 12, fontWeight: 600, textDecoration: "none",
-          border: "1px solid rgba(185,23,47,0.12)",
+          border: "1px solid rgba(132,204,22,0.2)",
           transition: "all 0.15s",
         }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>

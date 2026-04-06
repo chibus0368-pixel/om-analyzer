@@ -23,7 +23,7 @@ interface ShareLink {
 }
 
 const C = {
-  primary: "#b9172f",
+  primary: "#84CC16",
   onSurface: "#151b2b",
   secondary: "#585e70",
   bg: "#faf8ff",

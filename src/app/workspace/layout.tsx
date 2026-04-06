@@ -46,8 +46,8 @@ function NavLink({ href, label, icon, active, collapsed, compact = false }: { hr
         padding,
         justifyContent: collapsed ? "center" : "flex-start",
         borderRadius: 8,
-        color: active ? "#b9172f" : "#64748b",
-        background: active ? "rgba(185, 23, 47, 0.06)" : "transparent",
+        color: active ? "#84CC16" : "#64748b",
+        background: active ? "rgba(132, 204, 22, 0.1)" : "transparent",
         textDecoration: "none", fontSize, fontWeight: active ? 600 : 500,
         transition: "all 0.15s",
         position: "relative",
@@ -56,7 +56,7 @@ function NavLink({ href, label, icon, active, collapsed, compact = false }: { hr
     >
       <div style={{
         width: iconSize, height: iconSize, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
-        background: active ? "rgba(185, 23, 47, 0.08)" : "transparent",
+        background: active ? "rgba(132, 204, 22, 0.12)" : "transparent",
         transition: "background 0.15s",
         flexShrink: 0,
       }}>
@@ -114,9 +114,9 @@ function SidebarUserCard({ user, collapsed, userTier, onUpgradeClick }: {
         title={`${displayName}\n${email}`}
       >
         <div style={{
-          width: 34, height: 34, borderRadius: "50%", background: "#b9172f",
+          width: 34, height: 34, borderRadius: "50%", background: "#84CC16",
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0,
+          fontSize: 12, fontWeight: 700, color: "#0F172A", flexShrink: 0,
         }}>
           {initials}
         </div>
@@ -137,9 +137,9 @@ function SidebarUserCard({ user, collapsed, userTier, onUpgradeClick }: {
         }}
       >
         <div style={{
-          width: 36, height: 36, borderRadius: "50%", background: "#b9172f",
+          width: 36, height: 36, borderRadius: "50%", background: "#84CC16",
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 13, fontWeight: 700, color: "#fff", flexShrink: 0,
+          fontSize: 13, fontWeight: 700, color: "#0F172A", flexShrink: 0,
         }}>
           {initials}
         </div>
@@ -164,7 +164,7 @@ function SidebarUserCard({ user, collapsed, userTier, onUpgradeClick }: {
           <div style={{
             height: "100%", borderRadius: 4,
             width: `${usagePct}%`,
-            background: usagePct >= 90 ? "#EF4444" : usagePct >= 70 ? "#F59E0B" : "#b9172f",
+            background: usagePct >= 90 ? "#EF4444" : usagePct >= 70 ? "#F59E0B" : "#84CC16",
             transition: "width 0.4s ease",
           }} />
         </div>
@@ -182,10 +182,10 @@ function SidebarUserCard({ user, collapsed, userTier, onUpgradeClick }: {
             style={{
               width: "100%", marginTop: 6, padding: "5px 0",
               background: "none", border: "1px solid #e2e8f0", borderRadius: 6,
-              fontSize: 11, fontWeight: 600, color: "#b9172f", cursor: "pointer",
+              fontSize: 11, fontWeight: 600, color: "#84CC16", cursor: "pointer",
               fontFamily: "inherit", transition: "all 0.15s",
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(185,23,47,0.04)"; e.currentTarget.style.borderColor = "#b9172f"; }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.08)"; e.currentTarget.style.borderColor = "#84CC16"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.borderColor = "#e2e8f0"; }}
           >
             Upgrade Plan
@@ -215,8 +215,8 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
         <div style={{ textAlign: "center", color: "#585e70" }}>
           <div style={{
             width: 32, height: 32,
-            border: "3px solid rgba(227, 190, 189, 0.15)",
-            borderTopColor: "#b9172f",
+            border: "3px solid rgba(0,0,0,0.06)",
+            borderTopColor: "#84CC16",
             borderRadius: "50%",
             animation: "spin 0.8s linear infinite",
             margin: "0 auto 12px",
@@ -233,9 +233,9 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600;1,700&display=swap');
         /* Sidebar nav hover */
-        .ws-nav:hover { background: #f8fafc !important; color: #b9172f !important; }
-        .ws-header-nav:hover { color: #b9172f !important; }
-        .ws-new-analysis:hover { background: rgba(185, 23, 47, 0.06) !important; }
+        .ws-nav:hover { background: #f8fafc !important; color: #0F172A !important; }
+        .ws-header-nav:hover { color: #84CC16 !important; }
+        .ws-new-analysis:hover { background: rgba(132, 204, 22, 0.1) !important; }
         .ws-prop-link:hover { background: #f8fafc !important; color: #1e293b !important; }
         .ws-add-prop:hover { border-color: #e2e8f0 !important; background: #f8fafc !important; }
         .ws-props-scroll::-webkit-scrollbar { width: 4px; }
@@ -263,7 +263,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
         /* Text links */
         .ws-link:hover { opacity: 0.8; }
         /* Collapse button */
-        .ws-collapse:hover { color: #585e70 !important; background: rgba(185, 23, 47, 0.04) !important; }
+        .ws-collapse:hover { color: #585e70 !important; background: rgba(132, 204, 22, 0.08) !important; }
       `}</style>
       <WorkspaceLayoutInner user={user}>{children}</WorkspaceLayoutInner>
     </WorkspaceProvider>
@@ -288,11 +288,11 @@ function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean;
   if (collapsed) {
     return (
       <div style={{ padding: "10px 8px 4px", textAlign: "center" }}>
-        <div style={{ width: 32, height: 32, borderRadius: 6, background: "rgba(185, 23, 47, 0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto", cursor: "pointer" }}
+        <div style={{ width: 32, height: 32, borderRadius: 6, background: "rgba(132, 204, 22, 0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto", cursor: "pointer" }}
           title={activeWorkspace?.name || "DealBoard"}
           onClick={() => setOpen(!open)}
         >
-          <span style={{ color: "#b9172f", fontSize: 11, fontWeight: 800 }}>
+          <span style={{ color: "#84CC16", fontSize: 11, fontWeight: 800 }}>
             {(activeWorkspace?.name || "W").charAt(0).toUpperCase()}
           </span>
         </div>
@@ -314,7 +314,7 @@ function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean;
       >
         <span style={{
           fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8,
-          color: "#b9172f", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+          color: "#84CC16", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
           flex: 1,
         }}>
           {activeWorkspace?.name || "Loading..."}
@@ -350,13 +350,13 @@ function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean;
               className="ws-nav"
               style={{
                 display: "flex", alignItems: "center", gap: 10, width: "100%",
-                padding: "12px 14px", background: ws.id === activeWorkspace?.id ? "rgba(185, 23, 47, 0.06)" : "transparent",
-                border: "none", cursor: "pointer", fontSize: 14, color: ws.id === activeWorkspace?.id ? "#b9172f" : "#475569",
+                padding: "12px 14px", background: ws.id === activeWorkspace?.id ? "rgba(132, 204, 22, 0.1)" : "transparent",
+                border: "none", cursor: "pointer", fontSize: 14, color: ws.id === activeWorkspace?.id ? "#84CC16" : "#475569",
                 fontWeight: ws.id === activeWorkspace?.id ? 700 : 500, fontFamily: "inherit",
                 textAlign: "left", borderRadius: 8,
               }}
             >
-              {ws.id === activeWorkspace?.id && <span style={{ color: "#b9172f", fontSize: 14 }}>✓</span>}
+              {ws.id === activeWorkspace?.id && <span style={{ color: "#84CC16", fontSize: 14 }}>✓</span>}
               {ws.id !== activeWorkspace?.id && <span style={{ width: 14 }} />}
               <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ws.name}</span>
               <span style={{
@@ -381,7 +381,7 @@ function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean;
                 color: "#64748b", fontWeight: 600, fontFamily: "inherit",
                 textAlign: "left", transition: "color 0.15s", borderRadius: 8,
               }}
-              onMouseEnter={e => (e.currentTarget.style.color = "#b9172f")}
+              onMouseEnter={e => (e.currentTarget.style.color = "#84CC16")}
               onMouseLeave={e => (e.currentTarget.style.color = "#64748b")}
             >
               <span style={{ fontSize: 14, lineHeight: 1 }}>+</span>
@@ -460,13 +460,13 @@ function HeaderWorkspaceSwitcher({ onAddNew }: { onAddNew: () => void }) {
               className="ws-nav"
               style={{
                 display: "flex", alignItems: "center", gap: 10, width: "100%",
-                padding: "10px 14px", background: ws.id === activeWorkspace?.id ? "rgba(185, 23, 47, 0.06)" : "transparent",
-                border: "none", cursor: "pointer", fontSize: 13, color: ws.id === activeWorkspace?.id ? "#b9172f" : "#475569",
+                padding: "10px 14px", background: ws.id === activeWorkspace?.id ? "rgba(132, 204, 22, 0.1)" : "transparent",
+                border: "none", cursor: "pointer", fontSize: 13, color: ws.id === activeWorkspace?.id ? "#84CC16" : "#475569",
                 fontWeight: ws.id === activeWorkspace?.id ? 700 : 500, fontFamily: "inherit",
                 textAlign: "left", borderRadius: 8,
               }}
             >
-              {ws.id === activeWorkspace?.id && <span style={{ color: "#b9172f", fontSize: 13 }}>✓</span>}
+              {ws.id === activeWorkspace?.id && <span style={{ color: "#84CC16", fontSize: 13 }}>✓</span>}
               {ws.id !== activeWorkspace?.id && <span style={{ width: 13 }} />}
               <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ws.name}</span>
               <span style={{
@@ -491,7 +491,7 @@ function HeaderWorkspaceSwitcher({ onAddNew }: { onAddNew: () => void }) {
                 color: "#64748b", fontWeight: 600, fontFamily: "inherit",
                 textAlign: "left", borderRadius: 8,
               }}
-              onMouseEnter={e => (e.currentTarget.style.color = "#b9172f")}
+              onMouseEnter={e => (e.currentTarget.style.color = "#84CC16")}
               onMouseLeave={e => (e.currentTarget.style.color = "#64748b")}
             >
               <span style={{ fontSize: 14, lineHeight: 1 }}>+</span>
@@ -659,12 +659,12 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", background: "#f8fafc" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", background: "#F7F8FA" }}>
       {/* ===== TOP HEADER BAR — Deal Signals ===== */}
       <header style={{
         display: "flex", alignItems: "center",
         height: 56, minHeight: 56,
-        background: "#ffffff", borderBottom: "1px solid #e2e8f0",
+        background: "#0B0F1A", borderBottom: "1px solid rgba(255,255,255,0.1)",
         zIndex: 60,
       }}>
         {/* Logo zone — matches sidebar width */}
@@ -696,13 +696,13 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                 <Link key={item.href} href={item.href} style={{
                   padding: "6px 14px", borderRadius: 8,
                   fontSize: 13, fontWeight: active ? 700 : 500,
-                  color: active ? "#b9172f" : "#64748b",
-                  background: active ? "rgba(185,23,47,0.06)" : "transparent",
+                  color: active ? "#FFFFFF" : "rgba(255,255,255,0.7)",
+                  background: active ? "rgba(255,255,255,0.1)" : "transparent",
                   textDecoration: "none", transition: "all 0.15s",
                   fontFamily: "'Inter', sans-serif",
                 }}
-                  onMouseEnter={e => { if (!active) { e.currentTarget.style.color = "#1e293b"; e.currentTarget.style.background = "#f8fafc"; } }}
-                  onMouseLeave={e => { if (!active) { e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "transparent"; } }}
+                  onMouseEnter={e => { if (!active) { e.currentTarget.style.color = "#FFFFFF"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; } }}
+                  onMouseLeave={e => { if (!active) { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.background = "transparent"; } }}
                 >
                   {item.label}
                 </Link>
@@ -716,19 +716,19 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               <button
                 onClick={() => setShowUpgrade(true)}
                 style={{
-                  padding: "7px 18px", background: "transparent", color: "#b9172f",
-                  border: "1.5px solid #b9172f", borderRadius: 50,
+                  padding: "7px 18px", background: "transparent", color: "#84CC16",
+                  border: "1.5px solid #84CC16", borderRadius: 50,
                   fontSize: 12, fontWeight: 700, cursor: "pointer",
                   fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(185,23,47,0.04)"; }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.1)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
               >
                 Upgrade to Pro
               </button>
             ) : (
               <Link href="/workspace/profile?tab=account" style={{
-                padding: "7px 18px", background: "#b9172f", color: "#fff",
+                padding: "7px 18px", background: "#84CC16", color: "#0F172A",
                 borderRadius: 50,
                 fontSize: 12, fontWeight: 700, textDecoration: "none", fontFamily: "'Inter', sans-serif",
                 transition: "all 0.15s",
@@ -744,21 +744,21 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                 padding: "6px 12px", borderRadius: 8,
                 textDecoration: "none", transition: "background 0.15s",
               }}
-                onMouseEnter={e => { e.currentTarget.style.background = "#f8fafc"; }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
               >
                 <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", lineHeight: 1.2 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#FFFFFF", lineHeight: 1.2 }}>
                     {user.displayName || user.email?.split("@")[0] || "User"}
                   </div>
-                  <div style={{ fontSize: 11, color: "#94a3b8", lineHeight: 1.2 }}>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", lineHeight: 1.2 }}>
                     {user.email || ""}
                   </div>
                 </div>
                 <div style={{
-                  width: 36, height: 36, borderRadius: "50%", background: "#b9172f",
+                  width: 36, height: 36, borderRadius: "50%", background: "#84CC16",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 13, fontWeight: 700, color: "#fff", flexShrink: 0,
+                  fontSize: 13, fontWeight: 700, color: "#0F172A", flexShrink: 0,
                 }}>
                   {user.displayName ? user.displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : (user.email?.split("@")[0] || "U").substring(0, 2).toUpperCase()}
                 </div>
@@ -767,7 +767,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
             {/* Settings/grid icon */}
             <Link href="/workspace/settings" className="ws-header-nav" title="Settings" style={{
-              background: "none", border: "none", cursor: "pointer", color: "#585e70", padding: 6,
+              background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)", padding: 6,
               display: "flex", alignItems: "center", borderRadius: 6, transition: "color 0.15s",
             }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
@@ -783,7 +783,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         background: "#ffffff", color: "#1e293b", display: "flex", flexDirection: "column",
         transition: "width 0.2s, min-width 0.2s", zIndex: 50,
         paddingTop: 8, overflow: "hidden",
-        borderRight: "1px solid #e2e8f0",
+        borderRight: "1px solid rgba(0,0,0,0.06)",
       }}>
         {/* Workspace Switcher at top */}
         <SidebarWorkspaceSwitcher collapsed={collapsed} onAddNew={() => setShowNewWs(true)} />
@@ -817,10 +817,10 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                       className="ws-prop-link"
                       style={{
                         display: "flex", alignItems: "center", gap: 10, padding: "8px 10px",
-                        fontSize: 12, color: isPropertyActive ? "#b9172f" : "#64748b",
+                        fontSize: 12, color: isPropertyActive ? "#84CC16" : "#64748b",
                         textDecoration: "none", overflow: "hidden",
                         whiteSpace: "nowrap", borderRadius: 8,
-                        background: isPropertyActive ? "rgba(185, 23, 47, 0.06)" : "transparent",
+                        background: isPropertyActive ? "rgba(132, 204, 22, 0.1)" : "transparent",
                         fontWeight: isPropertyActive ? 600 : 500,
                         transition: "all 0.15s",
                       }}
@@ -828,10 +828,10 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                     >
                       <div style={{
                         width: 28, height: 28, borderRadius: 8,
-                        background: isPropertyActive ? "rgba(185, 23, 47, 0.08)" : "#f1f5f9",
+                        background: isPropertyActive ? "rgba(132, 204, 22, 0.12)" : "#f1f5f9",
                         display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                       }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={isPropertyActive ? "#b9172f" : "#94a3b8"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /></svg>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={isPropertyActive ? "#84CC16" : "#94a3b8"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /></svg>
                       </div>
                       <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{cleanDisplayName(prop.propertyName, prop.address1, prop.city, prop.state)}</span>
                     </Link>
@@ -851,7 +851,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                 width: 28, height: 28, borderRadius: 8, background: "#f8fafc",
                 display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
               }}>
-                <span style={{ fontSize: 16, lineHeight: 1, color: "#b9172f", fontWeight: 700 }}>+</span>
+                <span style={{ fontSize: 16, lineHeight: 1, color: "#84CC16", fontWeight: 700 }}>+</span>
               </div>
               <span>Add Property</span>
             </Link>
@@ -995,8 +995,8 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                 disabled={!newWsName.trim()}
                 className="ws-btn-gold"
                 style={{
-                  padding: "8px 20px", background: newWsName.trim() ? "#DC2626" : "#D8DFE9",
-                  color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600,
+                  padding: "8px 20px", background: newWsName.trim() ? "#84CC16" : "#D8DFE9",
+                  color: newWsName.trim() ? "#0F172A" : "#ffffff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600,
                   cursor: newWsName.trim() ? "pointer" : "default", fontFamily: "inherit",
                 }}
               >

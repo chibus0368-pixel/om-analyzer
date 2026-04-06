@@ -8,7 +8,7 @@ import { requestPasswordReset } from "@/lib/auth/providers";
 import { PLANS } from "@/lib/stripe/config";
 
 /* ── Design tokens ── */
-const PRIMARY = "#b9172f";
+const PRIMARY = "#84CC16";
 const SURFACE = "#151b2b";
 const MUTED = "#585e70";
 const BG = "#faf8ff";

@@ -200,8 +200,8 @@ export default function WorkspaceLoginPage() {
     marginBottom: 6, fontFamily: "'Inter', sans-serif",
   };
   const focusIn = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.currentTarget.style.borderColor = "#b9172f";
-    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(185,23,47,0.08)";
+    e.currentTarget.style.borderColor = "#84CC16";
+    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(132,204,22,0.1)";
   };
   const focusOut = (e: React.FocusEvent<HTMLInputElement>) => {
     e.currentTarget.style.borderColor = "#D8DFE9";
@@ -369,8 +369,8 @@ export default function WorkspaceLoginPage() {
             disabled={loading}
             style={{
               width: "100%", padding: "13px 0",
-              background: loading ? "#999" : "linear-gradient(135deg, #b9172f, #dc3545)",
-              color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 700,
+              background: loading ? "#999" : "#84CC16",
+              color: loading ? "#fff" : "#0F172A", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 700,
               cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1,
               marginTop: 2, fontFamily: "'Inter', sans-serif",
               transition: "all 0.2s",
@@ -390,7 +390,7 @@ export default function WorkspaceLoginPage() {
             <>
               No account?{" "}
               <button onClick={() => { setMode("register"); setError(""); }}
-                style={{ background: "none", border: "none", color: "#b9172f", fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "'Inter', sans-serif" }}>
+                style={{ background: "none", border: "none", color: "#84CC16", fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "'Inter', sans-serif" }}>
                 Create Account
               </button>
             </>
@@ -398,7 +398,7 @@ export default function WorkspaceLoginPage() {
             <>
               Already have an account?{" "}
               <button onClick={() => { setMode("login"); setError(""); }}
-                style={{ background: "none", border: "none", color: "#b9172f", fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "'Inter', sans-serif" }}>
+                style={{ background: "none", border: "none", color: "#84CC16", fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "'Inter', sans-serif" }}>
                 Sign In
               </button>
             </>

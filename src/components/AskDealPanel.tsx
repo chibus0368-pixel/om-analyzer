@@ -167,7 +167,7 @@ export default function AskDealPanel({ propertyId, userTier }: AskDealPanelProps
         .atd-action-btn { transition: all 0.15s ease; }
         .atd-action-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .atd-action-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
-        .atd-chat-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(185,23,47,0.15); }
+        .atd-chat-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(132,204,22,0.15); }
       `}</style>
 
       {/* ── Collapsed trigger button ── */}
@@ -248,15 +248,15 @@ export default function AskDealPanel({ propertyId, userTier }: AskDealPanelProps
                     disabled={disabled}
                     style={{
                       padding: "12px 14px", borderRadius: 12,
-                      border: isActive ? "1.5px solid #b9172f" : "1.5px solid #e2e8f0",
-                      background: isActive ? "rgba(185,23,47,0.04)" : "#fff",
+                      border: isActive ? "1.5px solid #84CC16" : "1.5px solid #e2e8f0",
+                      background: isActive ? "rgba(132,204,22,0.04)" : "#fff",
                       cursor: disabled ? "not-allowed" : "pointer",
                       textAlign: "left", position: "relative",
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
                       <span style={{ fontSize: 14 }}>{a.icon}</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: isActive ? "#b9172f" : "#1e293b" }}>{a.label}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: isActive ? "#84CC16" : "#1e293b" }}>{a.label}</span>
                     </div>
                     <div style={{ fontSize: 10, color: "#94a3b8" }}>{a.desc}</div>
                     {cached && (
@@ -305,7 +305,7 @@ export default function AskDealPanel({ propertyId, userTier }: AskDealPanelProps
               }}>
                 <div style={{
                   width: 28, height: 28,
-                  border: "3px solid #e2e8f0", borderTopColor: "#b9172f",
+                  border: "3px solid #e2e8f0", borderTopColor: "#84CC16",
                   borderRadius: "50%", animation: "spin 0.8s linear infinite",
                 }} />
                 <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -417,7 +417,7 @@ export default function AskDealPanel({ propertyId, userTier }: AskDealPanelProps
                     disabled={!chatInput.trim() || chatLoading || isFree}
                     style={{
                       width: 30, height: 30, borderRadius: 8,
-                      background: chatInput.trim() && !chatLoading && !isFree ? "#b9172f" : "#e2e8f0",
+                      background: chatInput.trim() && !chatLoading && !isFree ? "#84CC16" : "#e2e8f0",
                       border: "none", cursor: chatInput.trim() && !chatLoading && !isFree ? "pointer" : "not-allowed",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       flexShrink: 0, transition: "background 0.15s",

@@ -58,7 +58,7 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
           }}>✕</button>
           <div style={{
             width: 56, height: 56, borderRadius: "50%",
-            background: "rgba(185, 23, 47, 0.08)", display: "flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(132, 204, 22, 0.08)", display: "flex", alignItems: "center", justifyContent: "center",
             margin: "0 auto 16px", fontSize: 24,
           }}>⭐</div>
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "#0B1120", margin: "0 0 8px" }}>
@@ -72,7 +72,7 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
           <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
             {currentTier === "pro" && (
               <a href="/workspace/profile?tab=account" style={{
-                padding: "10px 24px", background: "#b9172f", color: "#fff", borderRadius: 8,
+                padding: "10px 24px", background: "#84CC16", color: "#0F172A", borderRadius: 8,
                 fontSize: 14, fontWeight: 600, textDecoration: "none", fontFamily: "'Inter', sans-serif",
               }}>
                 Upgrade to Pro+
@@ -202,15 +202,15 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
 
           {/* Pro+ */}
           <div style={{
-            border: "2px solid #b9172f", borderRadius: 12, padding: 24,
+            border: "2px solid #84CC16", borderRadius: 12, padding: 24,
             display: "flex", flexDirection: "column", position: "relative",
           }}>
             <div style={{
               position: "absolute", top: -10, right: 16,
-              background: "#b9172f", color: "#fff", fontSize: 10, fontWeight: 700,
+              background: "#84CC16", color: "#0F172A", fontSize: 10, fontWeight: 700,
               padding: "3px 10px", borderRadius: 10, textTransform: "uppercase", letterSpacing: "0.05em",
             }}>Best Value</div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#b9172f", textTransform: "uppercase", letterSpacing: "0.05em" }}>Pro+</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: "0.05em" }}>Pro+</div>
             <div style={{ fontSize: 32, fontWeight: 700, color: "#0B1120", margin: "8px 0 4px" }}>
               ${proPlus.priceMonthly}<span style={{ fontSize: 14, fontWeight: 400, color: "#94a3b8" }}>/mo</span>
             </div>
@@ -226,7 +226,7 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
               disabled={!!loading}
               style={{
                 width: "100%", padding: "10px 0", border: "none",
-                borderRadius: 8, background: "#b9172f", color: "#fff",
+                borderRadius: 8, background: "#84CC16", color: "#0F172A",
                 fontSize: 14, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer",
                 fontFamily: "'Inter', sans-serif",
               }}

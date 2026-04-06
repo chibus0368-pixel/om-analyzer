@@ -59,20 +59,20 @@ export default function UsageMeter({ collapsed }: { collapsed: boolean }) {
   const nearLimit = uploadsUsed >= uploadLimit - 1 && !atLimit;
   const pct = Math.min(100, Math.round((uploadsUsed / uploadLimit) * 100));
 
-  const barColor = atLimit ? "#b9172f" : nearLimit ? "#eab308" : "#10b981";
+  const barColor = atLimit ? "#84CC16" : nearLimit ? "#eab308" : "#10b981";
 
   return (
     <div style={{ padding: "0 14px", marginBottom: 4 }}>
       <div style={{
         padding: "10px 12px",
-        background: atLimit ? "rgba(185, 23, 47, 0.05)" : "rgba(148, 163, 184, 0.04)",
+        background: atLimit ? "rgba(132, 204, 22, 0.05)" : "rgba(148, 163, 184, 0.04)",
         borderRadius: 8,
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
           <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#585e70" }}>
             Usage
           </span>
-          <span style={{ fontSize: 11, fontWeight: 600, color: atLimit ? "#b9172f" : "#585e70" }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: atLimit ? "#84CC16" : "#585e70" }}>
             {uploadsUsed} / {uploadLimit}
           </span>
         </div>
@@ -105,10 +105,10 @@ export default function UsageMeter({ collapsed }: { collapsed: boolean }) {
               textAlign: "center",
               fontSize: 11,
               fontWeight: 600,
-              color: "#b9172f",
+              color: "#84CC16",
               textDecoration: "none",
               borderRadius: 4,
-              background: "rgba(185, 23, 47, 0.06)",
+              background: "rgba(132, 204, 22, 0.06)",
             }}
           >
             {atLimit ? "Upgrade to continue" : "Upgrade for more deals"}

@@ -247,7 +247,7 @@ export default function MapPage() {
               ` : ""}
               ${scoreTotal > 0 ? `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:${pinColor};color:#fff;font-size:12px;font-weight:800;">${scoreTotal}</span><span style="font-size:12px;font-weight:600;color:#151b2b;">${scoreBand === "strong_buy" ? "Strong Buy" : scoreBand === "buy" ? "Buy" : scoreBand === "hold" ? "Neutral" : scoreBand === "pass" ? "Pass" : scoreBand === "strong_reject" ? "Reject" : ""}</span></div>` : ""}
               ${signal ? `<div style="font-size:11px;margin-bottom:8px;color:#585e70;">${signal}</div>` : ""}
-              <a href="/workspace/properties/${prop.id}" style="display:inline-block;padding:6px 16px;background:#b9172f;color:#fff;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600;">View Deal</a>
+              <a href="/workspace/properties/${prop.id}" style="display:inline-block;padding:6px 16px;background:#84CC16;color:#0F172A;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600;">View Deal</a>
             </div>
           `;
 
@@ -299,9 +299,9 @@ export default function MapPage() {
           <Link href={`/workspace/share?ws=${activeWorkspace?.slug || "default-dealboard"}`} style={{
             display: "inline-flex", alignItems: "center", gap: 6,
             padding: "7px 16px", borderRadius: 8,
-            background: "rgba(185,23,47,0.06)", color: "#b9172f",
+            background: "rgba(132,204,22,0.1)", color: "#84CC16",
             fontSize: 12, fontWeight: 600, textDecoration: "none",
-            border: "1px solid rgba(185,23,47,0.12)",
+            border: "1px solid rgba(132,204,22,0.2)",
             transition: "all 0.15s",
           }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
