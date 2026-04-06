@@ -57,11 +57,11 @@ export default function DealSignalNav() {
         borderBottom: "1px solid rgba(255,255,255,0.05)",
       }} />
 
-      {/* Nav content */}
+      {/* Nav content — outer padding matches page sections, inner maxWidth matches content grid */}
+      <div style={{ position: "relative", padding: "0 32px", height: 64 }}>
       <nav style={{
-        position: "relative",
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        maxWidth: 1100, margin: "0 auto", padding: "0 32px", height: 64,
+        maxWidth: 1100, margin: "0 auto", height: 64,
         fontFamily: "'Plus Jakarta Sans', sans-serif",
       }}>
         {/* Logo */}
@@ -131,6 +131,7 @@ export default function DealSignalNav() {
           )}
         </div>
       </nav>
+      </div>
     </header>
   );
 }
