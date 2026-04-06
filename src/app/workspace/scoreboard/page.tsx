@@ -874,7 +874,41 @@ export default function ScoreboardPage() {
           <p style={{ fontSize: 14, fontWeight: 500, color: "#9CA3AF", margin: 0 }}>
             Comparative analysis and algorithmic rankings for all dealboard assets.
           </p>
-          <div style={{ display: "flex", gap: 12 }}>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            {/* View Toggle */}
+            <div style={{
+              display: "inline-flex", background: "#F3F4F6", borderRadius: 8, padding: 2,
+            }}>
+              <button
+                onClick={() => setView("leaderboard")}
+                style={{
+                  padding: "6px 14px", borderRadius: 6, border: "none",
+                  fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                  textTransform: "uppercase", letterSpacing: 0.5,
+                  background: view === "leaderboard" ? "#fff" : "transparent",
+                  color: view === "leaderboard" ? "#111827" : "#9CA3AF",
+                  boxShadow: view === "leaderboard" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                  transition: "all 0.15s",
+                }}
+              >
+                Leaderboard
+              </button>
+              <button
+                onClick={() => setView("comparison")}
+                style={{
+                  padding: "6px 14px", borderRadius: 6, border: "none",
+                  fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                  textTransform: "uppercase", letterSpacing: 0.5,
+                  background: view === "comparison" ? "#fff" : "transparent",
+                  color: view === "comparison" ? "#111827" : "#9CA3AF",
+                  boxShadow: view === "comparison" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                  transition: "all 0.15s",
+                }}
+              >
+                Table
+              </button>
+            </div>
+
             <button onClick={() => exportToXlsx(sortedData, activeWorkspace?.name || "")} style={{
               display: "inline-flex", alignItems: "center", gap: 6,
               padding: "8px 14px", background: "#fff", border: "1px solid rgba(0,0,0,0.05)",
@@ -883,7 +917,6 @@ export default function ScoreboardPage() {
             }} disabled={propertyData.length === 0}>
               Export CSV
             </button>
-            {/* Scoring happens automatically in the background during upload */}
           </div>
         </div>
       </div>
@@ -1098,7 +1131,26 @@ export default function ScoreboardPage() {
             </div>
           )}
 
-          {/* NEW SIMPLIFIED TABLE */}
+          {/* LEADERBOARD VIEW */}
+          {view === "leaderboard" && (
+            <div style={{ marginBottom: 24 }}>
+              <ScoreDistribution data={sortedData} />
+              {sortedData.map((pd, idx) => (
+                <LeaderboardRow
+                  key={pd.property.id}
+                  pd={pd}
+                  rank={idx + 1}
+                  totalCount={sortedData.length}
+                  maxScore={Math.max(...sortedData.map(d => (d.property as any).scoreTotal || 0), 1)}
+                  expanded={expandedId === pd.property.id}
+                  onToggle={() => setExpandedId(expandedId === pd.property.id ? null : pd.property.id)}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* TABLE VIEW */}
+          {view === "comparison" && (
           <div style={{
             background: "#fff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
             boxShadow: "0 1px 2px rgba(0,0,0,0.05)", overflow: "hidden", marginBottom: 24,
@@ -1321,6 +1373,7 @@ export default function ScoreboardPage() {
               </tbody>
             </table>
           </div>
+          )}
 
           {/* FOOTER NOTE */}
           <div style={{
