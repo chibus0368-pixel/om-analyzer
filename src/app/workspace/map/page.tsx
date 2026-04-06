@@ -207,14 +207,22 @@ export default function MapPage() {
           const noi = gf(fields, "expenses", "noi_om");
           const signal = gf(fields, "signals", "overall_signal") || "";
 
-          const status = (prop as any).parseStatus || "pending";
-          let pinColor = "#F59E0B"; // yellow default
-          if (signal.includes("\u{1F7E2}")) pinColor = "#10B981";
-          else if (signal.includes("\u{1F534}")) pinColor = "#EF4444";
-          else if (status === "parsed") pinColor = "#2563EB";
+          // Score-based pin color
+          const scoreTotal = (prop as any).scoreTotal || 0;
+          const scoreBand = (prop as any).scoreBand || "";
+          let pinColor = "#94a3b8"; // gray default (no score)
+          let pinLabel = "–";
+          if (scoreTotal > 0) {
+            pinLabel = `${scoreTotal}`;
+            if (scoreBand === "strong_buy" || scoreTotal >= 85) pinColor = "#059669";
+            else if (scoreBand === "buy" || scoreTotal >= 70) pinColor = "#2563EB";
+            else if (scoreBand === "hold" || scoreTotal >= 50) pinColor = "#D97706";
+            else if (scoreBand === "pass" || scoreTotal >= 30) pinColor = "#EA580C";
+            else pinColor = "#DC2626";
+          }
 
           const icon = L.divIcon({
-            html: `<div style="width:32px;height:32px;border-radius:50%;background:${pinColor};border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;">$</div>`,
+            html: `<div style="width:32px;height:32px;border-radius:50%;background:${pinColor};border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800;letter-spacing:-0.5px;">${pinLabel}</div>`,
             className: "",
             iconSize: [32, 32],
             iconAnchor: [16, 16],
@@ -236,7 +244,8 @@ export default function MapPage() {
                   ${noi ? `<div><div style="font-size:9px;color:#585e70;text-transform:uppercase;font-weight:600;">NOI</div><div style="font-size:13px;font-weight:700;">${fmt$(noi)}</div></div>` : ""}
                 </div>
               ` : ""}
-              ${signal ? `<div style="font-size:11px;margin-bottom:8px;color:#151b2b;">${signal}</div>` : ""}
+              ${scoreTotal > 0 ? `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:${pinColor};color:#fff;font-size:12px;font-weight:800;">${scoreTotal}</span><span style="font-size:12px;font-weight:600;color:#151b2b;">${scoreBand === "strong_buy" ? "Strong Buy" : scoreBand === "buy" ? "Buy" : scoreBand === "hold" ? "Neutral" : scoreBand === "pass" ? "Pass" : scoreBand === "strong_reject" ? "Reject" : ""}</span></div>` : ""}
+              ${signal ? `<div style="font-size:11px;margin-bottom:8px;color:#585e70;">${signal}</div>` : ""}
               <a href="/workspace/properties/${prop.id}" style="display:inline-block;padding:6px 16px;background:#b9172f;color:#fff;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600;">View Deal</a>
             </div>
           `;
@@ -287,16 +296,19 @@ export default function MapPage() {
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center", fontSize: 11 }}>
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#10B981", display: "inline-block" }} /> Green signal
+            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#059669", display: "inline-block" }} /> Strong Buy (85+)
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#2563EB", display: "inline-block" }} /> Parsed
+            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#2563EB", display: "inline-block" }} /> Buy (70–84)
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#F59E0B", display: "inline-block" }} /> Pending
+            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#D97706", display: "inline-block" }} /> Neutral (50–69)
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#EF4444", display: "inline-block" }} /> Red signal
+            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#EA580C", display: "inline-block" }} /> Pass (30–49)
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#94a3b8", display: "inline-block" }} /> Not scored
           </span>
         </div>
       </div>
