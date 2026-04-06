@@ -39,8 +39,8 @@ export default function DealSignalLogo({
       >
         <defs>
           <linearGradient id="ds-mark-bg" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#b9172f" />
-            <stop offset="100%" stopColor="#8B0D1F" />
+            <stop offset="0%" stopColor="#c8ff00" />
+            <stop offset="100%" stopColor="#7da000" />
           </linearGradient>
         </defs>
         <rect width="36" height="36" rx="9" fill="url(#ds-mark-bg)" />
@@ -75,7 +75,7 @@ export default function DealSignalLogo({
               fontWeight: 800,
               fontSize,
               letterSpacing: "-0.03em",
-              color: "#b9172f",
+              color: "#c8ff00",
               lineHeight: 1,
             }}
           >

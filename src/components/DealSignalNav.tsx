@@ -39,13 +39,13 @@ export default function DealSignalNav() {
   const linkStyle = (href: string): React.CSSProperties => ({
     fontSize: 14, fontWeight: 500, textDecoration: "none", transition: "color 0.15s",
     fontFamily: "'Plus Jakarta Sans', sans-serif",
-    color: isActive(href) ? "#b9172f" : "#9ca3af",
+    color: isActive(href) ? "#c8ff00" : "#9ca3af",
   });
 
   return (
     <header style={{
       position: "sticky", top: 0, zIndex: 100,
-      background: "rgba(13,13,20,0.8)",
+      background: "rgba(0,0,0,0.85)",
       backdropFilter: "blur(20px)",
       WebkitBackdropFilter: "blur(20px)",
       borderBottom: "1px solid rgba(255,255,255,0.06)",
@@ -77,9 +77,9 @@ export default function DealSignalNav() {
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#16161f"; }}
             >
               <span style={{
-                width: 24, height: 24, borderRadius: "50%", background: "#b9172f",
+                width: 24, height: 24, borderRadius: "50%", background: "#c8ff00",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 11, fontWeight: 700, color: "#fff", flexShrink: 0,
+                fontSize: 11, fontWeight: 700, color: "#0d0d14", flexShrink: 0,
               }}>
                 {(authedUser.displayName || authedUser.email || "U")[0].toUpperCase()}
               </span>
@@ -94,19 +94,19 @@ export default function DealSignalNav() {
                 transition: "all 0.15s",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#b9172f"; (e.currentTarget as HTMLElement).style.color = "#b9172f"; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#c8ff00"; (e.currentTarget as HTMLElement).style.color = "#c8ff00"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.15)"; (e.currentTarget as HTMLElement).style.color = "#9ca3af"; }}
               >Sign in</Link>
               <Link href="/try-pro" style={{
-                fontSize: 13, fontWeight: 600, color: "#fff", textDecoration: "none",
+                fontSize: 13, fontWeight: 600, color: "#0d0d14", textDecoration: "none",
                 padding: "9px 22px", borderRadius: 50,
-                background: "linear-gradient(135deg, #b9172f, #dc3545)",
+                background: "linear-gradient(135deg, #c8ff00, #a8d600)",
                 transition: "all 0.15s",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
-                boxShadow: "0 0 20px rgba(185,23,47,0.3)",
+                boxShadow: "0 0 20px rgba(200,255,0,0.3)",
               }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 30px rgba(185,23,47,0.5)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(185,23,47,0.3)"; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 30px rgba(200,255,0,0.5)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(200,255,0,0.3)"; }}
               >Get Started</Link>
             </>
           )}
