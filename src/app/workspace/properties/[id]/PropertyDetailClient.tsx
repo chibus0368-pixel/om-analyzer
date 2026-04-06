@@ -1193,22 +1193,6 @@ function PropertyDetailInner({
         );
       })()}
 
-      {/* Data counts */}
-      {hasData && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: 24 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
-            <span style={{ fontSize: 11, color: "#4338CA", fontWeight: 600 }}>{pulledCount} pulled</span>
-            <span style={{ fontSize: 11, color: C.secondary, margin: "0 8px", opacity: 0.4 }}>&middot;</span>
-            <span style={{ fontSize: 11, color: "#15803D", fontWeight: 600 }}>{calcCount} calculated</span>
-            {reviewCount > 0 && (
-              <>
-                <span style={{ fontSize: 11, color: C.secondary, margin: "0 8px", opacity: 0.4 }}>&middot;</span>
-                <span style={{ fontSize: 11, color: "#92400E", fontWeight: 600 }}>{reviewCount} review</span>
-              </>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  3. PRICE SENSITIVITY PANEL                        */}
@@ -1383,9 +1367,22 @@ function PropertyDetailInner({
           border: `1px solid rgba(0,0,0,0.06)`, marginBottom: 16,
         }}>
           <div style={{ padding: "12px 18px", borderBottom: `1px solid rgba(0,0,0,0.04)`, background: "#F9FAFB" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ width: 3, height: 14, background: "#4338CA", borderRadius: 2 }} />
-              <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Pulled from OM</h3>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ width: 3, height: 14, background: "#4338CA", borderRadius: 2 }} />
+                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Pulled from OM</h3>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+                <span style={{ fontSize: 11, color: "#4338CA", fontWeight: 600 }}>{pulledCount} pulled</span>
+                <span style={{ fontSize: 11, color: C.secondary, margin: "0 8px", opacity: 0.4 }}>&middot;</span>
+                <span style={{ fontSize: 11, color: "#15803D", fontWeight: 600 }}>{calcCount} calculated</span>
+                {reviewCount > 0 && (
+                  <>
+                    <span style={{ fontSize: 11, color: C.secondary, margin: "0 8px", opacity: 0.4 }}>&middot;</span>
+                    <span style={{ fontSize: 11, color: "#92400E", fontWeight: 600 }}>{reviewCount} review</span>
+                  </>
+                )}
+              </div>
             </div>
             <p style={{ fontSize: 11, color: C.secondary, margin: "4px 0 0 11px" }}>Extracted directly from the uploaded document</p>
           </div>
