@@ -1319,7 +1319,60 @@ function PropertyDetailInner({
         </div>
       )}
 
-      {/* (Deal Brief now shown in combined Our Take + Score block above) */}
+      {/* ═══════════════════════════════════════════════════ */}
+      {/*  4B. STRENGTHS & RISKS (moved here from section 6C) */}
+      {/* ═══════════════════════════════════════════════════ */}
+      {signals.length > 0 && (() => {
+        const classified = signals.map(([label, val]: [string, string]) => {
+          const valStr = String(val);
+          const hasGreen = valStr.includes("\u{1F7E2}") || valStr.toLowerCase().includes("green");
+          const hasRed = valStr.includes("\u{1F534}") || valStr.toLowerCase().includes("red");
+          const type = hasGreen ? "positive" : hasRed ? "negative" : "negative";
+          const text = valStr.replace(/[\u{1F7E2}\u{1F7E1}\u{1F534}]/gu, "").trim();
+          return { label: String(label), text, type };
+        });
+        const positives = classified.filter(s => s.type === "positive");
+        const negatives = classified.filter(s => s.type === "negative");
+
+        const renderSignalCard = (title: string, items: typeof classified, accent: string, bgTint: string, icon: string) => items.length > 0 ? (
+          <div style={{
+            flex: 1, minWidth: 280,
+            background: "#FFFFFF", borderRadius: C.radius, overflow: "hidden",
+            border: `1px solid rgba(0,0,0,0.06)`,
+          }}>
+            <div style={{ padding: "12px 18px", borderBottom: `1px solid rgba(0,0,0,0.04)`, background: bgTint, display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 14 }}>{icon}</span>
+              <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: accent, fontFamily: "'Inter', sans-serif" }}>{title}</h3>
+              <span style={{ fontSize: 11, color: accent, opacity: 0.7, marginLeft: "auto", fontWeight: 600 }}>{items.length}</span>
+            </div>
+            <div>
+              {items.map((s, i) => (
+                <div key={s.label} style={{
+                  padding: "12px 18px",
+                  borderBottom: i < items.length - 1 ? `1px solid rgba(0,0,0,0.04)` : "none",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: accent, flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, fontWeight: 700, color: C.onSurface, textTransform: "uppercase", letterSpacing: 0.3 }}>
+                      {s.label}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 12, color: "#4B5563", lineHeight: 1.6, margin: "0 0 0 15px", wordBreak: "break-word" }}>
+                    {s.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null;
+
+        return (
+          <div style={{ display: "flex", gap: 16, marginBottom: 16, flexWrap: "wrap" }}>
+            {renderSignalCard("Strengths", positives, "#059669", "#F0FDF4", "✅")}
+            {renderSignalCard("Risks", negatives, "#DC2626", "#FEF2F2", "⚠️")}
+          </div>
+        );
+      })()}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  6A. PULLED FROM OM                                 */}
@@ -1398,61 +1451,6 @@ function PropertyDetailInner({
           </div>
         </div>
       )}
-
-      {/* ═══════════════════════════════════════════════════ */}
-      {/*  6C. SIGNAL ASSESSMENT — POSITIVES & NEGATIVES      */}
-      {/* ═══════════════════════════════════════════════════ */}
-      {signals.length > 0 && (() => {
-        const classified = signals.map(([label, val]: [string, string]) => {
-          const valStr = String(val);
-          const hasGreen = valStr.includes("\u{1F7E2}") || valStr.toLowerCase().includes("green");
-          const hasRed = valStr.includes("\u{1F534}") || valStr.toLowerCase().includes("red");
-          const type = hasGreen ? "positive" : hasRed ? "negative" : "negative";
-          const text = valStr.replace(/[\u{1F7E2}\u{1F7E1}\u{1F534}]/gu, "").trim();
-          return { label: String(label), text, type };
-        });
-        const positives = classified.filter(s => s.type === "positive");
-        const negatives = classified.filter(s => s.type === "negative");
-
-        const renderSignalCard = (title: string, items: typeof classified, accent: string, bgTint: string, icon: string) => items.length > 0 ? (
-          <div style={{
-            flex: 1, minWidth: 280,
-            background: "#FFFFFF", borderRadius: C.radius, overflow: "hidden",
-            border: `1px solid rgba(0,0,0,0.06)`,
-          }}>
-            <div style={{ padding: "12px 18px", borderBottom: `1px solid rgba(0,0,0,0.04)`, background: bgTint, display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 14 }}>{icon}</span>
-              <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: accent, fontFamily: "'Inter', sans-serif" }}>{title}</h3>
-              <span style={{ fontSize: 11, color: accent, opacity: 0.7, marginLeft: "auto", fontWeight: 600 }}>{items.length}</span>
-            </div>
-            <div>
-              {items.map((s, i) => (
-                <div key={s.label} style={{
-                  padding: "12px 18px",
-                  borderBottom: i < items.length - 1 ? `1px solid rgba(0,0,0,0.04)` : "none",
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: accent, flexShrink: 0 }} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: C.onSurface, textTransform: "uppercase", letterSpacing: 0.3 }}>
-                      {s.label}
-                    </span>
-                  </div>
-                  <p style={{ fontSize: 12, color: "#4B5563", lineHeight: 1.6, margin: "0 0 0 15px", wordBreak: "break-word" }}>
-                    {s.text}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null;
-
-        return (
-          <div style={{ display: "flex", gap: 16, marginBottom: 16, flexWrap: "wrap" }}>
-            {renderSignalCard("Strengths", positives, "#059669", "#F0FDF4", "✅")}
-            {renderSignalCard("Risks", negatives, "#DC2626", "#FEF2F2", "⚠️")}
-          </div>
-        );
-      })()}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  7. TENANT SUMMARY                                  */}
