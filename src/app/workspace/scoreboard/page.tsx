@@ -1177,6 +1177,9 @@ export default function ScoreboardPage() {
 
                   const propertyName = cleanDisplayName(pd.property.propertyName, pd.property.address1, pd.property.city, pd.property.state);
                   const cityState = [pd.property.city, pd.property.state].filter(Boolean).join(", ");
+                  const heroUrl = (pd.property as any).heroImageUrl;
+                  const procStatus = (pd.property as any).processingStatus || "";
+                  const isProcessing = procStatus && procStatus !== "complete";
 
                   return (
                     <tr key={pd.property.id} style={{
@@ -1186,22 +1189,59 @@ export default function ScoreboardPage() {
                     onMouseEnter={e => { e.currentTarget.style.background = "#FAFAFA"; }}
                     onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}
                     >
-                      {/* Property Name + City */}
+                      {/* Property Name + Thumbnail + City + Status */}
                       <td style={{
-                        padding: "16px 24px", color: "#111827", fontSize: 14, fontWeight: 700,
+                        padding: "12px 24px", color: "#111827", fontSize: 14, fontWeight: 700,
                       }}>
-                        <Link href={`/workspace/properties/${pd.property.id}`} style={{
-                          textDecoration: "none", color: "#111827", cursor: "pointer",
-                        }}>
-                          {propertyName}
-                        </Link>
-                        {cityState && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                          {/* Thumbnail */}
                           <div style={{
-                            fontSize: 12, color: "#9CA3AF", marginTop: 2, fontWeight: 400,
+                            width: 48, height: 48, borderRadius: 8, overflow: "hidden", flexShrink: 0,
+                            background: "#F3F4F6", border: "1px solid rgba(0,0,0,0.05)",
                           }}>
-                            {cityState}
+                            {heroUrl ? (
+                              <img src={heroUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            ) : (
+                              <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4" />
+                                </svg>
+                              </div>
+                            )}
                           </div>
-                        )}
+                          {/* Name + location + status */}
+                          <div style={{ minWidth: 0 }}>
+                            <Link href={`/workspace/properties/${pd.property.id}`} style={{
+                              textDecoration: "none", color: "#111827", cursor: "pointer",
+                              display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                            }}>
+                              {propertyName}
+                            </Link>
+                            {cityState && (
+                              <div style={{
+                                fontSize: 12, color: "#9CA3AF", marginTop: 2, fontWeight: 400,
+                              }}>
+                                {cityState}
+                              </div>
+                            )}
+                            {isProcessing && (
+                              <div style={{
+                                display: "inline-flex", alignItems: "center", gap: 4, marginTop: 4,
+                                fontSize: 10, fontWeight: 600, color: "#2563EB",
+                                background: "rgba(37,99,235,0.06)", padding: "2px 8px", borderRadius: 4,
+                              }}>
+                                <div style={{
+                                  width: 8, height: 8, borderRadius: "50%",
+                                  border: "1.5px solid rgba(37,99,235,0.3)", borderTopColor: "#2563EB",
+                                  animation: "spin 0.8s linear infinite",
+                                }} />
+                                {procStatus === "parsing" ? "Parsing" :
+                                 procStatus === "generating" ? "Generating" :
+                                 procStatus === "scoring" ? "Scoring" : "Processing"}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </td>
 
                       {/* Deal Score with circular badge */}

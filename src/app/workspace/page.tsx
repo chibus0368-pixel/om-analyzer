@@ -78,7 +78,10 @@ function ClearAllButton({ onClear, workspaceId, workspaceName }: { onClear: () =
 /* ========== Property Card ========== */
 function PropertyCard({ property, docCount }: { property: Property; docCount: number }) {
   const router = useRouter();
-  const status = (property as any).parseStatus || "pending";
+  const parseStatus = (property as any).parseStatus || "pending";
+  const processingStatus = (property as any).processingStatus || "";
+  const isProcessing = processingStatus && processingStatus !== "complete";
+  const isAnalyzed = parseStatus === "parsed" || (!isProcessing && processingStatus === "complete");
   const score = (property as any).scoreTotal;
   const scoreBand = (property as any).scoreBand;
   const heroUrl = (property as any).heroImageUrl;
@@ -122,15 +125,29 @@ function PropertyCard({ property, docCount }: { property: Property; docCount: nu
           </div>
         )}
 
-        {/* Top-left: "Analyzed" or "Processing" badge */}
+        {/* Top-left: status badge */}
         <span style={{
           position: "absolute", top: 12, left: 12,
           padding: "2.5px 10px", borderRadius: 4, fontSize: 10, fontWeight: 700,
-          color: "#FFFFFF", background: "rgba(132,204,22,0.9)",
+          color: "#FFFFFF",
+          background: isProcessing ? "rgba(37,99,235,0.85)" : isAnalyzed ? "rgba(132,204,22,0.9)" : "rgba(156,163,175,0.8)",
           letterSpacing: "0.05em",
           textTransform: "uppercase",
+          display: "flex", alignItems: "center", gap: 5,
+          backdropFilter: "blur(4px)",
         }}>
-          {status === "parsed" ? "Analyzed" : "Processing"}
+          {isProcessing && (
+            <div style={{
+              width: 10, height: 10, borderRadius: "50%",
+              border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff",
+              animation: "spin 0.8s linear infinite",
+            }} />
+          )}
+          {isProcessing ? (
+            processingStatus === "parsing" ? "Parsing" :
+            processingStatus === "generating" ? "Generating" :
+            processingStatus === "scoring" ? "Scoring" : "Processing"
+          ) : isAnalyzed ? "Analyzed" : "Pending"}
         </span>
 
         {/* Top-right: Score badge */}
@@ -342,6 +359,7 @@ export default function WorkspaceDashboard() {
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px" }}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
       {/* Header Section - New Design */}
       <div style={{
         display: "flex",

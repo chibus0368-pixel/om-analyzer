@@ -135,6 +135,7 @@ export async function POST(req: NextRequest) {
     try {
       await db.collection("workspace_properties").doc(propertyId).set({
         processingStatus: "complete",
+        parseStatus: fieldsExtracted > 0 ? "parsed" : "pending",
         updatedAt: new Date().toISOString(),
       }, { merge: true });
     } catch { /* non-blocking */ }

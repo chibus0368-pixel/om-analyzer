@@ -8,6 +8,7 @@ import { storage } from "@/lib/firebase";
 import {
   getProperty, getProjectDocuments, getPropertyExtractedFields,
   getProjectOutputs, getPropertyNotes, createDocument, logActivity, updateProperty, deleteProperty,
+  getWorkspaceProperties,
 } from "@/lib/workspace/firestore";
 import type { Property, ProjectDocument, ExtractedField, ProjectOutput, Note, DocCategory } from "@/lib/workspace/types";
 import { DOC_CATEGORY_LABELS, ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
@@ -442,7 +443,16 @@ export default function PropertyDetailClient() {
   const [feedbackSent, setFeedbackSent] = useState(false);
   const [reviewExpanded, setReviewExpanded] = useState(false);
   const [userTier, setUserTier] = useState<string>("free");
+  const [siblingProps, setSiblingProps] = useState<Property[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Load sibling properties in workspace for sidebar navigation
+  useEffect(() => {
+    if (!user || !activeWorkspace) return;
+    getWorkspaceProperties(user.uid, activeWorkspace.id).then(props => {
+      setSiblingProps(props);
+    }).catch(() => {});
+  }, [user, activeWorkspace]);
 
   const loadData = useCallback(async () => {
     if (!propertyId) return;
@@ -645,23 +655,121 @@ export default function PropertyDetailClient() {
   /* Count pulled / calculated / review items */
   const omPurchasePrice = Number(g("pricing_deal_terms", "asking_price")) || null;
 
-  return <PropertyDetailInner
-    property={property} setProperty={setProperty} propertyId={propertyId}
-    fields={fields} notes={notes} documents={documents} outputs={outputs}
-    hasData={hasData} brief={brief} location={location} encodedAddress={encodedAddress}
-    wsType={wsType} scoreTotal={scoreTotal} scoreBand={scoreBand}
-    processingStatus={processingStatus}
-    omPurchasePrice={omPurchasePrice} activeWorkspace={activeWorkspace}
-    handleFileUpload={handleFileUpload} handleReAnalyze={handleReAnalyze}
-    reparsing={reparsing} reparseStatus={reparseStatus} uploading={uploading}
-    fileRef={fileRef} g={g}
-    user={user}
-    deepResearchLoading={deepResearchLoading} setDeepResearchLoading={setDeepResearchLoading}
-    deepResearch={deepResearch} setDeepResearch={setDeepResearch}
-    feedbackSent={feedbackSent} setFeedbackSent={setFeedbackSent}
-    reviewExpanded={reviewExpanded} setReviewExpanded={setReviewExpanded}
-    userTier={userTier}
-  />;
+  return (
+    <div style={{ display: "flex", height: "100%", minHeight: 0 }}>
+      {/* ── Property Sidebar ──────────────────────────────── */}
+      {siblingProps.length > 1 && (
+        <div style={{
+          width: 260, minWidth: 260, background: "#fff", borderRight: "1px solid rgba(0,0,0,0.06)",
+          overflow: "auto", flexShrink: 0,
+        }}>
+          <div style={{ padding: "14px 14px 8px", borderBottom: "1px solid #F0F2F5" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              Properties ({siblingProps.length})
+            </div>
+          </div>
+          <div style={{ padding: 8, display: "flex", flexDirection: "column", gap: 4 }}>
+            {siblingProps.map(sp => {
+              const isActive = sp.id === propertyId;
+              const spScore = (sp as any).scoreTotal || 0;
+              const spHero = (sp as any).heroImageUrl;
+              const spName = cleanDisplayName(sp.propertyName, sp.address1, sp.city, sp.state);
+              const spCity = [sp.city, sp.state].filter(Boolean).join(", ");
+              const spProcessing = (sp as any).processingStatus;
+              const spIsProcessing = spProcessing && spProcessing !== "complete";
+              return (
+                <div
+                  key={sp.id}
+                  onClick={() => router.push(`/workspace/properties/${sp.id}`)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 10, padding: "8px 10px",
+                    borderRadius: 8, cursor: "pointer",
+                    background: isActive ? "rgba(132,204,22,0.06)" : "transparent",
+                    border: isActive ? "1px solid rgba(132,204,22,0.15)" : "1px solid transparent",
+                    transition: "all 0.12s",
+                  }}
+                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "#F9FAFB"; }}
+                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = isActive ? "rgba(132,204,22,0.06)" : "transparent"; }}
+                >
+                  {/* Thumbnail */}
+                  <div style={{
+                    width: 40, height: 40, borderRadius: 6, overflow: "hidden", flexShrink: 0,
+                    background: "#F3F4F6", border: "1px solid rgba(0,0,0,0.04)",
+                  }}>
+                    {spHero ? (
+                      <img src={spHero} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4" /></svg>
+                      </div>
+                    )}
+                  </div>
+                  {/* Name + meta */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: 12, fontWeight: isActive ? 700 : 600,
+                      color: isActive ? "#111827" : "#374151",
+                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    }}>
+                      {spName}
+                    </div>
+                    {spCity && (
+                      <div style={{ fontSize: 10, color: "#9CA3AF", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {spCity}
+                      </div>
+                    )}
+                    {spIsProcessing ? (
+                      <div style={{
+                        display: "inline-flex", alignItems: "center", gap: 3, marginTop: 3,
+                        fontSize: 9, fontWeight: 600, color: "#2563EB",
+                        background: "rgba(37,99,235,0.06)", padding: "1px 6px", borderRadius: 3,
+                      }}>
+                        <div style={{
+                          width: 6, height: 6, borderRadius: "50%",
+                          border: "1.5px solid rgba(37,99,235,0.3)", borderTopColor: "#2563EB",
+                          animation: "spin 0.8s linear infinite",
+                        }} />
+                        Processing
+                      </div>
+                    ) : spScore > 0 ? (
+                      <div style={{
+                        display: "inline-flex", alignItems: "center", gap: 3, marginTop: 3,
+                        fontSize: 9, fontWeight: 700,
+                        color: spScore >= 70 ? "#059669" : spScore >= 50 ? "#D97706" : "#DC2626",
+                      }}>
+                        Score: {spScore}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Main Content ──────────────────────────────────── */}
+      <div style={{ flex: 1, overflow: "auto", minWidth: 0 }}>
+        <PropertyDetailInner
+          property={property} setProperty={setProperty} propertyId={propertyId}
+          fields={fields} notes={notes} documents={documents} outputs={outputs}
+          hasData={hasData} brief={brief} location={location} encodedAddress={encodedAddress}
+          wsType={wsType} scoreTotal={scoreTotal} scoreBand={scoreBand}
+          processingStatus={processingStatus}
+          omPurchasePrice={omPurchasePrice} activeWorkspace={activeWorkspace}
+          handleFileUpload={handleFileUpload} handleReAnalyze={handleReAnalyze}
+          reparsing={reparsing} reparseStatus={reparseStatus} uploading={uploading}
+          fileRef={fileRef} g={g}
+          user={user}
+          deepResearchLoading={deepResearchLoading} setDeepResearchLoading={setDeepResearchLoading}
+          deepResearch={deepResearch} setDeepResearch={setDeepResearch}
+          feedbackSent={feedbackSent} setFeedbackSent={setFeedbackSent}
+          reviewExpanded={reviewExpanded} setReviewExpanded={setReviewExpanded}
+          userTier={userTier}
+        />
+      </div>
+    </div>
+  );
 }
 
 /* ══════════════════════════════════════════════════════════ */
