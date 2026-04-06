@@ -771,7 +771,7 @@ export default function ScoreboardPage() {
             )}
           </div>
           <p style={{ fontSize: 13, color: "#585e70", marginTop: 4, marginBottom: 0 }}>
-            {propertyData.length} propert{propertyData.length !== 1 ? "ies" : "y"} ranked by investment score
+            {propertyData.length} propert{propertyData.length !== 1 ? "ies" : "y"} ranked by deal score
           </p>
         </div>
 
@@ -793,7 +793,7 @@ export default function ScoreboardPage() {
             padding: "7px 12px", borderRadius: 8, border: "1px solid #E0E4EA", fontSize: 12,
             fontWeight: 600, color: "#585e70", background: "#fff", cursor: "pointer", fontFamily: "inherit",
           }}>
-            <option value="score">Sort: Score</option>
+            <option value="score">Sort: Deal Score</option>
             <option value="name">Sort: Name</option>
             <option value="price">Sort: Price</option>
             <option value="cap_rate">Sort: Cap Rate</option>

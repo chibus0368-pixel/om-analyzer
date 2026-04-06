@@ -108,7 +108,7 @@ export default function ShareLinksPage() {
         headers: { "Content-Type": "application/json", ...authHeaders },
         body: JSON.stringify({
           workspaceId: selectedWsId,
-          workspaceName: ws?.name || "Workspace",
+          workspaceName: ws?.name || "DealBoard",
           displayName: displayName.trim() || "",
           whiteLabel,
           hideDocuments,
@@ -297,7 +297,7 @@ export default function ShareLinksPage() {
             <input
               value={displayName}
               onChange={e => setDisplayName(e.target.value)}
-              placeholder="e.g. Q2 NNN Properties for ABC Capital"
+              placeholder="e.g. Q2 NNN Deals for ABC Capital"
               style={inputStyle}
             />
           </div>

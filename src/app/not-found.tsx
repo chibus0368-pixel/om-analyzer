@@ -20,7 +20,7 @@ export default function NotFound() {
           </p>
 
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <Link href="/om-analyzer" style={{
+            <Link href="/" style={{
               display: "inline-flex", alignItems: "center", gap: 8,
               padding: "14px 28px",
               background: "#EF4444", color: "#fff",

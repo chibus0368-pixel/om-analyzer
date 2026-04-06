@@ -177,7 +177,7 @@ export default function TryProPage() {
   const SIDEBAR_NAV = [
     { icon: icons.dashboard, label: "Dashboard" },
     { icon: icons.scoreboard, label: "Scoreboard" },
-    { icon: icons.upload, label: "Upload Property", active: true },
+    { icon: icons.upload, label: "Upload Deal", active: true },
     { icon: icons.map, label: "Map" },
     { icon: icons.share, label: "Shareable Links" },
   ];
@@ -252,7 +252,7 @@ export default function TryProPage() {
             }}>
               Start Analyzing Free
             </Link>
-            <Link href="/om-analyzer" style={{
+            <Link href="/" style={{
               display: "inline-flex", alignItems: "center", justifyContent: "center",
               padding: "14px 32px", background: "#fff", color: "#1e293b",
               borderRadius: 50, fontSize: 15, fontWeight: 600, textDecoration: "none",
@@ -405,7 +405,7 @@ export default function TryProPage() {
 
               {/* Bottom nav */}
               <div style={{ borderTop: "1px solid #f1f5f9", padding: "6px 8px 10px" }}>
-                {["Workspaces", "Settings", "Profile"].map(label => (
+                {["DealBoards", "Settings", "Profile"].map(label => (
                   <div key={label} className="ws-nav" style={{
                     display: "flex", alignItems: "center", gap: 8,
                     padding: "5px 12px", borderRadius: 8,
@@ -745,9 +745,9 @@ export default function TryProPage() {
           </div>
         </div>
 
-        {/* Label under workspace preview */}
+        {/* Label under dealboard preview */}
         <p style={{ textAlign: "center", fontSize: 13, color: "#94a3b8", marginTop: 16 }}>
-          Interactive preview of the Pro workspace — explore the sample deals above
+          Interactive preview of the Pro dealboard — explore the sample deals above
         </p>
       </section>
 
@@ -776,7 +776,7 @@ export default function TryProPage() {
             }}>
               Start Free Pro Trial
             </Link>
-            <Link href="/om-analyzer" style={{
+            <Link href="/" style={{
               display: "inline-flex", alignItems: "center", justifyContent: "center",
               padding: "14px 36px", background: "rgba(255,255,255,0.08)",
               border: "1.5px solid rgba(255,255,255,0.2)", color: "#fff",

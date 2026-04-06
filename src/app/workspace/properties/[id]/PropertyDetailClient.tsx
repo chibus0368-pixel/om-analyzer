@@ -1616,8 +1616,8 @@ function PropertyDetailInner({
         display: "flex", justifyContent: "space-between", alignItems: "center",
       }}>
         <div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#991B1B", marginBottom: 2 }}>Delete Property</div>
-          <div style={{ fontSize: 12, color: C.primary }}>Permanently remove this property and all associated data.</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#991B1B", marginBottom: 2 }}>Delete Deal</div>
+          <div style={{ fontSize: 12, color: C.primary }}>Permanently remove this deal and all associated data.</div>
         </div>
         <button onClick={async (e) => {
           if (!confirm(`Delete "${property.propertyName}"? This cannot be undone.`)) return;
@@ -1635,9 +1635,9 @@ function PropertyDetailInner({
           } catch (err) {
             console.error("[delete] Failed:", err);
             btn.disabled = false;
-            btn.textContent = "Delete Property";
+            btn.textContent = "Delete Deal";
             btn.style.opacity = "1";
-            alert("Failed to delete property. Please try again.");
+            alert("Failed to delete deal. Please try again.");
           }
         }} style={{
           padding: "8px 20px", background: C.primary, color: "#fff", border: "none",
@@ -1645,7 +1645,7 @@ function PropertyDetailInner({
           fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0,
           transition: "all 0.2s ease",
         }}>
-          Delete Property
+          Delete Deal
         </button>
       </div>
     </div>

@@ -17,13 +17,13 @@ import UpgradeModal from "@/components/billing/UpgradeModal";
 /* Sidebar nav — matches Deal Signals design */
 const SIDEBAR_NAV = [
   { href: "/workspace/scoreboard", label: "Scoreboard", icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
-  { href: "/workspace/upload", label: "Upload Property", icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" },
+  { href: "/workspace/upload", label: "Upload Deal", icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" },
   { href: "/workspace/map", label: "Map", icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" },
   { href: "/workspace/share", label: "Shareable Links", icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" },
 ];
 
 const BOTTOM_NAV = [
-  { href: "/workspace/manage", label: "Workspaces", icon: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" },
+  { href: "/workspace/manage", label: "DealBoards", icon: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" },
 ];
 
 function SidebarIcon({ d, size = 18 }: { d: string; size?: number }) {
@@ -291,7 +291,7 @@ function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean;
     return (
       <div style={{ padding: "10px 8px 4px", textAlign: "center" }}>
         <div style={{ width: 32, height: 32, borderRadius: 6, background: "rgba(185, 23, 47, 0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto", cursor: "pointer" }}
-          title={activeWorkspace?.name || "Workspace"}
+          title={activeWorkspace?.name || "DealBoard"}
           onClick={() => setOpen(!open)}
         >
           <span style={{ color: "#b9172f", fontSize: 11, fontWeight: 800 }}>
@@ -387,7 +387,7 @@ function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean;
               onMouseLeave={e => (e.currentTarget.style.color = "#64748b")}
             >
               <span style={{ fontSize: 14, lineHeight: 1 }}>+</span>
-              <span>Add New Workspace</span>
+              <span>Add New DealBoard</span>
             </button>
           </div>
         </div>
@@ -497,7 +497,7 @@ function HeaderWorkspaceSwitcher({ onAddNew }: { onAddNew: () => void }) {
               onMouseLeave={e => (e.currentTarget.style.color = "#64748b")}
             >
               <span style={{ fontSize: 14, lineHeight: 1 }}>+</span>
-              <span>Add New Workspace</span>
+              <span>Add New DealBoard</span>
             </button>
           </div>
         </div>
@@ -779,7 +779,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         {!collapsed && (
           <div className="ws-props-scroll" style={{ flex: 1, overflow: "auto", padding: "8px 8px", marginTop: 4, minHeight: 0 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 8px 8px", marginBottom: 2, position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: "#94a3b8" }}>Properties{properties.length > 0 ? ` (${properties.length})` : ""}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: "#94a3b8" }}>Deals{properties.length > 0 ? ` (${properties.length})` : ""}</span>
             </div>
 
             {loadingProps ? (
@@ -955,7 +955,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               }}
             />
 
-            <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#151b2b", marginBottom: 10 }}>Property Type</label>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#151b2b", marginBottom: 10 }}>Deal Type</label>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
               {(["retail", "industrial", "office", "land"] as AnalysisType[]).map(type => (
                 <button

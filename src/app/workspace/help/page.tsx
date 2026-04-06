@@ -205,7 +205,7 @@ const HELP_TOPICS: HelpTopic[] = [
         <div style={{ padding: "0 0 0 16px" }}>
           <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
             <span style={{ width: 24, height: 24, borderRadius: "50%", background: C.primary, color: "#fff", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>1</span>
-            <div><strong style={{ color: C.onSurface }}>Create a Workspace</strong> — Click "Workspaces" in the bottom nav, then create a new workspace. Choose your asset type (Retail, Industrial, Office, or Land) so scoring uses the right model.</div>
+            <div><strong style={{ color: C.onSurface }}>Create a DealBoard</strong> — Click "DealBoards" in the bottom nav, then create a new dealboard. Choose your asset type (Retail, Industrial, Office, or Land) so scoring uses the right model.</div>
           </div>
           <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
             <span style={{ width: 24, height: 24, borderRadius: "50%", background: C.primary, color: "#fff", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>2</span>
@@ -231,7 +231,7 @@ const HELP_TOPICS: HelpTopic[] = [
   },
   {
     id: "uploading",
-    title: "Uploading Properties",
+    title: "Uploading Deals",
     icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12",
     content: (
       <div>
@@ -291,7 +291,7 @@ const HELP_TOPICS: HelpTopic[] = [
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Score Ring</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          The colored circular gauge on each card shows the deal score at a glance. Green (85+) for Strong Buy, blue (70–84) for Buy, gold (50–69) for Neutral, orange (30–49) for Pass, and red (below 30) for Reject. The score updates automatically whenever you add documents or re-analyze.
+          The colored circular gauge on each card shows the investment score at a glance. Green (85+) for Strong Buy, blue (70–84) for Buy, gold (50–69) for Neutral, orange (30–49) for Pass, and red (below 30) for Reject. The score updates automatically whenever you add documents or re-analyze.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Parse Status</h4>
@@ -400,7 +400,7 @@ const HELP_TOPICS: HelpTopic[] = [
   },
   {
     id: "property-detail",
-    title: "Property Detail Page",
+    title: "Deal Detail Page",
     icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4",
     content: (
       <div>
@@ -468,12 +468,12 @@ const HELP_TOPICS: HelpTopic[] = [
   },
   {
     id: "workspaces",
-    title: "Workspaces",
+    title: "DealBoards",
     icon: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10",
     content: (
       <div>
         <p style={{ fontSize: 14, color: C.secondary, lineHeight: 1.7 }}>
-          Workspaces let you organize properties into separate collections — by deal pipeline, client, asset type, or any grouping that makes sense for your workflow.
+          DealBoards let you organize properties into separate collections — by deal pipeline, client, asset type, or any grouping that makes sense for your workflow.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Asset Types</h4>
@@ -482,12 +482,12 @@ const HELP_TOPICS: HelpTopic[] = [
           Each workspace is tied to an asset type. This determines which scoring model is used and which property-type-specific metrics are extracted. Choose the type that best matches your deals.
         </p>
 
-        <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Managing Workspaces</h4>
+        <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Managing DealBoards</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          Go to <strong>Workspaces</strong> in the bottom nav to create, rename, or delete workspaces. Switch between workspaces using the dropdown at the top of the sidebar. Each workspace has its own set of properties, scores, and outputs.
+          Go to <strong>DealBoards</strong> in the bottom nav to create, rename, or delete dealboards. Switch between dealboards using the dropdown at the top of the sidebar. Each dealboard has its own set of properties, scores, and outputs.
         </p>
 
-        <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Workspace Examples</h4>
+        <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>DealBoard Examples</h4>
         <div style={{ background: C.surfLow, borderRadius: C.radius, padding: 16, fontSize: 13, color: C.secondary, lineHeight: 1.7 }}>
           <strong style={{ color: C.onSurface }}>"Q2 Pipeline"</strong> — All deals you're evaluating this quarter.
           <br /><br />
@@ -700,13 +700,13 @@ const HELP_TOPICS: HelpTopic[] = [
           { q: "Can I re-analyze a property?", a: "Yes. Go to the property detail page and click 'Re-analyze.' This re-runs the entire pipeline with all attached documents and recalculates the score." },
           { q: "What if the AI extracts the wrong data?", a: "Click any field value to override it with the correct number. Your override takes precedence in all calculations and scoring. The more fields you confirm, the higher your Data Confidence score." },
           { q: "Can I upload multiple files for one property?", a: "Yes. Upload the OM first, then go to the property detail page and add rent rolls, T-12s, leases, or any additional documents. The AI incorporates all documents into the analysis." },
-          { q: "What's the difference between workspaces?", a: "Each workspace can have a different asset type (Retail, Industrial, Office, Land), which determines the scoring model used. You can also use workspaces to separate different pipelines or clients." },
+          { q: "What's the difference between dealboards?", a: "Each dealboard can have a different asset type (Retail, Industrial, Office, Land), which determines the scoring model used. You can also use dealboards to separate different pipelines or clients." },
           { q: "Why is my score low even though the deal looks good?", a: "The score is based only on data the AI could extract. If your document is missing key information (e.g., no cap rate, no tenant details), the Data Confidence category will pull the score down. Try uploading additional documents with more complete financial data." },
           { q: "Can I export my analysis?", a: "Yes. Each property generates a downloadable Proforma XLSX and Underwriting Brief. You can also use the Scoreboard for a quick metrics overview across all properties." },
           { q: "Is my data secure?", a: "All documents are stored in Firebase with per-user access controls. Your data is not shared with other users or used to train AI models." },
           { q: "What file types give the best results?", a: "PDFs and Excel files (.xlsx, .xls) produce the most accurate extractions. PDFs are best for OMs and flyers. Excel is best for rent rolls and financial statements. Avoid low-resolution scans or heavily redacted documents." },
           { q: "Can I change the underwriting assumptions?", a: "Yes. Go to Settings to modify default assumptions (LTV, interest rate, amortization, hold period, exit cap, vacancy, rent/expense growth). Changes apply to all new proformas generated in that workspace." },
-          { q: "What happens if I upload to the wrong workspace?", a: "The system detects property type mismatches automatically. If you upload an industrial deal to a retail workspace, you'll see a warning with options to continue anyway or create a new workspace for that asset type." },
+          { q: "What happens if I upload to the wrong dealboard?", a: "The system detects property type mismatches automatically. If you upload an industrial deal to a retail dealboard, you'll see a warning with options to continue anyway or create a new dealboard for that asset type." },
         ].map((item, i) => (
           <details key={i} style={{
             borderBottom: `1px solid ${C.ghost}`,

@@ -100,7 +100,7 @@ export default function ConfirmedPage() {
               Explore Deal Signals
             </Link>
             <Link
-              href="/om-analyzer"
+              href="/"
               style={{
                 display: "inline-block",
                 padding: "14px 32px",

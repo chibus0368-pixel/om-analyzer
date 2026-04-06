@@ -32,7 +32,7 @@ export default function DealSignalNav() {
   }, []);
 
   const isActive = (href: string) => {
-    if (href === "/om-analyzer") return pathname === "/om-analyzer" || pathname === "/";
+    if (href === "/") return pathname === "/" || pathname === "/om-analyzer";
     return pathname?.startsWith(href);
   };
 
@@ -53,14 +53,14 @@ export default function DealSignalNav() {
         display: "flex", alignItems: "center", justifyContent: "space-between",
         maxWidth: 1160, margin: "0 auto", padding: "0 32px", height: 68,
       }}>
-        <Link href="/om-analyzer" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
           <DealSignalLogo size={34} fontSize={20} gap={9} />
         </Link>
 
         <nav className="ds-nav-links" style={{ display: "flex", alignItems: "center", gap: 36 }}>
-          <Link href="/om-analyzer#how-it-works" style={linkStyle("/om-analyzer#how-it-works")}>How it works</Link>
-          <Link href="/om-analyzer#pricing" style={linkStyle("/om-analyzer#pricing")}>Pricing</Link>
-          <Link href="/om-analyzer#demo" style={linkStyle("/om-analyzer#demo")}>Try Pro</Link>
+          <Link href="/#how-it-works" style={linkStyle("/#how-it-works")}>How it works</Link>
+          <Link href="/#pricing" style={linkStyle("/#pricing")}>Pricing</Link>
+          <Link href="/#demo" style={linkStyle("/#demo")}>Try Pro</Link>
         </nav>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

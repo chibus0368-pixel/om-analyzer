@@ -1128,15 +1128,15 @@ export default function OmAnalyzerPage() {
                     {[
                       { label: "Dashboard", icon: "M3 3h7v7H3z" },
                       { label: "Scoreboard", icon: "M18 20V10M12 20V4M6 20v-6" },
-                      { label: "Upload Property", icon: "M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5" },
+                      { label: "Upload Deal", icon: "M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5" },
                     ].map(item => (
                       <div key={item.label} style={{
                         display: "flex", alignItems: "center", gap: 8, padding: "7px 14px", borderRadius: 8,
-                        color: item.label === "Upload Property" ? "#b9172f" : "#64748b",
-                        background: item.label === "Upload Property" ? "rgba(185,23,47,0.06)" : "transparent",
-                        fontSize: 13, fontWeight: item.label === "Upload Property" ? 600 : 500, cursor: "pointer",
+                        color: item.label === "Upload Deal" ? "#b9172f" : "#64748b",
+                        background: item.label === "Upload Deal" ? "rgba(185,23,47,0.06)" : "transparent",
+                        fontSize: 13, fontWeight: item.label === "Upload Deal" ? 600 : 500, cursor: "pointer",
                       }}>
-                        <div style={{ width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: item.label === "Upload Property" ? "rgba(185,23,47,0.08)" : "transparent", fontSize: 12 }}>
+                        <div style={{ width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: item.label === "Upload Deal" ? "rgba(185,23,47,0.08)" : "transparent", fontSize: 12 }}>
                           {item.label === "Dashboard" ? "📊" : item.label === "Scoreboard" ? "📈" : "📤"}
                         </div>
                         {item.label}
@@ -1177,7 +1177,7 @@ export default function OmAnalyzerPage() {
 
                   {/* Bottom nav */}
                   <div style={{ borderTop: "1px solid #f1f5f9", padding: "6px 8px 10px" }}>
-                    {["Workspaces", "Settings"].map(label => (
+                    {["DealBoards", "Settings"].map(label => (
                       <div key={label} style={{
                         display: "flex", alignItems: "center", gap: 8, padding: "5px 12px", borderRadius: 8,
                         color: "#64748b", fontSize: 11, fontWeight: 500, cursor: "pointer",
@@ -1321,7 +1321,7 @@ export default function OmAnalyzerPage() {
                     { text: "Workspace & history", included: false },
                   ],
                   cta: "Get Started Free",
-                  ctaLink: "/om-analyzer",
+                  ctaLink: "/",
                   highlight: false,
                 },
                 {
@@ -1596,7 +1596,7 @@ export default function OmAnalyzerPage() {
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>Product</div>
             {[
-              { label: "OM Analyzer", href: "/om-analyzer" },
+              { label: "OM Analyzer", href: "/" },
               { label: "Pro Workspace", href: "/workspace" },
               { label: "Pricing", href: "/pricing" },
             ].map(link => (

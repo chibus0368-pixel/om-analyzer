@@ -237,7 +237,7 @@ export default function MapPage() {
                 </div>
               ` : ""}
               ${signal ? `<div style="font-size:11px;margin-bottom:8px;color:#151b2b;">${signal}</div>` : ""}
-              <a href="/workspace/properties/${prop.id}" style="display:inline-block;padding:6px 16px;background:#b9172f;color:#fff;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600;">View Property</a>
+              <a href="/workspace/properties/${prop.id}" style="display:inline-block;padding:6px 16px;background:#b9172f;color:#fff;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600;">View Deal</a>
             </div>
           `;
 
@@ -265,7 +265,7 @@ export default function MapPage() {
       <div style={{ padding: "12px 20px", background: "#fff", borderBottom: "1px solid rgba(227, 190, 189, 0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Property Map{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}</h1>
+            <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Deal Map{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}</h1>
             {activeWorkspace?.analysisType && (
               <span style={{
                 display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 4,

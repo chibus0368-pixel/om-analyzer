@@ -426,7 +426,7 @@ export default function UploadPage() {
     <div style={{ maxWidth: 680, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Playfair Display', Georgia, serif" }}>
-          Upload Property{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}
+          Upload Deal{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}
         </h1>
         {activeWorkspace?.analysisType && (
           <span style={{
@@ -669,7 +669,7 @@ export default function UploadPage() {
               style={inputStyle}
               value={propertyName}
               onChange={e => setPropertyName(e.target.value)}
-              placeholder="Enter property name"
+              placeholder="Enter deal name"
               autoFocus
             />
             <p style={{ fontSize: 11, color: C.secondary, margin: "6px 0 0" }}>

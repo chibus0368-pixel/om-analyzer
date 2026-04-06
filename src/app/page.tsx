@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
-
+// Homepage is served via rewrite → /om-analyzer in next.config.ts
+// This empty page exists as a fallback; the rewrite takes priority.
 export default function HomePage() {
-  redirect("/om-analyzer");
+  return null;
 }

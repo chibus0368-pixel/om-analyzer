@@ -22,7 +22,7 @@ const TIERS = [
       { text: "Workspace & history", included: false },
     ],
     cta: "Get Started Free",
-    ctaLink: "/om-analyzer",
+    ctaLink: "/",
     highlight: false,
   },
   {
@@ -238,7 +238,7 @@ export default function PricingPage() {
             Ready to underwrite smarter?
           </h2>
           <p style={{ fontSize: 14, color: "#5A7091", marginBottom: 24 }}>Start with a free analysis. No credit card required.</p>
-          <Link href="/om-analyzer" style={{
+          <Link href="/" style={{
             display: "inline-block", padding: "14px 36px", background: "#DC2626", color: "#fff",
             border: "none", borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: "none", fontFamily: "inherit",
           }}>

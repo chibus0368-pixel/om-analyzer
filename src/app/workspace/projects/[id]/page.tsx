@@ -68,7 +68,7 @@ function AddPropertyModal({ projectId, onClose, onCreate }: { projectId: string;
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: "#253352", display: "block", marginBottom: 4 }}>Property Name *</label>
+            <label style={{ fontSize: 12, fontWeight: 600, color: "#253352", display: "block", marginBottom: 4 }}>Deal Name *</label>
             <input style={inputStyle} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Walgreens - 1234 Main St, Austin TX" autoFocus />
           </div>
           <div>
@@ -489,9 +489,9 @@ export default function ProjectDetailPage() {
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
         {[
-          { label: "Properties", value: properties.length, color: "#2563EB" },
+          { label: "Deals", value: properties.length, color: "#2563EB" },
           { label: "Total Files", value: documents.length, color: "#10B981" },
-          { label: "Score", value: score ? score.totalScore : "--", color: "#C49A3C" },
+          { label: "Deal Score", value: score ? score.totalScore : "--", color: "#C49A3C" },
         ].map(s => (
           <div key={s.label} style={{ ...cardStyle, padding: "14px 16px" }}>
             <div style={{ fontSize: 10, fontWeight: 600, color: "#8899B0", textTransform: "uppercase", letterSpacing: 0.5 }}>{s.label}</div>

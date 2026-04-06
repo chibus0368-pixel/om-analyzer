@@ -112,6 +112,12 @@ const nextConfig: NextConfig = {
   // Redirects configuration - WordPress migration redirects
   async redirects() {
     return [
+      // Redirect /om-analyzer to root (homepage now lives at /)
+      {
+        source: '/om-analyzer',
+        destination: '/',
+        permanent: true,
+      },
       // WordPress admin and login pages
       {
         source: '/wp-admin',
@@ -226,6 +232,11 @@ const nextConfig: NextConfig = {
         {
           source: "/__/auth/:path*",
           destination: "https://hacktheprompt-8051e.firebaseapp.com/__/auth/:path*",
+        },
+        // Serve om-analyzer page at root
+        {
+          source: "/",
+          destination: "/om-analyzer",
         },
       ],
       afterFiles: [],

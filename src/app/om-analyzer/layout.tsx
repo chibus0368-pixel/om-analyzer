@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Deal Signals — AI-Powered CRE Deal Analysis in Seconds",
     description: "Drop an OM and get a scored Deal Signals report instantly — financials, risk ratings, and investment insights.",
-    url: "https://www.dealsignals.app/om-analyzer",
+    url: "https://www.dealsignals.app",
   },
   twitter: {
     card: "summary_large_image",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     description: "Drop an OM and get a scored Deal Signals report instantly — financials, risk ratings, and investment insights.",
   },
   alternates: {
-    canonical: "https://www.dealsignals.app/om-analyzer",
+    canonical: "https://www.dealsignals.app",
   },
 };
 

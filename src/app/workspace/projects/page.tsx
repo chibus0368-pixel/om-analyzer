@@ -191,7 +191,7 @@ export default function ProjectsListPage() {
         <select value={sortBy} onChange={e => setSortBy(e.target.value as typeof sortBy)} style={{ ...inputStyle, width: 160, padding: "8px 12px" }}>
           <option value="updatedAt">Last Updated</option>
           <option value="projectName">Name</option>
-          <option value="scoreTotal">Score</option>
+          <option value="scoreTotal">Deal Score</option>
         </select>
         <span style={{ fontSize: 12, color: "#8899B0", marginLeft: "auto" }}>{filtered.length} project{filtered.length !== 1 ? "s" : ""}</span>
       </div>
@@ -218,7 +218,7 @@ export default function ProjectsListPage() {
                 <th style={{ padding: "10px 16px", textAlign: "left", fontWeight: 600, color: "#5A7091" }}>Project</th>
                 <th style={{ padding: "10px 16px", textAlign: "left", fontWeight: 600, color: "#5A7091" }}>Asset Type</th>
                 <th style={{ padding: "10px 16px", textAlign: "left", fontWeight: 600, color: "#5A7091" }}>Status</th>
-                <th style={{ padding: "10px 16px", textAlign: "left", fontWeight: 600, color: "#5A7091" }}>Score</th>
+                <th style={{ padding: "10px 16px", textAlign: "left", fontWeight: 600, color: "#5A7091" }}>Deal Score</th>
                 <th style={{ padding: "10px 16px", textAlign: "left", fontWeight: 600, color: "#5A7091" }}>Tags</th>
                 <th style={{ padding: "10px 16px", textAlign: "left", fontWeight: 600, color: "#5A7091" }}>Updated</th>
               </tr>

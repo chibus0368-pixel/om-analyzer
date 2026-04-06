@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
       shareId,
       userId,
       workspaceId,
-      workspaceName: workspaceName || "Workspace",
+      workspaceName: workspaceName || "DealBoard",
       displayName: displayName || "",
       whiteLabel: whiteLabel !== false, // default true
       hideDocuments: hideDocuments !== false, // default true
