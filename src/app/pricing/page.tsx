@@ -19,7 +19,7 @@ const TIERS = [
       { text: "Save & organize deals", included: false },
       { text: "AI scoring models", included: false },
       { text: "Full Excel exports", included: false },
-      { text: "Workspace & history", included: false },
+      { text: "DealBoard & history", included: false },
     ],
     cta: "Get Started Free",
     ctaLink: "/",
@@ -35,7 +35,7 @@ const TIERS = [
       { text: "Save & organize deals", included: true },
       { text: "Deal Signals scoring", included: true },
       { text: "Full Excel workbooks (6 sheets)", included: true },
-      { text: "Pro workspace with history", included: true },
+      { text: "Pro DealBoard with history", included: true },
       { text: "Interactive property map", included: true },
       { text: "Deal comparison scoreboard", included: true },
       { text: "Shareable client links", included: true },
@@ -71,7 +71,7 @@ const FAQS = [
   { q: "What file types are supported?", a: "We support PDF (best results), Word documents (.docx), Excel files (.xlsx, .xls, .csv), and plain text. Our AI extracts property data from any standard Offering Memorandum format." },
   { q: "How accurate is the analysis?", a: "Our models achieve 99.8% precision on standard NNN retail OMs. Multi-tenant and complex documents may require manual verification. We always label outputs as first-pass directional analysis." },
   { q: "Can I cancel anytime?", a: "Yes. No long-term contracts. Cancel your Pro or Pro+ subscription anytime and you'll retain access through the end of your billing period." },
-  { q: "What's the difference between Pro and Pro+?", a: "Pro gives you 40 deals/month with the full workspace, scoring, maps, and Excel exports. Pro+ scales to 200 deals/month and adds Location Intelligence, advanced exports, and priority processing." },
+  { q: "What's the difference between Pro and Pro+?", a: "Pro gives you 40 deals/month with the full DealBoard, scoring, maps, and Excel exports. Pro+ scales to 200 deals/month and adds Location Intelligence, advanced exports, and priority processing." },
 ];
 
 const UPGRADES = [

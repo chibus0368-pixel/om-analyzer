@@ -16,6 +16,7 @@ import UpgradeModal from "@/components/billing/UpgradeModal";
 
 /* Sidebar nav — matches Deal Signals design */
 const SIDEBAR_NAV = [
+  { href: "/workspace", label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1" },
   { href: "/workspace/scoreboard", label: "Scoreboard", icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
   { href: "/workspace/upload", label: "Upload Deal", icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" },
   { href: "/workspace/map", label: "Map", icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" },
@@ -938,10 +939,10 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               boxShadow: "0 16px 48px rgba(0,0,0,0.2)",
             }}
           >
-            <h3 style={{ margin: "0 0 6px", fontSize: 16, fontWeight: 700, color: "#151b2b" }}>New Workspace</h3>
-            <p style={{ margin: "0 0 16px", fontSize: 13, color: "#585e70" }}>Create a blank workspace for a new set of properties.</p>
+            <h3 style={{ margin: "0 0 6px", fontSize: 16, fontWeight: 700, color: "#151b2b" }}>New DealBoard</h3>
+            <p style={{ margin: "0 0 16px", fontSize: 13, color: "#585e70" }}>Create a blank DealBoard for a new set of properties.</p>
 
-            <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#151b2b", marginBottom: 8 }}>Workspace Name</label>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#151b2b", marginBottom: 8 }}>DealBoard Name</label>
             <input
               autoFocus
               value={newWsName}

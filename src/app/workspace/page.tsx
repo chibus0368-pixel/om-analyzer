@@ -368,10 +368,10 @@ export default function WorkspaceDashboard() {
           padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
           <div>
-            <span style={{ fontSize: 12, fontWeight: 600, color: "#b9172f" }}>Clear Workspace</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#b9172f" }}>Clear DealBoard</span>
             <span style={{ fontSize: 11, color: "#585e70", marginLeft: 8 }}>Delete all properties in &ldquo;{activeWorkspace?.name}&rdquo;</span>
           </div>
-          <ClearAllButton onClear={() => window.location.reload()} workspaceId={activeWorkspace?.id || ""} workspaceName={activeWorkspace?.name || "this workspace"} />
+          <ClearAllButton onClear={() => window.location.reload()} workspaceId={activeWorkspace?.id || ""} workspaceName={activeWorkspace?.name || "this DealBoard"} />
         </div>
       )}
     </div>

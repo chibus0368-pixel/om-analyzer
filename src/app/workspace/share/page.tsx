@@ -243,7 +243,7 @@ export default function ShareLinksPage() {
             Shareable Links
           </h1>
           <p style={{ fontSize: 13, color: C.secondary, margin: "4px 0 0" }}>
-            Create links to share workspace properties with clients and partners
+            Create links to share DealBoard deals with clients and partners
           </p>
         </div>
         <button
@@ -275,14 +275,14 @@ export default function ShareLinksPage() {
           {/* Workspace selector */}
           <div style={{ marginBottom: 14 }}>
             <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.onSurface, marginBottom: 6 }}>
-              Workspace
+              DealBoard
             </label>
             <select
               value={selectedWsId}
               onChange={e => setSelectedWsId(e.target.value)}
               style={{ ...inputStyle, cursor: "pointer" }}
             >
-              <option value="">Select a workspace...</option>
+              <option value="">Select a DealBoard...</option>
               {workspaces.map(ws => (
                 <option key={ws.id} value={ws.id}>{ws.name}</option>
               ))}
@@ -292,7 +292,7 @@ export default function ShareLinksPage() {
           {/* Custom display name */}
           <div style={{ marginBottom: 14 }}>
             <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.onSurface, marginBottom: 6 }}>
-              Display Name <span style={{ color: C.secondary, fontWeight: 400 }}>(optional — overrides workspace name)</span>
+              Display Name <span style={{ color: C.secondary, fontWeight: 400 }}>(optional — overrides DealBoard name)</span>
             </label>
             <input
               value={displayName}
@@ -433,7 +433,7 @@ export default function ShareLinksPage() {
                     {/* Workspace */}
                     <div style={{ marginBottom: 12 }}>
                       <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.onSurface, marginBottom: 6 }}>
-                        Workspace
+                        DealBoard
                       </label>
                       <select
                         value={editWorkspaceId}
@@ -682,7 +682,7 @@ export default function ShareLinksPage() {
                     </div>
 
                     <div style={{ marginTop: 8, fontSize: 10, color: C.secondary }}>
-                      Created {new Date(link.createdAt).toLocaleDateString()} · Workspace: {link.workspaceName}
+                      Created {new Date(link.createdAt).toLocaleDateString()} · DealBoard: {link.workspaceName}
                     </div>
                   </>
                 )}

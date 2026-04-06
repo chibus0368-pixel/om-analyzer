@@ -98,7 +98,7 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
     : `Unlock ${featureName || "this feature"}`;
 
   const subtitle = reason === "limit_reached"
-    ? "Upgrade to continue analyzing deals and unlock your workspace."
+    ? "Upgrade to continue analyzing deals and unlock your DealBoard."
     : reason === "save_required"
     ? "Create an account to continue."
     : `${featureName || "This feature"} is available on Pro and Pro+ plans.`;

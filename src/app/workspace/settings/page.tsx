@@ -78,7 +78,7 @@ export default function SettingsPage() {
           </span>
         )}
       </div>
-      <p style={{ fontSize: 14, color: "#5A7091", marginBottom: 24 }}>Configure your workspace preferences and default assumptions.</p>
+      <p style={{ fontSize: 14, color: "#5A7091", marginBottom: 24 }}>Configure your DealBoard preferences and default assumptions.</p>
 
       {/* Default Underwriting Assumptions */}
       <div style={{ ...cardStyle, marginBottom: 20 }}>

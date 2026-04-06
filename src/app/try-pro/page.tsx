@@ -314,7 +314,7 @@ export default function TryProPage() {
               <div style={{ padding: "10px 14px 8px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#b9172f" }}>
-                    My Workspace
+                    My DealBoard
                   </span>
                   <span style={{
                     padding: "2px 6px", borderRadius: 3, fontSize: 10, fontWeight: 600,

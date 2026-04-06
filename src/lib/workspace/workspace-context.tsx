@@ -87,7 +87,7 @@ function getStoredWorkspaces(): Workspace[] {
   const defaultWs: Workspace = {
     id: DEFAULT_WS_ID,
     userId: "",
-    name: "Default Workspace",
+    name: "Default DealBoard",
     slug: "default",
     analysisType: "retail",
     createdAt: new Date().toISOString(),

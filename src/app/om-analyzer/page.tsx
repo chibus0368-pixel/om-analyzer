@@ -474,7 +474,7 @@ export default function OmAnalyzerPage() {
               Free Trial Complete
             </h3>
             <p style={{ fontSize: 14, color: "#585e70", lineHeight: 1.6, margin: "0 0 24px" }}>
-              You&apos;ve used your 2 free analyses. Upgrade to Pro to continue analyzing deals with full scoring, Excel exports, and your own deal workspace.
+              You&apos;ve used your 2 free analyses. Upgrade to Pro to continue analyzing deals with full scoring, Excel exports, and your own DealBoard.
             </p>
             <Link href="/workspace/login?upgrade=pro" style={{
               display: "inline-block", padding: "14px 36px",
@@ -1091,7 +1091,7 @@ export default function OmAnalyzerPage() {
           <div id="demo" style={{ maxWidth: 1000, margin: "0 auto", padding: "88px 32px 0" }}>
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <h2 style={{ fontSize: 34, fontWeight: 800, color: "#1e293b", marginBottom: 10 }}>
-                Your full deal <span style={{ color: "#b9172f" }}>workspace</span>
+                Your full deal <span style={{ color: "#b9172f" }}>DealBoard</span>
               </h2>
               <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7 }}>
                 Deep research on tenant credit, location intel, comp analysis, and everything the OM doesn&apos;t mention.
@@ -1122,7 +1122,7 @@ export default function OmAnalyzerPage() {
                 {/* Sidebar */}
                 <aside style={{ width: 260, background: "#fff", borderRight: "1px solid #e2e8f0", padding: "12px 8px", display: "flex", flexDirection: "column" }}>
                   <div style={{ padding: "10px 14px 8px" }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#b9172f" }}>My Workspace</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#b9172f" }}>My DealBoard</div>
                   </div>
                   <nav style={{ padding: "4px 8px", display: "flex", flexDirection: "column", gap: 1 }}>
                     {[
@@ -1318,7 +1318,7 @@ export default function OmAnalyzerPage() {
                     { text: "Save & organize deals", included: false },
                     { text: "AI scoring models", included: false },
                     { text: "Full Excel exports", included: false },
-                    { text: "Workspace & history", included: false },
+                    { text: "DealBoard & history", included: false },
                   ],
                   cta: "Get Started Free",
                   ctaLink: "/",
@@ -1334,7 +1334,7 @@ export default function OmAnalyzerPage() {
                     { text: "Save & organize deals", included: true },
                     { text: "Deal Signals scoring", included: true },
                     { text: "Full Excel workbooks (6 sheets)", included: true },
-                    { text: "Pro workspace with history", included: true },
+                    { text: "Pro DealBoard with history", included: true },
                     { text: "Interactive property map", included: true },
                     { text: "Deal comparison scoreboard", included: true },
                     { text: "Shareable client links", included: true },
@@ -1597,7 +1597,7 @@ export default function OmAnalyzerPage() {
             <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>Product</div>
             {[
               { label: "OM Analyzer", href: "/" },
-              { label: "Pro Workspace", href: "/workspace" },
+              { label: "Pro DealBoard", href: "/workspace" },
               { label: "Pricing", href: "/pricing" },
             ].map(link => (
               <Link key={link.label} href={link.href} style={{

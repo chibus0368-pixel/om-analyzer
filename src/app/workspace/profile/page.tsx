@@ -516,7 +516,7 @@ export default function ProfilePage() {
           {/* Personal Information */}
           <div style={cardStyle}>
             <h2 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 4px", color: SURFACE }}>Personal Information</h2>
-            <p style={{ fontSize: 12, color: MUTED, margin: "0 0 20px" }}>This information is used across your workspace.</p>
+            <p style={{ fontSize: 12, color: MUTED, margin: "0 0 20px" }}>This information is used across your DealBoard.</p>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
               <div>
@@ -771,7 +771,7 @@ export default function ProfilePage() {
                 { key: "newsletter" as const, label: "Newsletter", desc: "CRE market insights, trends, and platform updates." },
                 { key: "productUpdates" as const, label: "Product Updates", desc: "New features, improvements, and platform announcements." },
                 { key: "onboardingEmails" as const, label: "Onboarding Tips", desc: "Helpful tips to get the most out of the platform." },
-                { key: "accountSummary" as const, label: "Account Summary", desc: "Periodic summary of your account activity, usage, and workspace stats." },
+                { key: "accountSummary" as const, label: "Account Summary", desc: "Periodic summary of your account activity, usage, and DealBoard stats." },
               ].map((item, i) => (
                 <div key={item.key} style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between",

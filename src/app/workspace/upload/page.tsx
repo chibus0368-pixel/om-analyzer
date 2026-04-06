@@ -408,7 +408,7 @@ export default function UploadPage() {
   async function handleMismatchCreateWorkspace() {
     if (!mismatchInfo || !activeWorkspace) return;
     try {
-      const newWsName = `${ANALYSIS_TYPE_LABELS[mismatchInfo.detected as any]} Workspace`;
+      const newWsName = `${ANALYSIS_TYPE_LABELS[mismatchInfo.detected as any]} DealBoard`;
       const newWs = await addWorkspace(newWsName, mismatchInfo.detected as any);
       console.log("[upload] Created new workspace:", newWs);
       const { updateProperty } = await import("@/lib/workspace/firestore");
@@ -768,7 +768,7 @@ export default function UploadPage() {
                 padding: "8px 20px", background: C.primaryGradient, color: "#fff", border: "none",
                 borderRadius: C.radius, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif",
               }}>
-                Create New {ANALYSIS_TYPE_LABELS[mismatchInfo.detected as AnalysisType]} Workspace
+                Create New {ANALYSIS_TYPE_LABELS[mismatchInfo.detected as AnalysisType]} DealBoard
               </button>
             </div>
           </div>

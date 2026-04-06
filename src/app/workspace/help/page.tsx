@@ -158,7 +158,7 @@ function WorkspaceTypesDiagram() {
 function KeyboardShortcutTable() {
   const shortcuts = [
     { key: "Click property card", action: "Open property detail page" },
-    { key: "Drag & drop files", action: "Upload to current workspace" },
+    { key: "Drag & drop files", action: "Upload to current DealBoard" },
     { key: "Click score ring", action: "View scoring breakdown" },
     { key: "Click map marker", action: "View property popup with metrics" },
     { key: "Select up to 5 deals", action: "Side-by-side comparison" },
@@ -260,7 +260,7 @@ const HELP_TOPICS: HelpTopic[] = [
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Property Type Detection</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          The AI automatically detects whether a document is for a retail, industrial, office, or land deal. If the detected type doesn't match your workspace type (e.g., uploading an industrial deal to a retail workspace), you'll see a mismatch warning with options to continue anyway or create a new workspace for that asset type.
+          The AI automatically detects whether a document is for a retail, industrial, office, or land deal. If the detected type doesn't match your DealBoard type (e.g., uploading an industrial deal to a retail DealBoard), you'll see a mismatch warning with options to continue anyway or create a new DealBoard for that asset type.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Tips for Best Results</h4>
@@ -281,7 +281,7 @@ const HELP_TOPICS: HelpTopic[] = [
     content: (
       <div>
         <p style={{ fontSize: 14, color: C.secondary, lineHeight: 1.7 }}>
-          The Dashboard is your home screen — it shows all properties in your active workspace at a glance.
+          The Dashboard is your home screen — it shows all properties in your active DealBoard at a glance.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Property Cards</h4>
@@ -301,7 +301,7 @@ const HELP_TOPICS: HelpTopic[] = [
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>+ Add Property Button</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          In the upper right corner of the dashboard, click "+ Add Property" to upload a new deal. This takes you directly to the upload page for your active workspace.
+          In the upper right corner of the dashboard, click "+ Add Property" to upload a new deal. This takes you directly to the upload page for your active DealBoard.
         </p>
       </div>
     ),
@@ -370,7 +370,7 @@ const HELP_TOPICS: HelpTopic[] = [
     content: (
       <div>
         <p style={{ fontSize: 14, color: C.secondary, lineHeight: 1.7 }}>
-          The Scoreboard provides a detailed metrics breakdown for all properties in your workspace, organized into financial categories.
+          The Scoreboard provides a detailed metrics breakdown for all properties in your DealBoard, organized into financial categories.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Metrics Categories</h4>
@@ -479,7 +479,7 @@ const HELP_TOPICS: HelpTopic[] = [
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Asset Types</h4>
         <WorkspaceTypesDiagram />
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          Each workspace is tied to an asset type. This determines which scoring model is used and which property-type-specific metrics are extracted. Choose the type that best matches your deals.
+          Each DealBoard is tied to an asset type. This determines which scoring model is used and which property-type-specific metrics are extracted. Choose the type that best matches your deals.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Managing DealBoards</h4>
@@ -493,7 +493,7 @@ const HELP_TOPICS: HelpTopic[] = [
           <br /><br />
           <strong style={{ color: C.onSurface }}>"Client: ABC Investors"</strong> — Properties screened for a specific client.
           <br /><br />
-          <strong style={{ color: C.onSurface }}>"Industrial Acquisitions"</strong> — Industrial-only workspace with warehouse-specific scoring.
+          <strong style={{ color: C.onSurface }}>"Industrial Acquisitions"</strong> — Industrial-only DealBoard with warehouse-specific scoring.
           <br /><br />
           <strong style={{ color: C.onSurface }}>"Comparison Set"</strong> — A curated set of deals for side-by-side analysis.
         </div>
@@ -566,7 +566,7 @@ const HELP_TOPICS: HelpTopic[] = [
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Proforma XLSX</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          A financial spreadsheet containing projected income, expenses, NOI, debt service, cash flow, and returns over your hold period. Uses the extracted data plus your workspace's default assumptions (LTV, interest rate, amortization, hold period, exit cap, vacancy, rent growth, expense growth). Editable in Excel or Google Sheets.
+          A financial spreadsheet containing projected income, expenses, NOI, debt service, cash flow, and returns over your hold period. Uses the extracted data plus your DealBoard's default assumptions (LTV, interest rate, amortization, hold period, exit cap, vacancy, rent growth, expense growth). Editable in Excel or Google Sheets.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Underwriting Brief</h4>
@@ -576,7 +576,7 @@ const HELP_TOPICS: HelpTopic[] = [
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Re-generating Outputs</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          If you override extracted fields or change workspace assumptions in Settings, you can re-generate outputs from the property detail page. The new outputs will reflect your updated data.
+          If you override extracted fields or change DealBoard assumptions in Settings, you can re-generate outputs from the property detail page. The new outputs will reflect your updated data.
         </p>
       </div>
     ),
@@ -588,7 +588,7 @@ const HELP_TOPICS: HelpTopic[] = [
     content: (
       <div>
         <p style={{ fontSize: 14, color: C.secondary, lineHeight: 1.7 }}>
-          Configure default underwriting assumptions that apply to all new properties in this workspace. These values are used when generating proformas and financial projections.
+          Configure default underwriting assumptions that apply to all new properties in this DealBoard. These values are used when generating proformas and financial projections.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Default Assumptions</h4>
@@ -613,7 +613,7 @@ const HELP_TOPICS: HelpTopic[] = [
           ))}
         </div>
         <p style={{ fontSize: 12, color: C.secondary, fontStyle: "italic" }}>
-          These are the system defaults. You can change them in Settings — your changes apply to all new underwriting models in this workspace.
+          These are the system defaults. You can change them in Settings — your changes apply to all new underwriting models in this DealBoard.
         </p>
       </div>
     ),
@@ -641,7 +641,7 @@ const HELP_TOPICS: HelpTopic[] = [
           <br /><br />
           <strong style={{ color: C.onSurface }}>Use Bulk Upload for deal flow.</strong> If a broker sends you 10 OMs, bulk upload them all at once instead of one by one.
           <br /><br />
-          <strong style={{ color: C.onSurface }}>Create separate workspaces per client or pipeline.</strong> This keeps your deals organized and lets you use the right scoring model per asset type.
+          <strong style={{ color: C.onSurface }}>Create separate DealBoards per client or pipeline.</strong> This keeps your deals organized and lets you use the right scoring model per asset type.
           <br /><br />
           <strong style={{ color: C.onSurface }}>Check the Map for geographic concentration.</strong> If all your deals cluster in one area, you may want to diversify.
         </div>
@@ -705,7 +705,7 @@ const HELP_TOPICS: HelpTopic[] = [
           { q: "Can I export my analysis?", a: "Yes. Each property generates a downloadable Proforma XLSX and Underwriting Brief. You can also use the Scoreboard for a quick metrics overview across all properties." },
           { q: "Is my data secure?", a: "All documents are stored in Firebase with per-user access controls. Your data is not shared with other users or used to train AI models." },
           { q: "What file types give the best results?", a: "PDFs and Excel files (.xlsx, .xls) produce the most accurate extractions. PDFs are best for OMs and flyers. Excel is best for rent rolls and financial statements. Avoid low-resolution scans or heavily redacted documents." },
-          { q: "Can I change the underwriting assumptions?", a: "Yes. Go to Settings to modify default assumptions (LTV, interest rate, amortization, hold period, exit cap, vacancy, rent/expense growth). Changes apply to all new proformas generated in that workspace." },
+          { q: "Can I change the underwriting assumptions?", a: "Yes. Go to Settings to modify default assumptions (LTV, interest rate, amortization, hold period, exit cap, vacancy, rent/expense growth). Changes apply to all new proformas generated in that DealBoard." },
           { q: "What happens if I upload to the wrong dealboard?", a: "The system detects property type mismatches automatically. If you upload an industrial deal to a retail dealboard, you'll see a warning with options to continue anyway or create a new dealboard for that asset type." },
         ].map((item, i) => (
           <details key={i} style={{

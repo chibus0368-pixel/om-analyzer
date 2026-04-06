@@ -57,7 +57,7 @@ export default function ManageWorkspacesPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#0B1120" }}>Manage Workspaces</h1>
+            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#0B1120" }}>Manage DealBoards</h1>
             {activeWorkspace?.analysisType && (
               <span style={{
                 display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 4,
@@ -69,7 +69,7 @@ export default function ManageWorkspacesPage() {
               </span>
             )}
           </div>
-          <p style={{ margin: "4px 0 0", fontSize: 13, color: "#5A7091" }}>Add, rename, clear data, or delete workspaces.</p>
+          <p style={{ margin: "4px 0 0", fontSize: 13, color: "#5A7091" }}>Add, rename, clear data, or delete DealBoards.</p>
         </div>
         <button
           onClick={() => setShowAdd(true)}
@@ -79,7 +79,7 @@ export default function ManageWorkspacesPage() {
             borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
           }}
         >
-          + New Workspace
+          + New DealBoard
         </button>
       </div>
 
@@ -89,7 +89,7 @@ export default function ManageWorkspacesPage() {
           background: "#fff", borderRadius: 12, padding: "24px 28px", marginBottom: 16,
           border: "1px solid #E5E9F0", boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
         }}>
-          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#151b2b", marginBottom: 8 }}>Workspace Name</label>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#151b2b", marginBottom: 8 }}>DealBoard Name</label>
           <input
             autoFocus
             value={newName}
@@ -145,7 +145,7 @@ export default function ManageWorkspacesPage() {
                 cursor: newName.trim() ? "pointer" : "default", fontFamily: "inherit",
               }}
             >
-              Create Workspace
+              Create DealBoard
             </button>
           </div>
         </div>
@@ -223,7 +223,7 @@ export default function ManageWorkspacesPage() {
               {/* Confirm Delete */}
               {confirmDeleteId === ws.id && (
                 <ConfirmBanner
-                  message={`Permanently delete "${ws.name}"? This removes the workspace entry (properties remain in Firestore).`}
+                  message={`Permanently delete "${ws.name}"? This removes the DealBoard entry (properties remain in Firestore).`}
                   confirmLabel="Delete"
                   confirmColor="#DC3545"
                   onConfirm={() => handleDelete(ws.id)}
@@ -249,7 +249,7 @@ export default function ManageWorkspacesPage() {
 
       {workspaces.length === 0 && (
         <div style={{ textAlign: "center", padding: 40, color: "#8899B0", fontSize: 14 }}>
-          No workspaces found. Create one to get started.
+          No DealBoards found. Create one to get started.
         </div>
       )}
     </div>
