@@ -975,28 +975,26 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
             Share DealBoard
           </Link>
-          {/* Info tooltip for sharing */}
-          <div style={{ position: "relative" }}
-            onMouseEnter={e => {
-              const tip = e.currentTarget.querySelector("[data-tooltip]") as HTMLElement;
-              if (tip) tip.style.opacity = "1";
-              if (tip) tip.style.pointerEvents = "auto";
-            }}
-            onMouseLeave={e => {
-              const tip = e.currentTarget.querySelector("[data-tooltip]") as HTMLElement;
-              if (tip) tip.style.opacity = "0";
-              if (tip) tip.style.pointerEvents = "none";
-            }}
-          >
-            <div style={{
-              width: 24, height: 24, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-              background: "rgba(156,163,175,0.08)", cursor: "help", transition: "background 0.15s",
-            }}>
+          {/* Info tooltip for sharing — click to toggle so user can click Learn more */}
+          <div style={{ position: "relative" }}>
+            <div
+              onClick={() => {
+                const tip = document.getElementById("share-tooltip");
+                if (!tip) return;
+                const isVisible = tip.style.opacity === "1";
+                tip.style.opacity = isVisible ? "0" : "1";
+                tip.style.pointerEvents = isVisible ? "none" : "auto";
+              }}
+              style={{
+                width: 24, height: 24, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+                background: "rgba(156,163,175,0.08)", cursor: "pointer", transition: "background 0.15s",
+              }}
+            >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
             </div>
-            <div data-tooltip style={{
+            <div id="share-tooltip" style={{
               position: "absolute", top: "calc(100% + 8px)", right: 0, width: 280,
               background: "#1a2236", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10,
               padding: "14px 16px", boxShadow: "0 12px 40px rgba(0,0,0,0.3)",
@@ -1008,7 +1006,10 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 1.6, marginBottom: 10 }}>
                 Generate a read-only link to share your DealBoard with investors, partners, or your team. Recipients can view property scores, financials, and AI analysis without needing an account.
               </div>
-              <Link href="/workspace/help#sharing" style={{
+              <Link href="/workspace/help#sharing" onClick={() => {
+                const tip = document.getElementById("share-tooltip");
+                if (tip) { tip.style.opacity = "0"; tip.style.pointerEvents = "none"; }
+              }} style={{
                 fontSize: 11, fontWeight: 700, color: "#84CC16", textDecoration: "none",
                 display: "inline-flex", alignItems: "center", gap: 4,
               }}>
