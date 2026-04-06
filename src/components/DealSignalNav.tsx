@@ -38,16 +38,17 @@ export default function DealSignalNav() {
 
   const linkStyle = (href: string): React.CSSProperties => ({
     fontSize: 14, fontWeight: 500, textDecoration: "none", transition: "color 0.15s",
-    color: isActive(href) ? "#b9172f" : "#475569",
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    color: isActive(href) ? "#b9172f" : "#9ca3af",
   });
 
   return (
     <header style={{
       position: "sticky", top: 0, zIndex: 100,
-      background: "rgba(255,255,255,0.92)",
-      backdropFilter: "blur(12px)",
-      WebkitBackdropFilter: "blur(12px)",
-      borderBottom: "1px solid #f1f5f9",
+      background: "rgba(13,13,20,0.8)",
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+      borderBottom: "1px solid rgba(255,255,255,0.06)",
     }}>
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -67,12 +68,13 @@ export default function DealSignalNav() {
           {authedUser ? (
             <Link href="/workspace" style={{
               display: "flex", alignItems: "center", gap: 8,
-              fontSize: 13, fontWeight: 600, color: "#1e293b", textDecoration: "none",
-              padding: "8px 18px", borderRadius: 50, background: "#f1f5f9",
-              border: "1px solid #e2e8f0", transition: "all 0.15s",
+              fontSize: 13, fontWeight: 600, color: "#ffffff", textDecoration: "none",
+              padding: "8px 18px", borderRadius: 50, background: "#16161f",
+              border: "1px solid rgba(255,255,255,0.1)", transition: "all 0.15s",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
             }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#e2e8f0"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#f1f5f9"; }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#1e1e28"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#16161f"; }}
             >
               <span style={{
                 width: 24, height: 24, borderRadius: "50%", background: "#b9172f",
@@ -82,26 +84,29 @@ export default function DealSignalNav() {
                 {(authedUser.displayName || authedUser.email || "U")[0].toUpperCase()}
               </span>
               Open App
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </Link>
           ) : (
             <>
               <Link href="/workspace/login" style={{
-                fontSize: 13, fontWeight: 600, color: "#475569", textDecoration: "none",
-                padding: "9px 22px", borderRadius: 50, border: "1px solid #e2e8f0",
+                fontSize: 13, fontWeight: 600, color: "#9ca3af", textDecoration: "none",
+                padding: "9px 22px", borderRadius: 50, border: "1px solid rgba(255,255,255,0.15)",
                 transition: "all 0.15s",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#b9172f"; (e.currentTarget as HTMLElement).style.color = "#b9172f"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#e2e8f0"; (e.currentTarget as HTMLElement).style.color = "#475569"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.15)"; (e.currentTarget as HTMLElement).style.color = "#9ca3af"; }}
               >Sign in</Link>
               <Link href="/try-pro" style={{
                 fontSize: 13, fontWeight: 600, color: "#fff", textDecoration: "none",
                 padding: "9px 22px", borderRadius: 50,
                 background: "linear-gradient(135deg, #b9172f, #dc3545)",
-                transition: "opacity 0.15s",
+                transition: "all 0.15s",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                boxShadow: "0 0 20px rgba(185,23,47,0.3)",
               }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.9"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 30px rgba(185,23,47,0.5)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(185,23,47,0.3)"; }}
               >Get Started</Link>
             </>
           )}
