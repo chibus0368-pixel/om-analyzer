@@ -686,8 +686,8 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           flex: 1, display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "0 20px", height: "100%",
         }}>
-          {/* Left: Top nav links (All DealBoards, Upload History) */}
-          <nav style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          {/* Left: Top nav links */}
+          <nav style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {[
               { href: "/workspace/manage", label: "All DealBoards" },
               { href: "/workspace/upload/history", label: "Upload History" },
@@ -695,15 +695,16 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               const active = pathname.startsWith(item.href);
               return (
                 <Link key={item.href} href={item.href} style={{
-                  padding: "6px 14px", borderRadius: 8,
-                  fontSize: 13, fontWeight: active ? 700 : 500,
-                  color: active ? "#FFFFFF" : "rgba(255,255,255,0.7)",
-                  background: active ? "rgba(255,255,255,0.1)" : "transparent",
+                  padding: "6px 16px", borderRadius: 8,
+                  fontSize: 13, fontWeight: active ? 600 : 500,
+                  letterSpacing: 0.5,
+                  color: active ? "#FFFFFF" : "rgba(255,255,255,0.6)",
+                  background: active ? "rgba(255,255,255,0.08)" : "transparent",
                   textDecoration: "none", transition: "all 0.15s",
                   fontFamily: "'Inter', sans-serif",
                 }}
-                  onMouseEnter={e => { if (!active) { e.currentTarget.style.color = "#FFFFFF"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; } }}
-                  onMouseLeave={e => { if (!active) { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.background = "transparent"; } }}
+                  onMouseEnter={e => { if (!active) { e.currentTarget.style.color = "rgba(255,255,255,0.9)"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; } }}
+                  onMouseLeave={e => { if (!active) { e.currentTarget.style.color = "rgba(255,255,255,0.6)"; e.currentTarget.style.background = "transparent"; } }}
                 >
                   {item.label}
                 </Link>
@@ -729,11 +730,15 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               </button>
             ) : (
               <Link href="/workspace/profile?tab=account" style={{
-                padding: "7px 18px", background: "#84CC16", color: "#0F172A",
-                borderRadius: 50,
-                fontSize: 12, fontWeight: 700, textDecoration: "none", fontFamily: "'Inter', sans-serif",
+                padding: "7px 20px", background: "transparent", color: "#84CC16",
+                border: "1.5px solid #84CC16", borderRadius: 50,
+                fontSize: 11, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase",
+                textDecoration: "none", fontFamily: "'Inter', sans-serif",
                 transition: "all 0.15s",
-              }}>
+              }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.1)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+              >
                 {userTier === "pro" ? "Pro Plan" : userTier === "pro_plus" ? "Pro+" : "My Plan"}
               </Link>
             )}
@@ -749,10 +754,10 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
               >
                 <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#FFFFFF", lineHeight: 1.2 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", lineHeight: 1.2, letterSpacing: 0.3, textTransform: "uppercase" }}>
                     {user.displayName || user.email?.split("@")[0] || "User"}
                   </div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", lineHeight: 1.2 }}>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", lineHeight: 1.3 }}>
                     {user.email || ""}
                   </div>
                 </div>
