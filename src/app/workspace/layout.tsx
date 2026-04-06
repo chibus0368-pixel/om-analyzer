@@ -931,6 +931,42 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
       {/* Main Content */}
       <main style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
+        {/* ===== HORIZONTAL WORKSPACE NAV TABS ===== */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 0,
+          padding: "0 24px", height: 42, minHeight: 42,
+          background: "#FFFFFF", borderBottom: "1px solid rgba(0,0,0,0.06)",
+        }}>
+          {[
+            { href: "/workspace", label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
+            { href: "/workspace/scoreboard", label: "Scoreboard", icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
+            { href: "/workspace/upload", label: "Upload", icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" },
+            { href: "/workspace/map", label: "Map", icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" },
+          ].map(tab => {
+            const active = tab.href === "/workspace" ? pathname === "/workspace" || pathname.startsWith("/workspace/properties") : pathname.startsWith(tab.href);
+            return (
+              <Link key={tab.href} href={`${tab.href}${activeWorkspace?.slug ? "?ws=" + activeWorkspace.slug : ""}`} style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                padding: "8px 16px", height: "100%",
+                fontSize: 12, fontWeight: 600, letterSpacing: 0.8, textTransform: "uppercase",
+                color: active ? "#0F172A" : "#9CA3AF",
+                textDecoration: "none",
+                borderBottom: active ? "2px solid #84CC16" : "2px solid transparent",
+                fontFamily: "'Inter', sans-serif",
+                transition: "all 0.15s",
+              }}
+                onMouseEnter={e => { if (!active) { e.currentTarget.style.color = "#6B7280"; } }}
+                onMouseLeave={e => { if (!active) { e.currentTarget.style.color = "#9CA3AF"; } }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: active ? 1 : 0.5 }}>
+                  <path d={tab.icon} />
+                </svg>
+                {tab.label}
+              </Link>
+            );
+          })}
+        </div>
+
         <div style={{ flex: 1, overflow: "auto", padding: 24, display: "flex", flexDirection: "column" }}>
           {showUpgradeSuccess && (
             <div style={{
