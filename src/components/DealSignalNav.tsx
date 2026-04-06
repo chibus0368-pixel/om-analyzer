@@ -6,8 +6,8 @@ import { usePathname } from "next/navigation";
 import DealSignalLogo from "./DealSignalLogo";
 
 /**
- * Deal Signals shared marketing nav — used on all public pages.
- * Detects signed-in users and shows "Open App" instead of login/signup.
+ * Deal Signals shared marketing nav — matches ValidateFast header style.
+ * Fixed position, translucent dark bg with blur, compact green CTA.
  */
 export default function DealSignalNav() {
   const pathname = usePathname();
@@ -39,79 +39,98 @@ export default function DealSignalNav() {
   const linkStyle = (href: string): React.CSSProperties => ({
     fontSize: 14, fontWeight: 500, textDecoration: "none", transition: "color 0.15s",
     fontFamily: "'Plus Jakarta Sans', sans-serif",
-    color: isActive(href) ? "#c8ff00" : "#9ca3af",
+    padding: "4px 0",
+    color: isActive(href) ? "#ffffff" : "#9ca3af",
   });
 
   return (
     <header style={{
-      position: "sticky", top: 0, zIndex: 100,
-      background: "#000000",
-      backdropFilter: "blur(20px)",
-      WebkitBackdropFilter: "blur(20px)",
-      borderBottom: "1px solid rgba(255,255,255,0.06)",
+      position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
+      height: 64,
     }}>
+      {/* Translucent background overlay with blur */}
       <div style={{
+        position: "absolute", inset: 0,
+        background: "rgba(13,13,20,0.8)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        borderBottom: "1px solid rgba(255,255,255,0.05)",
+      }} />
+
+      {/* Nav content */}
+      <nav style={{
+        position: "relative",
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        maxWidth: 1160, margin: "0 auto", padding: "0 32px", height: 68,
+        maxWidth: 1280, margin: "0 auto", padding: "0 128px", height: 64,
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
       }}>
+        {/* Logo */}
         <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <DealSignalLogo size={34} fontSize={20} gap={9} />
+          <DealSignalLogo size={28} fontSize={18} gap={8} />
         </Link>
 
-        <nav className="ds-nav-links" style={{ display: "flex", alignItems: "center", gap: 36 }}>
-          <Link href="/#how-it-works" style={linkStyle("/#how-it-works")}>How it works</Link>
-          <Link href="/#pricing" style={linkStyle("/#pricing")}>Pricing</Link>
-          <Link href="/#demo" style={linkStyle("/#demo")}>Try Pro</Link>
-        </nav>
+        {/* Center nav links */}
+        <div className="ds-nav-links" style={{ display: "flex", alignItems: "center", gap: 32 }}>
+          <Link href="/#how-it-works" style={linkStyle("/#how-it-works")}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#ffffff"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = isActive("/#how-it-works") ? "#ffffff" : "#9ca3af"; }}
+          >How it works</Link>
+          <Link href="/#features" style={linkStyle("/#features")}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#ffffff"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = isActive("/#features") ? "#ffffff" : "#9ca3af"; }}
+          >Features</Link>
+          <Link href="/#pricing" style={linkStyle("/#pricing")}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#ffffff"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = isActive("/#pricing") ? "#ffffff" : "#9ca3af"; }}
+          >Pricing</Link>
+          <Link href="/#faq" style={linkStyle("/#faq")}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#ffffff"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = isActive("/#faq") ? "#ffffff" : "#9ca3af"; }}
+          >FAQ</Link>
+        </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {/* Right side CTA */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           {authedUser ? (
             <Link href="/workspace" style={{
-              display: "flex", alignItems: "center", gap: 8,
-              fontSize: 13, fontWeight: 600, color: "#ffffff", textDecoration: "none",
-              padding: "8px 18px", borderRadius: 50, background: "#16161f",
-              border: "1px solid rgba(255,255,255,0.1)", transition: "all 0.15s",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+              fontSize: 14, fontWeight: 600, color: "#0d0d14", textDecoration: "none",
+              padding: "0 14px", borderRadius: 8, background: "#c8ff00",
+              height: 32, transition: "all 0.2s",
               fontFamily: "'Plus Jakarta Sans', sans-serif",
+              boxShadow: "0 0 20px rgba(200,255,0,0.3), 0 0 40px rgba(200,255,0,0.1)",
             }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#1e1e28"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#16161f"; }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 25px rgba(200,255,0,0.5), 0 0 50px rgba(200,255,0,0.2)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(200,255,0,0.3), 0 0 40px rgba(200,255,0,0.1)"; }}
             >
-              <span style={{
-                width: 24, height: 24, borderRadius: "50%", background: "#c8ff00",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 11, fontWeight: 700, color: "#0d0d14", flexShrink: 0,
-              }}>
-                {(authedUser.displayName || authedUser.email || "U")[0].toUpperCase()}
-              </span>
               Open App
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </Link>
           ) : (
             <>
               <Link href="/workspace/login" style={{
-                fontSize: 13, fontWeight: 600, color: "#9ca3af", textDecoration: "none",
-                padding: "9px 22px", borderRadius: 50, border: "1px solid rgba(255,255,255,0.15)",
-                transition: "all 0.15s",
+                fontSize: 14, fontWeight: 500, color: "#9ca3af", textDecoration: "none",
+                transition: "color 0.15s",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#c8ff00"; (e.currentTarget as HTMLElement).style.color = "#c8ff00"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.15)"; (e.currentTarget as HTMLElement).style.color = "#9ca3af"; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#ffffff"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#9ca3af"; }}
               >Sign in</Link>
-              <Link href="/try-pro" style={{
-                fontSize: 13, fontWeight: 600, color: "#0d0d14", textDecoration: "none",
-                padding: "9px 22px", borderRadius: 50,
-                background: "linear-gradient(135deg, #c8ff00, #a8d600)",
-                transition: "all 0.15s",
+              <Link href="/workspace/login" style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                fontSize: 14, fontWeight: 600, color: "#0d0d14", textDecoration: "none",
+                padding: "0 14px", borderRadius: 8, background: "#c8ff00",
+                height: 32, transition: "all 0.2s",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
-                boxShadow: "0 0 20px rgba(200,255,0,0.3)",
+                boxShadow: "0 0 20px rgba(200,255,0,0.3), 0 0 40px rgba(200,255,0,0.1)",
               }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 30px rgba(200,255,0,0.5)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(200,255,0,0.3)"; }}
-              >Get Started</Link>
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 25px rgba(200,255,0,0.5), 0 0 50px rgba(200,255,0,0.2)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(200,255,0,0.3), 0 0 40px rgba(200,255,0,0.1)"; }}
+              >Get Started Free</Link>
             </>
           )}
         </div>
-      </div>
+      </nav>
     </header>
   );
 }

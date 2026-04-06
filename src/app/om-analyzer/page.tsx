@@ -518,7 +518,7 @@ export default function OmAnalyzerPage() {
 
       {/* ===== RESULT: minimal header bar ===== */}
       {view === "result" && (
-        <div style={{ padding: "12px 0", borderBottom: "1px solid #EDF0F5" }}>
+        <div style={{ padding: "12px 0", paddingTop: 76, borderBottom: "1px solid #EDF0F5" }}>
           <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <button onClick={resetAnalyzer} style={{
               padding: "8px 20px", background: "#16161f", border: "1.5px solid #D8DFE9",
@@ -533,7 +533,7 @@ export default function OmAnalyzerPage() {
 
       {/* ===== HERO + LANDING PAGE ===== */}
       {view === "upload" && (
-        <section style={{ background: "#0d0d14" }}>
+        <section style={{ background: "#0d0d14", paddingTop: 64 }}>
 
           {/* ── 1. HERO ── */}
           <div style={{ padding: "100px 32px 120px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
