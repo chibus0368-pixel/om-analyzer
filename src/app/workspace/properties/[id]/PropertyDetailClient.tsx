@@ -657,10 +657,31 @@ export default function PropertyDetailClient() {
 
   return (
     <div style={{ display: "flex", height: "100%", minHeight: 0 }}>
-      {/* ── Property Sidebar ──────────────────────────────── */}
+      {/* ── Main Content ──────────────────────────────────── */}
+      <div style={{ flex: 1, overflow: "auto", minWidth: 0 }}>
+        <PropertyDetailInner
+          property={property} setProperty={setProperty} propertyId={propertyId}
+          fields={fields} notes={notes} documents={documents} outputs={outputs}
+          hasData={hasData} brief={brief} location={location} encodedAddress={encodedAddress}
+          wsType={wsType} scoreTotal={scoreTotal} scoreBand={scoreBand}
+          processingStatus={processingStatus}
+          omPurchasePrice={omPurchasePrice} activeWorkspace={activeWorkspace}
+          handleFileUpload={handleFileUpload} handleReAnalyze={handleReAnalyze}
+          reparsing={reparsing} reparseStatus={reparseStatus} uploading={uploading}
+          fileRef={fileRef} g={g}
+          user={user}
+          deepResearchLoading={deepResearchLoading} setDeepResearchLoading={setDeepResearchLoading}
+          deepResearch={deepResearch} setDeepResearch={setDeepResearch}
+          feedbackSent={feedbackSent} setFeedbackSent={setFeedbackSent}
+          reviewExpanded={reviewExpanded} setReviewExpanded={setReviewExpanded}
+          userTier={userTier}
+        />
+      </div>
+
+      {/* ── Property Sidebar (right) ─────────────────────── */}
       {siblingProps.length > 1 && (
         <div style={{
-          width: 260, minWidth: 260, background: "#fff", borderRight: "1px solid rgba(0,0,0,0.06)",
+          width: 260, minWidth: 260, background: "#fff", borderLeft: "1px solid rgba(0,0,0,0.06)",
           overflow: "auto", flexShrink: 0,
         }}>
           <div style={{ padding: "14px 14px 8px", borderBottom: "1px solid #F0F2F5" }}>
@@ -754,26 +775,6 @@ export default function PropertyDetailClient() {
         </div>
       )}
 
-      {/* ── Main Content ──────────────────────────────────── */}
-      <div style={{ flex: 1, overflow: "auto", minWidth: 0 }}>
-        <PropertyDetailInner
-          property={property} setProperty={setProperty} propertyId={propertyId}
-          fields={fields} notes={notes} documents={documents} outputs={outputs}
-          hasData={hasData} brief={brief} location={location} encodedAddress={encodedAddress}
-          wsType={wsType} scoreTotal={scoreTotal} scoreBand={scoreBand}
-          processingStatus={processingStatus}
-          omPurchasePrice={omPurchasePrice} activeWorkspace={activeWorkspace}
-          handleFileUpload={handleFileUpload} handleReAnalyze={handleReAnalyze}
-          reparsing={reparsing} reparseStatus={reparseStatus} uploading={uploading}
-          fileRef={fileRef} g={g}
-          user={user}
-          deepResearchLoading={deepResearchLoading} setDeepResearchLoading={setDeepResearchLoading}
-          deepResearch={deepResearch} setDeepResearch={setDeepResearch}
-          feedbackSent={feedbackSent} setFeedbackSent={setFeedbackSent}
-          reviewExpanded={reviewExpanded} setReviewExpanded={setReviewExpanded}
-          userTier={userTier}
-        />
-      </div>
     </div>
   );
 }
@@ -1144,10 +1145,6 @@ function PropertyDetailInner({
             }}>
               <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
                 Price
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.7 }}>
-                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
                 {isOverridden && <span style={{ fontSize: 8, fontWeight: 700, background: "#DBEAFE", color: "#1E40AF", padding: "1px 5px", borderRadius: 3 }}>ADJUSTED</span>}
               </div>
               <PurchasePriceInline priceState={priceState} />
