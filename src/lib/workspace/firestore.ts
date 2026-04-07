@@ -44,83 +44,35 @@ async function safeGet<T>(fn: () => Promise<T | null>): Promise<T | null> {
 // Only the workspaceId field on properties lives in Firestore.
 // The "default" workspace ID means: properties with no workspaceId OR workspaceId === "default".
 
-/** Get properties filtered by workspace. "default" workspace includes all properties without a workspaceId. */
+/** Get properties filtered by workspace via server-side API (bypasses Firestore security rules). */
 export async function getWorkspaceProperties(userId: string, workspaceId: string): Promise<Property[]> {
-  return safeQuery(async () => {
-    // Strategy: query by userId first. If that returns nothing, fall back to querying
-    // by workspaceId directly (handles legacy properties created with "admin-user" userId).
-    let allProps = await getUserWorkspaceProperties(userId);
+  try {
+    // Get auth token from Firebase Auth
+    const { getAuth } = await import("firebase/auth");
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      console.warn("[getWorkspaceProperties] No authenticated user");
+      return [];
+    }
+    const token = await currentUser.getIdToken();
 
-    console.log(`[getWorkspaceProperties] userId=${userId}, workspaceId=${workspaceId}, byUserId=${allProps.length}`);
+    const res = await fetch(`/api/workspace/properties?workspaceId=${encodeURIComponent(workspaceId)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-    // FALLBACK: If userId query returns nothing, try querying directly by workspaceId
-    if (allProps.length === 0 && workspaceId && workspaceId !== "default") {
-      console.log(`[getWorkspaceProperties] userId returned 0, trying workspaceId query...`);
-      const wsQuery = query(collection(db, "workspace_properties"), where("workspaceId", "==", workspaceId));
-      const wsSnap = await getDocs(wsQuery);
-      allProps = wsSnap.docs.map(d => ({ id: d.id, ...d.data() } as Property));
-      console.log(`[getWorkspaceProperties] workspaceId query returned ${allProps.length} properties`);
-
-      // Auto-fix: stamp the correct userId on these orphaned properties
-      if (allProps.length > 0 && userId) {
-        console.log(`[getWorkspaceProperties] Auto-fixing userId on ${allProps.length} properties`);
-        for (const p of allProps) {
-          try {
-            await updateDoc(doc(db, "workspace_properties", p.id), { userId, updatedAt: new Date().toISOString() });
-          } catch (e) { console.warn("[getWorkspaceProperties] Failed to fix userId:", p.id, e); }
-        }
-        return allProps.sort((a, b) => (a.propertyName || "").localeCompare(b.propertyName || ""));
-      }
+    if (!res.ok) {
+      console.warn(`[getWorkspaceProperties] API returned ${res.status}`);
+      return [];
     }
 
-    // Also try legacy "admin-user" userId if still nothing
-    if (allProps.length === 0) {
-      console.log(`[getWorkspaceProperties] Trying legacy admin-user query...`);
-      const legacyQuery = query(collection(db, "workspace_properties"), where("userId", "==", "admin-user"));
-      const legacySnap = await getDocs(legacyQuery);
-      allProps = legacySnap.docs.map(d => ({ id: d.id, ...d.data() } as Property));
-      console.log(`[getWorkspaceProperties] admin-user query returned ${allProps.length} properties`);
-
-      // Auto-fix: stamp the correct userId + workspaceId
-      if (allProps.length > 0 && userId) {
-        console.log(`[getWorkspaceProperties] Auto-fixing userId+workspaceId on ${allProps.length} legacy properties`);
-        for (const p of allProps) {
-          try {
-            const updates: Record<string, any> = { userId, updatedAt: new Date().toISOString() };
-            if (!p.workspaceId && workspaceId) updates.workspaceId = workspaceId;
-            await updateDoc(doc(db, "workspace_properties", p.id), updates);
-          } catch (e) { console.warn("[getWorkspaceProperties] Failed to fix legacy property:", p.id, e); }
-        }
-        return allProps.sort((a, b) => (a.propertyName || "").localeCompare(b.propertyName || ""));
-      }
-    }
-
-    if (allProps.length > 0) {
-      const wsIds = [...new Set(allProps.map(p => p.workspaceId || "(none)"))];
-      console.log(`[getWorkspaceProperties] Workspace IDs on properties: ${wsIds.join(", ")}`);
-    }
-
-    let filtered: Property[];
-
-    if (workspaceId === "default") {
-      filtered = allProps
-        .filter(p => !p.workspaceId || p.workspaceId === "default")
-        .sort((a, b) => (a.propertyName || "").localeCompare(b.propertyName || ""));
-    } else {
-      filtered = allProps
-        .filter(p => p.workspaceId === workspaceId)
-        .sort((a, b) => (a.propertyName || "").localeCompare(b.propertyName || ""));
-    }
-
-    // FALLBACK: If filtered is empty but properties exist, workspace IDs are out of sync.
-    if (filtered.length === 0 && allProps.length > 0) {
-      console.warn(`[getWorkspaceProperties] MISMATCH: Workspace "${workspaceId}" matched 0 of ${allProps.length} properties. Showing all as fallback.`);
-      return allProps.sort((a, b) => (a.propertyName || "").localeCompare(b.propertyName || ""));
-    }
-
-    console.log(`[getWorkspaceProperties] Returning ${filtered.length} properties`);
-    return filtered;
-  });
+    const data = await res.json();
+    console.log(`[getWorkspaceProperties] API returned ${data.total} properties for workspace "${workspaceId}"`);
+    return (data.properties || []) as Property[];
+  } catch (err: any) {
+    console.warn("[getWorkspaceProperties] Failed:", err?.message || err);
+    return [];
+  }
 }
 
 // ===== PROJECTS =====
@@ -203,6 +155,24 @@ export async function createProperty(projectId: string, data: Partial<Property>)
 }
 
 export async function getProperty(propertyId: string): Promise<Property | null> {
+  try {
+    // Try server-side API first (bypasses Firestore security rules)
+    const { getAuth } = await import("firebase/auth");
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`/api/workspace/properties/${encodeURIComponent(propertyId)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.property as Property;
+      }
+    }
+  } catch { /* fall through to client-side */ }
+
+  // Fallback: direct Firestore read
   return safeGet(async () => {
     const snap = await getDoc(doc(db, "workspace_properties", propertyId));
     if (!snap.exists()) return null;
