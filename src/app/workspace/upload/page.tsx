@@ -552,26 +552,39 @@ export default function UploadPage() {
               <span style={{ fontSize: 11, color: C.secondary, alignSelf: "center", marginLeft: 4 }}>Best results with PDFs and Excel files</span>
             </div>
 
-            {/* Bulk upload link */}
+            {/* Bulk upload callout */}
             <a
               href="/workspace/upload/bulk"
+              className="bulk-callout"
               style={{
-                display: "flex", alignItems: "center", gap: 8, marginTop: 20, padding: "12px 16px",
-                background: C.surfLow, borderRadius: C.radius, border: `1px solid ${C.ghost}`, textDecoration: "none",
-                color: C.secondary, fontSize: 12, transition: "all 0.15s",
+                display: "flex", alignItems: "center", gap: 14, marginTop: 24, padding: "16px 20px",
+                background: "rgba(132, 204, 22, 0.06)", borderRadius: 8,
+                border: "1.5px solid rgba(132, 204, 22, 0.2)", textDecoration: "none",
+                transition: "all 0.2s",
               }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.tertiary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v-2" />
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="12" y1="2" x2="12" y2="6" />
-                <line x1="12" y1="18" x2="12" y2="22" />
-              </svg>
-              <div>
-                <div style={{ fontWeight: 600, color: C.onSurface, marginBottom: 1 }}>Have multiple properties?</div>
-                <div>Bulk upload up to 10 OMs at once &rarr;</div>
+              <div style={{
+                width: 44, height: 44, borderRadius: 10, background: "rgba(132, 204, 22, 0.12)",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 16l-4-4-4 4M12 12v9" />
+                  <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3" />
+                </svg>
               </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: 14, color: C.onSurface, marginBottom: 2, fontFamily: "'Inter', sans-serif" }}>
+                  Have multiple properties?
+                </div>
+                <div style={{ fontSize: 13, color: C.secondary }}>
+                  Bulk upload up to 10 OMs at once — analyze your entire pipeline in minutes
+                </div>
+              </div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
             </a>
+            <style>{`.bulk-callout:hover { background: rgba(132, 204, 22, 0.1) !important; border-color: rgba(132, 204, 22, 0.35) !important; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(132, 204, 22, 0.1); }`}</style>
           </div>
         </>
       )}
