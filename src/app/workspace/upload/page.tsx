@@ -526,8 +526,9 @@ export default function UploadPage() {
 
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <button onClick={handleUpload} className="ws-btn-red" style={{
-                  padding: "12px 32px", background: C.primaryGradient, color: "#fff", border: "none",
-                  borderRadius: C.radius, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Inter', sans-serif", maxWidth: 360,
+                  padding: "14px 48px", background: C.primaryGradient, color: "#fff", border: "none",
+                  borderRadius: C.radius, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Inter', sans-serif",
+                  width: "auto", display: "inline-block",
                 }}>
                   Upload &amp; Analyze
                 </button>
@@ -718,9 +719,10 @@ export default function UploadPage() {
 
           <div style={{ display: "flex", justifyContent: "center" }}>
             <button onClick={handleSaveName} disabled={!propertyName.trim()} className="ws-btn-red" style={{
-              padding: "12px 32px", background: C.primaryGradient, color: "#fff", border: "none",
+              padding: "14px 48px", background: C.primaryGradient, color: "#fff", border: "none",
               borderRadius: C.radius, fontSize: 14, fontWeight: 700, cursor: propertyName.trim() ? "pointer" : "not-allowed",
-              opacity: propertyName.trim() ? 1 : 0.4, fontFamily: "'Inter', sans-serif", maxWidth: 360,
+              opacity: propertyName.trim() ? 1 : 0.4, fontFamily: "'Inter', sans-serif",
+              width: "auto", display: "inline-block",
             }}>
               Save Property
             </button>
