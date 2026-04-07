@@ -1203,7 +1203,7 @@ function PropertyDetailInner({
       {/* ═══════════════════════════════════════════════════ */}
       {hasData && wsType !== "land" && activePrice && noiOm > 0 && (() => {
         const omPrice = priceState.omPrice || activePrice;
-        const steps = [-0.10, -0.05, 0, 0.05, 0.10];
+        const steps = [-0.30, -0.20, -0.10, -0.05, 0, 0.05, 0.10];
         const rows = steps.map(pct => {
           const price = Math.round(omPrice * (1 + pct));
           const capRate = noiOm > 0 ? (noiOm / price) * 100 : 0;
@@ -1224,12 +1224,12 @@ function PropertyDetailInner({
             background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
             overflow: "hidden", marginBottom: 24,
           }}>
-            <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0,0,0,0.04)", background: "#F9FAFB", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0,0,0,0.04)", background: "#F9FAFB" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Price Sensitivity</h3>
+                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Price Sensitivity</h3>
               </div>
-              <span style={{ fontSize: 11, color: C.secondary }}>See how purchase price impacts returns</span>
+              <p style={{ fontSize: 12, color: C.secondary, margin: "4px 0 0 11px", lineHeight: 1.4 }}>See how purchase price impacts returns</p>
             </div>
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: "'Inter', sans-serif" }}>
@@ -1282,7 +1282,7 @@ function PropertyDetailInner({
           <div style={{ padding: "14px 18px", borderBottom: "1px solid #F3E8C8", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
-              <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#92400E", fontFamily: "'Inter', sans-serif" }}>What to Double Check</h3>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#92400E", fontFamily: "'Inter', sans-serif" }}>What to Double Check</h3>
             </div>
             {reviewItems.length > 3 && (
               <button onClick={() => setReviewExpanded(!reviewExpanded)} style={{
@@ -1330,7 +1330,7 @@ function PropertyDetailInner({
           }}>
             <div style={{ padding: "12px 18px", borderBottom: `1px solid rgba(0,0,0,0.04)`, background: bgTint, display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 14 }}>{icon}</span>
-              <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: accent, fontFamily: "'Inter', sans-serif" }}>{title}</h3>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: accent, fontFamily: "'Inter', sans-serif" }}>{title}</h3>
               <span style={{ fontSize: 11, color: accent, opacity: 0.7, marginLeft: "auto", fontWeight: 600 }}>{items.length}</span>
             </div>
             <div>
@@ -1374,7 +1374,7 @@ function PropertyDetailInner({
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ width: 3, height: 14, background: "#4338CA", borderRadius: 2 }} />
-                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Pulled from OM</h3>
+                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Pulled from OM</h3>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
                 <span style={{ fontSize: 11, color: "#4338CA", fontWeight: 600 }}>{pulledCount} pulled</span>
@@ -1423,7 +1423,7 @@ function PropertyDetailInner({
           <div style={{ padding: "12px 18px", borderBottom: `1px solid rgba(0,0,0,0.04)`, background: "#F9FAFB" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ width: 3, height: 14, background: "#15803D", borderRadius: 2 }} />
-              <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Calculated Values</h3>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Calculated Values</h3>
             </div>
             <p style={{ fontSize: 11, color: C.secondary, margin: "4px 0 0 11px" }}>Derived from extracted values and current purchase price</p>
           </div>
@@ -1462,7 +1462,7 @@ function PropertyDetailInner({
           border: `1px solid rgba(0,0,0,0.06)`, marginBottom: 16,
         }}>
           <div style={{ padding: "12px 18px", borderBottom: `1px solid rgba(0,0,0,0.04)`, background: "#F9FAFB" }}>
-            <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Tenant Summary</h3>
+            <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Tenant Summary</h3>
           </div>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
@@ -1515,7 +1515,7 @@ function PropertyDetailInner({
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: documents.length > 0 ? 14 : 0 }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>
                 Source Documents
               </h3>
               <span style={{ fontSize: 11, color: C.secondary, fontWeight: 500 }}>({documents.length})</span>
