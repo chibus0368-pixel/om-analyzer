@@ -198,7 +198,7 @@ const HELP_TOPICS: HelpTopic[] = [
     content: (
       <div>
         <p style={{ fontSize: 14, color: C.secondary, lineHeight: 1.7 }}>
-          Deal Scan is a CRE (Commercial Real Estate) first-pass deal review tool that pulls key numbers, calculates core metrics, and flags items that need review. Here's how to get started in under 5 minutes.
+          Deal Signals is a CRE (Commercial Real Estate) first-pass deal review tool that pulls key numbers, calculates core metrics, and flags items that need review. Here's how to get started in under 5 minutes.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Quick Start Steps</h4>

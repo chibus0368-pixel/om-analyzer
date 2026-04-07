@@ -6,11 +6,11 @@ import Providers from "./Providers";
 export const metadata: Metadata = {
   metadataBase: new URL("https://dealsignals.app"),
   title: {
-    default: "Deal Signals - OM Analyzer & CRE DealBoard",
+    default: "Deal Signals - CRE DealBoard",
     template: "%s | Deal Signals",
   },
   description:
-    "AI-powered OM analysis and deal management platform for commercial real estate investors.",
+    "AI-powered deal analysis and management platform for commercial real estate investors.",
   alternates: {
     canonical: "https://dealsignals.app",
   },
@@ -20,19 +20,19 @@ export const metadata: Metadata = {
     url: "https://dealsignals.app",
     siteName: "Deal Signals",
     title: {
-      default: "Deal Signals - OM Analyzer & CRE DealBoard",
+      default: "Deal Signals - CRE DealBoard",
       template: "%s | Deal Signals",
     },
     description:
-      "AI-powered OM analysis and deal management platform for commercial real estate investors.",
+      "AI-powered deal analysis and management platform for commercial real estate investors.",
   },
   twitter: {
     card: "summary_large_image",
     title: {
-      default: "Deal Signals - OM Analyzer & CRE DealBoard",
+      default: "Deal Signals - CRE DealBoard",
       template: "%s | Deal Signals",
     },
-    description: "AI-powered OM analysis and CRE deal platform.",
+    description: "AI-powered deal analysis and CRE deal platform.",
   },
   robots: {
     index: true,

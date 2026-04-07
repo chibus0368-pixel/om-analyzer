@@ -171,7 +171,7 @@ export default function TryProPage() {
   const [activeTab, setActiveTab] = useState<"overview" | "signals" | "documents">("overview");
   const deal = SAMPLE_DEALS[selectedDeal];
   const score = deal.score;
-  const bandColor = score.scoreBand === "buy" || score.scoreBand === "strong_buy" ? "#059669" : score.scoreBand === "hold" ? "#D97706" : "#b9172f";
+  const bandColor = score.scoreBand === "buy" || score.scoreBand === "strong_buy" ? "#059669" : score.scoreBand === "hold" ? "#D97706" : "#65A30D";
   const bandBg = score.scoreBand === "buy" || score.scoreBand === "strong_buy" ? "#D1FAE5" : score.scoreBand === "hold" ? "#FEF3C7" : "#FDE8EA";
 
   const SIDEBAR_NAV = [
@@ -190,17 +190,17 @@ export default function TryProPage() {
         @keyframes barGrow { from { width: 0; } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes subtlePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.85; } }
-        .ws-nav:hover { background: #f8fafc !important; color: #b9172f !important; }
+        .ws-nav:hover { background: #f8fafc !important; color: #65A30D !important; }
         .ws-prop:hover { background: #f8fafc !important; color: #1e293b !important; }
         .tp-card { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; }
         .tp-tab { padding: 10px 20px; font-size: 13px; font-weight: 600; color: #64748b; background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
         .tp-tab:hover { color: #1e293b; }
-        .tp-tab-active { color: #b9172f !important; border-bottom-color: #b9172f !important; }
+        .tp-tab-active { color: #65A30D !important; border-bottom-color: #65A30D !important; }
         .tp-metric { background: #f8fafc; border-radius: 10px; padding: 14px 16px; border: 1px solid #f1f5f9; transition: all 0.15s; }
         .tp-metric:hover { background: #f1f5f9; border-color: #e2e8f0; }
         .tp-signal { padding: 12px 16px; border-left: 3px solid; transition: background 0.15s; }
         .tp-signal:hover { filter: brightness(0.98); }
-        .tp-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(185,23,47,0.3); }
+        .tp-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(132,204,22,0.3); }
         @media (max-width: 1024px) {
           .ws-sidebar { display: none !important; }
           .tp-hero-grid { grid-template-columns: 1fr !important; }
@@ -224,11 +224,11 @@ export default function TryProPage() {
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 8,
             padding: "6px 16px", borderRadius: 50,
-            background: "rgba(185,23,47,0.06)", color: "#b9172f",
+            background: "rgba(132,204,22,0.06)", color: "#65A30D",
             fontSize: 12, fontWeight: 700, letterSpacing: 0.3,
             marginBottom: 20,
           }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#b9172f", animation: "subtlePulse 2s ease-in-out infinite" }} />
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#65A30D", animation: "subtlePulse 2s ease-in-out infinite" }} />
             PropScore AI
           </div>
           <h1 style={{
@@ -246,7 +246,7 @@ export default function TryProPage() {
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <Link href="/workspace/login" style={{
               display: "inline-flex", alignItems: "center", justifyContent: "center",
-              padding: "14px 32px", background: "#b9172f", color: "#fff",
+              padding: "14px 32px", background: "#65A30D", color: "#fff",
               borderRadius: 50, fontSize: 15, fontWeight: 700, textDecoration: "none",
               transition: "all 0.2s", border: "none",
             }}>
@@ -283,7 +283,7 @@ export default function TryProPage() {
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{
                 padding: "6px 16px", borderRadius: 50, fontSize: 11, fontWeight: 700,
-                background: "#b9172f", color: "#fff",
+                background: "#65A30D", color: "#fff",
               }}>
                 Upgrade to Pro
               </span>
@@ -294,7 +294,7 @@ export default function TryProPage() {
               }}>?</div>
               <div style={{
                 width: 32, height: 32, borderRadius: "50%",
-                background: "linear-gradient(135deg, #b9172f, #8B0D1F)",
+                background: "linear-gradient(135deg, #65A30D, #8B0D1F)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: 11, fontWeight: 700, color: "#fff",
               }}>B</div>
@@ -313,12 +313,12 @@ export default function TryProPage() {
               {/* Workspace switcher */}
               <div style={{ padding: "10px 14px 8px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#b9172f" }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#65A30D" }}>
                     My DealBoard
                   </span>
                   <span style={{
                     padding: "2px 6px", borderRadius: 3, fontSize: 10, fontWeight: 600,
-                    background: "rgba(185,23,47,0.08)", color: "#b9172f",
+                    background: "rgba(132,204,22,0.08)", color: "#65A30D",
                   }}>Retail</span>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
@@ -330,15 +330,15 @@ export default function TryProPage() {
                   <div key={item.label} className="ws-nav" style={{
                     display: "flex", alignItems: "center", gap: 8,
                     padding: "7px 14px", borderRadius: 8,
-                    color: item.active ? "#b9172f" : "#64748b",
-                    background: item.active ? "rgba(185,23,47,0.06)" : "transparent",
+                    color: item.active ? "#65A30D" : "#64748b",
+                    background: item.active ? "rgba(132,204,22,0.06)" : "transparent",
                     fontSize: 13, fontWeight: item.active ? 600 : 500,
                     cursor: "pointer", transition: "all 0.15s",
                   }}>
                     <div style={{
                       width: 30, height: 30, borderRadius: 8,
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      background: item.active ? "rgba(185,23,47,0.08)" : "transparent",
+                      background: item.active ? "rgba(132,204,22,0.08)" : "transparent",
                     }}>
                       {item.icon}
                     </div>
@@ -363,8 +363,8 @@ export default function TryProPage() {
                     style={{
                       display: "flex", alignItems: "center", gap: 10,
                       padding: "8px 10px", borderRadius: 8,
-                      color: selectedDeal === i ? "#b9172f" : "#64748b",
-                      background: selectedDeal === i ? "rgba(185,23,47,0.06)" : "transparent",
+                      color: selectedDeal === i ? "#65A30D" : "#64748b",
+                      background: selectedDeal === i ? "rgba(132,204,22,0.06)" : "transparent",
                       fontWeight: selectedDeal === i ? 600 : 500,
                       fontSize: 12, cursor: "pointer", transition: "all 0.15s",
                       whiteSpace: "nowrap", overflow: "hidden",
@@ -372,7 +372,7 @@ export default function TryProPage() {
                   >
                     <div style={{
                       width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-                      background: selectedDeal === i ? "rgba(185,23,47,0.08)" : "#f1f5f9",
+                      background: selectedDeal === i ? "rgba(132,204,22,0.08)" : "#f1f5f9",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       fontSize: 14,
                     }}>
@@ -433,7 +433,7 @@ export default function TryProPage() {
                     }}>
                       <div style={{ fontSize: 42, opacity: 0.35 }}>📍</div>
                       <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500 }}>{deal.address}</div>
-                      <div style={{ fontSize: 10, color: "#b9172f", fontWeight: 600 }}>View on Google Maps &rarr;</div>
+                      <div style={{ fontSize: 10, color: "#65A30D", fontWeight: 600 }}>View on Google Maps &rarr;</div>
                     </div>
 
                     {/* Property info */}
@@ -446,7 +446,7 @@ export default function TryProPage() {
                             </h2>
                             <span style={{
                               padding: "3px 10px", borderRadius: 6, fontSize: 10, fontWeight: 700,
-                              background: "rgba(185,23,47,0.06)", color: "#b9172f",
+                              background: "rgba(132,204,22,0.06)", color: "#65A30D",
                               textTransform: "uppercase", letterSpacing: 0.5,
                             }}>{deal.assetType}</span>
                           </div>
@@ -540,7 +540,7 @@ export default function TryProPage() {
                     {/* Investment Summary */}
                     <div className="tp-card" style={{ padding: 24, marginBottom: 20 }}>
                       <h3 style={{ fontSize: 14, fontWeight: 700, color: "#1e293b", margin: "0 0 12px", display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ width: 3, height: 16, background: "#b9172f", borderRadius: 2 }} />
+                        <span style={{ width: 3, height: 16, background: "#65A30D", borderRadius: 2 }} />
                         Investment Summary
                       </h3>
                       <div style={{ fontSize: 13, color: "#475569", lineHeight: 1.75 }}>
@@ -576,7 +576,7 @@ export default function TryProPage() {
                       <div className="tp-card" style={{ overflow: "hidden" }}>
                         <div style={{ padding: "14px 20px", borderBottom: "1px solid #e2e8f0" }}>
                           <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#1e293b", display: "flex", alignItems: "center", gap: 8 }}>
-                            <span style={{ width: 3, height: 16, background: "#b9172f", borderRadius: 2 }} />
+                            <span style={{ width: 3, height: 16, background: "#65A30D", borderRadius: 2 }} />
                             Tenant Summary
                           </h3>
                         </div>
@@ -624,7 +624,7 @@ export default function TryProPage() {
                       {/* Score Categories */}
                       <div className="tp-card" style={{ padding: 24 }}>
                         <h3 style={{ fontSize: 14, fontWeight: 700, color: "#1e293b", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
-                          <span style={{ width: 3, height: 16, background: "#b9172f", borderRadius: 2 }} />
+                          <span style={{ width: 3, height: 16, background: "#65A30D", borderRadius: 2 }} />
                           Score Breakdown — {deal.analysisType.charAt(0).toUpperCase() + deal.analysisType.slice(1)} Model
                         </h3>
                         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -652,7 +652,7 @@ export default function TryProPage() {
                       {/* Signal Assessment */}
                       <div className="tp-card" style={{ padding: 24 }}>
                         <h3 style={{ fontSize: 14, fontWeight: 700, color: "#1e293b", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
-                          <span style={{ width: 3, height: 16, background: "#b9172f", borderRadius: 2 }} />
+                          <span style={{ width: 3, height: 16, background: "#65A30D", borderRadius: 2 }} />
                           Signal Assessment
                         </h3>
                         <div style={{ display: "flex", flexDirection: "column", gap: 2, borderRadius: 10, overflow: "hidden" }}>
@@ -683,7 +683,7 @@ export default function TryProPage() {
                   <div style={{ animation: "fadeIn 0.25s ease" }}>
                     <div className="tp-card" style={{ padding: 24 }}>
                       <h3 style={{ fontSize: 14, fontWeight: 700, color: "#1e293b", margin: "0 0 4px", display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ width: 3, height: 16, background: "#b9172f", borderRadius: 2 }} />
+                        <span style={{ width: 3, height: 16, background: "#65A30D", borderRadius: 2 }} />
                         Uploaded Documents
                       </h3>
                       <p style={{ fontSize: 12, color: "#94a3b8", margin: "0 0 16px" }}>
@@ -693,7 +693,7 @@ export default function TryProPage() {
                         {deal.documents.map((doc, i) => {
                           const isPdf = doc.type === "PDF";
                           const iconBg = isPdf ? "#FDE8EA" : "#D1FAE5";
-                          const iconColor = isPdf ? "#b9172f" : "#059669";
+                          const iconColor = isPdf ? "#65A30D" : "#059669";
                           return (
                             <div key={i} style={{
                               display: "flex", alignItems: "center", gap: 12,
@@ -758,7 +758,7 @@ export default function TryProPage() {
         <div style={{ maxWidth: 600, margin: "0 auto", position: "relative" }}>
           <div style={{
             position: "absolute", top: -60, right: -80, width: 200, height: 200,
-            borderRadius: "50%", background: "radial-gradient(circle, rgba(185,23,47,0.2) 0%, transparent 70%)",
+            borderRadius: "50%", background: "radial-gradient(circle, rgba(132,204,22,0.2) 0%, transparent 70%)",
             filter: "blur(40px)", pointerEvents: "none",
           }} />
           <h2 style={{ fontSize: 28, fontWeight: 800, color: "#fff", margin: "0 0 10px", letterSpacing: -0.5 }}>
@@ -770,7 +770,7 @@ export default function TryProPage() {
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <Link href="/workspace/login" className="tp-cta" style={{
               display: "inline-flex", alignItems: "center", justifyContent: "center",
-              padding: "14px 36px", background: "#b9172f", color: "#fff",
+              padding: "14px 36px", background: "#65A30D", color: "#fff",
               borderRadius: 50, fontSize: 15, fontWeight: 700, textDecoration: "none",
               border: "none", transition: "all 0.2s",
             }}>

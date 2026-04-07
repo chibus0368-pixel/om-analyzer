@@ -12,8 +12,8 @@ import { mapAuthError } from "@/lib/auth/errors";
 import type { UserRole } from "@/lib/types/user";
 
 const C = {
-  primary: "#b9172f",
-  primaryGradient: "linear-gradient(135deg, #b9172f, #dc3545)",
+  primary: "#65A30D",
+  primaryGradient: "linear-gradient(135deg, #65A30D, #84cc16)",
   onSurface: "#151b2b",
   secondary: "#585e70",
   bg: "#faf8ff",
@@ -611,7 +611,7 @@ export default function RegisterPage() {
           }}
           onMouseEnter={(e) => {
             if (!loading) {
-              e.currentTarget.style.boxShadow = "0 8px 20px rgba(185, 23, 47, 0.3)";
+              e.currentTarget.style.boxShadow = "0 8px 20px rgba(132, 204, 22, 0.3)";
             }
           }}
           onMouseLeave={(e) => {
