@@ -447,12 +447,16 @@ export default function PropertyDetailClient() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Load sibling properties in workspace for sidebar navigation
+  // Uses the current property's workspaceId to find true siblings,
+  // falling back to activeWorkspace.id if property hasn't loaded yet.
   useEffect(() => {
-    if (!user || !activeWorkspace) return;
-    getWorkspaceProperties(user.uid, activeWorkspace.id).then(props => {
+    if (!user) return;
+    const wsId = (property as any)?.workspaceId || activeWorkspace?.id;
+    if (!wsId) return;
+    getWorkspaceProperties(user.uid, wsId).then(props => {
       setSiblingProps(props);
     }).catch(() => {});
-  }, [user, activeWorkspace]);
+  }, [user, activeWorkspace, property]);
 
   const loadData = useCallback(async () => {
     if (!propertyId) return;
