@@ -245,6 +245,23 @@ export async function saveExtractedFields(fields: Omit<ExtractedField, "id">[]):
 }
 
 export async function getProjectExtractedFields(projectId: string): Promise<ExtractedField[]> {
+  // Try server-side API first (bypasses Firestore security rules)
+  try {
+    const { getAuth } = await import("firebase/auth");
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`/api/workspace/extracted-fields?projectId=${encodeURIComponent(projectId)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return (data.fields || []) as ExtractedField[];
+      }
+    }
+  } catch { /* fall through to client-side */ }
+
   return safeQuery(async () => {
     const q = query(collection(db, "workspace_extracted_fields"), where("projectId", "==", projectId));
     const snap = await getDocs(q);
@@ -254,6 +271,23 @@ export async function getProjectExtractedFields(projectId: string): Promise<Extr
 }
 
 export async function getPropertyExtractedFields(propertyId: string): Promise<ExtractedField[]> {
+  // Try server-side API first (bypasses Firestore security rules)
+  try {
+    const { getAuth } = await import("firebase/auth");
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`/api/workspace/extracted-fields?propertyId=${encodeURIComponent(propertyId)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return (data.fields || []) as ExtractedField[];
+      }
+    }
+  } catch { /* fall through to client-side */ }
+
   return safeQuery(async () => {
     const q = query(collection(db, "workspace_extracted_fields"), where("propertyId", "==", propertyId));
     const snap = await getDocs(q);

@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
       .where("userId", "==", userId)
       .get();
 
-    let properties = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    let properties = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
 
     // Filter by workspaceId
     if (workspaceId === "default") {
