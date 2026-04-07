@@ -330,7 +330,7 @@ function LeaderboardRow({ pd, rank, totalCount, maxScore, expanded, onToggle }: 
               const vaVal = (pd.property as any).valueAddScore;
               if (vaVal === undefined || vaVal === null) return null;
               const va = Number(vaVal);
-              const vaEmoji = va >= 7 ? "🔥" : va >= 4 ? "📊" : "〰️";
+              const vaEmoji = va >= 7 ? "💎" : va >= 4 ? "📊" : "〰️";
               return <InlineMetric label="Value-Add" value={`${vaEmoji} ${va}/10`}
                 thColor={va >= 7 ? "#059669" : va >= 4 ? "#D97706" : "#6B7280"} />;
             })()}
@@ -1247,7 +1247,7 @@ export default function ScoreboardPage() {
                           const va = Number(vaScoreVal);
                           const vaColor = va >= 7 ? "#059669" : va >= 4 ? "#D97706" : "#6B7280";
                           const vaBg = va >= 7 ? "rgba(5,150,105,0.08)" : va >= 4 ? "rgba(217,119,6,0.08)" : "rgba(107,114,128,0.06)";
-                          const vaLabel = va >= 7 ? "🔥" : va >= 4 ? "📊" : "〰️";
+                          const vaLabel = va >= 7 ? "💎" : va >= 4 ? "📊" : "〰️";
                           return (
                             <span style={{
                               display: "inline-flex", alignItems: "center", gap: 4,

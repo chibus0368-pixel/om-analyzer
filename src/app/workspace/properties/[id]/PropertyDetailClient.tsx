@@ -1283,7 +1283,7 @@ function PropertyDetailInner({
         if (vaFlags.length === 0 && !vaScore) return null;
 
         const strengthIcon: Record<string, { emoji: string; color: string; bg: string }> = {
-          strong: { emoji: "🔥", color: "#059669", bg: "rgba(5,150,105,0.08)" },
+          strong: { emoji: "💎", color: "#059669", bg: "rgba(5,150,105,0.08)" },
           moderate: { emoji: "📊", color: "#D97706", bg: "rgba(217,119,6,0.08)" },
           weak: { emoji: "〰️", color: "#6B7280", bg: "rgba(107,114,128,0.06)" },
         };
