@@ -15,8 +15,12 @@ import { useRouter } from "next/navigation";
 function ClearAllButton({ onClear, workspaceId, workspaceName }: { onClear: () => void; workspaceId: string; workspaceName: string }) {
   const [clearing, setClearing] = useState(false);
   async function handleClear() {
-    if (!confirm(`⚠️ This will delete all properties and data in "${workspaceName}".\n\nThis cannot be undone. Continue?`)) return;
-    if (!confirm(`Final confirmation: Delete all properties in "${workspaceName}"?`)) return;
+    const typed = prompt(`⚠️ DANGER: This will PERMANENTLY DELETE all properties and data in "${workspaceName}".\n\nThis cannot be undone.\n\nType "${workspaceName}" to confirm:`);
+    if (!typed || typed.trim() !== workspaceName) {
+      if (typed !== null) alert("Name didn't match. Nothing was deleted.");
+      return;
+    }
+    if (!confirm(`FINAL WARNING: Permanently delete ALL properties in "${workspaceName}"? This is irreversible.`)) return;
     setClearing(true);
     try {
       const { getAuth } = await import("firebase/auth");
@@ -123,12 +127,16 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
       }
       const newRef = await addDoc(collection(db, "workspace_properties"), copyData);
       console.log("[duplicate] Created copy:", newRef.id, "in workspace:", targetWorkspaceId);
-      alert(`Duplicated "${original.propertyName}" successfully!`);
       window.dispatchEvent(new Event("workspace-properties-changed"));
-      window.location.reload();
+      // Navigate to the target workspace to show the duplicated property
+      const targetWs = workspaces.find(w => w.id === targetWorkspaceId);
+      if (targetWs && targetWs.id !== activeWorkspaceId) {
+        window.location.href = `/workspace?ws=${encodeURIComponent(targetWs.slug)}`;
+      } else {
+        window.location.reload();
+      }
     } catch (err) {
       console.error("[duplicate] Failed:", err);
-      alert("Failed to duplicate. Please try again.");
     }
     setDuplicating(false);
   }
