@@ -652,10 +652,10 @@ export default function UploadPage() {
                 <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: C.secondary }}>{f.file.name}</span>
                 {f.status === "uploading" && (
                   <div style={{ width: 100, flexShrink: 0, display: "flex", alignItems: "center", gap: 6 }}>
-                    <div style={{ flex: 1, height: 6, background: "#E8F5E9", borderRadius: 3, overflow: "hidden" }}>
-                      <div style={{ height: "100%", background: "#65A30D", borderRadius: 3, width: `${f.progress}%`, transition: "width 0.3s" }} />
+                    <div style={{ flex: 1, height: 6, background: "#E0F2F1", borderRadius: 3, overflow: "hidden" }}>
+                      <div style={{ height: "100%", background: "#0D9488", borderRadius: 3, width: `${f.progress}%`, transition: "width 0.3s" }} />
                     </div>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: "#65A30D", minWidth: 28, textAlign: "right" }}>{f.progress}%</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: "#0D9488", minWidth: 28, textAlign: "right" }}>{f.progress}%</span>
                   </div>
                 )}
                 {f.status === "complete" && <span style={{ color: "#10B981", fontSize: 13, flexShrink: 0 }}>{"\u2713"}</span>}
