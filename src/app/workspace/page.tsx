@@ -463,7 +463,7 @@ export default function WorkspaceDashboard() {
   }
 
   return (
-    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
+    <div style={{ width: "100%", padding: "0 24px" }}>
       <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
       {/* Header Section - New Design */}
       <div style={{
