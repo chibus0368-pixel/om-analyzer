@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
 import { getWorkspaceProperties, getProjectDocuments, deleteProperty, updateProperty } from "@/lib/workspace/firestore";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
-import { collection, query, where, getDocs, writeBatch, doc, updateDoc, getDoc, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, doc, updateDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { Property, ProjectDocument, Workspace } from "@/lib/workspace/types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
@@ -18,50 +18,27 @@ function ClearAllButton({ onClear, workspaceId, workspaceName }: { onClear: () =
     if (!confirm(`⚠️ This will delete all properties and data in "${workspaceName}".\n\nThis cannot be undone. Continue?`)) return;
     if (!confirm(`Final confirmation: Delete all properties in "${workspaceName}"?`)) return;
     setClearing(true);
-    const collections = [
-      "workspace_properties", "workspace_projects", "workspace_documents",
-      "workspace_extracted_fields", "workspace_underwriting_models",
-      "workspace_underwriting_outputs", "workspace_scores",
-      "workspace_property_snapshots", "workspace_outputs", "workspace_notes",
-      "workspace_tasks", "workspace_activity_logs", "workspace_parser_runs",
-    ];
     try {
-      const propSnap = await getDocs(query(collection(db, "workspace_properties"), where("workspaceId", "==", workspaceId)));
-      const allUserSnap = await getDocs(query(collection(db, "workspace_properties"), where("userId", "==", "admin-user")));
-      const unmigratedDocs = allUserSnap.docs.filter(d => !d.data().workspaceId);
-      const allDocs = [...propSnap.docs, ...unmigratedDocs];
-      const seenIds = new Set<string>();
-      const dedupedDocs = allDocs.filter(d => { if (seenIds.has(d.id)) return false; seenIds.add(d.id); return true; });
-      const propIds = dedupedDocs.map(d => d.id);
-      const projectIds = dedupedDocs.map(d => d.data().projectId).filter(Boolean);
-
-      for (let i = 0; i < dedupedDocs.length; i += 450) {
-        const batch = writeBatch(db);
-        dedupedDocs.slice(i, i + 450).forEach(d => batch.delete(d.ref));
-        await batch.commit();
+      const { getAuth } = await import("firebase/auth");
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      if (!currentUser) throw new Error("Not authenticated");
+      const token = await currentUser.getIdToken();
+      const res = await fetch("/api/workspace/clear", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ workspaceId }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Clear failed (${res.status})`);
       }
-
-      for (const coll of collections.filter(c => c !== "workspace_properties")) {
-        try {
-          for (const pid of propIds) {
-            const snap = await getDocs(query(collection(db, coll), where("propertyId", "==", pid)));
-            for (let i = 0; i < snap.docs.length; i += 450) {
-              const batch = writeBatch(db);
-              snap.docs.slice(i, i + 450).forEach(d => batch.delete(d.ref));
-              await batch.commit();
-            }
-          }
-          for (const pid of projectIds) {
-            const snap = await getDocs(query(collection(db, coll), where("projectId", "==", pid)));
-            for (let i = 0; i < snap.docs.length; i += 450) {
-              const batch = writeBatch(db);
-              snap.docs.slice(i, i + 450).forEach(d => batch.delete(d.ref));
-              await batch.commit();
-            }
-          }
-        } catch { /* continue */ }
-      }
-    } catch { /* continue */ }
+      const result = await res.json();
+      console.log(`[ClearAll] Cleared ${result.properties} properties, ${result.deleted} total documents`);
+    } catch (err: any) {
+      console.error("[ClearAll] Error:", err?.message || err);
+      alert("Failed to clear data. Please try again.");
+    }
     setClearing(false);
     onClear();
   }

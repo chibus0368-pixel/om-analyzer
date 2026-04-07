@@ -239,14 +239,24 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
   }, [activeId]);
 
   const clearWorkspaceData = useCallback(async (id: string) => {
-    // Clear all Firestore properties for this workspace
+    // Clear all Firestore properties and related data via server-side API
     try {
-      const { deleteDoc, doc, collection, getDocs } = await import("firebase/firestore");
-      const { db } = await import("@/lib/firebase");
-      const { getWorkspaceProperties } = await import("@/lib/workspace/firestore");
-      const props = await getWorkspaceProperties(userId, id);
-      const promises = props.map(p => deleteDoc(doc(db, "properties", p.id)));
-      await Promise.all(promises);
+      const { getAuth } = await import("firebase/auth");
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      if (!currentUser) throw new Error("Not authenticated");
+      const token = await currentUser.getIdToken();
+      const res = await fetch("/api/workspace/clear", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ workspaceId: id }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Clear failed (${res.status})`);
+      }
+      const result = await res.json();
+      console.log(`[Workspace] Cleared ${result.properties} properties, ${result.deleted} total documents`);
       window.dispatchEvent(new Event("workspace-properties-changed"));
     } catch (err) {
       console.error("[Workspace] Failed to clear data:", err);
