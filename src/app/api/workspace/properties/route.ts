@@ -27,17 +27,11 @@ export async function GET(req: NextRequest) {
 
     let properties = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
 
-    // Filter by workspaceId
+    // Filter by workspaceId — strict filtering, no fallback
     if (workspaceId === "default") {
       properties = properties.filter(p => !p.workspaceId || p.workspaceId === "default");
     } else {
-      const filtered = properties.filter(p => p.workspaceId === workspaceId);
-      // Fallback: if workspace filter matches nothing, show all (prevents data loss)
-      if (filtered.length === 0 && properties.length > 0) {
-        console.warn(`[properties API] Workspace "${workspaceId}" matched 0 of ${properties.length}. Showing all.`);
-      } else {
-        properties = filtered;
-      }
+      properties = properties.filter(p => p.workspaceId === workspaceId);
     }
 
     // Sort by propertyName
