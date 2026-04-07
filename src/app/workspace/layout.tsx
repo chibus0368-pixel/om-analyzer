@@ -825,7 +825,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                         onClick={() => {
                           switchWorkspace(ws.id);
                           setShowWsDropdown(false);
-                          router.push("/workspace");
+                          router.push(`/workspace?ws=${encodeURIComponent(ws.slug)}`);
                         }}
                         style={{
                           display: "flex", alignItems: "center", gap: 12, width: "100%",
