@@ -47,11 +47,54 @@ async function safeGet<T>(fn: () => Promise<T | null>): Promise<T | null> {
 /** Get properties filtered by workspace. "default" workspace includes all properties without a workspaceId. */
 export async function getWorkspaceProperties(userId: string, workspaceId: string): Promise<Property[]> {
   return safeQuery(async () => {
-    // Get ALL user properties, then filter client-side
-    // This avoids needing composite indexes and handles the "default" workspace case
-    const allProps = await getUserWorkspaceProperties(userId);
+    // Strategy: query by userId first. If that returns nothing, fall back to querying
+    // by workspaceId directly (handles legacy properties created with "admin-user" userId).
+    let allProps = await getUserWorkspaceProperties(userId);
 
-    console.log(`[getWorkspaceProperties] userId=${userId}, workspaceId=${workspaceId}, total props=${allProps.length}`);
+    console.log(`[getWorkspaceProperties] userId=${userId}, workspaceId=${workspaceId}, byUserId=${allProps.length}`);
+
+    // FALLBACK: If userId query returns nothing, try querying directly by workspaceId
+    if (allProps.length === 0 && workspaceId && workspaceId !== "default") {
+      console.log(`[getWorkspaceProperties] userId returned 0, trying workspaceId query...`);
+      const wsQuery = query(collection(db, "workspace_properties"), where("workspaceId", "==", workspaceId));
+      const wsSnap = await getDocs(wsQuery);
+      allProps = wsSnap.docs.map(d => ({ id: d.id, ...d.data() } as Property));
+      console.log(`[getWorkspaceProperties] workspaceId query returned ${allProps.length} properties`);
+
+      // Auto-fix: stamp the correct userId on these orphaned properties
+      if (allProps.length > 0 && userId) {
+        console.log(`[getWorkspaceProperties] Auto-fixing userId on ${allProps.length} properties`);
+        for (const p of allProps) {
+          try {
+            await updateDoc(doc(db, "workspace_properties", p.id), { userId, updatedAt: new Date().toISOString() });
+          } catch (e) { console.warn("[getWorkspaceProperties] Failed to fix userId:", p.id, e); }
+        }
+        return allProps.sort((a, b) => (a.propertyName || "").localeCompare(b.propertyName || ""));
+      }
+    }
+
+    // Also try legacy "admin-user" userId if still nothing
+    if (allProps.length === 0) {
+      console.log(`[getWorkspaceProperties] Trying legacy admin-user query...`);
+      const legacyQuery = query(collection(db, "workspace_properties"), where("userId", "==", "admin-user"));
+      const legacySnap = await getDocs(legacyQuery);
+      allProps = legacySnap.docs.map(d => ({ id: d.id, ...d.data() } as Property));
+      console.log(`[getWorkspaceProperties] admin-user query returned ${allProps.length} properties`);
+
+      // Auto-fix: stamp the correct userId + workspaceId
+      if (allProps.length > 0 && userId) {
+        console.log(`[getWorkspaceProperties] Auto-fixing userId+workspaceId on ${allProps.length} legacy properties`);
+        for (const p of allProps) {
+          try {
+            const updates: Record<string, any> = { userId, updatedAt: new Date().toISOString() };
+            if (!p.workspaceId && workspaceId) updates.workspaceId = workspaceId;
+            await updateDoc(doc(db, "workspace_properties", p.id), updates);
+          } catch (e) { console.warn("[getWorkspaceProperties] Failed to fix legacy property:", p.id, e); }
+        }
+        return allProps.sort((a, b) => (a.propertyName || "").localeCompare(b.propertyName || ""));
+      }
+    }
+
     if (allProps.length > 0) {
       const wsIds = [...new Set(allProps.map(p => p.workspaceId || "(none)"))];
       console.log(`[getWorkspaceProperties] Workspace IDs on properties: ${wsIds.join(", ")}`);
@@ -60,21 +103,18 @@ export async function getWorkspaceProperties(userId: string, workspaceId: string
     let filtered: Property[];
 
     if (workspaceId === "default") {
-      // Default workspace: properties with no workspaceId, or workspaceId === "default"
       filtered = allProps
         .filter(p => !p.workspaceId || p.workspaceId === "default")
         .sort((a, b) => (a.propertyName || "").localeCompare(b.propertyName || ""));
     } else {
-      // Non-default workspace: only properties explicitly assigned
       filtered = allProps
         .filter(p => p.workspaceId === workspaceId)
         .sort((a, b) => (a.propertyName || "").localeCompare(b.propertyName || ""));
     }
 
-    // FALLBACK: If filtered is empty but properties exist, the workspace IDs are out of sync.
-    // Show all properties instead of showing nothing — prevents "lost" data.
+    // FALLBACK: If filtered is empty but properties exist, workspace IDs are out of sync.
     if (filtered.length === 0 && allProps.length > 0) {
-      console.warn(`[getWorkspaceProperties] MISMATCH: Workspace "${workspaceId}" matched 0 of ${allProps.length} properties. Showing all properties as fallback.`);
+      console.warn(`[getWorkspaceProperties] MISMATCH: Workspace "${workspaceId}" matched 0 of ${allProps.length} properties. Showing all as fallback.`);
       return allProps.sort((a, b) => (a.propertyName || "").localeCompare(b.propertyName || ""));
     }
 
