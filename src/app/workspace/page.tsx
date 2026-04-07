@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
 import { getWorkspaceProperties, getProjectDocuments, deleteProperty, updateProperty } from "@/lib/workspace/firestore";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
-import { collection, doc, updateDoc, addDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { collection, doc, updateDoc, addDoc, getDoc, getDocs, query, where, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { Property, ProjectDocument, Workspace } from "@/lib/workspace/types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
@@ -98,35 +98,70 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
       const snap = await getDoc(doc(db, "workspace_properties", property.id));
       if (!snap.exists()) throw new Error("Property not found");
       const original = snap.data();
-      // Build a clean copy — only include known safe fields
-      const copyData: Record<string, any> = {
-        propertyName: (original.propertyName || "Untitled") + " (Copy)",
-        workspaceId: targetWorkspaceId,
-        userId: original.userId,
-        projectId: original.projectId,
-        address1: original.address1 || "",
-        city: original.city || "",
-        state: original.state || "",
-        zip: original.zip || "",
-        parseStatus: original.parseStatus || "pending",
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      };
-      // Copy optional fields if they exist
-      const optionalFields = [
-        "address2", "county", "market", "assetType", "buildingSf", "landAcres",
-        "yearBuilt", "occupancyPct", "heroImageUrl", "scoreTotal", "scoreBand",
-        "scoreRecommendation", "processingStatus", "analysisType",
-        "purchasePrice", "noi", "capRate", "tenantName", "leaseTerm",
-        "leaseType", "rentPerSf", "briefSummary",
-      ];
-      for (const field of optionalFields) {
-        if (original[field] !== undefined && original[field] !== null) {
-          copyData[field] = original[field];
-        }
-      }
+
+      // 1. Copy the property record with ALL fields (except id)
+      const copyData: Record<string, any> = { ...original };
+      copyData.propertyName = (original.propertyName || "Untitled") + " (Copy)";
+      copyData.workspaceId = targetWorkspaceId;
+      copyData.createdAt = serverTimestamp();
+      copyData.updatedAt = serverTimestamp();
+      // Remove any Firestore-internal fields
+      delete copyData.__name__;
+
       const newRef = await addDoc(collection(db, "workspace_properties"), copyData);
-      console.log("[duplicate] Created copy:", newRef.id, "in workspace:", targetWorkspaceId);
+      const newPropertyId = newRef.id;
+      console.log("[duplicate] Created property copy:", newPropertyId, "in workspace:", targetWorkspaceId);
+
+      // 2. Copy extracted fields
+      try {
+        const fieldsSnap = await getDocs(query(collection(db, "workspace_extracted_fields"), where("propertyId", "==", property.id)));
+        for (const fieldDoc of fieldsSnap.docs) {
+          const fieldData = { ...fieldDoc.data(), propertyId: newPropertyId, createdAt: serverTimestamp() };
+          await addDoc(collection(db, "workspace_extracted_fields"), fieldData);
+        }
+        console.log("[duplicate] Copied", fieldsSnap.size, "extracted fields");
+      } catch (e) { console.warn("[duplicate] Could not copy extracted fields:", e); }
+
+      // 3. Copy scores
+      try {
+        const scoresSnap = await getDocs(query(collection(db, "workspace_scores"), where("propertyId", "==", property.id)));
+        for (const scoreDoc of scoresSnap.docs) {
+          const scoreData = { ...scoreDoc.data(), propertyId: newPropertyId, createdAt: serverTimestamp() };
+          await addDoc(collection(db, "workspace_scores"), scoreData);
+        }
+        console.log("[duplicate] Copied", scoresSnap.size, "scores");
+      } catch (e) { console.warn("[duplicate] Could not copy scores:", e); }
+
+      // 4. Copy documents (metadata only — references same uploaded files)
+      try {
+        const docsSnap = await getDocs(query(collection(db, "workspace_documents"), where("propertyId", "==", property.id)));
+        for (const docSnap of docsSnap.docs) {
+          const docData = { ...docSnap.data(), propertyId: newPropertyId, createdAt: serverTimestamp() };
+          await addDoc(collection(db, "workspace_documents"), docData);
+        }
+        console.log("[duplicate] Copied", docsSnap.size, "documents");
+      } catch (e) { console.warn("[duplicate] Could not copy documents:", e); }
+
+      // 5. Copy notes
+      try {
+        const notesSnap = await getDocs(query(collection(db, "workspace_notes"), where("propertyId", "==", property.id)));
+        for (const noteDoc of notesSnap.docs) {
+          const noteData = { ...noteDoc.data(), propertyId: newPropertyId, createdAt: serverTimestamp() };
+          await addDoc(collection(db, "workspace_notes"), noteData);
+        }
+        console.log("[duplicate] Copied", notesSnap.size, "notes");
+      } catch (e) { console.warn("[duplicate] Could not copy notes:", e); }
+
+      // 6. Copy outputs
+      try {
+        const outsSnap = await getDocs(query(collection(db, "workspace_outputs"), where("propertyId", "==", property.id)));
+        for (const outDoc of outsSnap.docs) {
+          const outData = { ...outDoc.data(), propertyId: newPropertyId, createdAt: serverTimestamp() };
+          await addDoc(collection(db, "workspace_outputs"), outData);
+        }
+        console.log("[duplicate] Copied", outsSnap.size, "outputs");
+      } catch (e) { console.warn("[duplicate] Could not copy outputs:", e); }
+
       window.dispatchEvent(new Event("workspace-properties-changed"));
       // Navigate to the target workspace to show the duplicated property
       const targetWs = workspaces.find(w => w.id === targetWorkspaceId);
