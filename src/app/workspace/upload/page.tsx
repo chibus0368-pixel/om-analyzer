@@ -460,7 +460,7 @@ export default function UploadPage() {
             onDragOver={e => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
             onDragLeave={e => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
             onDrop={handleDrop}
-            onClick={() => fileRef.current?.click()}
+            onClick={(e) => { if ((e.target as HTMLElement).closest('button')) return; fileRef.current?.click(); }}
             style={{
               background: C.surfLowest,
               borderRadius: C.radius,
