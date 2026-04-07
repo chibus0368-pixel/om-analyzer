@@ -953,18 +953,20 @@ export default function ProfilePage() {
                           </li>
                         ))}
                       </ul>
-                      <button
-                        onClick={() => handleUpgradeCheckout("pro")}
-                        disabled={!!billingLoading}
-                        style={{
-                          maxWidth: 200, padding: "9px 24px", border: `2px solid ${SURFACE}`,
-                          borderRadius: 6, background: "#fff", color: SURFACE,
-                          fontSize: 13, fontWeight: 600, cursor: billingLoading ? "not-allowed" : "pointer",
-                          fontFamily: "'Inter', sans-serif",
-                        }}
-                      >
-                        {billingLoading === "pro" ? "Loading..." : "Start Pro"}
-                      </button>
+                      <div style={{ display: "flex", justifyContent: "center" }}>
+                        <button
+                          onClick={() => handleUpgradeCheckout("pro")}
+                          disabled={!!billingLoading}
+                          style={{
+                            maxWidth: 200, padding: "9px 24px", border: `2px solid ${SURFACE}`,
+                            borderRadius: 6, background: "#fff", color: SURFACE,
+                            fontSize: 13, fontWeight: 600, cursor: billingLoading ? "not-allowed" : "pointer",
+                            fontFamily: "'Inter', sans-serif",
+                          }}
+                        >
+                          {billingLoading === "pro" ? "Loading..." : "Start Pro"}
+                        </button>
+                      </div>
                     </div>
                   )}
 
@@ -989,19 +991,21 @@ export default function ProfilePage() {
                         </li>
                       ))}
                     </ul>
-                    <button
-                      onClick={() => handleUpgradeCheckout("pro_plus")}
-                      disabled={!!billingLoading}
-                      style={{
-                        maxWidth: 200, padding: "9px 24px", border: "none",
-                        borderRadius: 6, background: PRIMARY, color: "#fff",
-                        fontSize: 13, fontWeight: 600, cursor: billingLoading ? "not-allowed" : "pointer",
-                        fontFamily: "'Inter', sans-serif",
-                      }}
-                    >
-                      {billingLoading === "pro_plus" ? "Loading..."
-                        : (usageData?.tier || profile?.tier) === "pro" ? "Upgrade to Pro+" : "Start Pro+"}
-                    </button>
+                    <div style={{ display: "flex", justifyContent: "center" }}>
+                      <button
+                        onClick={() => handleUpgradeCheckout("pro_plus")}
+                        disabled={!!billingLoading}
+                        style={{
+                          maxWidth: 200, padding: "9px 24px", border: "none",
+                          borderRadius: 6, background: PRIMARY, color: "#fff",
+                          fontSize: 13, fontWeight: 600, cursor: billingLoading ? "not-allowed" : "pointer",
+                          fontFamily: "'Inter', sans-serif",
+                        }}
+                      >
+                        {billingLoading === "pro_plus" ? "Loading..."
+                          : (usageData?.tier || profile?.tier) === "pro" ? "Upgrade to Pro+" : "Start Pro+"}
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <p style={{ fontSize: 11, color: MUTED, marginTop: 10, textAlign: "center" }}>
