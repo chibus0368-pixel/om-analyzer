@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
-import { getWorkspaceProperties, getProjectDocuments, deleteProperty } from "@/lib/workspace/firestore";
+import { getWorkspaceProperties, getProjectDocuments, deleteProperty, updateProperty } from "@/lib/workspace/firestore";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import { collection, query, where, getDocs, writeBatch, doc, updateDoc, getDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -452,6 +452,21 @@ export default function WorkspaceDashboard() {
     setLoading(true);
     getWorkspaceProperties(user.uid, activeWorkspace.id).then(async (props) => {
       setProperties(props);
+
+      // Auto-repair: if any properties came back via fallback (wrong workspaceId),
+      // silently update them to match the active workspace so they stay visible.
+      const orphaned = props.filter(p => p.workspaceId !== activeWorkspace.id);
+      if (orphaned.length > 0 && workspaces.length <= 1) {
+        console.log(`[dashboard] Auto-repairing ${orphaned.length} orphaned properties to workspace ${activeWorkspace.id}`);
+        for (const p of orphaned) {
+          try {
+            await updateProperty(p.id, { workspaceId: activeWorkspace.id } as any);
+          } catch (e) {
+            console.warn("[dashboard] Failed to repair property:", p.id, e);
+          }
+        }
+      }
+
       const counts: Record<string, number> = {};
       for (const prop of props) {
         try {

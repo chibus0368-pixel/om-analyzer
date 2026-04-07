@@ -51,17 +51,35 @@ export async function getWorkspaceProperties(userId: string, workspaceId: string
     // This avoids needing composite indexes and handles the "default" workspace case
     const allProps = await getUserWorkspaceProperties(userId);
 
+    console.log(`[getWorkspaceProperties] userId=${userId}, workspaceId=${workspaceId}, total props=${allProps.length}`);
+    if (allProps.length > 0) {
+      const wsIds = [...new Set(allProps.map(p => p.workspaceId || "(none)"))];
+      console.log(`[getWorkspaceProperties] Workspace IDs on properties: ${wsIds.join(", ")}`);
+    }
+
+    let filtered: Property[];
+
     if (workspaceId === "default") {
       // Default workspace: properties with no workspaceId, or workspaceId === "default"
-      return allProps
+      filtered = allProps
         .filter(p => !p.workspaceId || p.workspaceId === "default")
+        .sort((a, b) => (a.propertyName || "").localeCompare(b.propertyName || ""));
+    } else {
+      // Non-default workspace: only properties explicitly assigned
+      filtered = allProps
+        .filter(p => p.workspaceId === workspaceId)
         .sort((a, b) => (a.propertyName || "").localeCompare(b.propertyName || ""));
     }
 
-    // Non-default workspace: only properties explicitly assigned
-    return allProps
-      .filter(p => p.workspaceId === workspaceId)
-      .sort((a, b) => (a.propertyName || "").localeCompare(b.propertyName || ""));
+    // FALLBACK: If filtered is empty but properties exist, the workspace IDs are out of sync.
+    // Show all properties instead of showing nothing — prevents "lost" data.
+    if (filtered.length === 0 && allProps.length > 0) {
+      console.warn(`[getWorkspaceProperties] MISMATCH: Workspace "${workspaceId}" matched 0 of ${allProps.length} properties. Showing all properties as fallback.`);
+      return allProps.sort((a, b) => (a.propertyName || "").localeCompare(b.propertyName || ""));
+    }
+
+    console.log(`[getWorkspaceProperties] Returning ${filtered.length} properties`);
+    return filtered;
   });
 }
 
