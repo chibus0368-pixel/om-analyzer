@@ -526,7 +526,7 @@ export default function UploadPage() {
 
               <button onClick={handleUpload} className="ws-btn-red" style={{
                 padding: "12px 32px", background: C.primaryGradient, color: "#fff", border: "none",
-                borderRadius: C.radius, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Inter', sans-serif", width: "100%",
+                borderRadius: C.radius, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Inter', sans-serif", maxWidth: 360,
               }}>
                 Upload &amp; Analyze
               </button>
@@ -716,7 +716,7 @@ export default function UploadPage() {
           <button onClick={handleSaveName} disabled={!propertyName.trim()} className="ws-btn-red" style={{
             padding: "12px 0", background: C.primaryGradient, color: "#fff", border: "none",
             borderRadius: C.radius, fontSize: 14, fontWeight: 700, cursor: propertyName.trim() ? "pointer" : "not-allowed",
-            opacity: propertyName.trim() ? 1 : 0.4, fontFamily: "'Inter', sans-serif", width: "100%",
+            opacity: propertyName.trim() ? 1 : 0.4, fontFamily: "'Inter', sans-serif", maxWidth: 360,
           }}>
             Save Property
           </button>

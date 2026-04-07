@@ -957,7 +957,7 @@ export default function ProfilePage() {
                         onClick={() => handleUpgradeCheckout("pro")}
                         disabled={!!billingLoading}
                         style={{
-                          width: "100%", padding: "9px 0", border: `2px solid ${SURFACE}`,
+                          maxWidth: 200, padding: "9px 24px", border: `2px solid ${SURFACE}`,
                           borderRadius: 6, background: "#fff", color: SURFACE,
                           fontSize: 13, fontWeight: 600, cursor: billingLoading ? "not-allowed" : "pointer",
                           fontFamily: "'Inter', sans-serif",
@@ -993,7 +993,7 @@ export default function ProfilePage() {
                       onClick={() => handleUpgradeCheckout("pro_plus")}
                       disabled={!!billingLoading}
                       style={{
-                        width: "100%", padding: "9px 0", border: "none",
+                        maxWidth: 200, padding: "9px 24px", border: "none",
                         borderRadius: 6, background: PRIMARY, color: "#fff",
                         fontSize: 13, fontWeight: 600, cursor: billingLoading ? "not-allowed" : "pointer",
                         fontFamily: "'Inter', sans-serif",

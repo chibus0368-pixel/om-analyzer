@@ -346,7 +346,7 @@ export default function BulkUploadPage() {
             <button onClick={handleBulkUpload} style={{
               padding: "11px 32px", background: "#C49A3C", color: "#fff", border: "none",
               borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-              width: "100%",
+              maxWidth: 360,
             }}>
               Upload All ({items.length} propert{items.length !== 1 ? "ies" : "y"})
             </button>

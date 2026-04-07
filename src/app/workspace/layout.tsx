@@ -244,10 +244,10 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
         .ws-props-scroll::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.5); }
         /* Primary buttons */
         .ws-btn-gold { transition: all 0.15s ease; }
-        .ws-btn-gold:hover { filter: brightness(1.1); box-shadow: 0 2px 8px rgba(220,38,38,0.35); transform: translateY(-1px); }
-        /* Inline red buttons */
+        .ws-btn-gold:hover { filter: brightness(1.1); box-shadow: 0 2px 8px rgba(132,204,22,0.35); transform: translateY(-1px); }
+        /* Inline green buttons */
         .ws-btn-red { transition: all 0.15s ease; }
-        .ws-btn-red:hover { filter: brightness(1.15); box-shadow: 0 2px 8px rgba(220,38,38,0.35); transform: translateY(-1px); }
+        .ws-btn-red:hover { filter: brightness(1.15); box-shadow: 0 2px 8px rgba(132,204,22,0.35); transform: translateY(-1px); }
         /* Secondary/outline buttons */
         .ws-btn-secondary { transition: all 0.15s ease; }
         .ws-btn-secondary:hover { background: #EDF0F5 !important; border-color: #B4C1D1 !important; }
