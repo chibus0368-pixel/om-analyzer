@@ -15,12 +15,8 @@ import { useRouter } from "next/navigation";
 function ClearAllButton({ onClear, workspaceId, workspaceName }: { onClear: () => void; workspaceId: string; workspaceName: string }) {
   const [clearing, setClearing] = useState(false);
   async function handleClear() {
-    const typed = prompt(`⚠️ DANGER: This will PERMANENTLY DELETE all properties and data in "${workspaceName}".\n\nThis cannot be undone.\n\nType "${workspaceName}" to confirm:`);
-    if (!typed || typed.trim() !== workspaceName) {
-      if (typed !== null) alert("Name didn't match. Nothing was deleted.");
-      return;
-    }
-    if (!confirm(`FINAL WARNING: Permanently delete ALL properties in "${workspaceName}"? This is irreversible.`)) return;
+    if (!confirm(`⚠️ This will delete all properties and data in "${workspaceName}".\n\nThis cannot be undone. Continue?`)) return;
+    if (!confirm(`Final confirmation: Delete all properties in "${workspaceName}"?`)) return;
     setClearing(true);
     try {
       const { getAuth } = await import("firebase/auth");
