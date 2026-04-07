@@ -384,9 +384,9 @@ export default function BulkUploadPage() {
               Each property takes 30-60 seconds for full analysis.
             </p>
             {/* Overall progress bar */}
-            <div style={{ marginTop: 12, height: 6, background: "#EDF0F5", borderRadius: 3, overflow: "hidden" }}>
+            <div style={{ marginTop: 12, height: 10, background: "#E8F5E9", borderRadius: 5, overflow: "hidden" }}>
               <div style={{
-                height: "100%", background: "#C49A3C", borderRadius: 3,
+                height: "100%", background: "#65A30D", borderRadius: 5,
                 width: `${items.length > 0 ? (completedCount / items.length) * 100 : 0}%`,
                 transition: "width 0.5s",
               }} />
@@ -428,10 +428,11 @@ export default function BulkUploadPage() {
                 </div>
               </div>
               {(item.status === "uploading") && (
-                <div style={{ width: 50, flexShrink: 0 }}>
-                  <div style={{ height: 3, background: "#EDF0F5", borderRadius: 2, overflow: "hidden" }}>
-                    <div style={{ height: "100%", background: "#C49A3C", width: `${item.progress}%`, transition: "width 0.3s" }} />
+                <div style={{ width: 80, flexShrink: 0, display: "flex", alignItems: "center", gap: 6 }}>
+                  <div style={{ flex: 1, height: 6, background: "#E8F5E9", borderRadius: 3, overflow: "hidden" }}>
+                    <div style={{ height: "100%", background: "#65A30D", borderRadius: 3, width: `${item.progress}%`, transition: "width 0.3s" }} />
                   </div>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: "#65A30D", minWidth: 28, textAlign: "right" }}>{item.progress}%</span>
                 </div>
               )}
             </div>

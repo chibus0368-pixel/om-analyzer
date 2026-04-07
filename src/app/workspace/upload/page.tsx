@@ -625,7 +625,7 @@ export default function UploadPage() {
                     {stage.label}
                   </div>
                   {i < arr.length - 1 && (
-                    <div style={{ position: "relative", top: -26, left: "50%", width: "100%", height: 2, background: stage.done ? "#10B981" : C.surfLow }} />
+                    <div style={{ position: "relative", top: -26, left: "50%", width: "100%", height: 3, background: stage.done ? "#10B981" : C.surfLow, borderRadius: 2 }} />
                   )}
                 </div>
               );
@@ -651,10 +651,11 @@ export default function UploadPage() {
               <div key={f.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0", fontSize: 12 }}>
                 <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: C.secondary }}>{f.file.name}</span>
                 {f.status === "uploading" && (
-                  <div style={{ width: 60, flexShrink: 0 }}>
-                    <div style={{ height: 3, background: C.surfLow, borderRadius: 2, overflow: "hidden" }}>
-                      <div style={{ height: "100%", background: C.primary, width: `${f.progress}%`, transition: "width 0.3s" }} />
+                  <div style={{ width: 100, flexShrink: 0, display: "flex", alignItems: "center", gap: 6 }}>
+                    <div style={{ flex: 1, height: 6, background: "#E8F5E9", borderRadius: 3, overflow: "hidden" }}>
+                      <div style={{ height: "100%", background: "#65A30D", borderRadius: 3, width: `${f.progress}%`, transition: "width 0.3s" }} />
                     </div>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: "#65A30D", minWidth: 28, textAlign: "right" }}>{f.progress}%</span>
                   </div>
                 )}
                 {f.status === "complete" && <span style={{ color: "#10B981", fontSize: 13, flexShrink: 0 }}>{"\u2713"}</span>}
