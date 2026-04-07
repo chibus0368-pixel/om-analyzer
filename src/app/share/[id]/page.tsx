@@ -325,40 +325,52 @@ export default function SharedViewPage() {
         @keyframes slideIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
       `}</style>
 
-      {/* Header */}
+      {/* Header — dark branded bar matching workspace */}
       <header style={{
-        background: "#fff", padding: "0 24px", height: 56, display: "flex",
+        background: "#0b1326", padding: "0 24px", height: 56, display: "flex",
         alignItems: "center", justifyContent: "space-between",
-        boxShadow: "0 1px 3px rgba(21,27,43,0.04)", position: "relative", zIndex: 10,
+        borderBottom: "1px solid rgba(255,255,255,0.08)", position: "relative", zIndex: 10,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          {showBranding && <DealSignalLogo size={26} fontSize={15} gap={6} />}
-          {showBranding && <div style={{ width: 1, height: 24, background: "#e5e7eb" }} />}
-          <h1 style={{ fontSize: 16, fontWeight: 700, color: "#151b2b", margin: 0 }}>{title}</h1>
+          {showBranding && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {/* Logo mark — green rounded square with pulse */}
+              <div style={{ background: "#84CC16", padding: 5, borderRadius: 5, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: 16, height: 16, color: "#000" }}>
+                  <path d="M3 12h3l3-9 6 18 3-9h3" />
+                </svg>
+              </div>
+              <span style={{ fontSize: 16, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", fontFamily: "'Inter', sans-serif" }}>
+                Deal <span style={{ color: "#84CC16" }}>Signals</span>
+              </span>
+            </div>
+          )}
+          {showBranding && <div style={{ width: 1, height: 24, background: "rgba(255,255,255,0.12)" }} />}
+          <h1 style={{ fontSize: 15, fontWeight: 700, color: "#FFFFFF", margin: 0 }}>{title}</h1>
           <span style={{
-            fontSize: 11, fontWeight: 600, color: "#585e70", background: "#f2f3ff",
+            fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.6)", background: "rgba(255,255,255,0.08)",
             padding: "3px 10px", borderRadius: 4,
           }}>
             {properties.length} propert{properties.length === 1 ? "y" : "ies"}
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {(config?.contactName || config?.contactAgency || config?.contactPhone) && (
-            <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 12, color: "#585e70" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12 }}>
+              <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: 0.5 }}>Shared by</span>
               {config?.contactName && (
-                <span style={{ fontWeight: 600, color: "#151b2b" }}>{config.contactName}</span>
+                <span style={{ fontWeight: 700, color: "#FFFFFF" }}>{config.contactName}</span>
               )}
               {config?.contactAgency && (
-                <span>{config.contactAgency}</span>
+                <span style={{ color: "rgba(255,255,255,0.6)" }}>{config.contactAgency}</span>
               )}
               {config?.contactPhone && (
-                <a href={`tel:${config.contactPhone}`} style={{ color: "#585e70", textDecoration: "none" }}>
+                <a href={`tel:${config.contactPhone}`} style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>
                   {config.contactPhone}
                 </a>
               )}
             </div>
           )}
-          {/* Branding removed per design */}
         </div>
       </header>
 
@@ -419,9 +431,9 @@ export default function SharedViewPage() {
           ) : (
             /* ─── Property List View ─── */
             <>
-              <div style={{ padding: "14px 16px 8px", borderBottom: "1px solid #f1f5f9" }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#151b2b" }}>Properties</div>
-                <div style={{ fontSize: 11, color: "#94a3b8" }}>Click a property to view full details</div>
+              <div style={{ padding: "16px 16px 10px", borderBottom: "1px solid #f1f5f9" }}>
+                <div style={{ fontSize: 17, fontWeight: 800, color: "#151b2b", letterSpacing: "-0.02em" }}>Properties</div>
+                <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>Click a property to view full details</div>
               </div>
               <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 10 }}>
                 {properties.map(prop => {
@@ -522,7 +534,13 @@ export default function SharedViewPage() {
                 <div style={{
                   padding: "16px 20px", borderTop: "1px solid #e5e7eb",
                   textAlign: "center", fontSize: 10, color: "#94a3b8",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                 }}>
+                  <div style={{ background: "#84CC16", padding: 2, borderRadius: 3, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: 10, height: 10 }}>
+                      <path d="M3 12h3l3-9 6 18 3-9h3" />
+                    </svg>
+                  </div>
                   Deal Signals &mdash; CRE Intelligence
                 </div>
               )}
