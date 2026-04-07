@@ -274,6 +274,32 @@ export default function ProfilePage() {
     }
   };
 
+  const handleCancelSubscription = async () => {
+    if (!firebaseUser) return;
+    if (!confirm("Are you sure you want to cancel your subscription? You'll keep access until the end of your current billing period.")) return;
+    setBillingLoading("cancel");
+    try {
+      const token = await firebaseUser.getIdToken();
+      const res = await fetch("/api/stripe/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) {
+        const endDate = data.currentPeriodEnd ? new Date(data.currentPeriodEnd * 1000).toLocaleDateString() : "your billing period ends";
+        alert(`Subscription cancelled. You'll have access until ${endDate}.`);
+        window.dispatchEvent(new Event("usage-updated"));
+      } else {
+        alert(data.error || "Unable to cancel subscription. Please try Manage Billing instead.");
+      }
+    } catch (err) {
+      console.error("Cancel error:", err);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setBillingLoading(null);
+    }
+  };
+
   // Save profile
   const handleSave = async () => {
     if (!firebaseUser) return;
@@ -852,16 +878,28 @@ export default function ProfilePage() {
                 </div>
               </div>
               {usageData?.stripeSubscriptionId && (
-                <button
-                  onClick={handleManageBilling}
-                  disabled={billingLoading === "portal"}
-                  style={{
-                    ...btnOutline, fontSize: 12,
-                    opacity: billingLoading === "portal" ? 0.7 : 1,
-                  }}
-                >
-                  {billingLoading === "portal" ? "Opening..." : "Manage Billing"}
-                </button>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <button
+                    onClick={handleManageBilling}
+                    disabled={billingLoading === "portal"}
+                    style={{
+                      ...btnOutline, fontSize: 12,
+                      opacity: billingLoading === "portal" ? 0.7 : 1,
+                    }}
+                  >
+                    {billingLoading === "portal" ? "Opening..." : "Manage Billing"}
+                  </button>
+                  <button
+                    onClick={handleCancelSubscription}
+                    disabled={!!billingLoading}
+                    style={{
+                      ...btnDanger, fontSize: 12,
+                      opacity: billingLoading === "cancel" ? 0.7 : 1,
+                    }}
+                  >
+                    {billingLoading === "cancel" ? "Cancelling..." : "Cancel Plan"}
+                  </button>
+                </div>
               )}
             </div>
 

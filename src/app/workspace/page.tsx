@@ -116,16 +116,37 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
     try {
       const snap = await getDoc(doc(db, "workspace_properties", property.id));
       if (!snap.exists()) throw new Error("Property not found");
-      const data = snap.data();
-      // Remove ID fields and timestamps — create fresh copy
-      const { id, createdAt, updatedAt, ...rest } = data as any;
-      await addDoc(collection(db, "workspace_properties"), {
-        ...rest,
+      const original = snap.data();
+      // Build a clean copy — only include known safe fields
+      const copyData: Record<string, any> = {
+        propertyName: (original.propertyName || "Untitled") + " (Copy)",
         workspaceId: targetWorkspaceId,
-        propertyName: rest.propertyName + " (Copy)",
+        userId: original.userId,
+        projectId: original.projectId,
+        address1: original.address1 || "",
+        city: original.city || "",
+        state: original.state || "",
+        zip: original.zip || "",
+        parseStatus: original.parseStatus || "pending",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      });
+      };
+      // Copy optional fields if they exist
+      const optionalFields = [
+        "address2", "county", "market", "assetType", "buildingSf", "landAcres",
+        "yearBuilt", "occupancyPct", "heroImageUrl", "scoreTotal", "scoreBand",
+        "scoreRecommendation", "processingStatus", "analysisType",
+        "purchasePrice", "noi", "capRate", "tenantName", "leaseTerm",
+        "leaseType", "rentPerSf", "briefSummary",
+      ];
+      for (const field of optionalFields) {
+        if (original[field] !== undefined && original[field] !== null) {
+          copyData[field] = original[field];
+        }
+      }
+      const newRef = await addDoc(collection(db, "workspace_properties"), copyData);
+      console.log("[duplicate] Created copy:", newRef.id, "in workspace:", targetWorkspaceId);
+      alert(`Duplicated "${original.propertyName}" successfully!`);
       window.dispatchEvent(new Event("workspace-properties-changed"));
       window.location.reload();
     } catch (err) {
