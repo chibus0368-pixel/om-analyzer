@@ -1272,6 +1272,103 @@ function PropertyDetailInner({
       })()}
 
       {/* ═══════════════════════════════════════════════════ */}
+      {/*  3b. VALUE-ADD OPPORTUNITIES                       */}
+      {/* ═══════════════════════════════════════════════════ */}
+      {hasData && wsType !== "land" && (() => {
+        const vaFlagsRaw = gf(fields, "value_add", "flags_json");
+        const vaScore = gf(fields, "value_add", "score");
+        let vaFlags: { type: string; strength: string; summary: string; detail?: string }[] = [];
+        try { if (vaFlagsRaw) vaFlags = JSON.parse(vaFlagsRaw); } catch { /* bad JSON */ }
+
+        if (vaFlags.length === 0 && !vaScore) return null;
+
+        const strengthIcon: Record<string, { emoji: string; color: string; bg: string }> = {
+          strong: { emoji: "🔥", color: "#059669", bg: "rgba(5,150,105,0.08)" },
+          moderate: { emoji: "📊", color: "#D97706", bg: "rgba(217,119,6,0.08)" },
+          weak: { emoji: "〰️", color: "#6B7280", bg: "rgba(107,114,128,0.06)" },
+        };
+
+        const typeLabels: Record<string, string> = {
+          rent_gap: "Rent Upside",
+          expense_inefficiency: "Expense Optimization",
+          physical_update: "Physical/Cosmetic Upgrade",
+          vacancy_leaseup: "Vacancy Lease-Up",
+          lease_rollover: "Lease Rollover Opportunity",
+        };
+
+        const scoreNum = vaScore ? Number(vaScore) : 0;
+        const scoreColor = scoreNum >= 7 ? "#059669" : scoreNum >= 4 ? "#D97706" : "#6B7280";
+
+        return (
+          <div style={{
+            background: "#ffffff", borderRadius: C.radius, overflow: "hidden",
+            border: "1px solid rgba(5,150,105,0.15)", marginBottom: 24,
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+          }}>
+            <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0,0,0,0.04)", background: "rgba(5,150,105,0.03)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ width: 3, height: 14, background: "#059669", borderRadius: 2 }} />
+                  <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Value-Add Opportunities</h3>
+                </div>
+                {scoreNum > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 11, color: "#6B7280", fontWeight: 500 }}>Value-Add Score</span>
+                    <span style={{
+                      fontSize: 14, fontWeight: 800, color: scoreColor,
+                      background: scoreNum >= 7 ? "rgba(5,150,105,0.1)" : scoreNum >= 4 ? "rgba(217,119,6,0.1)" : "rgba(107,114,128,0.08)",
+                      padding: "2px 10px", borderRadius: 6,
+                    }}>{scoreNum}/10</span>
+                  </div>
+                )}
+              </div>
+              <p style={{ fontSize: 12, color: C.secondary, margin: "4px 0 0 11px", lineHeight: 1.4 }}>
+                Actionable signals that indicate NOI improvement potential
+              </p>
+            </div>
+            <div style={{ padding: "12px 20px" }}>
+              {vaFlags.length > 0 ? vaFlags.map((flag, i) => {
+                const style = strengthIcon[flag.strength] || strengthIcon.weak;
+                return (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "flex-start", gap: 12,
+                    padding: "10px 12px", marginBottom: i < vaFlags.length - 1 ? 6 : 0,
+                    borderRadius: 8, background: style.bg, transition: "background 0.15s ease",
+                  }}>
+                    <span style={{ fontSize: 16, lineHeight: 1, marginTop: 1, flexShrink: 0 }}>{style.emoji}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280" }}>
+                          {typeLabels[flag.type] || flag.type}
+                        </span>
+                        <span style={{
+                          fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5,
+                          color: style.color, background: "rgba(255,255,255,0.6)",
+                          padding: "1px 6px", borderRadius: 3,
+                        }}>{flag.strength}</span>
+                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: C.onSurface, lineHeight: 1.4 }}>
+                        {flag.summary}
+                      </div>
+                      {flag.detail && (
+                        <div style={{ fontSize: 11, color: C.secondary, marginTop: 2, lineHeight: 1.4 }}>
+                          {flag.detail}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              }) : (
+                <div style={{ fontSize: 12, color: C.secondary, padding: "8px 0" }}>
+                  Limited value-add signals detected for this deal.
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ═══════════════════════════════════════════════════ */}
       {/*  4. WHAT TO DOUBLE CHECK (Review Panel)            */}
       {/* ═══════════════════════════════════════════════════ */}
       {reviewItems.length > 0 && (

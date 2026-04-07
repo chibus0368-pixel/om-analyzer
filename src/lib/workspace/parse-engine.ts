@@ -1373,6 +1373,241 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
       }
     }
 
+    // ===== VALUE-ADD SIGNAL COMPUTATION (deterministic, post-extraction) =====
+    // Computes 5 core value-add indicators from extracted data:
+    // 1. Rent Gap — in-place rent vs estimated market
+    // 2. Expense Inefficiency — expense ratio vs benchmarks
+    // 3. Physical/Cosmetic Opportunity — age, renovation status
+    // 4. Vacancy/Lease-Up — current vacancy and upside NOI
+    // 5. Lease Rollover Opportunity — near-term expirations, under-market leases
+    if (!isLand) {
+      const prop = stage1.property || {};
+      const inc = { ...(stage1.income || {}), ...(stage2.income || {}) };
+      const exp = { ...(stage1.expenses || {}), ...(stage2.expenses || {}) };
+      const tenants = stage1.tenants || [];
+      const pricing = { ...(stage1.pricing || {}), ...(stage2.pricing || {}) };
+
+      const occupancyPct = prop.occupancy_pct ? Number(prop.occupancy_pct) : null;
+      const glaSf = prop.gla_sf ? Number(prop.gla_sf) : null;
+      const rentPsf = inc.rent_per_sf ? Number(inc.rent_per_sf) : null;
+      const noiVal = exp.noi_adjusted || exp.noi_om || exp.noi_stated;
+      const noiNum = noiVal ? Number(noiVal) : null;
+      const egiVal = inc.effective_gross_income || inc.potential_gross_income || inc.total_income;
+      const egiNum = egiVal ? Number(egiVal) : null;
+      const totalExpVal = exp.total_expenses || exp.total_expenses_stated;
+      const totalExpNum = totalExpVal ? Number(totalExpVal) : null;
+      const askingPrice = pricing.asking_price ? Number(pricing.asking_price) : null;
+      const yrBuilt = prop.year_built ? Number(prop.year_built) : null;
+      const renovated = prop.renovated ? Number(prop.renovated) : null;
+      const assetType = (prop.asset_type || analysisType || "retail").toLowerCase();
+
+      // Market rent heuristics by asset type (conservative PSF estimates)
+      const marketRentBenchmarks: Record<string, number> = {
+        retail: 22,
+        industrial: 10,
+        office: 24,
+      };
+      const expenseRatioBenchmarks: Record<string, number> = {
+        retail: 0.35, // 35% of EGI
+        industrial: 0.28,
+        office: 0.42,
+      };
+      const marketRent = marketRentBenchmarks[assetType] || 20;
+      const expenseBenchmark = expenseRatioBenchmarks[assetType] || 0.35;
+
+      const valueAddFlags: { type: string; strength: string; summary: string; detail?: string }[] = [];
+      let valueAddScore = 0;
+
+      // ── 1. RENT GAP ──
+      if (rentPsf && rentPsf > 0) {
+        const gapPct = ((marketRent - rentPsf) / marketRent) * 100;
+        if (gapPct > 15) {
+          valueAddFlags.push({
+            type: "rent_gap",
+            strength: "strong",
+            summary: `Rents ~${Math.round(gapPct)}% below market`,
+            detail: `In-place $${rentPsf.toFixed(2)}/SF vs ~$${marketRent}/SF market estimate`,
+          });
+          valueAddScore += 4;
+        } else if (gapPct > 5) {
+          valueAddFlags.push({
+            type: "rent_gap",
+            strength: "moderate",
+            summary: `Rents ~${Math.round(gapPct)}% below market`,
+            detail: `In-place $${rentPsf.toFixed(2)}/SF vs ~$${marketRent}/SF market estimate`,
+          });
+          valueAddScore += 2;
+        } else if (gapPct > 0) {
+          valueAddFlags.push({
+            type: "rent_gap",
+            strength: "weak",
+            summary: `Rents near market (~${Math.round(gapPct)}% gap)`,
+          });
+          valueAddScore += 0.5;
+        }
+        saveField("value_add", "rent_gap_pct", Math.round(gapPct * 10) / 10, 0.7, "calculated");
+        saveField("value_add", "rent_psf_current", rentPsf, 0.8, "calculated");
+        saveField("value_add", "rent_psf_market_est", marketRent, 0.6, "estimated");
+      }
+
+      // ── 2. EXPENSE INEFFICIENCY ──
+      if (egiNum && egiNum > 0 && totalExpNum && totalExpNum > 0) {
+        const expenseRatio = totalExpNum / egiNum;
+        const inefficiencyPct = ((expenseRatio - expenseBenchmark) / expenseBenchmark) * 100;
+        if (inefficiencyPct > 15) {
+          valueAddFlags.push({
+            type: "expense_inefficiency",
+            strength: "strong",
+            summary: `Expenses ~${Math.round(inefficiencyPct)}% above typical`,
+            detail: `Expense ratio ${(expenseRatio * 100).toFixed(0)}% vs ~${(expenseBenchmark * 100).toFixed(0)}% benchmark`,
+          });
+          valueAddScore += 2;
+        } else if (inefficiencyPct > 5) {
+          valueAddFlags.push({
+            type: "expense_inefficiency",
+            strength: "moderate",
+            summary: `Expenses ~${Math.round(inefficiencyPct)}% above typical`,
+          });
+          valueAddScore += 1;
+        }
+        saveField("value_add", "expense_ratio", Math.round(expenseRatio * 1000) / 10, 0.75, "calculated");
+        saveField("value_add", "expense_ratio_benchmark", Math.round(expenseBenchmark * 100), 0.6, "estimated");
+      }
+
+      // ── 3. PHYSICAL / COSMETIC OPPORTUNITY ──
+      const currentYear = new Date().getFullYear();
+      const lastRenovation = renovated || yrBuilt;
+      if (lastRenovation && lastRenovation > 0) {
+        const age = currentYear - lastRenovation;
+        if (age > 20 && !renovated) {
+          valueAddFlags.push({
+            type: "physical_update",
+            strength: "strong",
+            summary: `No renovations in ${age}+ years`,
+            detail: `Built ${yrBuilt || "unknown"}, no recorded renovation → facade + tenant mix upgrade potential`,
+          });
+          valueAddScore += 2;
+        } else if (age > 10 && !renovated) {
+          valueAddFlags.push({
+            type: "physical_update",
+            strength: "moderate",
+            summary: `No renovations in ${age} years`,
+          });
+          valueAddScore += 1;
+        }
+        saveField("value_add", "years_since_renovation", age, 0.8, "calculated");
+        saveField("value_add", "physical_update_needed", age > 15 && !renovated, 0.7, "calculated");
+      }
+
+      // ── 4. VACANCY / LEASE-UP ──
+      if (occupancyPct !== null && occupancyPct < 100) {
+        const vacancyPct = 100 - occupancyPct;
+        if (vacancyPct > 8 && noiNum && noiNum > 0 && occupancyPct > 0) {
+          // Estimate NOI uplift if vacancy is leased
+          const noiPerOccPct = noiNum / occupancyPct;
+          const upsideNoi = Math.round(noiPerOccPct * vacancyPct);
+          let upsideValue = "";
+          if (upsideNoi > 0) {
+            upsideValue = ` → lease-up adds ~$${upsideNoi > 999999 ? (upsideNoi / 1000000).toFixed(1) + "M" : Math.round(upsideNoi).toLocaleString()} NOI`;
+          }
+          valueAddFlags.push({
+            type: "vacancy_leaseup",
+            strength: vacancyPct > 20 ? "strong" : "moderate",
+            summary: `${vacancyPct.toFixed(0)}% vacancy${upsideValue}`,
+            detail: glaSf ? `~${Math.round(glaSf * vacancyPct / 100).toLocaleString()} SF available for lease-up` : undefined,
+          });
+          valueAddScore += vacancyPct > 20 ? 2 : 1;
+          saveField("value_add", "vacancy_pct", vacancyPct, 0.85, "calculated");
+          saveField("value_add", "vacancy_upside_noi", upsideNoi, 0.7, "calculated");
+        } else if (vacancyPct > 3) {
+          valueAddFlags.push({
+            type: "vacancy_leaseup",
+            strength: "weak",
+            summary: `${vacancyPct.toFixed(0)}% vacancy — minor lease-up potential`,
+          });
+          valueAddScore += 0.5;
+          saveField("value_add", "vacancy_pct", vacancyPct, 0.85, "calculated");
+        }
+      }
+
+      // ── 5. LEASE ROLLOVER OPPORTUNITY ──
+      if (tenants.length > 0) {
+        const now24 = new Date();
+        now24.setMonth(now24.getMonth() + 24);
+        let nearTermExpirations = 0;
+        let hasShortLeases = false;
+        let hasNoEscalations = false;
+
+        for (const t of tenants) {
+          if (t.lease_end) {
+            try {
+              const endDate = new Date(t.lease_end);
+              if (endDate <= now24 && endDate >= new Date()) {
+                nearTermExpirations++;
+              }
+            } catch { /* bad date format */ }
+          }
+          // Check for very short remaining lease
+          if (t.lease_end && t.lease_start) {
+            try {
+              const start = new Date(t.lease_start);
+              const end = new Date(t.lease_end);
+              const termYears = (end.getTime() - start.getTime()) / (365.25 * 24 * 3600 * 1000);
+              if (termYears < 3) hasShortLeases = true;
+            } catch { /* bad date format */ }
+          }
+          // Check for lack of escalations
+          if (t.notes && typeof t.notes === "string") {
+            if (!/escalat|bump|increase|annual.*\d|%.*per|per.*year/i.test(t.notes)) {
+              hasNoEscalations = true;
+            }
+          }
+        }
+
+        if (nearTermExpirations >= 2) {
+          valueAddFlags.push({
+            type: "lease_rollover",
+            strength: nearTermExpirations >= 3 ? "strong" : "moderate",
+            summary: `${nearTermExpirations} leases expire within 24 months`,
+            detail: "Reposition opportunity on renewal at higher rents",
+          });
+          valueAddScore += nearTermExpirations >= 3 ? 2 : 1;
+        } else if (hasShortLeases) {
+          valueAddFlags.push({
+            type: "lease_rollover",
+            strength: "moderate",
+            summary: "Short-term lease structure detected",
+            detail: "Near-term rollovers may allow mark-to-market",
+          });
+          valueAddScore += 1;
+        }
+
+        saveField("value_add", "near_term_expirations", nearTermExpirations, 0.8, "calculated");
+        saveField("value_add", "lease_rollover_risk",
+          nearTermExpirations >= 3 ? "high" : nearTermExpirations >= 1 ? "medium" : "low",
+          0.75, "calculated");
+      }
+
+      // ── SAVE AGGREGATE VALUE-ADD DATA ──
+      const cappedScore = Math.min(10, Math.round(valueAddScore));
+      saveField("value_add", "score", cappedScore, 0.8, "calculated");
+      saveField("value_add", "flags_count", valueAddFlags.length, 0.9, "calculated");
+      saveField("value_add", "flags_json", JSON.stringify(valueAddFlags), 0.8, "calculated");
+
+      // Summary for quick display
+      if (valueAddFlags.length > 0) {
+        const topFlags = valueAddFlags
+          .filter(f => f.strength === "strong" || f.strength === "moderate")
+          .slice(0, 3)
+          .map(f => f.summary);
+        saveField("value_add", "summary", topFlags.join(" · "), 0.8, "calculated");
+      } else {
+        saveField("value_add", "summary", "Limited value-add signals detected", 0.6, "calculated");
+      }
+
+      console.log(`[parser] Value-add: score=${cappedScore}/10, flags=${valueAddFlags.length} [${valueAddFlags.map(f => f.type + ":" + f.strength).join(", ")}]`);
+    }
+
     if (fieldCount > 0) {
       await batch.commit();
     }

@@ -326,6 +326,14 @@ function LeaderboardRow({ pd, rank, totalCount, maxScore, expanded, onToggle }: 
               <InlineMetric label="DSCR" value={formatValue("dscr", dscr)}
                 thColor={getThresholdColor("dscr", Number(dscr))?.color} />
             )}
+            {(() => {
+              const vaVal = (pd.property as any).valueAddScore;
+              if (vaVal === undefined || vaVal === null) return null;
+              const va = Number(vaVal);
+              const vaEmoji = va >= 7 ? "🔥" : va >= 4 ? "📊" : "〰️";
+              return <InlineMetric label="Value-Add" value={`${vaEmoji} ${va}/10`}
+                thColor={va >= 7 ? "#059669" : va >= 4 ? "#D97706" : "#6B7280"} />;
+            })()}
           </div>
           {/* Recommendation blurb — from Score API, stripped of emojis */}
           {recommendation && (
@@ -614,7 +622,7 @@ async function exportToXlsx(propertyData: PropertyData[], workspaceName: string)
 // ══════════════════════════════════════════════════════════════
 // MAIN PAGE
 // ══════════════════════════════════════════════════════════════
-type SortKey = "score" | "name" | "price" | "cap_rate" | "noi" | "gla" | "signal";
+type SortKey = "score" | "name" | "price" | "cap_rate" | "noi" | "gla" | "value_add" | "signal";
 type SortDir = "asc" | "desc";
 type ViewMode = "leaderboard" | "comparison";
 
@@ -796,6 +804,7 @@ export default function ScoreboardPage() {
         case "cap_rate": cmp = (Number(a.values.get("cap_rate")) || 0) - (Number(b.values.get("cap_rate")) || 0); break;
         case "noi": cmp = (Number(a.values.get("noi")) || 0) - (Number(b.values.get("noi")) || 0); break;
         case "gla": cmp = (Number(a.values.get("building_sf")) || 0) - (Number(b.values.get("building_sf")) || 0); break;
+        case "value_add": cmp = ((a.property as any).valueAddScore || 0) - ((b.property as any).valueAddScore || 0); break;
         case "signal": {
           const sa = (a.property as any).scoreTotal || 0;
           const sb = (b.property as any).scoreTotal || 0;
@@ -1040,6 +1049,7 @@ export default function ScoreboardPage() {
                     { key: "cap_rate" as SortKey, label: "Cap Rate", align: "right" as const },
                     { key: "noi" as SortKey, label: "NOI", align: "right" as const },
                     { key: "gla" as SortKey, label: "GLA", align: "right" as const },
+                    { key: "value_add" as SortKey, label: "Value-Add", align: "center" as const },
                     { key: "signal" as SortKey, label: "Signal", align: "center" as const },
                   ]).map(col => (
                     <th
@@ -1227,6 +1237,28 @@ export default function ScoreboardPage() {
                         fontWeight: 500, color: "#4B5563", fontVariantNumeric: "tabular-nums",
                       }}>
                         {gla ? formatValue("building_sf", gla) : "--"}
+                      </td>
+
+                      {/* Value-Add Score */}
+                      <td style={{ padding: "16px 24px", textAlign: "center" }}>
+                        {(() => {
+                          const vaScoreVal = (pd.property as any).valueAddScore;
+                          if (vaScoreVal === undefined || vaScoreVal === null) return <span style={{ color: "#D1D5DB" }}>--</span>;
+                          const va = Number(vaScoreVal);
+                          const vaColor = va >= 7 ? "#059669" : va >= 4 ? "#D97706" : "#6B7280";
+                          const vaBg = va >= 7 ? "rgba(5,150,105,0.08)" : va >= 4 ? "rgba(217,119,6,0.08)" : "rgba(107,114,128,0.06)";
+                          const vaLabel = va >= 7 ? "🔥" : va >= 4 ? "📊" : "〰️";
+                          return (
+                            <span style={{
+                              display: "inline-flex", alignItems: "center", gap: 4,
+                              padding: "4px 10px", borderRadius: 6,
+                              background: vaBg, color: vaColor,
+                              fontSize: 13, fontWeight: 700,
+                            }}>
+                              {vaLabel} {va}/10
+                            </span>
+                          );
+                        })()}
                       </td>
 
                       {/* Signal Pill Badge */}

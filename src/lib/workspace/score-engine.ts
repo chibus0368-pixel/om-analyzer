@@ -399,16 +399,34 @@ export async function runScoreEngine(params: {
       { condition: hasField("expenses.total_expenses") || hasField("expenses.operating_expenses"), points: 10 },
     ]);
 
-    // ── 3. VALUE & UPSIDE (weight: 10) ──
-    // Rewards strong cap rate, below-cost basis, and rent growth potential
-    // Does NOT penalize high occupancy (that's a strength, not a weakness)
-    const upsideScore = scoreCategory([
-      { condition: capRate !== undefined && capRate >= 7.5, points: 30 },  // Above-market yield
-      { condition: priceSf !== undefined && priceSf < 100, points: 25 },  // Deep value basis
-      { condition: priceSf !== undefined && priceSf < 200, points: 10 },  // Reasonable basis
-      { condition: hasField("rent_roll.avg_rent_psf") || baseRent !== undefined, points: 15 },
-      { condition: occupancy !== undefined && occupancy >= 90, points: 20 }, // Stabilized = less risk
-    ]);
+    // ── 3. VALUE-ADD (weight: 10) ──
+    // Uses concrete value-add signals computed by the parse engine:
+    // rent gap, expense inefficiency, physical update, vacancy lease-up, lease rollover
+    const vaScore = getFirst("value_add.score");
+    const vaFlagsCount = getFirst("value_add.flags_count");
+    const rentGapPct = getFirst("value_add.rent_gap_pct");
+    const vacancyUpsideNoi = getFirst("value_add.vacancy_upside_noi");
+    const physicalNeeded = getVal("value_add.physical_update_needed");
+    const nearTermExps = getFirst("value_add.near_term_expirations");
+    const expenseRatio = getFirst("value_add.expense_ratio");
+    const expenseBenchmark = getFirst("value_add.expense_ratio_benchmark");
+
+    const upsideScore = (() => {
+      // If we have the parsed value-add score, use it directly (scaled 0-100)
+      if (vaScore !== undefined && vaScore >= 0) {
+        return Math.min(100, Math.round(vaScore * 10));
+      }
+      // Fallback: score from individual indicators
+      return scoreCategory([
+        { condition: rentGapPct !== undefined && rentGapPct > 15, points: 30 },   // Strong rent gap
+        { condition: rentGapPct !== undefined && rentGapPct > 5, points: 15 },    // Moderate rent gap
+        { condition: occupancy !== undefined && occupancy < 92, points: 20 },     // Vacancy lease-up
+        { condition: vacancyUpsideNoi !== undefined && vacancyUpsideNoi > 0, points: 10 },
+        { condition: nearTermExps !== undefined && nearTermExps >= 2, points: 15 }, // Lease rollover
+        { condition: physicalNeeded === true || physicalNeeded === "true", points: 10 }, // Physical update
+        { condition: expenseRatio !== undefined && expenseBenchmark !== undefined && expenseRatio > expenseBenchmark, points: 15 }, // Expense inefficiency
+      ]);
+    })();
 
     // ── 4. TENANT (weight: 12) ──
     // More flexible — checks for any tenant info, not just exact credit strings
@@ -523,13 +541,15 @@ export async function runScoreEngine(params: {
     const scoreRef = db.collection("workspace_scores").doc();
     batch.set(scoreRef, {
       projectId,
-      scoringModelVersion: "1.0",
+      scoringModelVersion: "1.1",
       totalScore,
       scoreBand,
       recommendation,
       pricingScore,
       cashflowScore,
       upsideScore,
+      valueAddScore: vaScore !== undefined ? vaScore : null,
+      valueAddFlagsCount: vaFlagsCount !== undefined ? vaFlagsCount : 0,
       tenantScore,
       rolloverRiskScore: rolloverScore,
       vacancyScore,
@@ -546,12 +566,15 @@ export async function runScoreEngine(params: {
     // Update property record with score — separate from batch so a missing doc doesn't kill scoring
     if (propertyId) {
       try {
-        await db.collection("workspace_properties").doc(propertyId).set({
+        const propScoreUpdate: Record<string, any> = {
           scoreTotal: totalScore,
           scoreBand,
           recommendation,
           updatedAt: now,
-        }, { merge: true });
+        };
+        if (vaScore !== undefined) propScoreUpdate.valueAddScore = vaScore;
+        if (vaFlagsCount !== undefined) propScoreUpdate.valueAddFlagsCount = vaFlagsCount;
+        await db.collection("workspace_properties").doc(propertyId).set(propScoreUpdate, { merge: true });
       } catch (e) { console.warn("[score-engine] Property update failed (retail):", e); }
     }
 
