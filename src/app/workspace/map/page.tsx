@@ -275,7 +275,7 @@ export default function MapPage() {
       <div style={{ padding: "12px 20px", background: "#fff", borderBottom: "1px solid rgba(227, 190, 189, 0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Deal Map{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}</h1>
+            <h1 style={{ fontSize: 30, fontWeight: 700, margin: 0, color: "#111827", letterSpacing: -0.5 }}>Deal Map{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}</h1>
             {activeWorkspace?.analysisType && (
               <span style={{
                 display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 4,
