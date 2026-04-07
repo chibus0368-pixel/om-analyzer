@@ -93,13 +93,6 @@ export default function UploadPage() {
   const [mismatchInfo, setMismatchInfo] = useState<{ detected: string; workspace: string; propertyId: string } | null>(null);
   const skipMismatchRef = useRef(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const pickerOpen = useRef(false);
-  const openFilePicker = useCallback(() => {
-    if (pickerOpen.current) return;
-    pickerOpen.current = true;
-    fileRef.current?.click();
-    setTimeout(() => { pickerOpen.current = false; }, 1000);
-  }, []);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   useEffect(() => {
@@ -467,7 +460,7 @@ export default function UploadPage() {
             onDragOver={e => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
             onDragLeave={e => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
             onDrop={handleDrop}
-            onClick={() => openFilePicker()}
+            onClick={(e) => { if ((e.target as HTMLElement).closest("button,input")) return; fileRef.current?.click(); }}
             style={{
               background: C.surfLowest,
               borderRadius: C.radius,
@@ -496,7 +489,7 @@ export default function UploadPage() {
               PDF, Excel, or CSV accepted (Max 50MB)
             </p>
             {!hasFiles && (
-              <button onClick={(e) => { e.stopPropagation(); openFilePicker(); }} style={{
+              <button onClick={() => fileRef.current?.click()} style={{
                 padding: "12px 32px", background: C.onSurface, color: "#fff", border: "none",
                 borderRadius: C.radius, fontSize: 14, fontWeight: 600, cursor: "pointer",
                 fontFamily: "'Inter', sans-serif",
