@@ -721,14 +721,30 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
     }
   };
 
-  // If not authenticated: show login page without workspace chrome, or show nothing while redirecting
+  // If not authenticated: show login page without workspace chrome, or show loading while redirecting
   if (!user) {
     if (isLoginPage) {
       // Render children (login page) without the workspace sidebar/header
       return <>{children}</>;
     }
-    // Show nothing while redirecting to login
-    return null;
+    // Show loading spinner while redirecting or during auth token refresh
+    // (Firebase onAuthStateChanged can briefly fire null during token refresh)
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F7F8FA" }}>
+        <div style={{ textAlign: "center", color: "#585e70" }}>
+          <div style={{
+            width: 32, height: 32,
+            border: "3px solid rgba(0,0,0,0.06)",
+            borderTopColor: "#84CC16",
+            borderRadius: "50%",
+            animation: "spin 0.8s linear infinite",
+            margin: "0 auto 12px",
+          }} />
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          <span style={{ fontSize: 13 }}>Loading workspace...</span>
+        </div>
+      </div>
+    );
   }
 
   return (
