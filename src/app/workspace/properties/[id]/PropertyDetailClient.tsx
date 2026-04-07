@@ -39,7 +39,7 @@ const ACCEPTED_EXT = ".pdf,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.webp";
 
 /* ── File extension icon helper ─────────────────────── */
 function fileIcon(ext: string) {
-  if (ext === "pdf") return { bg: "#FDE8EA", color: C.primary, label: "PDF" };
+  if (ext === "pdf") return { bg: "#F0FDF4", color: "#15803D", label: "PDF" };
   if (["xls", "xlsx", "csv"].includes(ext)) return { bg: "#D1FAE5", color: "#059669", label: "XLS" };
   if (["doc", "docx"].includes(ext)) return { bg: "#DBEAFE", color: "#2563EB", label: "DOC" };
   if (["png", "jpg", "jpeg", "webp"].includes(ext)) return { bg: "#FEF3C7", color: "#D97706", label: "IMG" };

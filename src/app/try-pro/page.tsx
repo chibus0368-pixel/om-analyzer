@@ -692,7 +692,7 @@ export default function TryProPage() {
                       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                         {deal.documents.map((doc, i) => {
                           const isPdf = doc.type === "PDF";
-                          const iconBg = isPdf ? "#FDE8EA" : "#D1FAE5";
+                          const iconBg = isPdf ? "#F0FDF4" : "#D1FAE5";
                           const iconColor = isPdf ? "#65A30D" : "#059669";
                           return (
                             <div key={i} style={{
