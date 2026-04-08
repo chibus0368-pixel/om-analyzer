@@ -589,6 +589,7 @@ export default function OmAnalyzerPage() {
           .ds-pricing-grid { grid-template-columns: 1fr !important; }
           .ds-steps-grid { grid-template-columns: 1fr !important; }
           .ds-why-grid { grid-template-columns: 1fr !important; }
+          .ds-faq-grid { grid-template-columns: 1fr !important; }
           .ds-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
           .ds-nav-links { display: none !important; }
           .ds-pro-features { grid-template-columns: 1fr 1fr !important; }
@@ -1107,7 +1108,7 @@ export default function OmAnalyzerPage() {
               {/* ── Feature blocks: alternating left/right ── */}
               {[
                 {
-                  num: "01", title: "Extract Every Data Point Instantly", desc: "Upload a deal and watch 40+ fields populate in seconds — price, cap rate, NOI, tenant, lease terms, and more.",
+                  num: "01", title: "Extract Every Data Point Instantly", desc: "Upload a deal and watch 40+ fields populate in under a minute — price, cap rate, NOI, tenant, lease terms, and more. Add multiple documents to the same deal and data coalesces automatically.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
                       {/* Scan line animation overlay */}
@@ -1773,7 +1774,7 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 9. FAQ ── */}
-          <div id="faq" style={{ maxWidth: 680, margin: "0 auto", padding: "120px 32px 80px" }}>
+          <div id="faq" style={{ maxWidth: 1100, margin: "0 auto", padding: "120px 32px 80px" }}>
             {/* Section divider */}
             <div style={{
               height: 1,
@@ -1781,36 +1782,177 @@ export default function OmAnalyzerPage() {
               maxWidth: 600,
               margin: "-100px auto 60px",
             }} />
-            <h2 style={{ fontSize: 30, fontWeight: 800, color: "#ffffff", marginBottom: 48, textAlign: "center" }}>
-              Frequently asked questions
-            </h2>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {[
-                { q: "What is Deal Signals?", a: "Deal Signals is an AI-powered CRE underwriting tool that extracts key financial metrics, calculates investment scores, and flags risks from offering memorandums in seconds." },
-                { q: "What file types are supported?", a: "PDF, Word (.docx), Excel (.xlsx/.xls), CSV, and plain text. PDF is recommended for best accuracy. Max 50MB." },
-                { q: "Is Deal Signals really free?", a: "Yes. 2 deal analyses with full scoring and Excel export, no credit card required. Pro unlocks 100 deals/month at $40/month." },
-                { q: "How accurate is the extraction?", a: "90%+ accuracy on standard CRE metrics. Always review the original document for critical decisions." },
-                { q: "What's included in Pro?", a: "Up to 100 deals/month, unlimited saved deals, full Excel workbooks, DealBoard with history, deal comparison scoreboard, interactive property map, and shareable client links." },
-                { q: "Is my data private?", a: "Yes. Documents are processed in real-time and not stored permanently. No tracking, no account required for free tier." },
-              ].map((item, idx) => (
-                <div key={idx} style={{ borderBottom: idx < 5 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
-                  <button onClick={() => setOpenFaq(openFaq === idx ? null : idx)} style={{
-                    width: "100%", padding: "18px 0", background: "transparent",
-                    border: "none", textAlign: "left", cursor: "pointer",
-                    display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16,
-                  }}>
-                    <span style={{ fontSize: 15, fontWeight: 600, color: "#ffffff" }}>{item.q}</span>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === idx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                  </button>
-                  {openFaq === idx && (
-                    <div style={{ paddingBottom: 18 }}>
-                      <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{item.a}</p>
+
+            {/* Header */}
+            <div style={{ textAlign: "center", marginBottom: 64 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", padding: "6px 16px", borderRadius: 50, background: "rgba(132,204,22,0.06)", color: "#84CC16", fontSize: 12, fontWeight: 700, marginBottom: 16, gap: 6, letterSpacing: 0.5, textTransform: "uppercase" as const }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                FAQ
+              </div>
+              <h2 style={{ fontSize: 36, fontWeight: 800, color: "#ffffff", marginBottom: 12, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                Questions investors actually ask
+              </h2>
+              <p style={{ fontSize: 16, color: "#9ca3af", lineHeight: 1.7, maxWidth: 520, margin: "0 auto" }}>
+                Everything you need to know about using DealSignals for pre-diligence.
+              </p>
+            </div>
+
+            {/* Two-column FAQ grid */}
+            <div className="ds-faq-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+              {/* Left column */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {/* Category: Getting Started */}
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "0 0 8px", marginBottom: 4 }}>Getting Started</div>
+
+                {[
+                  { q: "What exactly does DealSignals do?", a: "DealSignals is a pre-diligence engine for commercial real estate. Upload an OM, rent roll, or broker flyer and get a scored deal brief with extracted financials, risk signals, and a buy/hold/pass recommendation — in under 60 seconds." },
+                  { q: "Who is this built for?", a: "Active CRE investors, acquisition analysts, and brokers who evaluate multiple deals per week. If you spend time reading OMs and building spreadsheets before deciding whether to pursue a deal, DealSignals gives you that answer faster." },
+                  { q: "What file types can I upload?", a: "PDF (recommended for best accuracy), Word (.docx), Excel (.xlsx/.xls), CSV, and plain text files. Maximum file size is 50MB. Multi-page OMs, single-page flyers, and rent rolls all work." },
+                  { q: "How accurate is the extraction?", a: "90%+ accuracy on standard CRE metrics like price, cap rate, NOI, tenant name, lease terms, and building size. DealSignals is designed for pre-diligence speed — always verify against the source document before making final investment decisions." },
+                  { q: "Do I need to create an account?", a: "No. Your first 2 deal analyses are completely free with no signup required. We use an anonymous session to track your usage. You only need an account if you upgrade to Pro to save deals and access your DealBoard." },
+                ].map((item, i) => {
+                  const faqIdx = i;
+                  return (
+                    <div key={faqIdx} style={{
+                      borderRadius: 12, border: "1px solid rgba(255,255,255,0.06)",
+                      background: openFaq === faqIdx ? "rgba(132,204,22,0.03)" : "rgba(22,26,35,0.4)",
+                      transition: "all 0.2s ease",
+                    }}>
+                      <button onClick={() => setOpenFaq(openFaq === faqIdx ? null : faqIdx)} style={{
+                        width: "100%", padding: "16px 20px", background: "transparent",
+                        border: "none", textAlign: "left", cursor: "pointer",
+                        display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
+                      }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#84CC16" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#84CC16" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </button>
+                      {openFaq === faqIdx && (
+                        <div style={{ padding: "0 20px 16px" }}>
+                          <p style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{item.a}</p>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
+                  );
+                })}
+
+                {/* Category: Pricing */}
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "16px 0 8px", marginBottom: 4 }}>Pricing &amp; Plans</div>
+
+                {[
+                  { q: "Is it really free?", a: "Yes. 2 full deal analyses with scoring, risk signals, and Excel export — no credit card, no signup. You see the exact same output that Pro users get." },
+                  { q: "What does Pro include?", a: "Pro ($40/month) gives you up to 100 deal analyses per month, unlimited saved deals, full 6-sheet Excel workbooks, DealBoard with deal history, comparison scoreboard, interactive property map, and shareable client links. Less than $0.50 per deal." },
+                  { q: "What about Pro+?", a: "Pro+ ($100/month) is for high-volume operators — up to 500 deals/month plus bulk portfolio uploads, location intelligence, white-label sharing, and priority processing and support. Less than $0.20 per deal." },
+                ].map((item, i) => {
+                  const faqIdx = 5 + i;
+                  return (
+                    <div key={faqIdx} style={{
+                      borderRadius: 12, border: "1px solid rgba(255,255,255,0.06)",
+                      background: openFaq === faqIdx ? "rgba(132,204,22,0.03)" : "rgba(22,26,35,0.4)",
+                      transition: "all 0.2s ease",
+                    }}>
+                      <button onClick={() => setOpenFaq(openFaq === faqIdx ? null : faqIdx)} style={{
+                        width: "100%", padding: "16px 20px", background: "transparent",
+                        border: "none", textAlign: "left", cursor: "pointer",
+                        display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
+                      }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#84CC16" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#84CC16" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </button>
+                      {openFaq === faqIdx && (
+                        <div style={{ padding: "0 20px 16px" }}>
+                          <p style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{item.a}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Right column */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {/* Category: The Product */}
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "0 0 8px", marginBottom: 4 }}>The Product</div>
+
+                {[
+                  { q: "How is this different from just reading the OM?", a: "Reading an OM takes 20–45 minutes and you still have to build a spreadsheet. DealSignals gives you the same data extraction, a structured financial summary, and a scored recommendation in under 60 seconds. It's the difference between reading every deal and filtering to the ones worth your time." },
+                  { q: "What does the Deal Score actually measure?", a: "The Deal Score (0–100) evaluates six investment dimensions: pricing relative to market, cashflow strength, tenant credit quality, rollover and lease risk, location fundamentals, and upside potential. Each dimension is scored independently so you can see exactly where a deal is strong or weak." },
+                  { q: "What's in the Excel export?", a: "A 6-sheet institutional-grade workbook: deal summary inputs, rent roll, operating statement, debt and returns analysis, breakeven scenarios, and cap rate sensitivity tables. Every sheet is formula-linked and ready for your own underwriting adjustments." },
+                  { q: "Can I share analysis with clients?", a: "Yes. Pro users can generate a unique shareable link for any deal. Your client sees the full analysis — score, metrics, financial summary — without needing a DealSignals account. Pro+ users get white-label branded links." },
+                  { q: "What property types does it support?", a: "DealSignals works across all major CRE asset classes: retail NNN, multifamily, industrial, office, medical, self-storage, and mixed-use. The scoring models adapt to the specific asset type and deal structure." },
+                ].map((item, i) => {
+                  const faqIdx = 8 + i;
+                  return (
+                    <div key={faqIdx} style={{
+                      borderRadius: 12, border: "1px solid rgba(255,255,255,0.06)",
+                      background: openFaq === faqIdx ? "rgba(132,204,22,0.03)" : "rgba(22,26,35,0.4)",
+                      transition: "all 0.2s ease",
+                    }}>
+                      <button onClick={() => setOpenFaq(openFaq === faqIdx ? null : faqIdx)} style={{
+                        width: "100%", padding: "16px 20px", background: "transparent",
+                        border: "none", textAlign: "left", cursor: "pointer",
+                        display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
+                      }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#84CC16" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#84CC16" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </button>
+                      {openFaq === faqIdx && (
+                        <div style={{ padding: "0 20px 16px" }}>
+                          <p style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{item.a}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Category: Security */}
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "16px 0 8px", marginBottom: 4 }}>Privacy &amp; Security</div>
+
+                {[
+                  { q: "Is my data private and secure?", a: "Yes. Documents are processed in real-time and not stored permanently on our servers. We don't sell or share your data. No tracking cookies, no analytics on your deals. Free tier doesn't even require an account." },
+                  { q: "Can other users see my deals?", a: "No. Your DealBoard is completely private. The only way someone else can see a deal is if you explicitly generate a share link for it. Share links can be password-protected and set to expire." },
+                ].map((item, i) => {
+                  const faqIdx = 13 + i;
+                  return (
+                    <div key={faqIdx} style={{
+                      borderRadius: 12, border: "1px solid rgba(255,255,255,0.06)",
+                      background: openFaq === faqIdx ? "rgba(132,204,22,0.03)" : "rgba(22,26,35,0.4)",
+                      transition: "all 0.2s ease",
+                    }}>
+                      <button onClick={() => setOpenFaq(openFaq === faqIdx ? null : faqIdx)} style={{
+                        width: "100%", padding: "16px 20px", background: "transparent",
+                        border: "none", textAlign: "left", cursor: "pointer",
+                        display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
+                      }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#84CC16" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#84CC16" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </button>
+                      {openFaq === faqIdx && (
+                        <div style={{ padding: "0 20px 16px" }}>
+                          <p style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{item.a}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Bottom CTA */}
+            <div style={{ textAlign: "center", marginTop: 56 }}>
+              <p style={{ fontSize: 15, color: "#9ca3af", marginBottom: 16 }}>
+                Still have questions? Upload a deal and see for yourself.
+              </p>
+              <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="ds-btn ds-btn-primary" style={{ fontSize: 14, padding: "12px 32px" }}>
+                Try Your First Deal — Free
+              </button>
             </div>
           </div>
 
