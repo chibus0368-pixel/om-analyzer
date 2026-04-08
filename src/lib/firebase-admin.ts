@@ -20,6 +20,7 @@ function getAdminApp(): App {
           }
           adminApp = initializeApp({
             credential: cert(parsed),
+            storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "hacktheprompt-8051e.firebasestorage.app",
           });
         } catch (err) {
           console.error("Firebase Admin SDK init error:", err);
