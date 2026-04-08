@@ -173,9 +173,18 @@ async function loginWithGoogleLegacy(): Promise<UserCredential> {
  */
 export async function checkGoogleRedirect(): Promise<UserCredential | null> {
   try {
+    // Wait for auth to fully initialize before checking redirect result
+    if (auth.authStateReady) {
+      await auth.authStateReady();
+    }
     const result = await getRedirectResult(auth);
     return result; // null if no redirect happened
   } catch (err: any) {
+    // Gracefully handle initialization race condition
+    if (err?.message?.includes('_initializationPromise') || err?.message?.includes('not initialized')) {
+      console.warn('[auth] Auth not ready for redirect check, skipping');
+      return null;
+    }
     console.error('Google redirect result error:', err);
     throw err;
   }

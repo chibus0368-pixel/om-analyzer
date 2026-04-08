@@ -222,8 +222,8 @@ export default function WorkspaceLoginPage() {
       }}>
         {/* ── Header ── */}
         <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-            <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 36 }} />
+          <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+            <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 52 }} />
           </div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0B1120", margin: 0, fontFamily: "'Inter', sans-serif" }}>
             {upgradePlan
