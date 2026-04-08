@@ -1,7 +1,7 @@
 "use client";
 /* OM Analyzer Lite — v3 with smart hero image extraction (skips tables) */
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
