@@ -9,6 +9,25 @@ import DealSignalLogo from "@/components/DealSignalLogo";
 import DealSignalNav from "@/components/DealSignalNav";
 
 /* ===========================================================================
+   INTERSECTION OBSERVER HOOK — SCROLL TRIGGER
+   =========================================================================== */
+function useInView(threshold = 0.2): [React.RefObject<HTMLDivElement>, boolean] {
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setInView(true); obs.disconnect(); } },
+      { threshold }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return [ref, inView];
+}
+
+/* ===========================================================================
    FORMAT HELPERS — IDENTICAL to pro property page
    =========================================================================== */
 function fmt$(val: any): string {
@@ -75,6 +94,36 @@ function MetricTooltip({ text }: { text: string }) {
         </span>
       )}
     </span>
+  );
+}
+
+/* ===========================================================================
+   FEATURE BLOCK WRAPPER — ANIMATES ON SCROLL
+   =========================================================================== */
+function FeatureBlock({ children, idx }: { children: React.ReactNode; idx: number }) {
+  const [ref, inView] = useInView(0.15);
+  return (
+    <div ref={ref} style={{ opacity: inView ? 1 : 0, transition: 'opacity 0.3s ease' }}>
+      <div className={inView ? 'ds-feature-animate' : 'ds-feature-hidden'}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* ===========================================================================
+   SCROLL REVEAL WRAPPER — GENERIC SCROLL-TRIGGER ANIMATION
+   =========================================================================== */
+function ScrollReveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const [ref, inView] = useInView(0.15);
+  return (
+    <div ref={ref} style={{
+      opacity: inView ? 1 : 0,
+      transform: inView ? 'translateY(0)' : 'translateY(24px)',
+      transition: `opacity 0.5s ease-out ${delay}s, transform 0.5s ease-out ${delay}s`,
+    }}>
+      {children}
+    </div>
   );
 }
 
@@ -449,6 +498,12 @@ export default function OmAnalyzerPage() {
         @keyframes omFlowLine { from { stroke-dashoffset: 40; } to { stroke-dashoffset: 0; } }
         @keyframes omScanLine { 0% { top: 10%; opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { top: 85%; opacity: 0; } }
         @keyframes omFlowDot { 0% { left: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { left: calc(100% - 6px); opacity: 0; } }
+
+        /* Feature block scroll-trigger animation classes */
+        .ds-feature-hidden * { animation-play-state: paused !important; opacity: 0; }
+        .ds-feature-animate { animation: fadeInUp 0.5s ease-out both; }
+        .ds-feature-animate * { animation-play-state: running; }
+
         .ds-om-outputs > div:hover { cursor: default; }
         /* Reusable curved green underline callout */
         .ds-callout {
@@ -960,35 +1015,36 @@ export default function OmAnalyzerPage() {
                     statLabel: "deals / month on Pro",
                   },
                 ].map((card, i) => (
-                  <div key={card.headline} style={{
-                    background: "rgba(22,26,35,0.6)", borderRadius: 16,
-                    border: "1px solid rgba(255,255,255,0.06)", padding: "36px 28px",
-                    position: "relative", overflow: "hidden",
-                    animation: `fadeInUp 0.5s ease-out ${0.1 + i * 0.15}s both`,
-                  }}>
-                    {/* Glow accent */}
-                    <div style={{ position: "absolute", top: -40, right: -40, width: 120, height: 120, borderRadius: "50%", background: "rgba(132,204,22,0.04)", filter: "blur(40px)", pointerEvents: "none" }} />
-
-                    {/* Icon */}
+                  <ScrollReveal key={card.headline} delay={0.1 + i * 0.15}>
                     <div style={{
-                      width: 48, height: 48, borderRadius: 14,
-                      background: "rgba(132,204,22,0.08)", border: "1px solid rgba(132,204,22,0.15)",
-                      display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20,
+                      background: "rgba(22,26,35,0.6)", borderRadius: 16,
+                      border: "1px solid rgba(255,255,255,0.06)", padding: "36px 28px",
+                      position: "relative", overflow: "hidden",
                     }}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={card.icon} /></svg>
-                    </div>
+                      {/* Glow accent */}
+                      <div style={{ position: "absolute", top: -40, right: -40, width: 120, height: 120, borderRadius: "50%", background: "rgba(132,204,22,0.04)", filter: "blur(40px)", pointerEvents: "none" }} />
 
-                    {/* Stat callout */}
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 16 }}>
-                      <span style={{ fontSize: 32, fontWeight: 800, color: "#84CC16", lineHeight: 1, letterSpacing: -1 }}>{card.stat}</span>
-                      <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(132,204,22,0.6)" }}>{card.statLabel}</span>
-                    </div>
+                      {/* Icon */}
+                      <div style={{
+                        width: 48, height: 48, borderRadius: 14,
+                        background: "rgba(132,204,22,0.08)", border: "1px solid rgba(132,204,22,0.15)",
+                        display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20,
+                      }}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={card.icon} /></svg>
+                      </div>
 
-                    {/* Copy */}
-                    <h3 style={{ fontSize: 18, fontWeight: 800, color: "#ffffff", marginBottom: 4, lineHeight: 1.3 }}>{card.headline}</h3>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: "#84CC16", marginBottom: 12 }}>{card.subline}</p>
-                    <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{card.body}</p>
-                  </div>
+                      {/* Stat callout */}
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 16 }}>
+                        <span style={{ fontSize: 32, fontWeight: 800, color: "#84CC16", lineHeight: 1, letterSpacing: -1 }}>{card.stat}</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(132,204,22,0.6)" }}>{card.statLabel}</span>
+                      </div>
+
+                      {/* Copy */}
+                      <h3 style={{ fontSize: 18, fontWeight: 800, color: "#ffffff", marginBottom: 4, lineHeight: 1.3 }}>{card.headline}</h3>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: "#84CC16", marginBottom: 12 }}>{card.subline}</p>
+                      <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{card.body}</p>
+                    </div>
+                  </ScrollReveal>
                 ))}
               </div>
 
@@ -1055,7 +1111,7 @@ export default function OmAnalyzerPage() {
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
                       {/* Scan line animation overlay */}
-                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, transparent, #84CC16, transparent)", animation: "scanDown 2.5s ease-in-out infinite", zIndex: 2 }} />
+                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, transparent, #84CC16, transparent)", animation: "scanDown 2.5s ease-in-out both", zIndex: 2 }} />
 
                       {/* File header */}
                       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6, animation: "fadeInUp 0.3s ease-out 0s both" }}>
@@ -1067,7 +1123,7 @@ export default function OmAnalyzerPage() {
                           <div style={{ fontSize: 9, color: "#6b7280" }}>2.4 MB · Processing...</div>
                         </div>
                         <div style={{ padding: "4px 10px", borderRadius: 50, background: "rgba(132,204,22,0.1)", border: "1px solid rgba(132,204,22,0.2)" }}>
-                          <span style={{ fontSize: 9, fontWeight: 700, color: "#84CC16", animation: "pulse 1.5s ease-in-out infinite" }}>EXTRACTING</span>
+                          <span style={{ fontSize: 9, fontWeight: 700, color: "#84CC16", animation: "pulse 1.5s ease-in-out both" }}>EXTRACTING</span>
                         </div>
                       </div>
 
@@ -1116,7 +1172,7 @@ export default function OmAnalyzerPage() {
                       {/* Score ring with animated pulse */}
                       <div style={{ position: "relative", zIndex: 1, textAlign: "center", marginBottom: 20 }}>
                         <div style={{ position: "relative", display: "inline-block" }}>
-                          <div style={{ width: 96, height: 96, borderRadius: "50%", border: "4px solid #84CC16", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 40px rgba(132,204,22,0.2), inset 0 0 20px rgba(132,204,22,0.05)", animation: "pulse 2.5s ease-in-out infinite" }}>
+                          <div style={{ width: 96, height: 96, borderRadius: "50%", border: "4px solid #84CC16", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 40px rgba(132,204,22,0.2), inset 0 0 20px rgba(132,204,22,0.05)", animation: "pulse 2.5s ease-in-out both" }}>
                             <div>
                               <span style={{ fontSize: 36, fontWeight: 800, color: "#84CC16", lineHeight: 1 }}>74</span>
                               <div style={{ fontSize: 8, fontWeight: 700, color: "rgba(132,204,22,0.6)", letterSpacing: 1, marginTop: 2 }}>/ 100</div>
@@ -1175,9 +1231,9 @@ export default function OmAnalyzerPage() {
                       {[
                         { name: "Walgreens NNN", loc: "Cedar Park, TX", score: 74, signal: "BUY", signalColor: "#84CC16", cap: "5.85%", delay: "0.15s" },
                         { name: "CVS Pharmacy", loc: "Plano, TX", score: 71, signal: "BUY", signalColor: "#84CC16", cap: "5.40%", delay: "0.3s" },
-                        { name: "Flex Industrial", loc: "Schaumburg, IL", score: 68, signal: "HOLD", signalColor: "#D97706", cap: "7.20%", delay: "0.45s" },
+                        { name: "Autozone NNN", loc: "Round Rock, TX", score: 68, signal: "HOLD", signalColor: "#D97706", cap: "6.25%", delay: "0.45s" },
                         { name: "Dollar General", loc: "Lawrenceville, GA", score: 61, signal: "HOLD", signalColor: "#eab308", cap: "6.50%", delay: "0.6s" },
-                        { name: "Family Dollar", loc: "Memphis, TN", score: 48, signal: "PASS", signalColor: "#ef4444", cap: "8.10%", delay: "0.75s" },
+                        { name: "O'Reilly Auto NNN", loc: "Pflugerville, TX", score: 48, signal: "PASS", signalColor: "#ef4444", cap: "7.80%", delay: "0.75s" },
                       ].map((row, i) => (
                         <div key={row.name} style={{
                           display: "grid", gridTemplateColumns: "1fr 54px 54px 54px", padding: "10px 20px", alignItems: "center",
@@ -1381,7 +1437,7 @@ export default function OmAnalyzerPage() {
                         ].map((pin, i) => (
                           <div key={i} style={{ position: "absolute", left: pin.left, top: pin.top, transform: "translate(-50%, -50%)", animation: `fadeInUp 0.4s ease-out ${pin.delay} both`, zIndex: pin.active ? 3 : 1 }}>
                             {/* Pulse ring for active */}
-                            {pin.active && <div style={{ position: "absolute", inset: -8, borderRadius: "50%", border: "1px solid rgba(132,204,22,0.3)", animation: "pulse 2s ease-in-out infinite" }} />}
+                            {pin.active && <div style={{ position: "absolute", inset: -8, borderRadius: "50%", border: "1px solid rgba(132,204,22,0.3)", animation: "pulse 2s ease-in-out both" }} />}
                             <div style={{ width: pin.active ? 30 : 24, height: pin.active ? 30 : 24, borderRadius: "50%", background: pin.active ? pin.color : `${pin.color}60`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: pin.active ? "#0d0d14" : "#fff", boxShadow: `0 0 ${pin.active ? 20 : 8}px ${pin.color}40`, cursor: "pointer" }}>{pin.score}</div>
 
                             {/* Hover tooltip for active pin */}
@@ -1463,18 +1519,20 @@ export default function OmAnalyzerPage() {
                   ),
                 },
               ].map((feature, idx) => (
-                <div key={feature.num} className="ds-feature-block" style={{
-                  display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center",
-                  marginBottom: idx < 7 ? 80 : 0,
-                  direction: idx % 2 === 1 ? "rtl" as const : "ltr" as const,
-                }}>
-                  <div style={{ direction: "ltr" }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(132,204,22,0.4)", letterSpacing: 2, marginBottom: 12 }}>{feature.num}</div>
-                    <h3 style={{ fontSize: 26, fontWeight: 800, color: "#ffffff", marginBottom: 10, lineHeight: 1.2, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{feature.title}</h3>
-                    <p style={{ fontSize: 15, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{feature.desc}</p>
+                <FeatureBlock key={feature.num} idx={idx}>
+                  <div className="ds-feature-block" style={{
+                    display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center",
+                    marginBottom: idx < 7 ? 80 : 0,
+                    direction: idx % 2 === 1 ? "rtl" as const : "ltr" as const,
+                  }}>
+                    <div style={{ direction: "ltr" }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(132,204,22,0.4)", letterSpacing: 2, marginBottom: 12 }}>{feature.num}</div>
+                      <h3 style={{ fontSize: 26, fontWeight: 800, color: "#ffffff", marginBottom: 10, lineHeight: 1.2, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{feature.title}</h3>
+                      <p style={{ fontSize: 15, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{feature.desc}</p>
+                    </div>
+                    <div style={{ direction: "ltr" }}>{feature.visual}</div>
                   </div>
-                  <div style={{ direction: "ltr" }}>{feature.visual}</div>
-                </div>
+                </FeatureBlock>
               ))}
 
               {/* ── Secondary features row ── */}
