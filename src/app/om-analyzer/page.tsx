@@ -716,140 +716,79 @@ export default function OmAnalyzerPage() {
                   <button onClick={() => fileRef.current?.click()} className="ds-btn ds-btn-primary" style={{
                     fontSize: 15, padding: "14px 32px",
                   }}>
-                    Try a CRE Deal - Free
+                    Upload a Deal
                   </button>
                   <button onClick={() => { setData(generateDemoResult("Walgreens-NNN-Texas")); setView("result"); }} className="ds-btn ds-btn-outline" style={{
                     fontSize: 15, padding: "14px 32px",
                   }}>
-                    Try a Demo
+                    See a Demo
                   </button>
                 </div>
               </div>
 
-              {/* Right — upload card */}
-              <div style={{
-                background: "#16161f", borderRadius: 24, padding: "32px 26px",
-                boxShadow: "0 8px 40px rgba(0,0,0,0.3), 0 0 30px rgba(132,204,22,0.08)",
-                animation: "fadeInUp 0.5s ease-out 0.1s both",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}>
-                <div style={{ textAlign: "center", marginBottom: 18 }}>
-                  <div style={{ fontSize: 17, fontWeight: 700, color: "#ffffff", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Try a CRE Deal - Free</div>
-                  <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 4 }}>Drop any CRE document to get started</div>
-                </div>
-
-                {/* Asset Type Selector */}
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Asset Type</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 5 }}>
-                    {[
-                      { value: "auto", label: "Auto", svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg> },
-                      { value: "retail", label: "Retail", svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg> },
-                      { value: "industrial", label: "Industrial", svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20h20V8l-7 4V8l-7 4V4H2z" /></svg> },
-                      { value: "office", label: "Office", svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" /><line x1="9" y1="6" x2="9" y2="6.01" /><line x1="15" y1="6" x2="15" y2="6.01" /><line x1="9" y1="10" x2="9" y2="10.01" /><line x1="15" y1="10" x2="15" y2="10.01" /><line x1="9" y1="14" x2="9" y2="14.01" /><line x1="15" y1="14" x2="15" y2="14.01" /><path d="M9 22v-4h6v4" /></svg> },
-                      { value: "land", label: "Land", svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 22L12 2l10 20H2z" /><path d="M7 22l5-10 5 10" /></svg> },
-                    ].map(type => {
-                      const isActive = selectedAssetType === type.value;
-                      const color = isActive ? "#84CC16" : "#9ca3af";
-                      return (
-                      <button key={type.value} onClick={() => setSelectedAssetType(type.value)} style={{
-                        padding: "8px 4px", border: "2px solid",
-                        borderColor: isActive ? "#84CC16" : "rgba(255,255,255,0.1)",
-                        background: isActive ? "rgba(132,204,22,0.15)" : "#1e1e28",
-                        borderRadius: 12, cursor: "pointer", textAlign: "center", transition: "all 0.15s",
-                      }}>
-                        <div style={{ lineHeight: 1, display: "flex", justifyContent: "center" }}>
-                          <span style={{ stroke: color, display: "inline-flex" }}>{type.svg}</span>
-                        </div>
-                        <div style={{ fontSize: 9, fontWeight: 700, marginTop: 3, color: isActive ? "#84CC16" : "#9ca3af", letterSpacing: 0.3 }}>{type.label}</div>
-                      </button>
-                    );})}
-                  </div>
-                  <div style={{ fontSize: 10, color: "#6b7280", marginTop: 4, textAlign: "center" }}>
-                    {selectedAssetType === "auto" ? "AI will detect the asset type" : `Using ${selectedAssetType} scoring model`}
-                  </div>
-                </div>
-
-                {/* Upload zone */}
-                <div
-                  onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDragging(true); }}
-                  onDragLeave={e => { e.preventDefault(); e.stopPropagation(); setDragging(false); }}
-                  onDrop={e => { e.preventDefault(); e.stopPropagation(); setDragging(false); if (e.dataTransfer.files?.length) handleFile(e.dataTransfer.files[0]); }}
-                  onClick={() => !selectedFile && fileRef.current?.click()}
-                  className="om-upload-zone"
-                  style={{
-                    background: dragging ? "rgba(132,204,22,0.08)" : "#1e1e28",
-                    borderRadius: 16, padding: selectedFile ? "16px" : "28px 20px",
-                    cursor: selectedFile ? "default" : "pointer",
-                    border: `2px dashed ${dragging ? "#84CC16" : "rgba(255,255,255,0.15)"}`,
-                    textAlign: "center",
-                  }}
-                >
-                  {!selectedFile ? (
-                    <>
-                      <div style={{
-                        width: 48, height: 48, borderRadius: 14, background: "rgba(132,204,22,0.15)",
-                        display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 10,
-                      }}>
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                          <polyline points="14,2 14,8 20,8" />
-                          <line x1="12" y1="18" x2="12" y2="12" />
-                          <line x1="9" y1="15" x2="15" y2="15" />
-                        </svg>
-                      </div>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: "#ffffff", margin: "0 0 3px" }}>
-                        {dragging ? "Drop your file here" : "Drop your OM or flyer"}
-                      </p>
-                      <p style={{ fontSize: 12, color: "#9ca3af", margin: "0 0 14px" }}>
-                        PDF, Word, Excel, or CSV &middot; Max 50MB
-                      </p>
-                      <button onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }} className="ds-btn ds-btn-primary" style={{
-                        fontSize: 13, padding: "10px 28px",
-                      }}>
-                        Browse Files
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <div style={{
-                        display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
-                        background: "#252532", borderRadius: 10, textAlign: "left",
-                      }}>
-                        <span style={{ padding: "2px 8px", background: "rgba(255,255,255,0.1)", borderRadius: 6, fontSize: 9, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", flexShrink: 0 }}>
-                          {selectedFile.name.split(".").pop()}
-                        </span>
-                        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500, fontSize: 13, color: "#ffffff" }}>{selectedFile.name}</span>
-                        <span style={{ fontSize: 11, color: "#9ca3af", flexShrink: 0 }}>{(selectedFile.size / (1024 * 1024)).toFixed(1)} MB</span>
-                        <button onClick={(e) => { e.stopPropagation(); removeFile(); }} style={{ background: "none", border: "none", color: "#6b7280", cursor: "pointer", fontSize: 18, padding: 4, lineHeight: 1 }}>&times;</button>
-                      </div>
-                      <button onClick={(e) => { e.stopPropagation(); startAnalysis(); }} className="ds-btn ds-btn-primary" style={{
-                        display: "block", width: "100%", fontSize: 15, padding: "13px 32px", marginTop: 12,
-                      }}>
-                        Run Deal Signals
-                      </button>
-                    </>
-                  )}
-                </div>
-                <input ref={fileRef} type="file" style={{ display: "none" }} accept={ACCEPTED_EXT}
-                  onChange={(e) => { if (e.target.files?.length) handleFile(e.target.files[0]); }} />
-
-                {/* Usage counter */}
-                {usageData && (
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 12, padding: "4px 0" }}>
-                    <div style={{ flex: "0 0 auto", height: 4, width: 56, background: "rgba(255,255,255,0.1)", borderRadius: 2, overflow: "hidden" }}>
-                      <div style={{ height: "100%", borderRadius: 2, transition: "width 0.3s ease",
-                        width: `${Math.min(100, (usageData.uploadsUsed / usageData.uploadLimit) * 100)}%`,
-                        background: usageData.uploadsUsed >= usageData.uploadLimit ? "#84CC16" : usageData.uploadsUsed >= usageData.uploadLimit - 1 ? "#eab308" : "#10b981",
-                      }} />
+              {/* Right — simple upload drop zone */}
+              <div
+                onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDragging(true); }}
+                onDragLeave={e => { e.preventDefault(); e.stopPropagation(); setDragging(false); }}
+                onDrop={e => { e.preventDefault(); e.stopPropagation(); setDragging(false); if (e.dataTransfer.files?.length) handleFile(e.dataTransfer.files[0]); }}
+                onClick={() => !selectedFile && fileRef.current?.click()}
+                style={{
+                  background: dragging ? "rgba(132,204,22,0.06)" : "rgba(255,255,255,0.03)",
+                  borderRadius: 20, padding: selectedFile ? "24px" : "48px 32px",
+                  cursor: selectedFile ? "default" : "pointer",
+                  border: `2px dashed ${dragging ? "#84CC16" : "rgba(132,204,22,0.25)"}`,
+                  textAlign: "center",
+                  animation: "fadeInUp 0.5s ease-out 0.1s both",
+                  transition: "border-color 0.2s, background 0.2s",
+                }}
+              >
+                {!selectedFile ? (
+                  <>
+                    <div style={{
+                      width: 56, height: 56, borderRadius: "50%", background: "rgba(132,204,22,0.12)",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 16,
+                    }}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
                     </div>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: usageData.uploadsUsed >= usageData.uploadLimit ? "#84CC16" : "#9ca3af" }}>
-                      {usageData.uploadsUsed} / {usageData.uploadLimit} free
-                    </span>
-                  </div>
+                    <p style={{ fontSize: 15, fontWeight: 600, color: "#ffffff", margin: "0 0 6px" }}>
+                      {dragging ? "Drop your file here" : "Drop your OM or flyer"}
+                    </p>
+                    <p style={{ fontSize: 13, color: "#9ca3af", margin: "0 0 20px" }}>
+                      PDF, Word, Excel, or CSV &middot; Max 50MB
+                    </p>
+                    <button onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }} className="ds-btn ds-btn-primary" style={{
+                      fontSize: 14, padding: "12px 32px",
+                    }}>
+                      Select File
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
+                      background: "rgba(255,255,255,0.05)", borderRadius: 10, textAlign: "left",
+                    }}>
+                      <span style={{ padding: "2px 8px", background: "rgba(132,204,22,0.15)", borderRadius: 6, fontSize: 9, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", flexShrink: 0 }}>
+                        {selectedFile.name.split(".").pop()}
+                      </span>
+                      <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500, fontSize: 13, color: "#ffffff" }}>{selectedFile.name}</span>
+                      <span style={{ fontSize: 11, color: "#9ca3af", flexShrink: 0 }}>{(selectedFile.size / (1024 * 1024)).toFixed(1)} MB</span>
+                      <button onClick={(e) => { e.stopPropagation(); removeFile(); }} style={{ background: "none", border: "none", color: "#6b7280", cursor: "pointer", fontSize: 18, padding: 4, lineHeight: 1 }}>&times;</button>
+                    </div>
+                    <button onClick={(e) => { e.stopPropagation(); startAnalysis(); }} className="ds-btn ds-btn-primary" style={{
+                      display: "block", width: "100%", fontSize: 15, padding: "13px 32px", marginTop: 12,
+                    }}>
+                      Run Deal Signals
+                    </button>
+                  </>
                 )}
-
               </div>
+              <input ref={fileRef} type="file" style={{ display: "none" }} accept={ACCEPTED_EXT}
+                onChange={(e) => { if (e.target.files?.length) handleFile(e.target.files[0]); }} />
             </div>
           </div>
 
