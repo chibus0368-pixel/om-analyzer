@@ -785,7 +785,7 @@ export default function OmAnalyzerPage() {
                   fontSize: 19, color: "#9ca3af", lineHeight: 1.7,
                   maxWidth: 500, marginBottom: 36,
                 }}>
-                  Deal Signals turns complex Offering Memorandums into actionable investment intelligence.
+                  DealSignals turns deals and OMs into actionable investment insight, powering faster pre-diligence decisions.
                 </p>
               </div>
 
