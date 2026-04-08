@@ -208,6 +208,8 @@ export default function OmAnalyzerPage() {
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [animateStrip, setAnimateStrip] = useState(false);
+  const [processingPct, setProcessingPct] = useState(0);
+  const [processingMsgIdx, setProcessingMsgIdx] = useState(0);
   const stripRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -256,6 +258,24 @@ export default function OmAnalyzerPage() {
     const timeout = setTimeout(() => { dragCounter.current = 0; setGlobalDragging(false); }, 3000);
     return () => clearTimeout(timeout);
   }, [globalDragging]);
+
+  // Processing percentage animation + rotating status messages
+  useEffect(() => {
+    if (view !== "processing") { setProcessingPct(0); setProcessingMsgIdx(0); return; }
+    const start = Date.now();
+    const duration = 50000; // 50 seconds to reach ~95%
+    const tick = () => {
+      const elapsed = Date.now() - start;
+      const linear = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - linear, 3);
+      const pct = Math.min(Math.round(eased * 95), 95);
+      setProcessingPct(pct);
+      if (linear < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    const msgInterval = setInterval(() => setProcessingMsgIdx(i => (i + 1) % 7), 3000);
+    return () => clearInterval(msgInterval);
+  }, [view]);
 
   /* Intersection Observer: trigger process strip animation when visible */
   useEffect(() => {
@@ -2019,74 +2039,223 @@ export default function OmAnalyzerPage() {
 
       {/* ===== PROCESSING STATE ===== */}
       {view === "processing" && (
-        <section style={{ background: "#faf8ff", minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ maxWidth: 520, width: "100%", padding: "0 24px" }}>
-            <div style={{ background: "#ffffff", borderRadius: 6, boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)", padding: "40px 36px" }}>
-              {/* Stage progress */}
-              <div style={{ display: "flex", gap: 0, marginBottom: 28 }}>
-                {[
-                  { label: "Upload", iconPath: "M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12", done: statusMsg !== "Uploading files..." },
-                  { label: "Extract", iconPath: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z", done: !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
-                  { label: "Read", iconPath: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", done: statusMsg !== "Reading file contents..." && !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
-                  { label: "Analyze", iconPath: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z", done: !statusMsg.includes("Analyzing") && !statusMsg.includes("Reading") && !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
-                  { label: "Generate", iconPath: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", done: statusMsg.includes("Generating") || statusMsg.includes("complete") },
-                ].map((stage, i, arr) => {
-                  const isCurrent = !stage.done && (i === 0 || arr[i - 1].done);
-                  return (
-                    <div key={stage.label} style={{ flex: 1, textAlign: "center" }}>
-                      <div style={{
-                        width: 32, height: 32, borderRadius: "50%", margin: "0 auto 5px",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        background: stage.done ? "#D1FAE5" : isCurrent ? "#FEF2F2" : "#F6F8FB",
-                        border: isCurrent ? "2px solid #DC2626" : "2px solid transparent",
-                        animation: isCurrent ? "pulse 1.5s ease-in-out infinite" : "none",
-                      }}>
-                        {stage.done ? (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>
-                        ) : (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={isCurrent ? "#DC2626" : "#B4C1D1"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d={stage.iconPath} /></svg>
-                        )}
-                      </div>
-                      <div style={{ fontSize: 9, fontWeight: 600, color: stage.done ? "#059669" : isCurrent ? "#DC2626" : "#B4C1D1", textTransform: "uppercase", letterSpacing: 0.3 }}>
-                        {stage.label}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <div style={{ textAlign: "center" }}>
-                <p style={{ fontSize: 15, fontWeight: 600, color: "#0B1120", margin: "0 0 4px" }}>{statusMsg}</p>
-                <p style={{ fontSize: 12, color: "#8899B0", margin: 0 }}>
-                  {statusMsg.includes("Analyzing") ? "AI is extracting property data and calculating underwriting (30–60s)" :
-                   statusMsg.includes("Reading") ? "Extracting text from your document (5–15s)" :
-                   statusMsg.includes("image") ? "Capturing property image from PDF (5s)" :
-                   statusMsg.includes("Generating") ? "Creating output files (5s)" :
-                   "Processing your files..."}
-                </p>
-              </div>
-              {selectedFile && (
-                <div style={{ marginTop: 20, display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "#F6F8FB", borderRadius: 8, fontSize: 12 }}>
-                  <span style={{ padding: "1px 5px", background: "#EDF0F5", borderRadius: 3, fontSize: 9, fontWeight: 700, color: "#5A7091", textTransform: "uppercase" }}>
-                    {selectedFile.name.split(".").pop()}
-                  </span>
-                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#5A7091" }}>{selectedFile.name}</span>
-                  <span style={{ color: "#059669", fontSize: 13, flexShrink: 0 }}>✓</span>
-                </div>
-              )}
+        <section style={{
+          background: "#0d0d14",
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
+          overflow: "hidden",
+        }}>
+          {/* Subtle green radial glow background */}
+          <div style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "600px",
+            height: "600px",
+            background: "radial-gradient(circle, rgba(132,204,22,0.15) 0%, rgba(132,204,22,0) 70%)",
+            borderRadius: "50%",
+            pointerEvents: "none",
+            zIndex: 0,
+          }} />
+
+          {/* City skyline background (very low opacity) */}
+          <div style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: "300px",
+            opacity: 0.03,
+            zIndex: 1,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 400'%3E%3Cpath d='M0,300 L50,200 L100,250 L150,150 L200,200 L250,100 L300,180 L350,120 L400,170 L450,100 L500,160 L550,80 L600,150 L650,90 L700,140 L750,110 L800,160 L850,100 L900,150 L950,120 L1000,180 L1050,140 L1100,190 L1150,160 L1200,200 L1200,400 L0,400 Z' fill='%2384CC16'/%3E%3C/svg%3E")`,
+            backgroundSize: "cover",
+            backgroundPosition: "bottom center",
+            backgroundRepeat: "no-repeat",
+          }} />
+
+          {/* Content container */}
+          <div style={{ position: "relative", zIndex: 2, textAlign: "center", maxWidth: "600px", padding: "0 24px" }}>
+            {/* DealSignals Logo */}
+            <div style={{ marginBottom: 60 }}>
+              <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 32 }} />
             </div>
+
+            {/* Animated percentage counter with circular progress ring */}
+            <div style={{ marginBottom: 60, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg
+                width="200"
+                height="200"
+                viewBox="0 0 200 200"
+                style={{ position: "absolute" }}
+              >
+                {/* Background circle */}
+                <circle
+                  cx="100"
+                  cy="100"
+                  r="90"
+                  fill="none"
+                  stroke="rgba(132,204,22,0.1)"
+                  strokeWidth="3"
+                />
+                {/* Progress circle */}
+                <circle
+                  cx="100"
+                  cy="100"
+                  r="90"
+                  fill="none"
+                  stroke="#84CC16"
+                  strokeWidth="3"
+                  strokeDasharray={`${2 * Math.PI * 90}`}
+                  strokeDashoffset={`${2 * Math.PI * 90 * (1 - processingPct / 100)}`}
+                  strokeLinecap="round"
+                  style={{ transition: "stroke-dashoffset 0.1s linear", transformOrigin: "100px 100px", transform: "rotate(-90deg)" }}
+                />
+              </svg>
+              <div style={{ position: "relative", zIndex: 1 }}>
+                <div style={{
+                  fontSize: 72,
+                  fontWeight: 700,
+                  color: "#84CC16",
+                  fontFamily: "'Inter', sans-serif",
+                  fontVariantNumeric: "tabular-nums",
+                }}>
+                  {processingPct}%
+                </div>
+              </div>
+            </div>
+
+            {/* Stage labels: UPLOAD → EXTRACT → READ → ANALYZE → GENERATE */}
+            <div style={{ display: "flex", gap: 12, marginBottom: 50, justifyContent: "center", alignItems: "center", flexWrap: "wrap" }}>
+              {[
+                { label: "UPLOAD", done: statusMsg !== "Uploading files..." },
+                { label: "EXTRACT", done: !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
+                { label: "READ", done: statusMsg !== "Reading file contents..." && !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
+                { label: "ANALYZE", done: !statusMsg.includes("Analyzing") && !statusMsg.includes("Reading") && !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
+                { label: "GENERATE", done: statusMsg.includes("Generating") || statusMsg.includes("complete") },
+              ].map((stage, i, arr) => {
+                const isCurrent = !stage.done && (i === 0 || arr[i - 1].done);
+                return (
+                  <div key={stage.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: stage.done ? "rgba(132,204,22,0.2)" : isCurrent ? "rgba(132,204,22,0.15)" : "rgba(255,255,255,0.05)",
+                      border: `2px solid ${stage.done ? "#84CC16" : isCurrent ? "#84CC16" : "rgba(132,204,22,0.3)"}`,
+                      animation: isCurrent ? "pulse 1.5s ease-in-out infinite" : "none",
+                    }}>
+                      {stage.done ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>
+                      ) : (
+                        <div style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: "50%",
+                          background: isCurrent ? "#84CC16" : "rgba(132,204,22,0.4)",
+                        }} />
+                      )}
+                    </div>
+                    <span style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: stage.done ? "#84CC16" : isCurrent ? "#84CC16" : "#6B7280",
+                      textTransform: "uppercase",
+                      letterSpacing: 0.5,
+                    }}>
+                      {stage.label}
+                    </span>
+                    {i < arr.length - 1 && (
+                      <div style={{ width: 16, height: 1, background: "rgba(132,204,22,0.2)" }} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Rotating status messages */}
+            <div style={{ marginBottom: 40, minHeight: 40 }}>
+              <p style={{
+                fontSize: 16,
+                fontWeight: 500,
+                color: "#84CC16",
+                margin: 0,
+                fontFamily: "'Inter', sans-serif",
+                animation: "fadeInOut 3s ease-in-out infinite",
+              }}>
+                {[
+                  "Scanning document structure...",
+                  "Extracting financial data points...",
+                  "Calculating cap rate and NOI...",
+                  "Running price sensitivity models...",
+                  "Scoring tenant credit quality...",
+                  "Mapping location intelligence...",
+                  "Building your deal analysis...",
+                ][processingMsgIdx]}
+              </p>
+            </div>
+
+            {/* File name pill */}
+            {selectedFile && (
+              <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 16px",
+                background: "rgba(132,204,22,0.1)",
+                border: "1px solid rgba(132,204,22,0.2)",
+                borderRadius: 20,
+                fontSize: 13,
+              }}>
+                <span style={{
+                  padding: "2px 8px",
+                  background: "rgba(132,204,22,0.2)",
+                  borderRadius: 4,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  color: "#84CC16",
+                  textTransform: "uppercase",
+                }}>
+                  {selectedFile.name.split(".").pop()}
+                </span>
+                <span style={{ flex: 1, maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#9CA3AF" }}>
+                  {selectedFile.name}
+                </span>
+              </div>
+            )}
           </div>
+
+          {/* CSS animations */}
+          <style>{`
+            @keyframes pulse {
+              0%, 100% { opacity: 1; }
+              50% { opacity: 0.6; }
+            }
+            @keyframes fadeInOut {
+              0%, 10% { opacity: 0; }
+              20%, 80% { opacity: 1; }
+              90%, 100% { opacity: 0; }
+            }
+          `}</style>
         </section>
       )}
 
       {/* ===== RESULT STATE ===== */}
       {view === "result" && data && (
-        <section data-ds-result style={{ padding: "24px 0 60px", background: "#faf8ff" }}>
-          <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
+        <section data-ds-result style={{ padding: "24px 0 60px", background: "#0d0d14" }}>
+          <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
             <PropertyOutput data={data} heroImageUrl={heroImageUrl} usageData={usageData} />
             <div style={{ textAlign: "center", marginTop: 24 }}>
               <button onClick={resetAnalyzer} style={{
-                padding: "12px 28px", background: "#16161f", border: "1.5px solid rgba(227, 190, 189, 0.2)",
-                borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: "pointer", color: "#9ca3af", fontFamily: "'Plus Jakarta Sans', sans-serif",
+                padding: "12px 28px", background: "rgba(132,204,22,0.1)", border: "1px solid rgba(132,204,22,0.15)",
+                borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: "pointer", color: "#84CC16", fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}>
                 &larr; Analyze Another OM
               </button>
@@ -2319,10 +2488,10 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto" }}>
       {/* ===== HERO SECTION — Property Info + Asset Type Badge ===== */}
-      <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", marginBottom: 20, overflow: "hidden" }}>
+      <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", marginBottom: 20, overflow: "hidden" }}>
         <div style={{ padding: "32px 28px" }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 16 }}>
-            <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 700, color: "#0F172A", margin: 0, lineHeight: 1.2, flex: 1 }}>{d.propertyName}</h1>
+            <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 700, color: "#FFFFFF", margin: 0, lineHeight: 1.2, flex: 1 }}>{d.propertyName}</h1>
             <span style={{
               padding: "6px 12px",
               background: "#84CC16",
@@ -2338,11 +2507,11 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
               {detectedType.toUpperCase()}
             </span>
           </div>
-          <div style={{ fontSize: 11, color: "#6B7280", fontWeight: 500, marginBottom: 2, textTransform: "uppercase", letterSpacing: 0.5 }}>Auto-detected</div>
+          <div style={{ fontSize: 11, color: "#9CA3AF", fontWeight: 500, marginBottom: 2, textTransform: "uppercase", letterSpacing: 0.5 }}>Auto-detected</div>
 
           {location && (
             <div style={{ marginBottom: 20 }}>
-              <span style={{ fontSize: 13, color: "#6B7280" }}>{location}</span>
+              <span style={{ fontSize: 13, color: "#D1D5DB" }}>{location}</span>
               <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
                 {[
                   { label: "Google Maps", url: `https://www.google.com/maps/search/?api=1&query=${encodedAddress}` },
@@ -2388,14 +2557,14 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== METRICS STRIP — Horizontal single-row key metrics ===== */}
       {metricsStripItems.length > 0 && (
-        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: "16px 0", marginBottom: 20, display: "grid", gridTemplateColumns: `repeat(${metricsStripItems.length}, 1fr)` }}>
+        <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", padding: "16px 0", marginBottom: 20, display: "grid", gridTemplateColumns: `repeat(${metricsStripItems.length}, 1fr)` }}>
           {metricsStripItems.map((item, idx) => (
             <div key={item.label} style={{
               padding: "12px 16px",
-              borderRight: idx < metricsStripItems.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+              borderRight: idx < metricsStripItems.length - 1 ? "1px solid rgba(132,204,22,0.1)" : "none",
               textAlign: "center",
             }}>
-              <div style={{ fontSize: 9, color: "#6B7280", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4, fontFamily: "'Inter', sans-serif" }}>{item.label}</div>
+              <div style={{ fontSize: 9, color: "#9CA3AF", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4, fontFamily: "'Inter', sans-serif" }}>{item.label}</div>
               <div style={{ fontSize: 16, fontWeight: 700, color: "#84CC16", fontVariantNumeric: "tabular-nums", fontFamily: "'Inter', sans-serif" }}>{item.value}</div>
             </div>
           ))}
@@ -2404,19 +2573,19 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== PRICE SENSITIVITY TABLE ===== */}
       {(d.askingPrice && d.noiOm) && (
-        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: "20px", marginBottom: 20, overflow: "auto" }}>
+        <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", padding: "20px", marginBottom: 20, overflow: "auto" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
             <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Price Sensitivity Analysis</h3>
+            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#FFFFFF", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Price Sensitivity Analysis</h3>
           </div>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: "'Inter', sans-serif" }}>
             <thead>
               <tr>
-                <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.06)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Scenario</th>
-                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.06)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Purchase Price</th>
-                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.06)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Cap Rate</th>
-                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.06)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>DSCR</th>
-                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.06)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Cash-on-Cash</th>
+                <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#9CA3AF", borderBottom: "1px solid rgba(132,204,22,0.1)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Scenario</th>
+                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#9CA3AF", borderBottom: "1px solid rgba(132,204,22,0.1)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Purchase Price</th>
+                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#9CA3AF", borderBottom: "1px solid rgba(132,204,22,0.1)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Cap Rate</th>
+                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#9CA3AF", borderBottom: "1px solid rgba(132,204,22,0.1)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>DSCR</th>
+                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#9CA3AF", borderBottom: "1px solid rgba(132,204,22,0.1)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Cash-on-Cash</th>
               </tr>
             </thead>
             <tbody>
@@ -2431,13 +2600,13 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
                 return (
                   <tr key={row.label} style={{
-                    background: row.isOM ? "rgba(132,204,22,0.08)" : idx % 2 === 1 ? "rgba(0,0,0,0.02)" : "transparent",
-                    borderBottom: row.isOM ? "2px solid #84CC16" : "1px solid rgba(0,0,0,0.05)",
+                    background: row.isOM ? "rgba(132,204,22,0.1)" : idx % 2 === 1 ? "rgba(132,204,22,0.03)" : "transparent",
+                    borderBottom: row.isOM ? "2px solid #84CC16" : "1px solid rgba(132,204,22,0.1)",
                   }}>
-                    <td style={{ padding: "10px 12px", fontWeight: row.isOM ? 700 : 500, color: "#0F172A" }}>
+                    <td style={{ padding: "10px 12px", fontWeight: row.isOM ? 700 : 500, color: "#E5E7EB" }}>
                       {row.isOM ? <span style={{ color: "#84CC16", fontWeight: 700 }}>⭐ {row.label}</span> : row.label}
                     </td>
-                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{fmt$((d.askingPrice || 0) * (1 + row.adjustment))}</td>
+                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 700, color: "#E5E7EB", fontVariantNumeric: "tabular-nums" }}>{fmt$((d.askingPrice || 0) * (1 + row.adjustment))}</td>
                     <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: capRateColor, fontVariantNumeric: "tabular-nums" }}>{sens.capRate.toFixed(2)}%</td>
                     <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: dscrColor, fontVariantNumeric: "tabular-nums" }}>{sens.dscr.toFixed(2)}x</td>
                     <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: cocColor, fontVariantNumeric: "tabular-nums" }}>{sens.coc.toFixed(2)}%</td>
@@ -2454,24 +2623,24 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== STRENGTHS & RISKS — matching pro layout ===== */}
       {(strengths.length > 0 || risks.length > 0) && (
-        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden", marginBottom: 20 }}>
-          <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0,0,0,0.04)", background: "#F9FAFB" }}>
+        <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", overflow: "hidden", marginBottom: 20 }}>
+          <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(132,204,22,0.1)", background: "rgba(132,204,22,0.03)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Inter', sans-serif" }}>Strengths &amp; Risks</h3>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>Strengths &amp; Risks</h3>
             </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 100 }}>
             {/* Strengths */}
-            <div style={{ padding: "16px 20px", borderRight: "1px solid rgba(0,0,0,0.05)" }}>
+            <div style={{ padding: "16px 20px", borderRight: "1px solid rgba(132,204,22,0.1)" }}>
               <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#059669", marginBottom: 12 }}>Strengths</div>
               {strengths.map((s, i) => (
                 <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 10 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" style={{ flexShrink: 0, marginTop: 2 }}><polyline points="20 6 9 17 4 12" /></svg>
-                  <span style={{ fontSize: 13, color: "#0F172A", lineHeight: 1.5 }}>{s}</span>
+                  <span style={{ fontSize: 13, color: "#D1D5DB", lineHeight: 1.5 }}>{s}</span>
                 </div>
               ))}
-              {strengths.length === 0 && <span style={{ fontSize: 12, color: "#9ca3af" }}>No strong signals detected</span>}
+              {strengths.length === 0 && <span style={{ fontSize: 12, color: "#6B7280" }}>No strong signals detected</span>}
             </div>
             {/* Risks */}
             <div style={{ padding: "16px 20px" }}>
@@ -2479,10 +2648,10 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
               {risks.map((r, i) => (
                 <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 10 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" style={{ flexShrink: 0, marginTop: 2 }}><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                  <span style={{ fontSize: 13, color: "#0F172A", lineHeight: 1.5 }}>{r}</span>
+                  <span style={{ fontSize: 13, color: "#D1D5DB", lineHeight: 1.5 }}>{r}</span>
                 </div>
               ))}
-              {risks.length === 0 && <span style={{ fontSize: 12, color: "#9ca3af" }}>No risk signals detected</span>}
+              {risks.length === 0 && <span style={{ fontSize: 12, color: "#6B7280" }}>No risk signals detected</span>}
             </div>
           </div>
         </div>
@@ -2505,26 +2674,26 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
           moderate: { color: "#D97706", bg: "rgba(217,119,6,0.08)" },
         };
         return (
-          <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(5,150,105,0.15)", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", overflow: "hidden", marginBottom: 20 }}>
-            <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0,0,0,0.04)", background: "rgba(5,150,105,0.03)" }}>
+          <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(5,150,105,0.2)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", overflow: "hidden", marginBottom: 20 }}>
+            <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(5,150,105,0.15)", background: "rgba(5,150,105,0.05)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ width: 3, height: 14, background: "#059669", borderRadius: 2 }} />
-                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Inter', sans-serif" }}>Value-Add Opportunities</h3>
+                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>Value-Add Opportunities</h3>
               </div>
-              <p style={{ fontSize: 12, color: "#6B7280", margin: "4px 0 0 11px", lineHeight: 1.4 }}>Actionable signals that indicate NOI improvement potential</p>
+              <p style={{ fontSize: 12, color: "#9CA3AF", margin: "4px 0 0 11px", lineHeight: 1.4 }}>Actionable signals that indicate NOI improvement potential</p>
             </div>
             <div style={{ padding: "12px 20px" }}>
               {vaFlags.map((flag, i) => {
                 const s = strengthStyle[flag.strength] || strengthStyle.moderate;
                 return (
-                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 12px", marginBottom: i < vaFlags.length - 1 ? 6 : 0, borderRadius: 8, background: s.bg }}>
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 12px", marginBottom: i < vaFlags.length - 1 ? 6 : 0, borderRadius: 8, background: flag.strength === "strong" ? "rgba(5,150,105,0.08)" : "rgba(217,119,6,0.08)" }}>
                     <span style={{ fontSize: 16, lineHeight: 1, marginTop: 1, flexShrink: 0 }}>{flag.strength === "strong" ? "📈" : "📊"}</span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280" }}>{flag.type}</span>
-                        <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: s.color, background: "rgba(255,255,255,0.6)", padding: "1px 6px", borderRadius: 3 }}>{flag.strength}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#9CA3AF" }}>{flag.type}</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: s.color, background: "rgba(0,0,0,0.3)", padding: "1px 6px", borderRadius: 3 }}>{flag.strength}</span>
                       </div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", lineHeight: 1.4 }}>{flag.summary}</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#D1D5DB", lineHeight: 1.4 }}>{flag.summary}</div>
                     </div>
                   </div>
                 );
@@ -2543,10 +2712,11 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
       {recommendation && (
         <div style={{
           padding: "14px 20px", borderRadius: 6, marginBottom: 16,
-          background: recommendation.includes("🟢") ? "linear-gradient(135deg, #D1FAE5, #ECFDF5)" : recommendation.includes("🔴") ? "linear-gradient(135deg, #FDE8EA, #FFF1F2)" : "linear-gradient(135deg, #FFFBF0, #FEF3C7)",
-          color: recommendation.includes("🟢") ? "#065F46" : recommendation.includes("🔴") ? "#991B1B" : "#78350F",
+          background: recommendation.includes("🟢") ? "linear-gradient(135deg, rgba(5,150,105,0.15), rgba(5,150,105,0.08))" : recommendation.includes("🔴") ? "linear-gradient(135deg, rgba(220,38,38,0.15), rgba(220,38,38,0.08))" : "linear-gradient(135deg, rgba(217,119,6,0.15), rgba(217,119,6,0.08))",
+          color: recommendation.includes("🟢") ? "#A7F3D0" : recommendation.includes("🔴") ? "#FCA5A5" : "#FED7AA",
+          border: recommendation.includes("🟢") ? "1px solid rgba(5,150,105,0.2)" : recommendation.includes("🔴") ? "1px solid rgba(220,38,38,0.2)" : "1px solid rgba(217,119,6,0.2)",
           fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 10,
-          boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)",
+          boxShadow: "0 8px 30px rgba(0,0,0,0.3)",
         }}>
           <span style={{ fontSize: 20 }}>{recommendation.includes("🟢") ? "🟢" : recommendation.includes("🔴") ? "🔴" : "🟡"}</span>
           <span>{recommendation.replace(/🟢|🟡|🔴/g, "").trim()}</span>
@@ -2555,14 +2725,14 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== SCORE BREAKDOWN — from Pro scoring model ===== */}
       {scoreCategories.length > 0 && (
-        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: 24, marginBottom: 16 }}>
+        <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", padding: 24, marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0, color: "#0F172A", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0, color: "#FFFFFF", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               <span style={{ width: 3, height: 20, background: "#84CC16", borderRadius: 2 }} />
               Deal Signals Score Breakdown
             </h2>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.5 }}>{detectedType} model</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.5 }}>{detectedType} model</span>
               <span style={{
                 fontSize: 11, fontWeight: 800, padding: "3px 10px", borderRadius: 4, letterSpacing: 0.5,
                 background: scoreBand === "strong_buy" || scoreBand === "buy" ? "rgba(5,150,105,0.1)" : scoreBand === "hold" ? "rgba(196,154,60,0.1)" : "rgba(132,204,22,0.1)",
@@ -2572,7 +2742,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
             </div>
           </div>
           {scoreRecommendation && (
-            <p style={{ fontSize: 13, color: "#0F172A", lineHeight: 1.6, margin: "0 0 16px", padding: "12px 16px", background: "#f8f9fb", borderRadius: 8 }}>
+            <p style={{ fontSize: 13, color: "#D1D5DB", lineHeight: 1.6, margin: "0 0 16px", padding: "12px 16px", background: "rgba(132,204,22,0.05)", borderRadius: 8 }}>
               {scoreRecommendation}
             </p>
           )}
@@ -2580,16 +2750,16 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
             {scoreCategories.map((cat: any) => {
               const barColor = cat.score >= 70 ? "#059669" : cat.score >= 50 ? "#C49A3C" : "#84CC16";
               return (
-                <div key={cat.name} style={{ padding: "10px 14px", background: "#f8f9fb", borderRadius: 8 }}>
+                <div key={cat.name} style={{ padding: "10px 14px", background: "rgba(132,204,22,0.05)", borderRadius: 8 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#0F172A", textTransform: "capitalize" }}>{cat.name}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#E5E7EB", textTransform: "capitalize" }}>{cat.name}</span>
                     <span style={{ fontSize: 12, fontWeight: 800, color: barColor }}>{cat.score}</span>
                   </div>
-                  <div style={{ height: 4, background: "rgba(0,0,0,0.06)", borderRadius: 2, overflow: "hidden" }}>
+                  <div style={{ height: 4, background: "rgba(132,204,22,0.15)", borderRadius: 2, overflow: "hidden" }}>
                     <div style={{ width: `${cat.score}%`, height: "100%", background: barColor, borderRadius: 2, animation: "barGrow 0.8s ease-out" }} />
                   </div>
                   {cat.explanation && (
-                    <div style={{ fontSize: 10, color: "#6B7280", marginTop: 3 }}>{cat.explanation}</div>
+                    <div style={{ fontSize: 10, color: "#9CA3AF", marginTop: 3 }}>{cat.explanation}</div>
                   )}
                 </div>
               );
@@ -2600,13 +2770,13 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== BRIEF / INITIAL ASSESSMENT ===== */}
       {brief && (
-        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: 24, marginBottom: 16 }}>
-          <h2 style={{ fontSize: 17, fontWeight: 700, margin: "0 0 4px", color: "#0F172A", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", padding: 24, marginBottom: 16 }}>
+          <h2 style={{ fontSize: 17, fontWeight: 700, margin: "0 0 4px", color: "#FFFFFF", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             <span style={{ width: 3, height: 20, background: "#84CC16", borderRadius: 2 }} />
             Initial Assessment
           </h2>
-          <p style={{ fontSize: 11, color: "#6B7280", margin: "0 0 14px" }}>AI-generated first-pass analysis based on uploaded documents</p>
-          <div style={{ fontSize: 14, color: "#0F172A", lineHeight: 1.8 }}>
+          <p style={{ fontSize: 11, color: "#9CA3AF", margin: "0 0 14px" }}>AI-generated first-pass analysis based on uploaded documents</p>
+          <div style={{ fontSize: 14, color: "#D1D5DB", lineHeight: 1.8 }}>
             {brief.split("\n").filter((p: string) => p.trim()).map((p: string, i: number) => (
               <p key={i} style={{ margin: "0 0 14px" }}>{p}</p>
             ))}
@@ -2618,36 +2788,36 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
       {hasData && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
           {metrics.length > 0 && (
-            <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden" }}>
-              <div style={{ padding: "12px 18px", background: "#f2f3ff", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", overflow: "hidden" }}>
+              <div style={{ padding: "12px 18px", background: "rgba(132,204,22,0.05)", display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Key Metrics</h3>
+                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#FFFFFF", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Key Metrics</h3>
               </div>
               {metrics.map(([label, val, tooltip], i) => (
                 <div key={String(label)} style={{
                   display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 18px",
-                  background: i % 2 === 1 ? "#f2f3ff" : "transparent",
+                  background: i % 2 === 1 ? "rgba(132,204,22,0.03)" : "transparent",
                 }}>
-                  <span style={{ fontSize: 12, color: "#6B7280", display: "flex", alignItems: "center", gap: 5 }}>
+                  <span style={{ fontSize: 12, color: "#9CA3AF", display: "flex", alignItems: "center", gap: 5 }}>
                     {String(label)}
                     {tooltip && <MetricTooltip text={String(tooltip)} />}
                   </span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{String(val)}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#E5E7EB", fontVariantNumeric: "tabular-nums" }}>{String(val)}</span>
                 </div>
               ))}
             </div>
           )}
           {signals.length > 0 && (
-            <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden" }}>
-              <div style={{ padding: "12px 18px", background: "#f2f3ff", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", overflow: "hidden" }}>
+              <div style={{ padding: "12px 18px", background: "rgba(132,204,22,0.05)", display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Signal Assessment</h3>
+                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#FFFFFF", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Signal Assessment</h3>
               </div>
               {signals.map(([label, val], i) => {
                 const raw = String(val);
                 const color = signalColor(raw);
-                const bgColor = color === "#059669" ? "rgba(5,150,105,0.06)" : color === "#D97706" ? "rgba(217,119,6,0.06)" : color === "#DC2626" ? "rgba(220,38,38,0.06)" : "transparent";
-                const borderLeft = color === "#059669" ? "3px solid #059669" : color === "#D97706" ? "3px solid #D97706" : color === "#DC2626" ? "3px solid #DC2626" : "3px solid #CBD5E1";
+                const bgColor = color === "#059669" ? "rgba(5,150,105,0.1)" : color === "#D97706" ? "rgba(217,119,6,0.1)" : color === "#DC2626" ? "rgba(220,38,38,0.1)" : "rgba(132,204,22,0.03)";
+                const borderLeft = color === "#059669" ? "3px solid #059669" : color === "#D97706" ? "3px solid #D97706" : color === "#DC2626" ? "3px solid #DC2626" : "3px solid #84CC16";
                 // Strip leading emoji + space for cleaner display
                 const text = raw.replace(/^[🟢🟡🔴]\s*/, "");
                 return (
@@ -2657,9 +2827,9 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
                   }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", textTransform: "uppercase", letterSpacing: 0.3 }}>{String(label)}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#E5E7EB", textTransform: "uppercase", letterSpacing: 0.3 }}>{String(label)}</span>
                     </div>
-                    <span style={{ fontSize: 13, color: "#0F172A", lineHeight: 1.5, paddingLeft: 14 }}>{text}</span>
+                    <span style={{ fontSize: 13, color: "#D1D5DB", lineHeight: 1.5, paddingLeft: 14 }}>{text}</span>
                   </div>
                 );
               })}
@@ -2670,34 +2840,34 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== TENANT SUMMARY ===== */}
       {tenants.length > 0 && (
-        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden", marginBottom: 16 }}>
-          <div style={{ padding: "12px 18px", background: "#f2f3ff" }}>
-            <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Tenant Summary</h3>
+        <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", overflow: "hidden", marginBottom: 16 }}>
+          <div style={{ padding: "12px 18px", background: "rgba(132,204,22,0.05)" }}>
+            <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#FFFFFF", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Tenant Summary</h3>
           </div>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
               <tr>
-                <th style={{ padding: "6px 16px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Tenant</th>
-                <th style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280" }}>SF</th>
-                <th style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280" }}>Annual Rent</th>
-                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Type</th>
-                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Lease End</th>
-                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Status</th>
+                <th style={{ padding: "6px 16px", textAlign: "left", fontWeight: 600, color: "#9CA3AF" }}>Tenant</th>
+                <th style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, color: "#9CA3AF" }}>SF</th>
+                <th style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, color: "#9CA3AF" }}>Annual Rent</th>
+                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#9CA3AF" }}>Type</th>
+                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#9CA3AF" }}>Lease End</th>
+                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#9CA3AF" }}>Status</th>
               </tr>
             </thead>
             <tbody>
               {tenants.map((t: any, i: number) => (
-                <tr key={i} style={{ background: i % 2 === 1 ? "#f2f3ff" : "transparent" }}>
-                  <td style={{ padding: "6px 16px", fontWeight: 600, color: "#0F172A" }}>{t.name}</td>
-                  <td style={{ padding: "6px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{t.sf ? Math.round(Number(t.sf)).toLocaleString() : "--"}</td>
-                  <td style={{ padding: "6px 12px", textAlign: "right", fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>{fmt$(t.rent)}</td>
-                  <td style={{ padding: "6px 12px", color: "#6B7280" }}>{t.type || "--"}</td>
-                  <td style={{ padding: "6px 12px", color: "#6B7280" }}>{t.end || "--"}</td>
+                <tr key={i} style={{ background: i % 2 === 1 ? "rgba(132,204,22,0.03)" : "transparent" }}>
+                  <td style={{ padding: "6px 16px", fontWeight: 600, color: "#E5E7EB" }}>{t.name}</td>
+                  <td style={{ padding: "6px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums", color: "#D1D5DB" }}>{t.sf ? Math.round(Number(t.sf)).toLocaleString() : "--"}</td>
+                  <td style={{ padding: "6px 12px", textAlign: "right", fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "#D1D5DB" }}>{fmt$(t.rent)}</td>
+                  <td style={{ padding: "6px 12px", color: "#9CA3AF" }}>{t.type || "--"}</td>
+                  <td style={{ padding: "6px 12px", color: "#9CA3AF" }}>{t.end || "--"}</td>
                   <td style={{ padding: "6px 12px" }}>
                     <span style={{
                       fontSize: 10, fontWeight: 600, padding: "2px 6px", borderRadius: 8,
                       color: String(t.status || "").includes("Expir") || String(t.status || "").includes("MTM") ? "#D97706" : "#059669",
-                      background: String(t.status || "").includes("Expir") || String(t.status || "").includes("MTM") ? "#FFFBF0" : "#D1FAE5",
+                      background: String(t.status || "").includes("Expir") || String(t.status || "").includes("MTM") ? "rgba(217,119,6,0.15)" : "rgba(5,150,105,0.15)",
                     }}>{t.status || "--"}</span>
                   </td>
                 </tr>
@@ -2709,38 +2879,38 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== DOWNLOAD ASSETS ===== */}
       {hasData && (
-        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: 20, marginBottom: 16 }}>
+        <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", padding: 20, marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
             <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Download Assets</h3>
+            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#FFFFFF", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Download Assets</h3>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <button className="dl-btn" onClick={() => downloadLiteXLSX(d)} style={{
               display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 18px",
-              background: "#f2f3ff", border: "none", borderRadius: 6,
-              color: "#151b2b", textAlign: "left", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif",
-              boxShadow: "0 2px 8px rgba(21, 27, 43, 0.04)",
+              background: "rgba(132,204,22,0.1)", border: "1px solid rgba(132,204,22,0.2)", borderRadius: 6,
+              color: "#D1D5DB", textAlign: "left", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
             }}>
-              <div style={{ width: 40, height: 40, borderRadius: 8, background: "#D1FAE5", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A7E5A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+              <div style={{ width: 40, height: 40, borderRadius: 8, background: "rgba(5,150,105,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
               </div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>Underwriting Workbook <span style={{ marginLeft: 6, padding: "1px 5px", background: "#D1FAE5", borderRadius: 4, fontSize: 9, fontWeight: 700, color: "#0A7E5A" }}>XLSX</span></div>
-                <div style={{ fontSize: 11, color: "#8899B0", lineHeight: 1.4 }}>6-sheet Excel: Inputs, Rent Roll, Operating Statement, Debt &amp; Returns, Breakeven, Cap Scenarios</div>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2, color: "#FFFFFF" }}>Underwriting Workbook <span style={{ marginLeft: 6, padding: "1px 5px", background: "rgba(5,150,105,0.15)", borderRadius: 4, fontSize: 9, fontWeight: 700, color: "#059669" }}>XLSX</span></div>
+                <div style={{ fontSize: 11, color: "#9CA3AF", lineHeight: 1.4 }}>6-sheet Excel: Inputs, Rent Roll, Operating Statement, Debt &amp; Returns, Breakeven, Cap Scenarios</div>
               </div>
             </button>
             <button className="dl-btn" onClick={() => downloadLiteBrief(d)} style={{
               display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 18px",
-              background: "#f2f3ff", border: "none", borderRadius: 6,
-              color: "#151b2b", textAlign: "left", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif",
-              boxShadow: "0 2px 8px rgba(21, 27, 43, 0.04)",
+              background: "rgba(132,204,22,0.1)", border: "1px solid rgba(132,204,22,0.2)", borderRadius: 6,
+              color: "#D1D5DB", textAlign: "left", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
             }}>
-              <div style={{ width: 40, height: 40, borderRadius: 8, background: "#DBEAFE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 8, background: "rgba(37,99,235,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
               </div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>First-Pass Brief <span style={{ marginLeft: 6, padding: "1px 5px", background: "#DBEAFE", borderRadius: 4, fontSize: 9, fontWeight: 700, color: "#2563EB" }}>DOC</span></div>
-                <div style={{ fontSize: 11, color: "#8899B0", lineHeight: 1.4 }}>Investment memo with assessment, key metrics, signal ratings, and recommendation</div>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2, color: "#FFFFFF" }}>First-Pass Brief <span style={{ marginLeft: 6, padding: "1px 5px", background: "rgba(37,99,235,0.15)", borderRadius: 4, fontSize: 9, fontWeight: 700, color: "#2563EB" }}>DOC</span></div>
+                <div style={{ fontSize: 11, color: "#9CA3AF", lineHeight: 1.4 }}>Investment memo with assessment, key metrics, signal ratings, and recommendation</div>
               </div>
             </button>
           </div>
