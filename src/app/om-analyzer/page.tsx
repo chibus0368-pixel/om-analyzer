@@ -597,7 +597,7 @@ export default function OmAnalyzerPage() {
           .ds-om-outputs { grid-template-columns: repeat(2, 1fr) !important; }
           .ds-report-cards { grid-template-columns: repeat(2, 1fr) !important; }
           .ds-report-header { text-align: center; justify-content: center !important; }
-          .ds-feature-block { grid-template-columns: 1fr !important; direction: ltr !important; }
+          .ds-feature-block { flex-direction: column !important; gap: 32px !important; }
           .ds-secondary-features { grid-template-columns: repeat(2, 1fr) !important; }
         }
         @media (max-width: 480px) {
@@ -1091,16 +1091,16 @@ export default function OmAnalyzerPage() {
             <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
 
               {/* Section header */}
-              <div style={{ textAlign: "center", marginBottom: 80 }}>
+              <div style={{ textAlign: "center", marginBottom: 64 }}>
                 <div style={{ display: "inline-flex", alignItems: "center", padding: "6px 16px", borderRadius: 50, background: "rgba(132,204,22,0.06)", color: "#84CC16", fontSize: 12, fontWeight: 700, marginBottom: 16, gap: 6, letterSpacing: 0.5, textTransform: "uppercase" as const }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                  Product Walkthrough
+                  How It Works
                 </div>
-                <h2 style={{ fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15, marginBottom: 12, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  From upload to <span className="ds-callout">decision</span>
+                <h2 style={{ fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15, marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  From Upload to <span className="ds-callout">Decision</span> in 8 Steps
                 </h2>
-                <p style={{ fontSize: 17, color: "#9ca3af", lineHeight: 1.7, maxWidth: 560, margin: "0 auto" }}>
-                  This is not a spreadsheet tool. It&apos;s a pre-diligence engine built for speed in competitive markets.
+                <p style={{ fontSize: 17, color: "#9ca3af", lineHeight: 1.7, maxWidth: 580, margin: "0 auto" }}>
+                  See exactly how DealSignals takes you from raw OM to scored, organized, shareable deal intelligence.
                 </p>
               </div>
 
@@ -1520,17 +1520,56 @@ export default function OmAnalyzerPage() {
                 },
               ].map((feature, idx) => (
                 <FeatureBlock key={feature.num} idx={idx}>
-                  <div className="ds-feature-block" style={{
-                    display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center",
-                    marginBottom: idx < 7 ? 80 : 0,
-                    direction: idx % 2 === 1 ? "rtl" as const : "ltr" as const,
+                  <div style={{
+                    padding: idx === 0 ? "0 0 96px" : "96px 0",
+                    borderTop: idx > 0 ? "1px solid rgba(255,255,255,0.04)" : "none",
                   }}>
-                    <div style={{ direction: "ltr" }}>
-                      <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(132,204,22,0.4)", letterSpacing: 2, marginBottom: 12 }}>{feature.num}</div>
-                      <h3 style={{ fontSize: 26, fontWeight: 800, color: "#ffffff", marginBottom: 10, lineHeight: 1.2, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{feature.title}</h3>
-                      <p style={{ fontSize: 15, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{feature.desc}</p>
+                    <div className="ds-feature-block" style={{
+                      display: "flex", gap: 64, alignItems: "center",
+                      flexDirection: idx % 2 === 1 ? "row-reverse" as const : "row" as const,
+                    }}>
+                      {/* Text side */}
+                      <div style={{ flex: 1 }}>
+                        {/* Bright number circle */}
+                        <div style={{
+                          width: 44, height: 44, borderRadius: "50%",
+                          background: "#84CC16", color: "#0d0d14",
+                          display: "inline-flex", alignItems: "center", justifyContent: "center",
+                          fontSize: 16, fontWeight: 800, marginBottom: 16,
+                          boxShadow: "0 4px 16px rgba(132,204,22,0.25)",
+                        }}>
+                          {parseInt(feature.num)}
+                        </div>
+
+                        {/* Step label */}
+                        <div style={{
+                          fontSize: 13, fontWeight: 700, color: "rgba(132,204,22,0.85)",
+                          textTransform: "uppercase" as const, letterSpacing: 0.7,
+                          marginBottom: 12,
+                        }}>
+                          Step {parseInt(feature.num)} — {feature.title}
+                        </div>
+
+                        {/* Title */}
+                        <h3 style={{
+                          fontSize: 30, fontWeight: 800, color: "#ffffff",
+                          marginBottom: 12, lineHeight: 1.25,
+                          fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        }}>
+                          {feature.desc.split("—")[0].split(".")[0]}.
+                        </h3>
+
+                        {/* Description */}
+                        <p style={{ fontSize: 16, color: "#9ca3af", lineHeight: 1.7, margin: 0, maxWidth: 460 }}>
+                          {feature.desc}
+                        </p>
+                      </div>
+
+                      {/* Visual side */}
+                      <div style={{ flex: 1, maxWidth: 480 }}>
+                        {feature.visual}
+                      </div>
                     </div>
-                    <div style={{ direction: "ltr" }}>{feature.visual}</div>
                   </div>
                 </FeatureBlock>
               ))}
