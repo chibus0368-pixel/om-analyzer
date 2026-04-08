@@ -790,7 +790,7 @@ export default function OmAnalyzerPage() {
               </div>
 
               {/* Right — upload column */}
-              <div style={{ animation: "fadeInUp 0.5s ease-out 0.1s both" }}>
+              <div style={{ animation: "fadeInUp 0.5s ease-out 0.1s both", marginTop: -40 }}>
                 {/* "Try now" label */}
                 <div style={{ textAlign: "center", marginBottom: 14 }}>
                   <span style={{ fontSize: 12, fontWeight: 800, color: "#ffffff", textTransform: "uppercase" as const, letterSpacing: 1.5 }}>
