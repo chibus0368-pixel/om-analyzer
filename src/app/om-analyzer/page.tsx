@@ -446,6 +446,8 @@ export default function OmAnalyzerPage() {
         @keyframes omProcessDot { 0% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0.3; transform: scale(0.8); } }
         @keyframes omFlowLine { from { stroke-dashoffset: 40; } to { stroke-dashoffset: 0; } }
         @keyframes omScanLine { 0% { top: 10%; opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { top: 85%; opacity: 0; } }
+        @keyframes omFlowDot { 0% { left: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { left: calc(100% - 6px); opacity: 0; } }
+        .ds-om-outputs > div:hover { cursor: default; }
         .om-insight-card { opacity: 0; animation: omCardFadeIn 0.5s ease-out forwards; transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .om-insight-card:hover { transform: translateY(-3px) !important; box-shadow: 0 12px 32px rgba(0,0,0,0.08) !important; }
         /* Global grid overlay */
@@ -502,6 +504,7 @@ export default function OmAnalyzerPage() {
           .ds-pro-features { grid-template-columns: 1fr 1fr !important; }
           .ds-workflow-steps { grid-template-columns: repeat(2, 1fr) !important; }
           .ds-process-strip { transform: scale(0.85); transform-origin: left center; }
+          .ds-om-outputs { grid-template-columns: repeat(2, 1fr) !important; }
         }
         @media (max-width: 480px) {
           .ds-footer-grid { grid-template-columns: 1fr !important; }
@@ -871,16 +874,159 @@ export default function OmAnalyzerPage() {
                 </p>
               </div>
 
-              {/* Workflow image */}
-              <div style={{
-                position: "relative", maxWidth: 1100, margin: "0 auto",
-                borderRadius: 20, overflow: "hidden",
-              }}>
-                <img
-                  src="/images/deal-signals-workflow.png"
-                  alt="Deal Signals workflow — from OM upload to scored deal on your DealBoard"
-                  style={{ width: "100%", height: "auto", display: "block" }}
-                />
+              {/* Animated workflow graphic */}
+              <div style={{ position: "relative", maxWidth: 1000, margin: "0 auto" }}>
+
+                {/* ── Row 1: Upload OM → AI Engine → DealBoard ── */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, marginBottom: 56 }}>
+
+                  {/* Upload OM card */}
+                  <div style={{
+                    background: "rgba(132,204,22,0.06)", border: "1px solid rgba(132,204,22,0.2)",
+                    borderRadius: 16, padding: "28px 32px", minWidth: 180, textAlign: "center",
+                    animation: "fadeInUp 0.6s ease-out both",
+                  }}>
+                    <div style={{
+                      width: 52, height: 52, borderRadius: 14, background: "rgba(132,204,22,0.1)",
+                      display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px",
+                    }}>
+                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><polyline points="9 15 12 12 15 15" />
+                      </svg>
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#ffffff", marginBottom: 4 }}>Upload OM</div>
+                    <div style={{ fontSize: 12, color: "#9ca3af" }}>PDF, DOCX, or XLS</div>
+                  </div>
+
+                  {/* Animated connector arrow 1 */}
+                  <div style={{ width: 80, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+                    <div style={{
+                      height: 2, background: "linear-gradient(90deg, #84CC16, rgba(132,204,22,0.3))",
+                      width: "100%", animation: "connectorGrow 0.8s ease-out 0.4s both",
+                    }} />
+                    <div style={{
+                      position: "absolute", right: -4, width: 8, height: 8, borderTop: "2px solid #84CC16",
+                      borderRight: "2px solid #84CC16", transform: "rotate(45deg)", animation: "fadeInUp 0.3s ease-out 1s both",
+                    }} />
+                    {/* Flowing dots */}
+                    <div style={{
+                      position: "absolute", width: 6, height: 6, borderRadius: "50%", background: "#84CC16",
+                      animation: "omFlowDot 1.8s ease-in-out 1.2s infinite",
+                    }} />
+                  </div>
+
+                  {/* AI Engine (center piece) */}
+                  <div style={{
+                    background: "linear-gradient(135deg, rgba(132,204,22,0.12), rgba(132,204,22,0.04))",
+                    border: "1.5px solid rgba(132,204,22,0.3)", borderRadius: 20,
+                    padding: "32px 40px", textAlign: "center", position: "relative",
+                    animation: "fadeInUp 0.6s ease-out 0.3s both",
+                    boxShadow: "0 0 60px rgba(132,204,22,0.08), inset 0 1px 0 rgba(255,255,255,0.05)",
+                  }}>
+                    {/* Scanning line effect */}
+                    <div style={{
+                      position: "absolute", top: 0, left: "10%", right: "10%", height: 1,
+                      background: "linear-gradient(90deg, transparent, #84CC16, transparent)",
+                      animation: "omScanLine 3s ease-in-out 1.5s infinite", opacity: 0.4,
+                    }} />
+                    <div style={{
+                      width: 60, height: 60, borderRadius: 16,
+                      background: "linear-gradient(135deg, #84CC16, #4D7C0F)",
+                      display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px",
+                      boxShadow: "0 4px 20px rgba(132,204,22,0.3)",
+                    }}>
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                      </svg>
+                    </div>
+                    <div style={{ fontSize: 17, fontWeight: 800, color: "#ffffff", marginBottom: 4 }}>AI Engine</div>
+                    <div style={{ fontSize: 12, color: "#84CC16", fontWeight: 600, letterSpacing: 0.5 }}>GPT-4o POWERED</div>
+                    {/* Processing dots */}
+                    <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 12 }}>
+                      {[0,1,2].map(i => (
+                        <div key={i} style={{
+                          width: 5, height: 5, borderRadius: "50%", background: "#84CC16",
+                          animation: `omProcessDot 1.2s ease-in-out ${i * 0.2}s infinite`,
+                        }} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Animated connector arrow 2 */}
+                  <div style={{ width: 80, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+                    <div style={{
+                      height: 2, background: "linear-gradient(90deg, rgba(132,204,22,0.3), #84CC16)",
+                      width: "100%", animation: "connectorGrow 0.8s ease-out 0.8s both",
+                    }} />
+                    <div style={{
+                      position: "absolute", right: -4, width: 8, height: 8, borderTop: "2px solid #84CC16",
+                      borderRight: "2px solid #84CC16", transform: "rotate(45deg)", animation: "fadeInUp 0.3s ease-out 1.4s both",
+                    }} />
+                    <div style={{
+                      position: "absolute", width: 6, height: 6, borderRadius: "50%", background: "#84CC16",
+                      animation: "omFlowDot 1.8s ease-in-out 1.6s infinite",
+                    }} />
+                  </div>
+
+                  {/* DealBoard card */}
+                  <div style={{
+                    background: "rgba(132,204,22,0.06)", border: "1px solid rgba(132,204,22,0.2)",
+                    borderRadius: 16, padding: "28px 32px", minWidth: 180, textAlign: "center",
+                    animation: "fadeInUp 0.6s ease-out 0.6s both",
+                  }}>
+                    <div style={{
+                      width: 52, height: 52, borderRadius: 14, background: "rgba(132,204,22,0.1)",
+                      display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px",
+                    }}>
+                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+                      </svg>
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#ffffff", marginBottom: 4 }}>DealBoard</div>
+                    <div style={{ fontSize: 12, color: "#9ca3af" }}>Score, share, export</div>
+                  </div>
+                </div>
+
+                {/* ── Row 2: Output cards ── */}
+                <div className="ds-om-outputs" style={{
+                  display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16,
+                }}>
+                  {[
+                    { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", label: "Financials", detail: "Cap rate, NOI, DSCR, rent/SF", color: "#84CC16" },
+                    { icon: "M22 12h-4l-3 9L9 3l-3 9H2", label: "Deal Score", detail: "Weighted 0–100 with signals", color: "#059669" },
+                    { icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z", label: "Risk Flags", detail: "Color-coded risk signals", color: "#D97706" },
+                    { icon: "M4 6h16M4 10h16M4 14h16M4 18h16", label: "Investment Thesis", detail: "Buy / hold / pass rationale", color: "#6366F1" },
+                  ].map((card, i) => (
+                    <div key={card.label} style={{
+                      background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
+                      borderRadius: 14, padding: "22px 18px", textAlign: "center",
+                      animation: `fadeInUp 0.5s ease-out ${0.9 + i * 0.12}s both`,
+                      transition: "border-color 0.3s, background 0.3s, transform 0.3s",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = `${card.color}33`; e.currentTarget.style.background = `${card.color}08`; e.currentTarget.style.transform = "translateY(-4px)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.transform = "translateY(0)"; }}
+                    >
+                      <div style={{
+                        width: 42, height: 42, borderRadius: 12,
+                        background: `${card.color}14`, display: "flex", alignItems: "center", justifyContent: "center",
+                        margin: "0 auto 12px",
+                      }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={card.color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d={card.icon} />
+                        </svg>
+                      </div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#ffffff", marginBottom: 3 }}>{card.label}</div>
+                      <div style={{ fontSize: 11.5, color: "#9ca3af", lineHeight: 1.4 }}>{card.detail}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Connecting lines from AI engine down to output cards */}
+                <div style={{
+                  position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -8px)",
+                  width: 2, height: 40, background: "linear-gradient(to bottom, rgba(132,204,22,0.3), rgba(132,204,22,0.08))",
+                  animation: "fadeInUp 0.5s ease-out 0.85s both",
+                }} />
               </div>
 
             </div>
