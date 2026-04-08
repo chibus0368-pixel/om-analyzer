@@ -6,7 +6,6 @@ import { useAuth } from "@/lib/auth-context";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { loginWithGoogle, checkGoogleRedirect } from "@/lib/auth/providers";
-import DealSignalLogo from "@/components/DealSignalLogo";
 
 /* ─── friendly error messages ─── */
 function friendlyError(code: string, fallback: string): string {
@@ -224,7 +223,7 @@ export default function WorkspaceLoginPage() {
         {/* ── Header ── */}
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-            <DealSignalLogo size={36} fontSize={22} gap={10} />
+            <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 36 }} />
           </div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0B1120", margin: 0, fontFamily: "'Inter', sans-serif" }}>
             {upgradePlan

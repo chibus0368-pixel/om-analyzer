@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import DealSignalLogo from "@/components/DealSignalLogo";
 import DealSignalNav from "@/components/DealSignalNav";
 import DealSignalFooter from "@/components/DealSignalFooter";
 
@@ -279,7 +278,7 @@ export default function TryProPage() {
             display: "flex", alignItems: "center", justifyContent: "space-between",
             padding: "0 20px",
           }}>
-            <DealSignalLogo size={26} fontSize={15} gap={7} />
+            <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 26 }} />
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{
                 padding: "6px 16px", borderRadius: 50, fontSize: 11, fontWeight: 700,

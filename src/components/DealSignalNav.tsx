@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import DealSignalLogo from "./DealSignalLogo";
+
 
 const NAV_LINKS = [
   { href: "/#how-it-works", label: "How it works", sectionId: "how-it-works" },
@@ -102,7 +102,7 @@ export default function DealSignalNav() {
       }}>
         {/* Logo */}
         <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <DealSignalLogo size={48} fontSize={18} gap={8} />
+          <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 40 }} />
         </Link>
 
         {/* Center nav links */}

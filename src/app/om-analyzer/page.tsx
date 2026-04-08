@@ -5,7 +5,7 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
-import DealSignalLogo from "@/components/DealSignalLogo";
+
 import DealSignalNav from "@/components/DealSignalNav";
 
 /* ===========================================================================
@@ -670,7 +670,7 @@ export default function OmAnalyzerPage() {
             }}>
               &larr; Analyze Another
             </button>
-            <DealSignalLogo size={24} fontSize={14} gap={8} />
+            <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 28 }} />
           </div>
         </div>
       )}
@@ -1071,7 +1071,7 @@ export default function OmAnalyzerPage() {
                 <div style={{ position: "absolute", top: "-50%", left: "50%", transform: "translateX(-50%)", width: 400, height: 400, borderRadius: "50%", background: "rgba(132,204,22,0.06)", filter: "blur(100px)", pointerEvents: "none" }} />
 
                 <h3 style={{ fontSize: 28, fontWeight: 800, color: "#ffffff", marginBottom: 32, fontFamily: "'Plus Jakarta Sans', sans-serif", position: "relative", letterSpacing: -0.5 }}>
-                  DealSignals is not an AI parser.
+                  Stop reading OMs. Start reading <span style={{ color: "#84CC16" }}>signals</span>.
                 </h3>
 
                 <div style={{ display: "flex", justifyContent: "center", gap: 20, flexWrap: "wrap", marginBottom: 40, position: "relative" }}>
@@ -1123,17 +1123,17 @@ export default function OmAnalyzerPage() {
                   How It Works
                 </div>
                 <h2 style={{ fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15, marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  From Upload to <span className="ds-callout">Confidence</span>.
+                  Eight Steps to <span className="ds-callout">Deal Clarity</span>.
                 </h2>
                 <p style={{ fontSize: 17, color: "#9ca3af", lineHeight: 1.7, maxWidth: 580, margin: "0 auto" }}>
-                  See exactly how DealSignals takes you from raw OM to scored, organized, shareable deal pre-diligence.
+                  Upload a deal. Get scored, organized, shareable pre-diligence back in seconds.
                 </p>
               </div>
 
               {/* ── Feature blocks: alternating left/right ── */}
               {[
                 {
-                  num: "01", title: "Extract Every Data Point Instantly", desc: "Upload an OM, flyer, rent roll, or broker package and watch 40+ fields populate in under a minute. Price, cap rate, NOI, tenant, lease terms, and more. Add multiple documents to the same deal and data coalesces automatically.",
+                  num: "01", title: "Extract 40+ Fields", desc: "Upload an OM, flyer, rent roll, or broker package and watch 40+ fields populate in under a minute. Price, cap rate, NOI, tenant, lease terms, and more. Add multiple documents to the same deal and data coalesces automatically.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
                       {/* Scan line animation overlay */}
@@ -1189,7 +1189,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "02", title: "Know If It\u2019s Worth Pursuing Immediately", desc: "Get a buy/hold/pass signal with risk tags before you spend time on full underwriting.",
+                  num: "02", title: "Get a Buy/Pass Signal", desc: "Get a buy/hold/pass signal with risk tags before you spend time on full underwriting.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
                       {/* Subtle glow behind score */}
@@ -1238,7 +1238,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "03", title: "Instantly Score Every Deal", desc: "Six investment dimensions scored automatically: pricing, cashflow, tenant quality, rollover risk, location, and upside potential.",
+                  num: "03", title: "Score Every Deal", desc: "Six investment dimensions scored automatically: pricing, cashflow, tenant quality, rollover risk, location, and upside potential.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Scoreboard header */}
@@ -1286,7 +1286,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "04", title: "Export Full Underwriting Models to Excel", desc: "Download a 4-sheet XLS workbook and property brief for reuse in your own underwriting.",
+                  num: "04", title: "Export to Excel", desc: "Download a 4-sheet XLS workbook and property brief for reuse in your own underwriting.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Excel tab bar */}
@@ -1343,7 +1343,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "05", title: "Organize Every Deal in One Place", desc: "Save deals to your DealBoard. Track across clients, strategies, and pipelines. Never lose a deal again.",
+                  num: "05", title: "Organize Your Pipeline", desc: "Save deals to your DealBoard. Track across clients, strategies, and pipelines. Never lose a deal again.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Asset type tabs */}
@@ -1403,7 +1403,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "06", title: "Compare Deals Side-by-Side in Seconds", desc: "Stack any deal against another on a sortable scoreboard. See which wins on price, cashflow, risk, and signal.",
+                  num: "06", title: "Compare Side-by-Side", desc: "Stack any deal against another on a sortable scoreboard. See which wins on price, cashflow, risk, and signal.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Header with asset type */}
@@ -1443,7 +1443,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "07", title: "See Where Your Deals Sit on the Map", desc: "Every deal pins to a map automatically. Hover to see scores and metrics at a glance. Share the view with clients via a unique link.",
+                  num: "07", title: "Map Your Deals", desc: "Every deal pins to a map automatically. Hover to see scores and metrics at a glance. Share the view with clients via a unique link.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Map area - dark themed street map */}
@@ -1521,7 +1521,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "08", title: "Send Deal Briefs to Clients in One Click", desc: "Generate a clean, branded share link with the partial or full analysis for clients. No login required.",
+                  num: "08", title: "Share with Clients", desc: "Generate a clean, branded share link with the partial or full analysis for clients. No login required.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Share link generation */}
@@ -2093,7 +2093,7 @@ export default function OmAnalyzerPage() {
       }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", gap: 48, marginBottom: 48 }}>
           <div>
-            <DealSignalLogo size={36} fontSize={18} gap={9} />
+            <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 36 }} />
             <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.7, marginTop: 14, maxWidth: 260 }}>
               Analyze CRE deals with AI-powered intelligence. Get real signals, not guesses.
             </p>

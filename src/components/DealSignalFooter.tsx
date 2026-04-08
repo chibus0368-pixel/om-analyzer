@@ -1,5 +1,5 @@
 import Link from "next/link";
-import DealSignalLogo from "./DealSignalLogo";
+
 
 /**
  * Deal Signals branded footer — used on om-analyzer and related pages
@@ -12,7 +12,7 @@ export default function DealSignalFooter() {
       maxWidth: 1280, margin: "0 auto",
       display: "flex", alignItems: "center", justifyContent: "space-between",
     }}>
-      <DealSignalLogo size={22} fontSize={13} gap={7} />
+      <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 24 }} />
       <div style={{ display: "flex", gap: 24 }}>
         {[
           { label: "Privacy", href: "/privacy" },

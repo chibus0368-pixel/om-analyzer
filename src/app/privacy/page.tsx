@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import DealSignalNav from "@/components/DealSignalNav";
 import DealSignalFooter from "@/components/DealSignalFooter";
-import DealSignalLogo from "@/components/DealSignalLogo";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | Deal Signals",
@@ -29,7 +28,7 @@ export default function PrivacyPage() {
       }}>
         <div className="container" style={{ maxWidth: 720 }}>
           <div style={{ marginBottom: 16 }}>
-            <DealSignalLogo size={30} fontSize={15} gap={8} style={{ color: "#fff" }} />
+            <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 30 }} />
           </div>
           <h1 style={{ fontFamily: "'Inter', sans-serif", fontSize: 36, fontWeight: 900, marginBottom: 8, letterSpacing: -0.5 }}>Privacy Policy</h1>
           <p style={{ fontSize: 14, opacity: 0.7 }}>Last updated: February 2026</p>

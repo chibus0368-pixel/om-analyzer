@@ -4,7 +4,6 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { loginWithEmail, loginWithGoogle } from "@/lib/auth/providers";
 import { mapAuthError } from "@/lib/auth/errors";
-import DealSignalLogo from "@/components/DealSignalLogo";
 
 const C = {
   primary: "#65A30D",
@@ -106,7 +105,7 @@ function LoginContent() {
           gap: 8,
         }}
       >
-        <DealSignalLogo size={36} fontSize={22} gap={10} />
+        <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 36 }} />
         <p
           style={{
             fontSize: "14px",

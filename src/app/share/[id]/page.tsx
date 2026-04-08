@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
-import DealSignalLogo from "@/components/DealSignalLogo";
+
 
 interface ExtractedField {
   fieldGroup: string;
