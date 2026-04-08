@@ -579,7 +579,11 @@ export default function OmAnalyzerPage() {
 
       {/* ===== HERO + LANDING PAGE ===== */}
       {view === "upload" && (
-        <section style={{ background: "#0d0d14", paddingTop: 64 }}>
+        <section
+          onDragOver={e => { e.preventDefault(); setDragging(true); }}
+          onDragLeave={e => { if (e.currentTarget === e.target || !e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false); }}
+          onDrop={e => { e.preventDefault(); setDragging(false); if (e.dataTransfer.files?.length) handleFile(e.dataTransfer.files[0]); }}
+          style={{ background: "#0d0d14", paddingTop: 64 }}>
 
           {/* ── 1. HERO ── */}
           <div style={{ padding: "100px 32px 120px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
