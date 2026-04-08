@@ -106,9 +106,20 @@ export default function DealSignalNav() {
         maxWidth: 1100, margin: "0 auto", height: 64,
         fontFamily: "'Plus Jakarta Sans', sans-serif",
       }}>
-        {/* Logo */}
+        {/* Logo — inline SVG so icon background matches nav bar */}
         <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 40 }} />
+          <svg width={160} height={40} viewBox="0 0 440 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Icon background — matches nav bar */}
+            <rect x="4" y="4" width="86" height="86" rx="16" fill="#0d0d14" stroke="rgba(132,204,22,0.12)" strokeWidth="1" />
+            {/* Bars */}
+            <rect x="22" y="58" width="10" height="24" rx="1.5" fill="#84CC16" />
+            <rect x="36" y="46" width="10" height="36" rx="1.5" fill="#84CC16" />
+            <rect x="50" y="34" width="10" height="48" rx="1.5" fill="#84CC16" />
+            <rect x="64" y="22" width="10" height="60" rx="1.5" fill="#84CC16" />
+            {/* Text */}
+            <text x="104" y="62" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#84CC16">Deal</text>
+            <text x="196" y="62" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#ffffff">Signals</text>
+          </svg>
         </Link>
 
         {/* Center nav links */}

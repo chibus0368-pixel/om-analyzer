@@ -692,15 +692,23 @@ export default function OmAnalyzerPage() {
 
       {/* ===== RESULT: minimal header bar ===== */}
       {view === "result" && (
-        <div style={{ padding: "12px 0", paddingTop: 76, borderBottom: "1px solid #EDF0F5" }}>
-          <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ padding: "12px 0", paddingTop: 76, borderBottom: "1px solid rgba(132,204,22,0.1)", background: "#0d0d14" }}>
+          <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <button onClick={resetAnalyzer} style={{
-              padding: "8px 20px", background: "#16161f", border: "1.5px solid #D8DFE9",
-              borderRadius: 6, fontSize: 13, fontWeight: 600, color: "#9ca3af", cursor: "pointer",
+              padding: "8px 20px", background: "rgba(132,204,22,0.1)", border: "1px solid rgba(132,204,22,0.15)",
+              borderRadius: 6, fontSize: 13, fontWeight: 600, color: "#84CC16", cursor: "pointer",
             }}>
               &larr; Analyze Another
             </button>
-            <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 28 }} />
+            <svg width={120} height={28} viewBox="0 0 440 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4" y="4" width="86" height="86" rx="16" fill="#0d0d14" stroke="rgba(132,204,22,0.12)" strokeWidth="1" />
+              <rect x="22" y="58" width="10" height="24" rx="1.5" fill="#84CC16" />
+              <rect x="36" y="46" width="10" height="36" rx="1.5" fill="#84CC16" />
+              <rect x="50" y="34" width="10" height="48" rx="1.5" fill="#84CC16" />
+              <rect x="64" y="22" width="10" height="60" rx="1.5" fill="#84CC16" />
+              <text x="104" y="62" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#84CC16">Deal</text>
+              <text x="196" y="62" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#ffffff">Signals</text>
+            </svg>
           </div>
         </div>
       )}
@@ -1316,7 +1324,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "04", title: "Export to Excel", desc: "Download a 4-sheet XLS workbook and property brief for reuse in your own underwriting.",
+                  num: "04", title: "Export to Excel", desc: "Download a 6-sheet Excel workbook with inputs, rent roll, operating statement, debt & returns, breakeven, and cap scenarios.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Excel tab bar */}
@@ -1946,7 +1954,7 @@ export default function OmAnalyzerPage() {
                 {[
                   { q: "How is this different from just reading the OM?", a: "Reading an OM takes 20–45 minutes and you still have to build a spreadsheet. DealSignals gives you the same data extraction, a structured financial summary, and a scored recommendation in under 60 seconds. It's the difference between reading every deal and filtering to the ones worth your time." },
                   { q: "What does the Deal Score actually measure?", a: "The Deal Score (0–100) evaluates six investment dimensions: pricing relative to market, cashflow strength, tenant credit quality, rollover and lease risk, location fundamentals, and upside potential. Each dimension is scored independently so you can see exactly where a deal is strong or weak." },
-                  { q: "What's in the Excel export?", a: "A 6-sheet institutional-grade workbook: deal summary inputs, rent roll, operating statement, debt and returns analysis, breakeven scenarios, and cap rate sensitivity tables. Every sheet is formula-linked and ready for your own underwriting adjustments." },
+                  { q: "What's in the Excel export?", a: "A 6-sheet Excel workbook: deal summary inputs, rent roll, operating statement, debt and returns analysis, breakeven scenarios, and cap rate sensitivity tables. Every sheet is formatted and ready for your own underwriting adjustments." },
                   { q: "Can I share analysis with clients?", a: "Yes. Pro users can generate a unique shareable link for any deal. Your client sees the full analysis (score, metrics, financial summary) without needing a DealSignals account. Pro+ users get white-label branded links." },
                   { q: "What property types does it support?", a: "DealSignals works across all major CRE asset classes: retail NNN, multifamily, industrial, office, medical, self-storage, and mixed-use. The scoring models adapt to the specific asset type and deal structure." },
                 ].map((item, i) => {
@@ -2082,7 +2090,15 @@ export default function OmAnalyzerPage() {
           <div style={{ position: "relative", zIndex: 2, textAlign: "center", maxWidth: "600px", padding: "0 24px" }}>
             {/* DealSignals Logo */}
             <div style={{ marginBottom: 60 }}>
-              <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 32 }} />
+              <svg width={140} height={32} viewBox="0 0 440 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="4" y="4" width="86" height="86" rx="16" fill="#0d0d14" stroke="rgba(132,204,22,0.12)" strokeWidth="1" />
+                <rect x="22" y="58" width="10" height="24" rx="1.5" fill="#84CC16" />
+                <rect x="36" y="46" width="10" height="36" rx="1.5" fill="#84CC16" />
+                <rect x="50" y="34" width="10" height="48" rx="1.5" fill="#84CC16" />
+                <rect x="64" y="22" width="10" height="60" rx="1.5" fill="#84CC16" />
+                <text x="104" y="62" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#84CC16">Deal</text>
+                <text x="196" y="62" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#ffffff">Signals</text>
+              </svg>
             </div>
 
             {/* Animated percentage counter with circular progress ring */}
@@ -2271,7 +2287,15 @@ export default function OmAnalyzerPage() {
       }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", gap: 48, marginBottom: 48 }}>
           <div>
-            <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 36 }} />
+            <svg width={160} height={36} viewBox="0 0 440 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4" y="4" width="86" height="86" rx="16" fill="transparent" stroke="rgba(132,204,22,0.12)" strokeWidth="1" />
+              <rect x="22" y="58" width="10" height="24" rx="1.5" fill="#84CC16" />
+              <rect x="36" y="46" width="10" height="36" rx="1.5" fill="#84CC16" />
+              <rect x="50" y="34" width="10" height="48" rx="1.5" fill="#84CC16" />
+              <rect x="64" y="22" width="10" height="60" rx="1.5" fill="#84CC16" />
+              <text x="104" y="62" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#84CC16">Deal</text>
+              <text x="196" y="62" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#ffffff">Signals</text>
+            </svg>
             <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.7, marginTop: 14, maxWidth: 260 }}>
               Analyze CRE deals with AI-powered intelligence. Get real signals, not guesses.
             </p>
@@ -2998,7 +3022,7 @@ function generateDemoResult(filename: string): AnalysisData {
 }
 
 /* ===========================================================================
-   LITE DOWNLOAD — XLSX (6-sheet workbook, pro-grade formatting via ExcelJS)
+   LITE DOWNLOAD — XLSX (6-sheet workbook via ExcelJS)
    =========================================================================== */
 async function downloadLiteXLSX(d: any) {
   let EJ: any;

@@ -760,7 +760,15 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         {/* Left: Logo + DealBoard selector */}
         <div style={{ display: "flex", alignItems: "center", gap: 48 }}>
           <Link href="/workspace" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
-            <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 36 }} />
+            <svg width={144} height={36} viewBox="0 0 440 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4" y="4" width="86" height="86" rx="16" fill="#0b1326" stroke="rgba(132,204,22,0.12)" strokeWidth="1" />
+              <rect x="22" y="58" width="10" height="24" rx="1.5" fill="#84CC16" />
+              <rect x="36" y="46" width="10" height="36" rx="1.5" fill="#84CC16" />
+              <rect x="50" y="34" width="10" height="48" rx="1.5" fill="#84CC16" />
+              <rect x="64" y="22" width="10" height="60" rx="1.5" fill="#84CC16" />
+              <text x="104" y="62" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#84CC16">Deal</text>
+              <text x="196" y="62" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#ffffff">Signals</text>
+            </svg>
           </Link>
 
           {/* DealBoard selector — separated by border */}
