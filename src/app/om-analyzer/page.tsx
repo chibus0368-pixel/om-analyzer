@@ -1480,10 +1480,10 @@ export default function OmAnalyzerPage() {
             <div style={{ position: "absolute", top: -200, right: -100, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.1)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
             <div style={{ textAlign: "center", marginBottom: 56, position: "relative", zIndex: 1 }}>
               <h2 style={{ fontSize: 34, fontWeight: 800, color: "#ffffff", marginBottom: 10 }}>
-                Simple pricing for serious underwriting
+                Start free. Scale as your deal flow grows.
               </h2>
               <p style={{ fontSize: 14, color: "#5A7091", lineHeight: 1.7, maxWidth: 500, margin: "0 auto" }}>
-                Start free. Upgrade when your deal flow demands it. No contracts, cancel anytime.
+                DealSignals turns deals and OMs into actionable investment insight, powering faster pre-diligence decisions.
               </p>
             </div>
 
@@ -1494,18 +1494,18 @@ export default function OmAnalyzerPage() {
                   name: "Free",
                   price: "0",
                   period: "",
-                  desc: "For independent analysts and students evaluating deals.",
+                  desc: "Try DealSignals on real deals.",
                   features: [
                     { text: "2 Deal Analyses", included: true },
-                    { text: "Standard PDF extraction", included: true },
-                    { text: "Basic Deal Signals score", included: true },
-                    { text: "First-pass brief download", included: true },
-                    { text: "Save & organize deals", included: false },
-                    { text: "AI scoring models", included: false },
-                    { text: "Full Excel exports", included: false },
+                    { text: "Full Deal Signals scoring", included: true },
+                    { text: "Full Excel export", included: true },
+                    { text: "Save up to 5 deals", included: true },
+                    { text: "1 shareable link", included: true },
                     { text: "DealBoard & history", included: false },
+                    { text: "Deal comparison", included: false },
+                    { text: "Bulk uploads", included: false },
                   ],
-                  cta: "Get Started Free",
+                  cta: "Try Your First Deal",
                   ctaLink: "/",
                   highlight: false,
                 },
@@ -1513,15 +1513,16 @@ export default function OmAnalyzerPage() {
                   name: "Pro",
                   price: "40",
                   period: "/mo",
-                  desc: "For active investors and small acquisition teams.",
+                  desc: "For active investors moving fast on deals.",
+                  valueCallout: "Less than $0.50 per deal",
                   features: [
-                    { text: "Up to 40 deals/month", included: true },
-                    { text: "Save & organize deals", included: true },
+                    { text: "Up to 100 deals/month", included: true },
+                    { text: "Unlimited saved deals", included: true },
                     { text: "Deal Signals scoring", included: true },
                     { text: "Full Excel workbooks (6 sheets)", included: true },
-                    { text: "Pro DealBoard with history", included: true },
-                    { text: "Interactive property map", included: true },
+                    { text: "DealBoard with history", included: true },
                     { text: "Deal comparison scoreboard", included: true },
+                    { text: "Interactive property map", included: true },
                     { text: "Shareable client links", included: true },
                   ],
                   cta: "Start Pro",
@@ -1532,18 +1533,18 @@ export default function OmAnalyzerPage() {
                   name: "Pro+",
                   price: "100",
                   period: "/mo",
-                  desc: "For power users and teams with high deal flow.",
+                  desc: "For high-volume deal flow and serious operators.",
+                  valueCallout: "Less than $0.20 per deal",
                   features: [
-                    { text: "Up to 200 deals/month", included: true },
+                    { text: "Up to 500 deals/month", included: true },
                     { text: "Everything in Pro", included: true },
-                    { text: "Location Intelligence", included: true },
-                    { text: "Advanced exports", included: true },
-                    { text: "Priority processing", included: true },
                     { text: "Bulk portfolio uploads", included: true },
+                    { text: "Location Intelligence", included: true },
                     { text: "White-label shareable links", included: true },
+                    { text: "Priority processing", included: true },
                     { text: "Priority support", included: true },
                   ],
-                  cta: "Start Pro+",
+                  cta: "Go Pro+",
                   ctaLink: "/workspace/login?upgrade=pro_plus",
                   highlight: false,
                   bestValue: true,
@@ -1574,7 +1575,12 @@ export default function OmAnalyzerPage() {
                     <span style={{ fontSize: 40, fontWeight: 800, color: "#ffffff", letterSpacing: -1 }}>{tier.price}</span>
                     {tier.period && <span style={{ fontSize: 14, color: "rgba(255,255,255,0.5)" }}>{tier.period}</span>}
                   </div>
-                  <p style={{ fontSize: 13, color: "#9ca3af", marginBottom: 28, lineHeight: 1.5 }}>{tier.desc}</p>
+                  <p style={{ fontSize: 13, color: "#9ca3af", marginBottom: (tier as any).valueCallout ? 10 : 28, lineHeight: 1.5 }}>{tier.desc}</p>
+                  {(tier as any).valueCallout && (
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#84CC16", marginBottom: 20, letterSpacing: 0.3 }}>
+                      {(tier as any).valueCallout}
+                    </div>
+                  )}
 
                   <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
                     {tier.features.map(f => (
@@ -1606,10 +1612,10 @@ export default function OmAnalyzerPage() {
             {/* Why upgrade to Pro */}
             <div style={{ marginBottom: 60, position: "relative", zIndex: 1 }}>
               <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 30, fontWeight: 800, color: "#ffffff", marginBottom: 8, textAlign: "center", letterSpacing: -0.5 }}>
-                Why upgrade to Pro?
+                Why people upgrade
               </h2>
               <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.7, marginBottom: 40, textAlign: "center", maxWidth: 560, margin: "0 auto 40px" }}>
-                Free gives you a taste. Pro gives you the full institutional toolkit.
+                Evaluate more deals faster. Organize deals across clients and pipelines. Make decisions before full underwriting.
               </p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
                 {[
@@ -1653,9 +1659,9 @@ export default function OmAnalyzerPage() {
               {[
                 { q: "What is Deal Signals?", a: "Deal Signals is an AI-powered CRE underwriting tool that extracts key financial metrics, calculates investment scores, and flags risks from offering memorandums in seconds." },
                 { q: "What file types are supported?", a: "PDF, Word (.docx), Excel (.xlsx/.xls), CSV, and plain text. PDF is recommended for best accuracy. Max 50MB." },
-                { q: "Is Deal Signals really free?", a: "Yes. 2 analyses/month, no signup. Pro unlocks 40+ monthly analyses plus deep research tools at $40/month." },
+                { q: "Is Deal Signals really free?", a: "Yes. 2 deal analyses with full scoring and Excel export, no credit card required. Pro unlocks 100 deals/month at $40/month." },
                 { q: "How accurate is the extraction?", a: "90%+ accuracy on standard CRE metrics. Always review the original document for critical decisions." },
-                { q: "What's included in Pro?", a: "Location intelligence, tenant research, comp analysis, deal pipeline, map view, shareable reports, and priority support." },
+                { q: "What's included in Pro?", a: "Up to 100 deals/month, unlimited saved deals, full Excel workbooks, DealBoard with history, deal comparison scoreboard, interactive property map, and shareable client links." },
                 { q: "Is my data private?", a: "Yes. Documents are processed in real-time and not stored permanently. No tracking, no account required for free tier." },
               ].map((item, idx) => (
                 <div key={idx} style={{ borderBottom: idx < 5 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
@@ -2253,7 +2259,7 @@ function ProUpsell() {
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 32 }}>
           {[
-            { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", text: "40 deals/month on Pro" },
+            { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", text: "100 deals/month on Pro" },
             { icon: "M22 12h-4l-3 9L9 3l-3 9H2", text: "AI scoring & risk ratings" },
             { icon: "M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7", text: "Interactive property map" },
             { icon: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z", text: "6-sheet Excel workbooks" },
