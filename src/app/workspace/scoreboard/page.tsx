@@ -999,19 +999,32 @@ export default function ScoreboardPage() {
             return !((d.property as any).scoreTotal > 0) && (!ps || ps === "complete" || ps === "error");
           }).length > 0 && (
             <div style={{
-              display: "flex", alignItems: "center", gap: 10,
+              display: "flex", alignItems: "center", gap: 12,
               padding: "14px 20px", background: "rgba(217,119,6,0.06)",
               border: "1px solid rgba(217,119,6,0.15)", borderRadius: 10, marginBottom: 16,
             }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#92400E" }}>
-                {propertyData.filter(d => {
-                  const ps = (d.property as any).processingStatus;
-                  return !((d.property as any).scoreTotal > 0) && (!ps || ps === "complete" || ps === "error");
-                }).length} of {propertyData.length} properties are awaiting scores. Scores are generated automatically when you upload a deal.
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#92400E", flex: 1 }}>
+                {rescoring ? rescoreProgress : (<>
+                  {propertyData.filter(d => {
+                    const ps = (d.property as any).processingStatus;
+                    return !((d.property as any).scoreTotal > 0) && (!ps || ps === "complete" || ps === "error");
+                  }).length} of {propertyData.length} properties need scoring.
+                </>)}
               </span>
+              <button
+                onClick={() => rescoreAll()}
+                disabled={rescoring}
+                style={{
+                  padding: "7px 18px", background: rescoring ? "#D97706" : "#92400E", color: "#fff",
+                  border: "none", borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: rescoring ? "default" : "pointer",
+                  fontFamily: "inherit", whiteSpace: "nowrap", opacity: rescoring ? 0.7 : 1,
+                }}
+              >
+                {rescoring ? "Scoring..." : "Score Now"}
+              </button>
             </div>
           )}
 
