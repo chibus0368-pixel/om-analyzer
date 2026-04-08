@@ -457,11 +457,11 @@ export default function OmAnalyzerPage() {
         .ds-callout::after {
           content: '';
           position: absolute;
-          bottom: -6px;
-          left: -2%;
-          width: 104%;
-          height: 8px;
-          background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'%3E%3Cpath d='M2 8 C40 2, 80 2, 100 4 S160 10, 198 4' stroke='%2384CC16' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center;
+          bottom: -8px;
+          left: 0%;
+          width: 100%;
+          height: 10px;
+          background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 14' preserveAspectRatio='none'%3E%3Cpath d='M4 4 Q100 18 196 4' stroke='%2384CC16' stroke-width='3.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center;
           background-size: 100% 100%;
         }
         /* Light bg variant */
@@ -473,11 +473,11 @@ export default function OmAnalyzerPage() {
         .ds-callout-dark::after {
           content: '';
           position: absolute;
-          bottom: -6px;
-          left: -2%;
-          width: 104%;
-          height: 8px;
-          background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'%3E%3Cpath d='M2 8 C40 2, 80 2, 100 4 S160 10, 198 4' stroke='%234D7C0F' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center;
+          bottom: -8px;
+          left: 0%;
+          width: 100%;
+          height: 10px;
+          background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 14' preserveAspectRatio='none'%3E%3Cpath d='M4 4 Q100 18 196 4' stroke='%234D7C0F' stroke-width='3.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center;
           background-size: 100% 100%;
         }
         .om-insight-card { opacity: 0; animation: omCardFadeIn 0.5s ease-out forwards; transition: transform 0.2s ease, box-shadow 0.2s ease; }
