@@ -16,6 +16,7 @@ export default function DealSignalNav() {
   const pathname = usePathname();
   const [authedUser, setAuthedUser] = useState<{ displayName: string | null; email: string | null } | null>(null);
   const [activeSection, setActiveSection] = useState<string>("");
+  const [scrolledPastHero, setScrolledPastHero] = useState(false);
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
@@ -33,6 +34,13 @@ export default function DealSignalNav() {
       } catch { /* Firebase not available */ }
     })();
     return () => { if (unsubscribe) unsubscribe(); };
+  }, []);
+
+  // Show "Try It" once user scrolls past the hero
+  useEffect(() => {
+    const onScroll = () => setScrolledPastHero(window.scrollY > 500);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   // Track which section is in view via IntersectionObserver
@@ -99,6 +107,26 @@ export default function DealSignalNav() {
 
         {/* Center nav links */}
         <div className="ds-nav-links" style={{ display: "flex", alignItems: "center", gap: 32, height: 64 }}>
+          {/* "Try It" link — appears after scrolling past hero */}
+          {isOnLanding && scrolledPastHero && (
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              style={{
+                fontSize: 14, fontWeight: 700, color: "#84CC16",
+                background: "none", border: "none", cursor: "pointer",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                height: 64, display: "inline-flex", alignItems: "center",
+                position: "relative", padding: 0,
+                animation: "fadeInUp 0.3s ease-out",
+              }}
+            >
+              Try It
+              <span style={{
+                position: "absolute", bottom: 0, left: 0, right: 0, height: 2,
+                background: "#84CC16", borderRadius: 1,
+              }} />
+            </button>
+          )}
           {NAV_LINKS.map(({ href, label, sectionId }) => {
             const isActive = isOnLanding && activeSection === sectionId;
             return (

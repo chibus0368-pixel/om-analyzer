@@ -860,7 +860,7 @@ export default function OmAnalyzerPage() {
                   fontSize: 14, color: "#84CC16", fontWeight: 600, letterSpacing: 0.2,
                   marginBottom: 0, marginTop: 0,
                 }}>
-                  Underwrite in seconds. Decide before others even open Excel.
+                  Decide before others even open Excel.
                 </p>
               </div>
 
@@ -2004,22 +2004,6 @@ export default function OmAnalyzerPage() {
             </div>
           </div>
 
-          {/* ── 10. FINAL CTA ── */}
-          <div style={{ background: "#0d0d14", padding: "100px 32px 120px", textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
-            {/* Gradient orb for CTA area */}
-            <div style={{ position: "absolute", bottom: -200, left: -100, width: 400, height: 400, borderRadius: "50%", background: "rgba(132,204,22,0.08)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
-            <div style={{ maxWidth: 520, margin: "0 auto", position: "relative", zIndex: 1 }}>
-              <p style={{ fontSize: 13, color: "#9ca3af", marginBottom: 16, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>Get started today</p>
-              <h2 style={{ fontSize: 28, fontWeight: 800, color: "#ffffff", marginBottom: 12, lineHeight: 1.3 }}>
-                Try the all-in-one deal analysis tool with AI-powered underwriting
-              </h2>
-              <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 28 }}>
-                <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="ds-btn ds-btn-primary" style={{ fontSize: 15, padding: "14px 36px" }}>
-                  Get it Now
-                </button>
-              </div>
-            </div>
-          </div>
         </section>
       )}
 
@@ -2697,6 +2681,63 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
           </div>
         </div>
       )}
+
+      {/* ===== BOLD PRO CTA ===== */}
+      <div style={{
+        background: "linear-gradient(135deg, #0d0d14 0%, #111827 50%, #0d0d14 100%)",
+        borderRadius: 16, padding: "48px 40px", marginTop: 32,
+        border: "1px solid rgba(132,204,22,0.15)",
+        position: "relative", overflow: "hidden", textAlign: "center",
+      }}>
+        <div style={{ position: "absolute", top: "-50%", left: "50%", transform: "translateX(-50%)", width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.08)", filter: "blur(120px)", pointerEvents: "none" }} />
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+            <svg width={40} height={40} viewBox="0 0 100 100" fill="none">
+              <rect x="10" y="62" width="14" height="28" rx="2" fill="#84CC16" />
+              <rect x="30" y="48" width="14" height="42" rx="2" fill="#84CC16" />
+              <rect x="50" y="32" width="14" height="58" rx="2" fill="#84CC16" />
+              <rect x="70" y="16" width="14" height="74" rx="2" fill="#84CC16" />
+              <circle cx="77" cy="8" r="5" fill="#84CC16" />
+              <path d="M5 95 Q50 82 95 95" stroke="#84CC16" strokeWidth="2.5" fill="none" />
+            </svg>
+          </div>
+          <h2 style={{
+            fontSize: 28, fontWeight: 800, color: "#ffffff", marginBottom: 12,
+            fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.3,
+          }}>
+            Save this breakdown. Compare it. Share it.
+          </h2>
+          <p style={{ fontSize: 16, color: "#9ca3af", lineHeight: 1.7, maxWidth: 520, margin: "0 auto 8px" }}>
+            With DealSignals Pro, every analysis is saved to your DealBoard. Score side-by-side, export full workbooks, pin deals to a map, and send branded briefs to clients.
+          </p>
+          <p style={{ fontSize: 14, color: "#84CC16", fontWeight: 600, marginBottom: 28 }}>
+            Decide before others even open Excel. 100 deals/month for less than $0.50 per deal.
+          </p>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            <a href="/workspace/login?upgrade=pro" style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "14px 36px", borderRadius: 10,
+              background: "#84CC16", color: "#0d0d14",
+              fontSize: 16, fontWeight: 700, textDecoration: "none",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              boxShadow: "0 0 30px rgba(132,204,22,0.4), 0 0 60px rgba(132,204,22,0.15)",
+            }}>
+              Upgrade to Pro
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+            </a>
+            <a href="/pricing" style={{
+              display: "inline-flex", alignItems: "center",
+              padding: "14px 28px", borderRadius: 10,
+              background: "transparent", color: "#e0e0e6",
+              border: "1px solid rgba(255,255,255,0.15)",
+              fontSize: 14, fontWeight: 600, textDecoration: "none",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+            }}>
+              View Plans
+            </a>
+          </div>
+        </div>
+      </div>
 
     </div>
   );

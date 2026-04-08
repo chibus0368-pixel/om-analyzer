@@ -131,6 +131,27 @@ export default function SettingsPage() {
         {saved ? "Saved!" : rescoring ? "Re-scoring..." : "Save Settings"}
       </button>
 
+      {/* Sign Out */}
+      <div style={{ ...cardStyle, marginTop: 32, borderColor: "#FEE2E2" }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 6px" }}>Sign Out</h2>
+        <p style={{ fontSize: 12, color: "#6B7280", margin: "0 0 16px" }}>Sign out of your DealSignals account on this device.</p>
+        <button
+          onClick={async () => {
+            const { auth } = await import("@/lib/firebase");
+            await auth.signOut();
+            window.location.href = "/workspace/login";
+          }}
+          style={{
+            padding: "9px 24px", background: "transparent", color: "#DC2626",
+            border: "1.5px solid #FCA5A5", borderRadius: 8, fontSize: 13,
+            fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+            transition: "all 0.2s ease",
+          }}
+        >
+          Sign Out
+        </button>
+      </div>
+
       {rescoreStatus && (
         <div style={{
           marginTop: 12, padding: "10px 16px", borderRadius: 8,
