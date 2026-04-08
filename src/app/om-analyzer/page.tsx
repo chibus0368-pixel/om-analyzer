@@ -768,7 +768,7 @@ export default function OmAnalyzerPage() {
             <div style={{ position: "absolute", bottom: -100, right: -150, width: 400, height: 400, borderRadius: "50%", background: "rgba(132,204,22,0.06)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
             <div className="ds-hero-grid" style={{
               maxWidth: 1100, margin: "0 auto",
-              display: "grid", gridTemplateColumns: "1fr 420px", gap: 64, alignItems: "center",
+              display: "grid", gridTemplateColumns: "1fr 1fr", gap: 56, alignItems: "center",
               position: "relative", zIndex: 1,
             }}>
               {/* Left */}
@@ -787,13 +787,6 @@ export default function OmAnalyzerPage() {
                 }}>
                   Deal Signals turns complex Offering Memorandums into actionable investment intelligence.
                 </p>
-                <div className="ds-hero-btns" style={{ display: "flex", gap: 12 }}>
-                  <button onClick={() => fileRef.current?.click()} className="ds-btn ds-btn-primary" style={{
-                    fontSize: 15, padding: "14px 32px",
-                  }}>
-                    Upload a Deal
-                  </button>
-                </div>
               </div>
 
               {/* Right — upload column */}
