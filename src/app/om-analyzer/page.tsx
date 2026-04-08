@@ -1032,13 +1032,21 @@ export default function OmAnalyzerPage() {
               {/* Workflow image */}
               <div style={{
                 position: "relative", maxWidth: 1060, margin: "0 auto",
-                overflow: "hidden",
+                borderRadius: 20, overflow: "hidden",
+                border: "1.5px solid rgba(255,255,255,0.12)",
+                boxShadow: "0 8px 60px rgba(0,0,0,0.5), 0 0 40px rgba(132,204,22,0.08)",
+                background: "#111118",
               }}>
                 <img
                   src="/images/deal-signals-workflow.png"
                   alt="Deal Signals workflow — from OM upload to scored deal on your DealBoard"
                   style={{ width: "100%", height: "auto", display: "block" }}
                 />
+                {/* Subtle green glow on top edge */}
+                <div style={{
+                  position: "absolute", top: 0, left: "10%", right: "10%", height: 1,
+                  background: "linear-gradient(90deg, transparent, rgba(132,204,22,0.4), transparent)",
+                }} />
               </div>
 
               {/* Step indicators below */}
