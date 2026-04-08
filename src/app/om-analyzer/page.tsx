@@ -1012,7 +1012,7 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 4. HOW IT WORKS — WORKFLOW VISUAL ── */}
-          <div id="how-it-works" style={{ padding: "88px 32px 72px", background: "#f5f5f0" }}>
+          <div id="workflow" style={{ padding: "88px 32px 72px", background: "#f5f5f0" }}>
             <div style={{ maxWidth: 1100, margin: "0 auto", textAlign: "center" }}>
               <div style={{
                 display: "inline-block", padding: "5px 14px", borderRadius: 20,

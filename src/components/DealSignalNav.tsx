@@ -5,13 +5,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import DealSignalLogo from "./DealSignalLogo";
 
-/**
- * Deal Signals shared marketing nav — matches ValidateFast header style.
- * Fixed position, translucent dark bg with blur, compact green CTA.
- */
+const NAV_LINKS = [
+  { href: "/#how-it-works", label: "How it works", sectionId: "how-it-works" },
+  { href: "/#features", label: "Features", sectionId: "features" },
+  { href: "/#pricing", label: "Pricing", sectionId: "pricing" },
+  { href: "/#faq", label: "FAQ", sectionId: "faq" },
+];
+
 export default function DealSignalNav() {
   const pathname = usePathname();
   const [authedUser, setAuthedUser] = useState<{ displayName: string | null; email: string | null } | null>(null);
+  const [activeSection, setActiveSection] = useState<string>("");
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
@@ -31,17 +35,41 @@ export default function DealSignalNav() {
     return () => { if (unsubscribe) unsubscribe(); };
   }, []);
 
-  const isActive = (href: string) => {
-    if (href === "/") return pathname === "/" || pathname === "/om-analyzer";
-    return pathname?.startsWith(href);
-  };
+  // Track which section is in view via IntersectionObserver
+  useEffect(() => {
+    if (pathname !== "/" && pathname !== "/om-analyzer") return;
 
-  const linkStyle = (href: string): React.CSSProperties => ({
-    fontSize: 14, fontWeight: 500, textDecoration: "none", transition: "color 0.15s",
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
-    padding: "4px 0",
-    color: isActive(href) ? "#ffffff" : "#9ca3af",
-  });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Find the most visible section
+        let best: string = "";
+        let bestRatio = 0;
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > bestRatio) {
+            best = entry.target.id;
+            bestRatio = entry.intersectionRatio;
+          }
+        });
+        if (best) setActiveSection(best);
+      },
+      { rootMargin: "-80px 0px -40% 0px", threshold: [0, 0.25, 0.5] }
+    );
+
+    // Slight delay to let DOM render
+    const timer = setTimeout(() => {
+      NAV_LINKS.forEach(({ sectionId }) => {
+        const el = document.getElementById(sectionId);
+        if (el) observer.observe(el);
+      });
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [pathname]);
+
+  const isOnLanding = pathname === "/" || pathname === "/om-analyzer";
 
   return (
     <header style={{
@@ -57,7 +85,7 @@ export default function DealSignalNav() {
         borderBottom: "1px solid rgba(255,255,255,0.05)",
       }} />
 
-      {/* Nav content — outer padding matches page sections, inner maxWidth matches content grid */}
+      {/* Nav content */}
       <div style={{ position: "relative", padding: "0 32px", height: 64 }}>
       <nav style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -70,23 +98,52 @@ export default function DealSignalNav() {
         </Link>
 
         {/* Center nav links */}
-        <div className="ds-nav-links" style={{ display: "flex", alignItems: "center", gap: 32 }}>
-          <Link href="/#how-it-works" style={linkStyle("/#how-it-works")}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#ffffff"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = isActive("/#how-it-works") ? "#ffffff" : "#9ca3af"; }}
-          >How it works</Link>
-          <Link href="/#features" style={linkStyle("/#features")}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#ffffff"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = isActive("/#features") ? "#ffffff" : "#9ca3af"; }}
-          >Features</Link>
-          <Link href="/#pricing" style={linkStyle("/#pricing")}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#ffffff"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = isActive("/#pricing") ? "#ffffff" : "#9ca3af"; }}
-          >Pricing</Link>
-          <Link href="/#faq" style={linkStyle("/#faq")}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#ffffff"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = isActive("/#faq") ? "#ffffff" : "#9ca3af"; }}
-          >FAQ</Link>
+        <div className="ds-nav-links" style={{ display: "flex", alignItems: "center", gap: 32, height: 64 }}>
+          {NAV_LINKS.map(({ href, label, sectionId }) => {
+            const isActive = isOnLanding && activeSection === sectionId;
+            return (
+              <Link
+                key={sectionId}
+                href={href}
+                className="ds-nav-link"
+                style={{
+                  fontSize: 14, fontWeight: 600, textDecoration: "none",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  color: isActive ? "#84CC16" : "#e0e0e6",
+                  position: "relative",
+                  height: 64, display: "inline-flex", alignItems: "center",
+                  transition: "color 0.2s",
+                }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.color = "#84CC16";
+                  const line = el.querySelector(".nav-underline") as HTMLElement;
+                  if (line) { line.style.transform = "scaleX(1)"; line.style.opacity = "1"; }
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLElement;
+                  const stillActive = isOnLanding && activeSection === sectionId;
+                  el.style.color = stillActive ? "#84CC16" : "#e0e0e6";
+                  const line = el.querySelector(".nav-underline") as HTMLElement;
+                  if (line && !stillActive) { line.style.transform = "scaleX(0)"; line.style.opacity = "0"; }
+                }}
+              >
+                {label}
+                {/* Underline */}
+                <span
+                  className="nav-underline"
+                  style={{
+                    position: "absolute", bottom: 0, left: 0, right: 0, height: 2,
+                    background: "#84CC16", borderRadius: 1,
+                    transform: isActive ? "scaleX(1)" : "scaleX(0)",
+                    opacity: isActive ? 1 : 0,
+                    transition: "transform 0.2s ease, opacity 0.2s ease",
+                    transformOrigin: "center",
+                  }}
+                />
+              </Link>
+            );
+          })}
         </div>
 
         {/* Right side CTA */}
@@ -109,12 +166,12 @@ export default function DealSignalNav() {
           ) : (
             <>
               <Link href="/workspace/login" style={{
-                fontSize: 14, fontWeight: 500, color: "#9ca3af", textDecoration: "none",
+                fontSize: 14, fontWeight: 600, color: "#e0e0e6", textDecoration: "none",
                 transition: "color 0.15s",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#ffffff"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#9ca3af"; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#84CC16"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#e0e0e6"; }}
               >Sign in</Link>
               <Link href="/workspace/login" style={{
                 display: "inline-flex", alignItems: "center", justifyContent: "center",
