@@ -6,11 +6,11 @@ import Providers from "./Providers";
 export const metadata: Metadata = {
   metadataBase: new URL("https://dealsignals.app"),
   title: {
-    default: "Deal Signals - CRE DealBoard",
-    template: "%s | Deal Signals",
+    default: "DealSignals - Commercial Real Estate Pre-Diligence",
+    template: "%s | DealSignals",
   },
   description:
-    "AI-powered deal analysis and management platform for commercial real estate investors.",
+    "Pre-diligence engine for commercial real estate. Upload an OM and get a scored deal brief in under 60 seconds.",
   alternates: {
     canonical: "https://dealsignals.app",
   },
@@ -18,21 +18,21 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://dealsignals.app",
-    siteName: "Deal Signals",
+    siteName: "DealSignals",
     title: {
-      default: "Deal Signals - CRE DealBoard",
-      template: "%s | Deal Signals",
+      default: "DealSignals - Commercial Real Estate Pre-Diligence",
+      template: "%s | DealSignals",
     },
     description:
-      "AI-powered deal analysis and management platform for commercial real estate investors.",
+      "Pre-diligence engine for commercial real estate. Upload an OM and get a scored deal brief in under 60 seconds.",
   },
   twitter: {
     card: "summary_large_image",
     title: {
-      default: "Deal Signals - CRE DealBoard",
-      template: "%s | Deal Signals",
+      default: "DealSignals - Commercial Real Estate Pre-Diligence",
+      template: "%s | DealSignals",
     },
-    description: "AI-powered deal analysis and CRE deal platform.",
+    description: "Pre-diligence engine for commercial real estate. Upload an OM and get a scored deal brief in under 60 seconds.",
   },
   robots: {
     index: true,

@@ -26,7 +26,7 @@ export default function DealSignalFooter() {
         ))}
       </div>
       <span style={{ fontSize: 10, color: "#B4C1D1" }}>
-        &copy; 2026 Deal Signals
+        &copy; 2026 DealSignals
       </span>
     </footer>
   );

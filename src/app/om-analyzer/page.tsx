@@ -835,12 +835,20 @@ export default function OmAnalyzerPage() {
               {/* Left */}
               <div className="ds-hero-left" style={{ animation: "fadeInUp 0.5s ease-out" }}>
 
+                <div style={{
+                  fontSize: 13, fontWeight: 700, color: "#84CC16",
+                  textTransform: "uppercase" as const, letterSpacing: 2,
+                  marginBottom: 16,
+                }}>
+                  Commercial Real Estate
+                </div>
+
                 <h1 style={{
                   fontSize: 56, fontWeight: 800, color: "#ffffff", lineHeight: 1.1,
                   marginBottom: 20, letterSpacing: -1.5,
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                 }}>
-                  Move Faster Than the<br />Market on <span className="ds-callout">Every Deal</span>.
+                  Move Faster Than<br />the Market on<br /><span className="ds-callout">Every Deal</span>.
                 </h1>
                 <p style={{
                   fontSize: 19, color: "#9ca3af", lineHeight: 1.7,
@@ -1011,7 +1019,7 @@ export default function OmAnalyzerPage() {
                     icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4",
                     headline: "Focus your time where it counts",
                     subline: "Filter. Compare. Decide.",
-                    body: "Stop spending hours on deals that don't pencil. Upload your pipeline, score everything, and put your energy into the deals that actually matter. One place. One system.",
+                    body: "Stop spending hours on deals that don't pencil. Upload your pipeline, score everything, and put your energy into the deals that actually matter.",
                     stat: "100+",
                     statLabel: "deals / month on Pro",
                   },

@@ -335,7 +335,7 @@ export default function SharedViewPage() {
           {showBranding && (
             <div style={{ display: "flex", alignItems: "center" }}>
               <img
-                src="/images/dealsignals-full-logo.png"
+                src="/images/dealsignals-full-logo.svg"
                 alt="Deal Signals"
                 style={{ height: 36, width: "auto", display: "block" }}
               />

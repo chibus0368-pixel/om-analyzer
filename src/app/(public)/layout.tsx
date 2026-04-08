@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Deal Signals - CRE Intelligence & Analytics",
+  title: "DealSignals - Commercial Real Estate Pre-Diligence",
   description: "Authentication",
 };
 

@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Deal Signals — AI-Powered CRE Deal Analysis in Seconds",
-  description: "Drop an Offering Memorandum and get a full Deal Signals report — scored underwriting, financial breakdown, and risk analysis in 60 seconds.",
+  title: "DealSignals - Commercial Real Estate Pre-Diligence in Seconds",
+  description: "Upload an Offering Memorandum and get a scored deal brief with extracted financials, risk signals, and a buy/hold/pass recommendation in under 60 seconds.",
   openGraph: {
-    title: "Deal Signals — AI-Powered CRE Deal Analysis in Seconds",
-    description: "Drop an OM and get a scored Deal Signals report instantly — financials, risk ratings, and investment insights.",
+    title: "DealSignals - Commercial Real Estate Pre-Diligence in Seconds",
+    description: "Upload an OM and get a scored deal brief instantly. Extracted financials, risk signals, and investment insights for CRE investors.",
     url: "https://www.dealsignals.app",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Deal Signals — AI-Powered CRE Deal Analysis in Seconds",
-    description: "Drop an OM and get a scored Deal Signals report instantly — financials, risk ratings, and investment insights.",
+    title: "DealSignals - Commercial Real Estate Pre-Diligence in Seconds",
+    description: "Upload an OM and get a scored deal brief instantly. Extracted financials, risk signals, and investment insights for CRE investors.",
   },
   alternates: {
     canonical: "https://www.dealsignals.app",

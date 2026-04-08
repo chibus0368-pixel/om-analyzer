@@ -761,7 +761,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         <div style={{ display: "flex", alignItems: "center", gap: 48 }}>
           <Link href="/workspace" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
             <img
-              src="/images/dealsignals-full-logo.png"
+              src="/images/dealsignals-full-logo.svg"
               alt="Deal Signals"
               style={{ height: 44, width: "auto", display: "block" }}
             />

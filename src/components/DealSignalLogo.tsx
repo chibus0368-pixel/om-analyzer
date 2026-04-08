@@ -42,7 +42,7 @@ export default function DealSignalLogo({
   return (
     <span style={{ display: "inline-flex", alignItems: "center", textDecoration: "none", ...style }}>
       <img
-        src="/images/dealsignals-full-logo.png"
+        src="/images/dealsignals-full-logo.svg"
         alt="Deal Signals"
         height={logoHeight}
         width={logoWidth}
