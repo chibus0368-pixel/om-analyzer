@@ -2073,7 +2073,6 @@ export default function OmAnalyzerPage() {
         <section style={{ padding: "24px 0 60px", background: "#faf8ff" }}>
           <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
             <PropertyOutput data={data} heroImageUrl={heroImageUrl} />
-            <ProUpsell />
             <div style={{ textAlign: "center", marginTop: 24 }}>
               <button onClick={resetAnalyzer} style={{
                 padding: "12px 28px", background: "#16161f", border: "1.5px solid rgba(227, 190, 189, 0.2)",
@@ -2790,71 +2789,6 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
 }
 
 
-/* ===========================================================================
-   PRO UPSELL — Conversion component
-   =========================================================================== */
-function ProUpsell() {
-  return (
-    <div style={{
-      background: "linear-gradient(135deg, #0B1120 0%, #151b2b 50%, #1e2740 100%)",
-      borderRadius: 16, padding: "48px 40px", margin: "32px 0 16px",
-      boxShadow: "0 32px 64px rgba(11,17,32,0.25)", position: "relative", overflow: "hidden",
-    }}>
-      {/* Accent glow */}
-      <div style={{ position: "absolute", top: -40, right: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(132,204,22,0.2) 0%, transparent 70%)", filter: "blur(40px)" }} />
-
-      <div style={{ position: "relative", zIndex: 1 }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", background: "rgba(132,204,22,0.15)", borderRadius: 20, border: "1px solid rgba(132,204,22,0.25)", marginBottom: 20 }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2.5"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#f87171", letterSpacing: 0.5 }}>Free Pro Trial</span>
-        </div>
-
-        <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 800, color: "#fff", marginBottom: 10, lineHeight: 1.2, letterSpacing: -0.5 }}>
-          Do this across your <em style={{ fontStyle: "italic", background: "linear-gradient(135deg, #f87171, #84CC16)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>entire pipeline</em>
-        </h2>
-        <p style={{ fontSize: 15, color: "rgba(255,255,255,0.55)", lineHeight: 1.7, marginBottom: 28, maxWidth: 520 }}>
-          You just saw what Deal Signals can do with one OM. Now imagine it across every deal you touch &mdash; saved, scored, and compared side by side.
-        </p>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 32 }}>
-          {[
-            { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", text: "100 deals/month on Pro" },
-            { icon: "M22 12h-4l-3 9L9 3l-3 9H2", text: "AI scoring & risk ratings" },
-            { icon: "M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7", text: "Interactive property map" },
-            { icon: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z", text: "6-sheet Excel workbooks" },
-            { icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z", text: "Saved history & archives" },
-            { icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0", text: "Shareable client links" },
-          ].map(f => (
-            <div key={f.text} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d={f.icon} /></svg>
-              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>{f.text}</span>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-          <Link href="/workspace/login" style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            padding: "14px 32px", background: "linear-gradient(135deg, #84CC16, #a8d600)",
-            color: "#0d0d14", border: "none", borderRadius: 8, fontSize: 15, fontWeight: 700,
-            textDecoration: "none", cursor: "pointer",
-          }}>
-            Start Free Pro Trial
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-          </Link>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>
-              No credit card required &middot; 2 free analyses
-            </span>
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 2 }}>
-              Then $40/mo for Pro &middot; $100/mo for Pro+
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 
 /* ===========================================================================
