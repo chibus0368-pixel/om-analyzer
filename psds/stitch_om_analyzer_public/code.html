@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#bcc7de",
+                    "on-tertiary-fixed-variant": "#3b4d00",
+                    "on-tertiary": "#273500",
+                    "on-primary-container": "#6c8c00",
+                    "primary-container": "#121a00",
+                    "on-error-container": "#ffdad6",
+                    "surface-container-lowest": "#060e20",
+                    "error-container": "#93000a",
+                    "tertiary": "#a8d700",
+                    "error": "#ffb4ab",
+                    "surface-container-high": "#222a3d",
+                    "on-secondary-fixed-variant": "#3c475a",
+                    "secondary-fixed": "#d8e3fb",
+                    "background": "#0b1326",
+                    "on-tertiary-fixed": "#161f00",
+                    "on-secondary-fixed": "#111c2d",
+                    "on-primary-fixed": "#161f00",
+                    "on-background": "#dae2fd",
+                    "surface-dim": "#0b1326",
+                    "on-surface-variant": "#c6c6cd",
+                    "on-error": "#690005",
+                    "on-secondary-container": "#aeb9d0",
+                    "on-secondary": "#263143",
+                    "on-primary": "#273500",
+                    "tertiary-fixed-dim": "#a8d700",
+                    "surface-container-low": "#131b2e",
+                    "primary-fixed": "#c0f500",
+                    "surface-variant": "#2d3449",
+                    "on-surface": "#dae2fd",
+                    "surface-tint": "#a8d700",
+                    "outline-variant": "#45464d",
+                    "surface-container-highest": "#2d3449",
+                    "primary": "#a8d700",
+                    "inverse-on-surface": "#283044",
+                    "secondary-container": "#3e495d",
+                    "outline": "#909097",
+                    "inverse-surface": "#dae2fd",
+                    "surface-bright": "#31394d",
+                    "secondary-fixed-dim": "#bcc7de",
+                    "primary-fixed-dim": "#a8d700",
+                    "on-primary-fixed-variant": "#3b4d00",
+                    "inverse-primary": "#4f6600",
+                    "surface": "#0b1326",
+                    "tertiary-container": "#121a00",
+                    "surface-container": "#171f33",
+                    "tertiary-fixed": "#c0f500",
+                    "on-tertiary-container": "#6c8b00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-headline { font-family: 'Space Grotesk', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bloom-shadow {
+            box-shadow: 0px 0px 20px rgba(168, 215, 0, 0.15);
+        }
+        .glass-panel {
+            backdrop-filter: blur(16px);
+            background: rgba(19, 27, 46, 0.7);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- TopNavBar (Shell Aspect 1) -->
+<header class="w-full border-b border-white/10 bg-[#0b1326] flex justify-between items-center px-8 h-16 sticky top-0 z-50">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 group cursor-pointer">
+<span class="text-xl font-bold text-[#a8d700] font-['Space_Grotesk'] tracking-tight">Retail Portfolio</span>
+<span class="material-symbols-outlined text-[#a8d700] text-sm group-hover:translate-y-0.5 transition-transform">expand_more</span>
+</div>
+<div class="h-6 w-[1px] bg-white/10"></div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-slate-400 text-sm">search</span>
+<input class="bg-surface-container-low border-none text-sm pl-10 pr-4 py-1.5 rounded-full w-64 focus:ring-1 focus:ring-primary focus:bg-surface-container" placeholder="Quick find property..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-400 hover:text-[#a8d700] transition-colors duration-150">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-[#a8d700] transition-colors duration-150">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-white/10">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="Close-up professional headshot of a corporate executive in a dark suit with clean modern lighting against a neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeskma05oMnJNaCpV2QuKxqPYObhDONwBY-m2Ac25K9xqWTwC9bjZcwTiCyqKkDXEgY6VmelAh23QPM0itM9C4NjdNHueeVLaNh86w3FrBdOZOTwyf7KXGw9Fg4I9aD6QcV8o3jWKd1uwX0qWhbplNdXVexownF5zc-w2p0YthFOTZTxQqnkgw8VHMlpIc-39TSQTHmxR9y6gOhDX7oFt4yayoY9QAPRjODgPjItbON-G_zUHOxtxx954sPCqf5VuxNMFpFDU5fadV"/>
+</div>
+</div>
+</header>
+<!-- Secondary Nav (Shell Aspect 2) -->
+<nav class="w-full sticky top-16 z-40 bg-[#0b1326]/80 backdrop-blur-xl flex justify-between items-center px-8 h-12 border-b border-white/5 shadow-[0px_0px_40px_rgba(168,215,0,0.06)]">
+<div class="flex items-center gap-8 h-full">
+<a class="flex items-center gap-2 text-sm uppercase tracking-widest text-[#a8d700] border-b-2 border-[#a8d700] h-full pt-1" href="#">
+<span class="material-symbols-outlined text-sm">dashboard</span>
+<span class="font-['Inter']">Dashboard</span>
+</a>
+<a class="flex items-center gap-2 text-sm uppercase tracking-widest text-slate-500 hover:text-slate-200 transition-all h-full pt-1" href="#">
+<span class="material-symbols-outlined text-sm">leaderboard</span>
+<span class="font-['Inter']">Scoreboard</span>
+</a>
+<a class="flex items-center gap-2 text-sm uppercase tracking-widest text-slate-500 hover:text-slate-200 transition-all h-full pt-1" href="#">
+<span class="material-symbols-outlined text-sm">upload_file</span>
+<span class="font-['Inter']">Upload</span>
+</a>
+<a class="flex items-center gap-2 text-sm uppercase tracking-widest text-slate-500 hover:text-slate-200 transition-all h-full pt-1" href="#">
+<span class="material-symbols-outlined text-sm">map</span>
+<span class="font-['Inter']">Map</span>
+</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-slate-300 hover:text-white transition-all">
+                Sharing
+            </button>
+<button class="bg-primary text-on-primary px-5 py-1.5 rounded-sm text-xs font-bold uppercase tracking-widest bloom-shadow hover:brightness-110 active:translate-y-[1px] transition-all">
+                Publish
+            </button>
+</div>
+</nav>
+<main class="p-8 max-w-[1600px] mx-auto">
+<!-- Header Section -->
+<div class="mb-10">
+<h1 class="text-4xl font-headline font-bold text-on-surface mb-2 tracking-tight">Workspace Dashboard</h1>
+<p class="text-slate-400 font-light max-w-2xl">CRE intelligence and predictive signals for the Q4 retail portfolio acquisition pipeline.</p>
+</div>
+<!-- Bento Grid Main Content -->
+<div class="grid grid-cols-12 gap-6 mb-12">
+<!-- Key Metric: Portfolio Signal -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-low p-8 rounded-lg relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-8xl text-primary">analytics</span>
+</div>
+<h3 class="text-slate-500 text-xs uppercase tracking-widest mb-6 font-semibold">Portfolio Signal Average</h3>
+<div class="flex items-baseline gap-4 mb-2">
+<span class="text-7xl font-headline font-bold text-on-surface">84.2</span>
+<span class="text-primary flex items-center text-lg font-bold">
+<span class="material-symbols-outlined">trending_up</span>
+                        12.4%
+                    </span>
+</div>
+<p class="text-slate-400 text-sm">Aggregated signal strength across 24 assets in verification.</p>
+<div class="mt-8 h-1 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[84.2%] bloom-shadow"></div>
+</div>
+</div>
+<!-- Key Metric: Active Management (Circular Gauge) -->
+<div class="col-span-12 md:col-span-6 lg:col-span-4 bg-surface-container-low p-8 rounded-lg flex flex-col items-center justify-center text-center">
+<h3 class="text-slate-500 text-xs uppercase tracking-widest mb-8 font-semibold w-full text-left">Active Management</h3>
+<div class="relative w-40 h-40 mb-6">
+<!-- SVG Gauge -->
+<svg class="w-full h-full -rotate-90" viewbox="0 0 36 36">
+<circle class="stroke-surface-variant" cx="18" cy="18" fill="none" r="16" stroke-width="2.5"></circle>
+<circle class="stroke-primary" cx="18" cy="18" fill="none" r="16" stroke-dasharray="72, 100" stroke-linecap="round" stroke-width="2.5" style="filter: drop-shadow(0 0 4px rgba(168, 215, 0, 0.4));"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-3xl font-headline font-bold">72%</span>
+<span class="text-[10px] text-slate-500 uppercase">Optimal</span>
+</div>
+</div>
+<div class="flex gap-8 text-xs">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="text-slate-300">Monitored</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+<span class="text-slate-300">Pending</span>
+</div>
+</div>
+</div>
+<!-- Key Metric: Processing Pipeline -->
+<div class="col-span-12 md:col-span-6 lg:col-span-4 bg-surface-container-low p-8 rounded-lg">
+<h3 class="text-slate-500 text-xs uppercase tracking-widest mb-8 font-semibold">Processing Pipeline</h3>
+<div class="space-y-6">
+<div>
+<div class="flex justify-between text-xs mb-2">
+<span class="text-slate-300 font-medium">Data Extraction</span>
+<span class="text-primary font-bold">92%</span>
+</div>
+<div class="h-1.5 bg-surface-variant rounded-full">
+<div class="h-full bg-primary w-[92%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-xs mb-2">
+<span class="text-slate-300 font-medium">Risk Modeling</span>
+<span class="text-primary font-bold">45%</span>
+</div>
+<div class="h-1.5 bg-surface-variant rounded-full">
+<div class="h-full bg-primary w-[45%] opacity-60"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-xs mb-2">
+<span class="text-slate-300 font-medium">Compliance Audit</span>
+<span class="text-primary font-bold">12%</span>
+</div>
+<div class="h-1.5 bg-surface-variant rounded-full">
+<div class="h-full bg-primary w-[12%] opacity-30"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Property Analysis -->
+<section class="mt-16">
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="text-2xl font-headline font-bold text-on-surface tracking-tight">Recent Property Analysis</h2>
+<p class="text-slate-500 text-sm mt-1">Live deal flow and algorithmic scoring</p>
+</div>
+<button class="text-xs uppercase tracking-widest text-[#a8d700] hover:underline font-bold">View All Assets</button>
+</div>
+<div class="space-y-1">
+<!-- Property Row 1 -->
+<div class="group flex items-center justify-between p-6 bg-surface-container-low hover:bg-surface-container transition-colors duration-200">
+<div class="flex items-center gap-6 flex-1">
+<div class="w-16 h-16 rounded overflow-hidden flex-shrink-0 bg-surface-variant">
+<img alt="Meridian Center" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" data-alt="Modern geometric glass office building reflected in still water under a dramatic deep blue twilight sky" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5RGGueZXXfWYh53wvIxMpLCxGxMzTgO86qefXCh64fQgMOb1L_aXY7fT_kjTdpT5_tHwbBQnEKMnApZdDu9k0xpMJ1ry_dDjTxMPwVCQu82e5HSuFY7bcJMQnl__whXdDQkfcmb6NhzHziv1GVNZWz8ViUJvc-TKDbWSQPWRIsRKC5-8LnWzIBFfwbcz8jgQR_XVWIj_-jISqoslzWCoS1G13O1yOuGRG-JApbo83CBVNyJFFCwPk6W9HzMzquujonrQOHUNB7Eum"/>
+</div>
+<div>
+<h4 class="text-lg font-bold text-on-surface">The Meridian Center</h4>
+<p class="text-slate-500 text-xs">Chicago, IL • Regional Shopping Center</p>
+</div>
+</div>
+<div class="flex items-center gap-12 flex-1 justify-end px-12">
+<div class="text-right">
+<div class="text-xs text-slate-500 uppercase tracking-tighter mb-1">Valuation</div>
+<div class="text-lg font-headline font-medium">$42.8M</div>
+</div>
+<div class="w-32">
+<div class="text-[10px] text-slate-500 uppercase mb-2">Deal Score</div>
+<div class="flex items-center gap-3">
+<div class="flex-1 h-1 bg-surface-variant rounded-full">
+<div class="h-full bg-primary w-[94%]"></div>
+</div>
+<span class="text-primary font-bold text-sm">94</span>
+</div>
+</div>
+<span class="px-3 py-1 bg-[#121a00] text-[#a8d700] text-[10px] font-bold uppercase tracking-widest rounded-full border border-[#a8d700]/20">
+                            Verified
+                        </span>
+</div>
+<button class="material-symbols-outlined text-slate-600 hover:text-on-surface">more_vert</button>
+</div>
+<!-- Property Row 2 -->
+<div class="group flex items-center justify-between p-6 bg-surface-container-low hover:bg-surface-container transition-colors duration-200">
+<div class="flex items-center gap-6 flex-1">
+<div class="w-16 h-16 rounded overflow-hidden flex-shrink-0 bg-surface-variant">
+<img alt="Logistics Hub East" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" data-alt="Wide shot of a modern industrial warehouse with many loading docks under bright high-contrast afternoon sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYQ2q20az5MudwykJRGJG8uZ-P3LivF2i-qlgJQ4jRKk8f4k0bTa5XV8VeJL-z8I63TMedyuFMOZ5-sBrtL95xM2cx7WDwsAcJxpFzQUDC_zH1XWhyNyiyD8bmzkFe0usDb5_fBa7YxNrfede--tLyRZtvdF2WIr7El5Y3gybU3fd0s3UoRsvjvsp-_DJ_DGokcAB5EHXxP7-ATczWvbpMbCn-B89GgYNDxHc9KwTDY37H3mx-LXUwbAoZyZ4TYMmumtkR6KYlM-EN"/>
+</div>
+<div>
+<h4 class="text-lg font-bold text-on-surface">Logistics Hub East</h4>
+<p class="text-slate-500 text-xs">Newark, NJ • Distribution Center</p>
+</div>
+</div>
+<div class="flex items-center gap-12 flex-1 justify-end px-12">
+<div class="text-right">
+<div class="text-xs text-slate-500 uppercase tracking-tighter mb-1">Valuation</div>
+<div class="text-lg font-headline font-medium">$115.2M</div>
+</div>
+<div class="w-32">
+<div class="text-[10px] text-slate-500 uppercase mb-2">Deal Score</div>
+<div class="flex items-center gap-3">
+<div class="flex-1 h-1 bg-surface-variant rounded-full">
+<div class="h-full bg-primary w-[68%]"></div>
+</div>
+<span class="text-primary font-bold text-sm">68</span>
+</div>
+</div>
+<span class="px-3 py-1 bg-surface-variant text-slate-400 text-[10px] font-bold uppercase tracking-widest rounded-full">
+                            Modeling
+                        </span>
+</div>
+<button class="material-symbols-outlined text-slate-600 hover:text-on-surface">more_vert</button>
+</div>
+<!-- Property Row 3 -->
+<div class="group flex items-center justify-between p-6 bg-surface-container-low hover:bg-surface-container transition-colors duration-200">
+<div class="flex items-center gap-6 flex-1">
+<div class="w-16 h-16 rounded overflow-hidden flex-shrink-0 bg-surface-variant">
+<img alt="Grand View Plaza" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" data-alt="Modern urban retail plaza with upscale storefronts and trees at sunset with long shadows and warm glow" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDl_lyASSxxTVv_pGUZ-BM8xwN6DV9W9K2-OBhJ6cXoz_9Wk2BSaTPifj2kDmqddp7IIZ6op25S5mt-mfQf-S5A5-drDD0rcbfYoRi7XN-Jwn8mmXSXf61jrYGZqCWY8OAnijI0vyUpNggkWboHEtk43O7DkZDeoUku_Zz1cqaVdmuEBSka1sGeuyZPkHTN8GflV0oH1_N4BBuly8MpKnM5PwyV8NgeQM_HVKh52qIhskAS1lHmZvv_oAX-dzFrnvHzKPOlmHWDAi9c"/>
+</div>
+<div>
+<h4 class="text-lg font-bold text-on-surface">Grand View Plaza</h4>
+<p class="text-slate-500 text-xs">Austin, TX • High-Street Retail</p>
+</div>
+</div>
+<div class="flex items-center gap-12 flex-1 justify-end px-12">
+<div class="text-right">
+<div class="text-xs text-slate-500 uppercase tracking-tighter mb-1">Valuation</div>
+<div class="text-lg font-headline font-medium">$89.4M</div>
+</div>
+<div class="w-32">
+<div class="text-[10px] text-slate-500 uppercase mb-2">Deal Score</div>
+<div class="flex items-center gap-3">
+<div class="flex-1 h-1 bg-surface-variant rounded-full">
+<div class="h-full bg-primary w-[82%]"></div>
+</div>
+<span class="text-primary font-bold text-sm">82</span>
+</div>
+</div>
+<span class="px-3 py-1 bg-[#121a00] text-[#a8d700] text-[10px] font-bold uppercase tracking-widest rounded-full border border-[#a8d700]/20">
+                            Verified
+                        </span>
+</div>
+<button class="material-symbols-outlined text-slate-600 hover:text-on-surface">more_vert</button>
+</div>
+</div>
+</section>
+</main>
+<!-- AI Intelligence Panel (Asymmetric Floating Intelligence) -->
+<div class="fixed bottom-10 right-10 w-80 glass-panel border border-primary/10 rounded-lg p-6 shadow-2xl z-50">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<span class="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">AI Signal Insight</span>
+</div>
+<p class="text-sm text-slate-300 leading-relaxed italic mb-4">
+            "Market volatility in retail sectors suggests a 4.2% yield compression for assets like Meridian Center. Consider accelerating the audit phase."
+        </p>
+<div class="flex justify-between items-center">
+<span class="text-[10px] text-slate-500 uppercase">Intelligence v2.4</span>
+<button class="text-[10px] font-bold text-primary uppercase border-b border-primary/30">Action Report</button>
+</div>
+</div>
+</body></html>

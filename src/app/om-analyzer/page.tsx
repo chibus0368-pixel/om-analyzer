@@ -569,10 +569,10 @@ export default function OmAnalyzerPage() {
               </svg>
             </div>
             <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#ffffff", margin: "0 0 8px", letterSpacing: -0.3 }}>
-              Free Trial Complete
+              You&apos;ve analyzed 2 deals. Ready to move faster?
             </h3>
             <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.6, margin: "0 0 24px" }}>
-              You&apos;ve used your 2 free analyses. Upgrade to Pro to continue analyzing deals with full scoring, Excel exports, and your own DealBoard.
+              Upgrade to Pro and keep the speed advantage — unlimited saves, full Excel workbooks, deal comparison, and your own DealBoard.
             </p>
             <Link href="/workspace/login?upgrade=pro" style={{
               display: "inline-block", padding: "14px 36px",
@@ -781,13 +781,19 @@ export default function OmAnalyzerPage() {
                   marginBottom: 20, letterSpacing: -1.5,
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                 }}>
-                  Analyze Any Commercial<br />Property With <span className="ds-callout">One Upload</span>.
+                  Move Faster Than the<br />Market on <span className="ds-callout">Every Deal</span>.
                 </h1>
                 <p style={{
                   fontSize: 19, color: "#9ca3af", lineHeight: 1.7,
                   maxWidth: 500, marginBottom: 36,
                 }}>
                   DealSignals turns deals and OMs into actionable investment insight, powering faster pre-diligence decisions.
+                </p>
+                <p style={{
+                  fontSize: 14, color: "#84CC16", fontWeight: 600, letterSpacing: 0.2,
+                  marginBottom: 0, marginTop: 0,
+                }}>
+                  Underwrite in seconds. Decide before others even open Excel.
                 </p>
               </div>
 
@@ -828,7 +834,7 @@ export default function OmAnalyzerPage() {
                         </svg>
                       </div>
                       <p style={{ fontSize: 15, fontWeight: 600, color: "#ffffff", margin: "0 0 6px" }}>
-                        {dragging ? "Drop your file here" : "Drop your OM or flyer"}
+                        {dragging ? "Drop your file here" : "Upload a deal"}
                       </p>
                       <p style={{ fontSize: 13, color: "#9ca3af", margin: "0 0 20px" }}>
                         PDF, Word, Excel, or CSV &middot; Max 50MB
@@ -855,7 +861,7 @@ export default function OmAnalyzerPage() {
                       <button onClick={(e) => { e.stopPropagation(); startAnalysis(); }} className="ds-btn ds-btn-primary" style={{
                         display: "block", width: "100%", fontSize: 15, padding: "13px 32px", marginTop: 12,
                       }}>
-                        Run Deal Signals
+                        Get Deal Signal
                       </button>
                     </>
                   )}
@@ -878,6 +884,22 @@ export default function OmAnalyzerPage() {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+
+          {/* ── TRUST BAR ── */}
+          <div style={{ padding: "20px 32px", background: "rgba(132,204,22,0.03)", borderTop: "1px solid rgba(132,204,22,0.06)", borderBottom: "1px solid rgba(132,204,22,0.06)" }}>
+            <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", justifyContent: "center", alignItems: "center", gap: 32, flexWrap: "wrap" }}>
+              {[
+                "Built for real-world acquisition workflows",
+                "90%+ extraction accuracy on standard CRE metrics",
+                "Pre-diligence in seconds, not hours",
+              ].map(t => (
+                <div key={t} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.6)" }}>{t}</span>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -1223,7 +1245,7 @@ export default function OmAnalyzerPage() {
               {/* ── Feature blocks: alternating left/right ── */}
               {[
                 {
-                  num: "01", title: "Instant Deal Extraction", desc: "Upload an OM or deal file and instantly extract all key data into a structured investment view.",
+                  num: "01", title: "Extract Every Data Point Instantly", desc: "Upload a deal and watch 40+ fields populate in seconds — price, cap rate, NOI, tenant, lease terms, and more.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
@@ -1255,46 +1277,96 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "02", title: "Pre-Diligence Signal", desc: "Get an immediate read on the deal before underwriting — risks, upside, and overall signal in seconds.",
+                  num: "02", title: "Know If It\u2019s Worth Pursuing Immediately", desc: "Get a buy/hold/pass signal with risk tags before you spend time on full underwriting.",
                   visual: (
-                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "28px", border: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
-                      <div style={{ width: 80, height: 80, borderRadius: "50%", border: "3px solid #84CC16", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", boxShadow: "0 0 30px rgba(132,204,22,0.15)" }}>
-                        <span style={{ fontSize: 28, fontWeight: 800, color: "#84CC16" }}>74</span>
+                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
+                      {/* Subtle glow behind score */}
+                      <div style={{ position: "absolute", top: "20%", left: "50%", transform: "translateX(-50%)", width: 200, height: 200, borderRadius: "50%", background: "rgba(132,204,22,0.08)", filter: "blur(60px)", pointerEvents: "none" }} />
+
+                      {/* Score ring with animated pulse */}
+                      <div style={{ position: "relative", zIndex: 1, textAlign: "center", marginBottom: 20 }}>
+                        <div style={{ position: "relative", display: "inline-block" }}>
+                          <div style={{ width: 96, height: 96, borderRadius: "50%", border: "4px solid #84CC16", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 40px rgba(132,204,22,0.2), inset 0 0 20px rgba(132,204,22,0.05)", animation: "pulse 2.5s ease-in-out infinite" }}>
+                            <div>
+                              <span style={{ fontSize: 36, fontWeight: 800, color: "#84CC16", lineHeight: 1 }}>74</span>
+                              <div style={{ fontSize: 8, fontWeight: 700, color: "rgba(132,204,22,0.6)", letterSpacing: 1, marginTop: 2 }}>/ 100</div>
+                            </div>
+                          </div>
+                          {/* BUY badge */}
+                          <div style={{ position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%)", padding: "3px 14px", borderRadius: 50, background: "#84CC16", color: "#0d0d14", fontSize: 10, fontWeight: 800, letterSpacing: 1, whiteSpace: "nowrap" as const }}>BUY SIGNAL</div>
+                        </div>
                       </div>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: "#84CC16", marginBottom: 16 }}>BUY SIGNAL</div>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
+
+                      {/* Animated callout cards */}
+                      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 8, marginTop: 28 }}>
                         {[
-                          { label: "Strong Location", color: "#84CC16" },
-                          { label: "Below Market Rents", color: "#D97706" },
-                          { label: "Rollover Risk", color: "#ef4444" },
-                          { label: "Investment Grade Tenant", color: "#84CC16" },
-                          { label: "Low DSCR", color: "#D97706" },
-                        ].map(t => (
-                          <span key={t.label} style={{ fontSize: 10, fontWeight: 600, padding: "4px 10px", borderRadius: 50, background: `${t.color}14`, color: t.color, border: `1px solid ${t.color}30` }}>{t.label}</span>
+                          { icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z", label: "Strong Location", detail: "High-traffic retail corridor", color: "#84CC16", delay: "0.2s" },
+                          { icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", label: "Investment Grade Tenant", detail: "Walgreens (S&P: BBB)", color: "#84CC16", delay: "0.4s" },
+                          { icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z", label: "Below Market Rents", detail: "12% upside at renewal", color: "#D97706", delay: "0.6s" },
+                          { icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z", label: "Rollover Risk", detail: "Lease expires in 18 months", color: "#ef4444", delay: "0.8s" },
+                          { icon: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6", label: "Moderate DSCR", detail: "1.42x — meets threshold", color: "#D97706", delay: "1.0s" },
+                        ].map(c => (
+                          <div key={c.label} style={{
+                            display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
+                            borderRadius: 10, background: "rgba(255,255,255,0.02)", border: `1px solid ${c.color}20`,
+                            animation: `fadeInUp 0.4s ease-out ${c.delay} both`,
+                          }}>
+                            <div style={{ width: 32, height: 32, borderRadius: 8, background: `${c.color}12`, border: `1px solid ${c.color}25`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={c.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={c.icon} /></svg>
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{c.label}</div>
+                              <div style={{ fontSize: 10, color: "#6b7280" }}>{c.detail}</div>
+                            </div>
+                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: c.color, flexShrink: 0, boxShadow: `0 0 8px ${c.color}40` }} />
+                          </div>
                         ))}
                       </div>
                     </div>
                   ),
                 },
                 {
-                  num: "03", title: "Deal Signals Scoring", desc: "Every deal is scored across key investment factors so you can quickly decide what to pursue.",
+                  num: "03", title: "Instantly Score Every Deal", desc: "Six investment dimensions scored automatically — pricing, cashflow, tenant quality, rollover risk, location, and upside potential.",
                   visual: (
-                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)" }}>
+                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                      {/* Scoreboard header */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 0.8 }}>Deal Scoreboard</span>
+                        <span style={{ fontSize: 9, color: "#6b7280" }}>Sorted by Score ↓</span>
+                      </div>
+                      {/* Column headers */}
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 54px 54px 54px", padding: "8px 20px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Property</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" as const, letterSpacing: 0.5, textAlign: "center" }}>Score</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" as const, letterSpacing: 0.5, textAlign: "center" }}>Signal</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" as const, letterSpacing: 0.5, textAlign: "center" }}>Cap</span>
+                      </div>
+                      {/* Animated rows */}
                       {[
-                        { label: "Pricing", score: 62, color: "#D97706" },
-                        { label: "Cashflow", score: 78, color: "#84CC16" },
-                        { label: "Tenant", score: 82, color: "#84CC16" },
-                        { label: "Rollover", score: 45, color: "#ef4444" },
-                        { label: "Location", score: 88, color: "#84CC16" },
-                        { label: "Upside", score: 71, color: "#84CC16" },
-                      ].map(s => (
-                        <div key={s.label} style={{ marginBottom: 12 }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                            <span style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af" }}>{s.label}</span>
-                            <span style={{ fontSize: 11, fontWeight: 700, color: s.color }}>{s.score}/100</span>
+                        { name: "Walgreens NNN", loc: "Cedar Park, TX", score: 74, signal: "BUY", signalColor: "#84CC16", cap: "5.85%", delay: "0.15s" },
+                        { name: "CVS Pharmacy", loc: "Plano, TX", score: 71, signal: "BUY", signalColor: "#84CC16", cap: "5.40%", delay: "0.3s" },
+                        { name: "Flex Industrial", loc: "Schaumburg, IL", score: 68, signal: "HOLD", signalColor: "#D97706", cap: "7.20%", delay: "0.45s" },
+                        { name: "Dollar General", loc: "Lawrenceville, GA", score: 61, signal: "HOLD", signalColor: "#eab308", cap: "6.50%", delay: "0.6s" },
+                        { name: "Family Dollar", loc: "Memphis, TN", score: 48, signal: "PASS", signalColor: "#ef4444", cap: "8.10%", delay: "0.75s" },
+                      ].map((row, i) => (
+                        <div key={row.name} style={{
+                          display: "grid", gridTemplateColumns: "1fr 54px 54px 54px", padding: "10px 20px", alignItems: "center",
+                          borderBottom: i < 4 ? "1px solid rgba(255,255,255,0.03)" : "none",
+                          animation: `fadeInUp 0.35s ease-out ${row.delay} both`,
+                          background: i === 0 ? "rgba(132,204,22,0.03)" : "transparent",
+                        }}>
+                          <div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{row.name}</div>
+                            <div style={{ fontSize: 9, color: "#6b7280" }}>{row.loc}</div>
                           </div>
-                          <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.06)" }}>
-                            <div style={{ height: "100%", borderRadius: 3, background: s.color, width: `${s.score}%`, transition: "width 1.2s ease" }} />
+                          <div style={{ textAlign: "center" }}>
+                            <span style={{ fontSize: 14, fontWeight: 800, color: row.signalColor }}>{row.score}</span>
+                          </div>
+                          <div style={{ textAlign: "center" }}>
+                            <span style={{ fontSize: 9, fontWeight: 700, padding: "3px 8px", borderRadius: 50, background: `${row.signalColor}14`, color: row.signalColor, border: `1px solid ${row.signalColor}30` }}>{row.signal}</span>
+                          </div>
+                          <div style={{ textAlign: "center" }}>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af" }}>{row.cap}</span>
                           </div>
                         </div>
                       ))}
@@ -1302,7 +1374,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "04", title: "Full Financial Outputs", desc: "Instantly generate structured Excel workbooks with full underwriting-ready data — 6 tabs, one click.",
+                  num: "04", title: "Export Full Underwriting Models to Excel", desc: "Download a 6-sheet institutional-grade workbook — inputs, rent roll, operating statement, debt &amp; returns, breakeven, and cap scenarios.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)" }}>
                       <div style={{ display: "flex", gap: 4, marginBottom: 16 }}>
@@ -1335,7 +1407,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "05", title: "DealBoard Workspace", desc: "Save, organize, and track deals across clients, strategies, and pipelines — all in one place.",
+                  num: "05", title: "Organize Every Deal in One Place", desc: "Save deals to your DealBoard. Track across clients, strategies, and pipelines. Never lose a deal again.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "20px 24px", border: "1px solid rgba(255,255,255,0.06)" }}>
                       <div style={{ fontSize: 10, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 0.6, marginBottom: 12 }}>My DealBoard</div>
@@ -1357,7 +1429,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "06", title: "Compare Deals Side-by-Side", desc: "Quickly evaluate multiple deals with a sortable comparison scoreboard.",
+                  num: "06", title: "Compare Deals Side-by-Side in Seconds", desc: "Stack any deal against another on a sortable scoreboard. See which wins on price, cashflow, risk, and signal.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "20px 24px", border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       <div style={{ display: "grid", gridTemplateColumns: "80px 1fr 1fr 1fr", gap: 0, fontSize: 10 }}>
@@ -1384,7 +1456,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "07", title: "Map + Location Intelligence", desc: "Understand where your deals sit with interactive mapping and location context.",
+                  num: "07", title: "See Where Your Deals Sit on the Map", desc: "Interactive mapping with score overlays. Understand location context before you drive out to a property.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "0", border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       <div style={{ height: 160, background: "linear-gradient(135deg, #1a2332, #0f1922)", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -1404,13 +1476,13 @@ export default function OmAnalyzerPage() {
                           <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>Walgreens NNN</div>
                           <div style={{ fontSize: 10, color: "#6b7280" }}>Cedar Park, TX · Retail</div>
                         </div>
-                        <span style={{ fontSize: 10, color: "#84CC16", fontWeight: 600 }}>View Deal →</span>
+                        <span style={{ fontSize: 10, color: "#84CC16", fontWeight: 600 }}>View Breakdown →</span>
                       </div>
                     </div>
                   ),
                 },
                 {
-                  num: "08", title: "Share with Clients", desc: "Send clean, branded deal links to clients with full analysis and insights — no login required.",
+                  num: "08", title: "Send Deal Briefs to Clients in One Click", desc: "Generate a clean, branded share link with the full analysis. Your client sees the breakdown — no login required.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>

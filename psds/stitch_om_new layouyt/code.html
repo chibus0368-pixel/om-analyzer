@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Deal Signals | The Financial Architect</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container": "#e5eeff",
+                    "on-primary-container": "#7c839b",
+                    "primary-container": "#131b2e",
+                    "secondary-fixed": "#dce1ff",
+                    "surface-dim": "#cbdbf5",
+                    "on-primary-fixed": "#131b2e",
+                    "surface": "#f8f9ff",
+                    "inverse-on-surface": "#eaf1ff",
+                    "on-secondary-container": "#fffbff",
+                    "primary": "#000000",
+                    "outline": "#76777d",
+                    "surface-container-highest": "#d3e4fe",
+                    "primary-fixed": "#dae2fd",
+                    "outline-variant": "#c6c6cd",
+                    "on-tertiary-container": "#5c9200",
+                    "error-container": "#ffdad6",
+                    "surface-bright": "#f8f9ff",
+                    "secondary-container": "#2c68fe",
+                    "on-error": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-tint": "#565e74",
+                    "background": "#f8f9ff",
+                    "surface-container-high": "#dce9ff",
+                    "on-primary": "#ffffff",
+                    "on-secondary-fixed": "#00164e",
+                    "on-tertiary-fixed": "#102000",
+                    "secondary-fixed-dim": "#b5c4ff",
+                    "inverse-primary": "#bec6e0",
+                    "tertiary-fixed": "#84CC16",
+                    "on-background": "#0b1c30",
+                    "tertiary": "#000000",
+                    "error": "#ba1a1a",
+                    "surface-variant": "#d3e4fe",
+                    "surface-container-low": "#eff4ff",
+                    "on-primary-fixed-variant": "#3f465c",
+                    "on-tertiary-fixed-variant": "#304f00",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary": "#004edc",
+                    "on-secondary": "#ffffff",
+                    "on-surface": "#0b1c30",
+                    "primary-fixed-dim": "#bec6e0",
+                    "on-secondary-fixed-variant": "#003cad",
+                    "tertiary-fixed-dim": "#84CC16",
+                    "inverse-surface": "#213145",
+                    "on-surface-variant": "#45464d",
+                    "tertiary-container": "#102000",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+    vertical-align: middle
+    }
+body {
+    font-family: "Inter", sans-serif
+    }
+h1, h2, h3, .font-headline {
+    font-family: "Space Grotesk", sans-serif
+    }
+.data-overlay-gradient {
+    background: linear-gradient(135deg, rgba(19, 27, 46, 0.05) 0%, rgba(211, 228, 254, 0.2) 100%)
+    }
+.bg-watermark {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuAGXlmnPr7Hge6A-4m70aclR8OqUUnWSZcukn555FOd6wwMU1HGSJQMdg7g1soGXtD2lTUXGw0tDRXAKMKcAAFZbrzYIICSryCS5MJQB9phkLm32UAcTNXCxjVj7tpJrZlKpzu1tUVpCiL3qdUTuNWwUMpAVQhFISod_TzPwf2pAKCmhh0cA5FXT7jI-neEPMVlbS1c4nqcMFX0W1gkkWpQd6Jl9lU4EWPf9i-MPJxXJ9YF0MhhnRG5J6xbZbR8zq6ofD47jp1sDJEu);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.15;
+    mix-blend-mode: multiply
+    }</style>
+</head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- TopNavBar -->
+<header class="w-full top-0 sticky bg-[#f8f9ff] dark:bg-[#131b2e] transition-colors duration-300 shadow-sm dark:shadow-none z-50">
+<div class="flex justify-between items-center h-20 px-8 max-w-[1440px] mx-auto">
+<div class="text-xl font-bold tracking-tighter text-[#131b2e] dark:text-[#f8f9ff]">
+                The Financial Architect
+            </div>
+<nav class="hidden md:flex gap-8 items-center font-['Space_Grotesk'] font-medium tracking-tight text-sm uppercase">
+<a class="text-[#131b2e] dark:text-[#f8f9ff] border-b-2 border-[#84CC16] pb-1 cursor-pointer" href="#">Solutions</a>
+<a class="text-slate-500 dark:text-slate-400 pb-1 hover:text-[#131b2e] dark:hover:text-[#f8f9ff] transition-colors cursor-pointer" href="#">Platform</a>
+<a class="text-slate-500 dark:text-slate-400 pb-1 hover:text-[#131b2e] dark:hover:text-[#f8f9ff] transition-colors cursor-pointer" href="#">Pricing</a>
+<a class="text-slate-500 dark:text-slate-400 pb-1 hover:text-[#131b2e] dark:hover:text-[#f8f9ff] transition-colors cursor-pointer" href="#">Resources</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="font-['Space_Grotesk'] font-medium tracking-tight text-sm uppercase text-slate-500 hover:text-primary transition-colors cursor-pointer active:opacity-70">Contact Sales</button>
+<button class="bg-primary-container text-on-primary px-6 py-2 font-['Space_Grotesk'] font-medium tracking-tight text-sm uppercase rounded-lg cursor-pointer active:opacity-70 transition-all">Institutional Access</button>
+</div>
+</div>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="relative overflow-hidden bg-surface py-24 md:py-32">
+<!-- Background Watermark -->
+<div class="absolute inset-0 bg-watermark pointer-events-none transform -translate-y-20 scale-110"></div>
+<div class="max-w-[1440px] mx-auto px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+<div class="lg:col-span-6 z-10">
+<div class="inline-block px-3 py-1 bg-surface-container text-on-primary-fixed-variant text-[10px] uppercase tracking-[0.2em] font-bold mb-6">
+                        Institutional Intelligence
+                    </div>
+<h1 class="text-5xl md:text-7xl font-bold text-primary-container leading-[1.1] tracking-tight mb-8">
+                        Analyze Commercial Property With <span class="text-tertiary-fixed">One Upload.</span>
+</h1>
+<p class="text-on-surface-variant text-lg md:text-xl max-w-lg mb-10 leading-relaxed">
+                        Transform complex Offering Memorandums into structured institutional data in seconds. The definitive signal engine for modern commercial real estate.
+                    </p>
+<div class="flex flex-wrap gap-4">
+<button class="bg-tertiary-fixed text-primary-container px-8 py-4 font-headline font-bold text-sm uppercase tracking-wider rounded-lg hover:brightness-105 transition-all">
+                            Start Free Analysis
+                        </button>
+<button class="bg-primary-container text-on-primary px-8 py-4 font-headline font-bold text-sm uppercase tracking-wider rounded-lg hover:bg-slate-800 transition-all">
+                            Book a Demo
+                        </button>
+</div>
+</div>
+<div class="lg:col-span-6 relative">
+<!-- Try Me Dropzone -->
+<div class="group relative w-full aspect-[4/3] bg-white border-2 border-dashed border-outline-variant/50 rounded-xl overflow-hidden shadow-2xl transition-all hover:border-tertiary-fixed flex flex-col items-center justify-center p-8 text-center bg-[url('https://lh3.googleusercontent.com/aida-public/AB6AXuDM_spTkXTtbkmicc-bgyo05Q86iWqIRm6CzgOT0V3WYaO_05v1a87QaRl3nG09ckvnJ_go5yV2wSFHPcwWzXqGJc56kR4ANx37caZ-vJphilumL-TnlXrX7r8U-RGfcXCqcIHT4F8NsAnfyAVudita28obRwyl0moEguyHwTwLzxNcsx-DOpEUGTHrw3_vjRAqVHnAY45LvVfzT-qsXXVYL02o-b63aXLd7-v3k_8sdyLHfC_S09bz8SWsor2q9nLZvOL2hA3Lfusq')] bg-cover bg-center">
+<div class="absolute inset-0 bg-white/90 group-hover:bg-white/80 transition-colors"></div>
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-16 h-16 bg-surface-container-high rounded-full flex items-center justify-center mb-6 text-tertiary-fixed-dim">
+<span class="material-symbols-outlined text-4xl" data-icon="cloud_upload">cloud_upload</span>
+</div>
+<h3 class="text-2xl font-bold text-primary-container mb-2 uppercase tracking-tight">Try Me</h3>
+<p class="text-on-surface-variant text-sm mb-6 max-w-xs">Drag and drop your Offering Memorandum (PDF) here to start institutional scoring.</p>
+<button class="bg-primary-container text-white px-6 py-3 font-headline font-bold text-[10px] uppercase tracking-widest rounded-lg hover:bg-slate-800 transition-all">
+                            Browse Files
+                        </button>
+</div>
+<!-- Data Overlay Visuals -->
+<div class="absolute bottom-6 left-6 right-6 flex gap-4 z-10">
+<div class="flex-1 bg-white/40 backdrop-blur-xl p-3 border-l-2 border-tertiary-fixed shadow-sm">
+<div class="text-[9px] uppercase text-on-surface-variant font-bold tracking-widest mb-1">Yield Signal</div>
+<div class="text-xl font-headline font-bold text-primary-container">7.24%</div>
+</div>
+<div class="flex-1 bg-white/40 backdrop-blur-xl p-3 border-l-2 border-secondary-container shadow-sm">
+<div class="text-[9px] uppercase text-on-surface-variant font-bold tracking-widest mb-1">Confidence</div>
+<div class="text-xl font-headline font-bold text-primary-container">0.982</div>
+</div>
+</div>
+</div>
+<!-- Floating Architectural Grid Element -->
+<div class="absolute -top-12 -right-12 w-64 h-64 border-[1px] border-primary-container/5 pointer-events-none hidden xl:block" style="background-image: radial-gradient(circle, #131b2e 1px, transparent 1px); background-size: 20px 20px;"></div>
+</div>
+</div>
+</section>
+<!-- Trust Section -->
+<section class="bg-surface-container-low py-16">
+<div class="max-w-[1440px] mx-auto px-8">
+<p class="text-center text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant mb-12">
+                    Trusted by Institutional Leaders
+                </p>
+<div class="flex flex-wrap justify-center items-center gap-12 md:gap-24 opacity-50 grayscale contrast-125">
+<div class="text-2xl font-bold font-headline tracking-tighter">Blackstone</div>
+<div class="text-2xl font-bold font-headline tracking-tighter">CBRE</div>
+<div class="text-2xl font-bold font-headline tracking-tighter">JLL</div>
+<div class="text-2xl font-bold font-headline tracking-tighter">Cushman &amp; Wakefield</div>
+<div class="text-2xl font-bold font-headline tracking-tighter">Colliers</div>
+</div>
+</div>
+</section>
+<!-- Features Section: The Centralized Deal Engine -->
+<section class="py-32 bg-surface relative">
+<div class="max-w-[1440px] mx-auto px-8">
+<div class="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+<div class="max-w-2xl">
+<h2 class="text-4xl md:text-6xl font-bold text-primary-container tracking-tighter leading-none mb-6">
+                            The Centralized Deal Engine
+                        </h2>
+<p class="text-on-surface-variant text-lg">
+                            An architectural approach to property analysis. We don't just extract data; we model intelligence.
+                        </p>
+</div>
+<div class="h-[1px] flex-grow mx-12 bg-outline-variant/30 hidden lg:block"></div>
+<div class="font-headline font-bold text-7xl text-surface-container-highest select-none">01-03</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-1 px-1 bg-outline-variant/20 border border-outline-variant/20">
+<!-- Feature Card 1 -->
+<div class="bg-surface p-12 flex flex-col items-start min-h-[420px]">
+<div class="mb-auto">
+<span class="material-symbols-outlined text-4xl text-primary-container mb-8" data-icon="upload_file">upload_file</span>
+<h3 class="text-2xl font-bold text-primary-container mb-4">1. Upload</h3>
+<p class="text-on-surface-variant leading-relaxed">
+                                Drop your Offering Memorandum (OM). Our neural-vision models dissect complex PDFs, rent rolls, and T12s instantly.
+                            </p>
+</div>
+<div class="w-full pt-8 border-t border-outline-variant/10">
+<span class="text-[10px] font-bold uppercase tracking-widest text-secondary-container">Input Engine v4.2</span>
+</div>
+</div>
+<!-- Feature Card 2 -->
+<div class="bg-surface p-12 flex flex-col items-start min-h-[420px] relative overflow-hidden group">
+<!-- Spot Graphic Illustration -->
+<div class="absolute -right-12 -bottom-12 w-48 h-48 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
+<img alt="Scoring Engine Illustration" class="w-full h-full object-contain grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwXWy2GaKpzKpRdU6HjPnC-qJ-bO7w8qkcAVUd0wFvA8dL-Z16p-9s-707kYACEMH5SpEj1v8BYN0IRui0Ha2pOFkj54TqqTIEmaKfoez3_KQ5AgD1sNmF8h7M5E-D79lCkelVH0YrzRWSpECuGCmnrPqZ0i4tKn1qq-Ebi1FLH37OieBOyxNUx38tiiPfIuQPe8XJ-fzE_MXKA40MEhbka0PAZKSLO1haReJqg6ygx9LKnhEy89MmxuGZorv4qXRqRjd0_RYpjufN"/>
+</div>
+<div class="mb-auto relative z-10">
+<span class="material-symbols-outlined text-4xl text-tertiary-fixed-dim mb-8" data-icon="analytics" data-weight="fill" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<h3 class="text-2xl font-bold text-primary-container mb-4">2. Score</h3>
+<p class="text-on-surface-variant leading-relaxed">
+                                Our proprietary Signal Engine compares the asset against 15M+ regional comps and macro indices to generate a risk-adjusted signal.
+                            </p>
+</div>
+<div class="w-full pt-8 border-t border-outline-variant/10 relative z-10">
+<span class="text-[10px] font-bold uppercase tracking-widest text-tertiary-fixed-dim">Signal Logic Active</span>
+</div>
+</div>
+<!-- Feature Card 3 -->
+<div class="bg-surface p-12 flex flex-col items-start min-h-[420px]">
+<div class="mb-auto">
+<span class="material-symbols-outlined text-4xl text-primary-container mb-8" data-icon="description">description</span>
+<h3 class="text-2xl font-bold text-primary-container mb-4">3. Export</h3>
+<p class="text-on-surface-variant leading-relaxed">
+                                Receive a complete 6-sheet institutional Excel model. Ready for your IC presentation with zero manual data entry.
+                            </p>
+</div>
+<div class="w-full pt-8 border-t border-outline-variant/10">
+<span class="text-[10px] font-bold uppercase tracking-widest text-primary-container">XLSX Ready</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Pricing/Tier Section -->
+<section class="py-32 bg-surface-container-low relative overflow-hidden">
+<!-- Subtle Background Watermark for depth -->
+<div class="absolute -left-1/4 top-0 w-full h-full bg-watermark pointer-events-none opacity-10"></div>
+<div class="max-w-[1440px] mx-auto px-8 relative z-10">
+<div class="text-center mb-24">
+<h2 class="text-4xl md:text-5xl font-bold text-primary-container mb-6">Select Your Intelligence</h2>
+<p class="text-on-surface-variant max-w-xl mx-auto">Scalable infrastructure for solo analysts and global investment banks.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch max-w-5xl mx-auto">
+<!-- Professional Tier -->
+<div class="bg-surface p-12 border border-outline-variant/20 flex flex-col">
+<div class="mb-8">
+<div class="text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-2">Professional</div>
+<div class="flex items-baseline gap-1">
+<span class="text-4xl font-headline font-bold">$495</span>
+<span class="text-on-surface-variant text-sm">/mo</span>
+</div>
+</div>
+<ul class="space-y-4 mb-12 flex-grow">
+<li class="flex items-center gap-3 text-sm text-on-surface">
+<span class="material-symbols-outlined text-tertiary-fixed-dim" data-icon="check_circle">check_circle</span>
+                                10 Asset Analysis Credits
+                            </li>
+<li class="flex items-center gap-3 text-sm text-on-surface">
+<span class="material-symbols-outlined text-tertiary-fixed-dim" data-icon="check_circle">check_circle</span>
+                                Core Data Extraction
+                            </li>
+<li class="flex items-center gap-3 text-sm text-on-surface">
+<span class="material-symbols-outlined text-tertiary-fixed-dim" data-icon="check_circle">check_circle</span>
+                                Single-User Dashboard
+                            </li>
+<li class="flex items-center gap-3 text-sm text-on-surface">
+<span class="material-symbols-outlined text-tertiary-fixed-dim" data-icon="check_circle">check_circle</span>
+                                Standard Excel Models
+                            </li>
+</ul>
+<button class="w-full py-4 border border-primary-container text-primary-container font-headline font-bold text-sm uppercase tracking-widest hover:bg-primary-container hover:text-white transition-all">
+                            Get Professional
+                        </button>
+</div>
+<!-- Enterprise Tier -->
+<div class="bg-primary-container p-12 shadow-2xl relative overflow-hidden flex flex-col">
+<div class="absolute top-0 right-0 bg-tertiary-fixed text-primary-container px-4 py-1 text-[10px] font-bold uppercase tracking-widest">Recommended</div>
+<div class="mb-8 relative z-10">
+<div class="text-sm font-bold uppercase tracking-widest text-on-primary-container mb-2">Enterprise Intelligence</div>
+<div class="flex items-baseline gap-1">
+<span class="text-4xl font-headline font-bold text-white">Custom</span>
+</div>
+</div>
+<ul class="space-y-4 mb-12 flex-grow relative z-10">
+<li class="flex items-center gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-tertiary-fixed" data-icon="verified">verified</span>
+                                Unlimited Property Analysis
+                            </li>
+<li class="flex items-center gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-tertiary-fixed" data-icon="verified">verified</span>
+                                Full API Integration
+                            </li>
+<li class="flex items-center gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-tertiary-fixed" data-icon="verified">verified</span>
+                                Proprietary Signal Tuning
+                            </li>
+<li class="flex items-center gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-tertiary-fixed" data-icon="verified">verified</span>
+                                24/7 Priority Underwriting Support
+                            </li>
+<li class="flex items-center gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-tertiary-fixed" data-icon="verified">verified</span>
+                                Custom White-Label Excel Reports
+                            </li>
+</ul>
+<button class="w-full py-4 bg-tertiary-fixed text-primary-container font-headline font-bold text-sm uppercase tracking-widest hover:brightness-110 transition-all relative z-10">
+                            Contact Enterprise Sales
+                        </button>
+<!-- Architectural Decorative Line -->
+<div class="absolute bottom-0 right-0 w-full h-[1px] bg-white/10 opacity-20"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Final CTA -->
+<section class="py-24 bg-primary-container overflow-hidden relative">
+<div class="max-w-[1440px] mx-auto px-8 relative z-10 flex flex-col md:flex-row justify-between items-center gap-12">
+<div class="text-center md:text-left">
+<h2 class="text-4xl md:text-6xl font-bold text-white tracking-tighter mb-4">
+                        Upgrade your deal velocity today.
+                    </h2>
+<p class="text-on-primary-container text-xl max-w-lg">
+                        Stop manual entry. Start strategic intelligence.
+                    </p>
+</div>
+<div>
+<button class="bg-tertiary-fixed text-primary-container px-12 py-5 font-headline font-bold text-base uppercase tracking-widest rounded-lg hover:scale-105 transition-transform">
+                        Launch Deal Engine
+                    </button>
+</div>
+</div>
+<!-- Decorative Overlay -->
+<div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: linear-gradient(30deg, transparent 50%, #84CC16 50%); background-size: 10px 10px; opacity: 0.05;"></div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-16 px-8 mt-24 bg-[#131b2e] dark:bg-[#0c111d] text-white dark:text-slate-200 border-t border-white/10">
+<div class="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:flex lg:justify-between items-start gap-12">
+<div class="space-y-6">
+<div class="font-['Space_Grotesk'] text-lg font-bold text-[#84CC16]">The Financial Architect</div>
+<p class="max-w-xs font-['Inter'] text-xs tracking-wide leading-relaxed text-slate-400">
+                    Institutional precision for modern assets. Built for analysts who demand superior structural data.
+                </p>
+</div>
+<div class="flex flex-wrap gap-8 items-center font-['Inter'] text-xs tracking-wide leading-relaxed">
+<a class="text-slate-400 hover:text-[#84CC16] transition-colors duration-200" href="#">Investment Strategy</a>
+<a class="text-slate-400 hover:text-[#84CC16] transition-colors duration-200" href="#">API Documentation</a>
+<a class="text-slate-400 hover:text-[#84CC16] transition-colors duration-200" href="#">Compliance &amp; Trust</a>
+<a class="text-slate-400 hover:text-[#84CC16] transition-colors duration-200" href="#">Privacy Policy</a>
+<a class="text-slate-400 hover:text-[#84CC16] transition-colors duration-200" href="#">Market Analysis</a>
+</div>
+<div class="text-slate-400 font-['Inter'] text-xs tracking-wide leading-relaxed text-right">
+                © 2024 The Financial Architect. All rights reserved.
+            </div>
+</div>
+</footer>
+</body></html>
