@@ -539,6 +539,8 @@ export default function OmAnalyzerPage() {
           .ds-om-outputs { grid-template-columns: repeat(2, 1fr) !important; }
           .ds-report-cards { grid-template-columns: repeat(2, 1fr) !important; }
           .ds-report-header { text-align: center; justify-content: center !important; }
+          .ds-feature-block { grid-template-columns: 1fr !important; direction: ltr !important; }
+          .ds-secondary-features { grid-template-columns: repeat(2, 1fr) !important; }
         }
         @media (max-width: 480px) {
           .ds-footer-grid { grid-template-columns: 1fr !important; }
@@ -1195,316 +1197,273 @@ export default function OmAnalyzerPage() {
 
           {/* testimonials section removed */}
 
-          {/* ── 6. EVERYTHING IN YOUR DEAL SIGNALS REPORT ── */}
-          <div id="features" style={{ padding: "120px 32px 100px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
-            {/* Gradient orbs for depth */}
-            <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "rgba(132,204,22,0.06)", filter: "blur(160px)", pointerEvents: "none" }} />
-            <div style={{ position: "absolute", bottom: -150, left: -100, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.04)", filter: "blur(140px)", pointerEvents: "none" }} />
-            <div style={{ position: "absolute", top: "40%", left: "50%", transform: "translateX(-50%)", width: 800, height: 400, borderRadius: "50%", background: "rgba(132,204,22,0.02)", filter: "blur(120px)", pointerEvents: "none" }} />
-
-            {/* Subtle grid pattern */}
-            <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(132,204,22,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(132,204,22,0.03) 1px, transparent 1px)", backgroundSize: "80px 80px", pointerEvents: "none", zIndex: 0 }} />
-
-            {/* Line-drawing accent — abstract document outlines */}
-            <svg style={{ position: "absolute", top: 40, left: 40, width: 120, height: 160, pointerEvents: "none", zIndex: 0, opacity: 0.04 }} viewBox="0 0 120 160" fill="none" stroke="#84CC16" strokeWidth="1">
-              <rect x="10" y="10" width="80" height="110" rx="4" />
-              <line x1="25" y1="35" x2="75" y2="35" />
-              <line x1="25" y1="50" x2="65" y2="50" />
-              <line x1="25" y1="65" x2="70" y2="65" />
-              <line x1="25" y1="80" x2="55" y2="80" />
-              <rect x="25" y="90" width="20" height="15" rx="2" />
-              <rect x="50" y="90" width="20" height="15" rx="2" />
-            </svg>
-            <svg style={{ position: "absolute", bottom: 60, right: 60, width: 140, height: 120, pointerEvents: "none", zIndex: 0, opacity: 0.04 }} viewBox="0 0 140 120" fill="none" stroke="#84CC16" strokeWidth="1">
-              {/* Bar chart outline */}
-              <line x1="20" y1="100" x2="120" y2="100" />
-              <line x1="20" y1="100" x2="20" y2="20" />
-              <rect x="30" y="60" width="14" height="40" rx="2" />
-              <rect x="50" y="40" width="14" height="60" rx="2" />
-              <rect x="70" y="50" width="14" height="50" rx="2" />
-              <rect x="90" y="30" width="14" height="70" rx="2" />
-            </svg>
-            <svg style={{ position: "absolute", top: "50%", right: 30, width: 100, height: 100, pointerEvents: "none", zIndex: 0, opacity: 0.03, transform: "translateY(-50%)" }} viewBox="0 0 100 100" fill="none" stroke="#84CC16" strokeWidth="1">
-              {/* Pie/donut chart outline */}
-              <circle cx="50" cy="50" r="38" />
-              <circle cx="50" cy="50" r="24" />
-              <line x1="50" y1="12" x2="50" y2="26" />
-              <line x1="83" y1="68" x2="71" y2="60" />
-              <line x1="17" y1="68" x2="29" y2="60" />
-            </svg>
-            <svg style={{ position: "absolute", bottom: 40, left: "35%", width: 160, height: 60, pointerEvents: "none", zIndex: 0, opacity: 0.03 }} viewBox="0 0 160 60" fill="none" stroke="#84CC16" strokeWidth="1">
-              {/* Line chart outline */}
-              <polyline points="10,50 40,30 70,40 100,15 130,25 150,10" strokeLinecap="round" />
-              <line x1="10" y1="55" x2="150" y2="55" />
-            </svg>
+          {/* ── 6. FEATURES — PRODUCT STORY ── */}
+          <div id="features" style={{ padding: "120px 32px 80px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
+            {/* Background depth */}
+            <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "rgba(132,204,22,0.05)", filter: "blur(160px)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", bottom: -150, left: -100, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.03)", filter: "blur(140px)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(132,204,22,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(132,204,22,0.02) 1px, transparent 1px)", backgroundSize: "80px 80px", pointerEvents: "none" }} />
 
             <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
-              {/* Header row: left text + right CTA */}
-              <div className="ds-report-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 56, flexWrap: "wrap", gap: 24 }}>
-                <div>
-                  <h2 style={{ fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15, marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                    Everything in your<br />Deal <span className="ds-callout">Signals</span> report
-                  </h2>
-                  <p style={{ fontSize: 16, color: "#9ca3af", lineHeight: 1.7, maxWidth: 520 }}>
-                    Stop manual data entry. Start making decisions with institutional-grade intelligence.
-                  </p>
+
+              {/* Section header */}
+              <div style={{ textAlign: "center", marginBottom: 80 }}>
+                <div style={{ display: "inline-flex", alignItems: "center", padding: "6px 16px", borderRadius: 50, background: "rgba(132,204,22,0.06)", color: "#84CC16", fontSize: 12, fontWeight: 700, marginBottom: 16, gap: 6, letterSpacing: 0.5, textTransform: "uppercase" as const }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
+                  Product Walkthrough
                 </div>
-                <a href="#demo" style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  padding: "12px 24px", borderRadius: 10,
-                  border: "1.5px solid rgba(132,204,22,0.4)", background: "transparent",
-                  color: "#84CC16", fontSize: 14, fontWeight: 600, textDecoration: "none",
-                  transition: "all 0.25s ease", cursor: "pointer",
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.08)"; e.currentTarget.style.borderColor = "#84CC16"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(132,204,22,0.4)"; }}
-                >
-                  See a Sample Report
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
-                </a>
+                <h2 style={{ fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15, marginBottom: 12, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  From upload to <span className="ds-callout">decision</span>
+                </h2>
+                <p style={{ fontSize: 17, color: "#9ca3af", lineHeight: 1.7, maxWidth: 560, margin: "0 auto" }}>
+                  This is not a spreadsheet tool. It&apos;s a pre-diligence engine built for speed in competitive markets.
+                </p>
               </div>
 
-              {/* 4-column card grid */}
-              <div className="ds-report-cards" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18 }}>
-                {[
-                  { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", title: "Extracted Financials", desc: "Cap rate, NOI, DSCR, price/SF, occupancy, and 40+ more fields extracted instantly." },
-                  { icon: "M22 12h-4l-3 9L9 3l-3 9H2", title: "Deal Signals Score", desc: "A weighted 0-100 score across pricing, cashflow, tenant, and location metrics." },
-                  { icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z", title: "Risk Flags", desc: "Color-coded signals for cap rate, basis, and rollover risk to spot red flags early." },
-                  { icon: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z", title: "Investment Thesis", desc: "A concise buy/hold/pass recommendation with supporting rationale for your team." },
-                ].map((card, i) => (
-                  <div key={card.title} className="ds-report-card" style={{
-                    background: "rgba(22,26,35,0.7)", borderRadius: 16, padding: "28px 24px",
-                    border: "1px solid rgba(132,204,22,0.12)",
-                    transition: "all 0.3s ease", cursor: "default",
-                    animation: `fadeInUp 0.5s ease-out ${0.1 + i * 0.1}s both`,
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(132,204,22,0.35)"; e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(0,0,0,0.3)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(132,204,22,0.12)"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
-                  >
-                    <div style={{
-                      width: 48, height: 48, borderRadius: 12,
-                      background: "rgba(132,204,22,0.08)", border: "1px solid rgba(132,204,22,0.15)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      marginBottom: 20,
-                    }}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={card.icon} /></svg>
-                    </div>
-                    <h3 style={{ fontSize: 17, fontWeight: 700, color: "#ffffff", marginBottom: 8 }}>{card.title}</h3>
-                    <p style={{ fontSize: 13.5, color: "#9ca3af", lineHeight: 1.65, margin: 0 }}>{card.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* ── 7. PRO WORKSPACE PREVIEW (DEMO) ── */}
-          <div id="demo" style={{ maxWidth: 1000, margin: "0 auto", padding: "120px 32px 80px" }}>
-            {/* Section divider */}
-            <div style={{
-              height: 1,
-              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06) 50%, transparent)",
-              maxWidth: 600,
-              margin: "-100px auto 60px",
-            }} />
-            <div style={{ textAlign: "center", marginBottom: 48 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 800, color: "#ffffff", marginBottom: 10 }}>
-                Your full deal <span className="ds-callout">DealBoard</span>
-              </h2>
-              <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.7 }}>
-                Deep research on tenant credit, location intel, comp analysis, and everything the OM doesn&apos;t mention.
-              </p>
-            </div>
-
-            {/* Workspace preview container */}
-            <div style={{
-              borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)",
-              boxShadow: "0 20px 60px rgba(15,23,42,0.08)", marginBottom: 28,
-              background: "rgba(22,22,31,0.6)", backdropFilter: "blur(10px)",
-            }}>
-              {/* Header bar */}
-              <div style={{
-                height: 56, background: "#16161f", borderBottom: "1px solid rgba(255,255,255,0.08)",
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "0 20px",
-              }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: "#ffffff" }}>Deal Signals</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ padding: "6px 16px", borderRadius: 50, fontSize: 11, fontWeight: 700, background: "#84CC16", color: "#0d0d14" }}>Upgrade to Pro</span>
-                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #84CC16, #4D7C0F)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#0d0d14" }}>B</div>
-                </div>
-              </div>
-
-              {/* Main workspace body */}
-              <div style={{ display: "flex", minHeight: 500 }}>
-                {/* Sidebar */}
-                <aside style={{ width: 260, background: "#16161f", borderRight: "1px solid rgba(255,255,255,0.08)", padding: "12px 8px", display: "flex", flexDirection: "column" }}>
-                  <div style={{ padding: "10px 14px 8px" }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#84CC16" }}>My DealBoard</div>
-                  </div>
-                  <nav style={{ padding: "4px 8px", display: "flex", flexDirection: "column", gap: 1 }}>
-                    {[
-                      { label: "DealBoard", icon: "M3 3h7v7H3z" },
-                      { label: "Scoreboard", icon: "M18 20V10M12 20V4M6 20v-6" },
-                      { label: "Upload Deal", icon: "M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5" },
-                    ].map(item => (
-                      <div key={item.label} style={{
-                        display: "flex", alignItems: "center", gap: 8, padding: "7px 14px", borderRadius: 8,
-                        color: item.label === "Upload Deal" ? "#84CC16" : "#64748b",
-                        background: item.label === "Upload Deal" ? "rgba(132,204,22,0.06)" : "transparent",
-                        fontSize: 13, fontWeight: item.label === "Upload Deal" ? 600 : 500, cursor: "pointer",
-                      }}>
-                        <div style={{ width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: item.label === "Upload Deal" ? "rgba(132,204,22,0.08)" : "transparent", fontSize: 12 }}>
-                          {item.label === "DealBoard" ? "📊" : item.label === "Scoreboard" ? "📈" : "📤"}
+              {/* ── Feature blocks: alternating left/right ── */}
+              {[
+                {
+                  num: "01", title: "Instant Deal Extraction", desc: "Upload an OM or deal file and instantly extract all key data into a structured investment view.",
+                  visual: (
+                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(132,204,22,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
                         </div>
-                        {item.label}
-                      </div>
-                    ))}
-                  </nav>
-
-                  {/* Properties */}
-                  <div style={{ flex: 1, overflow: "auto", padding: "8px 8px", marginTop: 4 }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: "#9ca3af", padding: "6px 8px 8px" }}>
-                      Properties (2)
-                    </div>
-                    {[
-                      { name: "Walgreens — Cedar Park, TX", score: 74, type: "retail" },
-                      { name: "Flex Industrial — Schaumburg, IL", score: 68, type: "industrial" },
-                    ].map((d, i) => (
-                      <div key={d.name} style={{
-                        display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 8,
-                        color: i === 0 ? "#84CC16" : "#64748b",
-                        background: i === 0 ? "rgba(132,204,22,0.06)" : "transparent",
-                        fontWeight: i === 0 ? 600 : 500, fontSize: 12, cursor: "pointer",
-                      }}>
-                        <div style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0, background: i === 0 ? "rgba(132,204,22,0.08)" : "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>
-                          {d.type === "retail" ? "🏪" : "🏭"}
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>Walgreens_OM_2026.pdf</div>
+                          <div style={{ fontSize: 10, color: "#6b7280" }}>2.4 MB · Uploaded</div>
                         </div>
-                        <div style={{ minWidth: 0, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {d.name}
-                        </div>
-                        <span style={{ padding: "2px 7px", borderRadius: 6, fontSize: 11, fontWeight: 800, flexShrink: 0, background: "rgba(5,150,105,0.1)", color: "#059669" }}>
-                          {d.score}
-                        </span>
-                      </div>
-                    ))}
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", marginTop: 8, border: "1.5px dashed #e2e8f0", borderRadius: 10, color: "#9ca3af", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                      <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> Add Property
-                    </div>
-                  </div>
-
-                  {/* Bottom nav */}
-                  <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: "6px 8px 10px" }}>
-                    {["DealBoards", "Settings"].map(label => (
-                      <div key={label} style={{
-                        display: "flex", alignItems: "center", gap: 8, padding: "5px 12px", borderRadius: 8,
-                        color: "#9ca3af", fontSize: 11, fontWeight: 500, cursor: "pointer",
-                      }}>
-                        {label}
-                      </div>
-                    ))}
-                  </div>
-                </aside>
-
-                {/* Main content */}
-                <main style={{ flex: 1, background: "#1e1e28", padding: "20px", overflow: "auto" }}>
-                  <div style={{ maxWidth: 700 }}>
-                    {/* Property header card */}
-                    <div style={{ background: "#16161f", borderRadius: 12, border: "1px solid rgba(255,255,255,0.08)", padding: 0, marginBottom: 20, overflow: "hidden" }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", minHeight: 160 }}>
-                        {/* Image placeholder */}
-                        <div style={{ background: "linear-gradient(135deg, #f1f5f9, #e2e8f0)", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 6, borderRight: "1px solid rgba(255,255,255,0.08)" }}>
-                          <div style={{ fontSize: 36, opacity: 0.3 }}>📍</div>
-                          <div style={{ fontSize: 9, color: "#9ca3af", fontWeight: 500 }}>Cedar Park, TX</div>
-                        </div>
-
-                        {/* Property info */}
-                        <div style={{ padding: "18px 22px" }}>
-                          <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between", marginBottom: 8 }}>
-                            <div>
-                              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                                <h2 style={{ fontSize: 18, fontWeight: 800, color: "#ffffff", margin: 0 }}>
-                                  Walgreens NNN
-                                </h2>
-                                <span style={{ padding: "3px 10px", borderRadius: 6, fontSize: 9, fontWeight: 700, background: "rgba(132,204,22,0.06)", color: "#84CC16", textTransform: "uppercase", letterSpacing: 0.5 }}>Retail</span>
-                              </div>
-                              <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>1301 E Whitestone Blvd</p>
-                            </div>
-                            {/* Score ring */}
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
-                              <div style={{ position: "relative", width: 56, height: 56 }}>
-                                <svg width="56" height="56" viewBox="0 0 56 56" style={{ transform: "rotate(-90deg)" }}>
-                                  <circle cx="28" cy="28" r="24" fill="none" stroke="#e2e8f0" strokeWidth="4" />
-                                  <circle cx="28" cy="28" r="24" fill="none" stroke="#059669" strokeWidth="4" strokeDasharray={`${2 * Math.PI * 24 * 0.74} ${2 * Math.PI * 24}`} strokeLinecap="round" />
-                                </svg>
-                                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                                  <span style={{ fontSize: 16, fontWeight: 800, color: "#ffffff", lineHeight: 1 }}>74</span>
-                                </div>
-                              </div>
-                              <span style={{ marginTop: 4, fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "#059669", padding: "2px 8px", borderRadius: 3, background: "rgba(5,150,105,0.1)" }}>Buy</span>
-                            </div>
-                          </div>
-
-                          {/* Key metrics */}
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, marginTop: 10 }}>
-                            {[
-                              { label: "Price", value: "$7.05M" },
-                              { label: "Cap Rate", value: "5.85%" },
-                              { label: "NOI", value: "$412K" },
-                              { label: "DSCR", value: "1.42x" },
-                            ].map(m => (
-                              <div key={m.label} style={{ padding: "8px 10px", background: "#1e1e28", borderRadius: 8, border: "1px solid #f1f5f9" }}>
-                                <div style={{ fontSize: 8, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase" }}>{m.label}</div>
-                                <div style={{ fontSize: 13, fontWeight: 800, color: "#ffffff", marginTop: 2 }}>{m.value}</div>
-                              </div>
-                            ))}
-                          </div>
+                        <div style={{ marginLeft: "auto", width: 20, height: 20, borderRadius: "50%", background: "#84CC16", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0d0d14" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
                         </div>
                       </div>
+                      {[
+                        { label: "Property", value: "Walgreens NNN", w: 100 },
+                        { label: "Price", value: "$7.05M", w: 85 },
+                        { label: "Cap Rate", value: "5.85%", w: 72 },
+                        { label: "NOI", value: "$412,000", w: 90 },
+                        { label: "Tenant", value: "Walgreens Co.", w: 78 },
+                      ].map((f, i) => (
+                        <div key={f.label} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,0.04)", animation: `fadeInUp 0.3s ease-out ${0.2 + i * 0.08}s both` }}>
+                          <span style={{ fontSize: 11, color: "#6b7280", fontWeight: 600 }}>{f.label}</span>
+                          <span style={{ fontSize: 12, color: "#fff", fontWeight: 700 }}>{f.value}</span>
+                        </div>
+                      ))}
+                      <div style={{ marginTop: 12, fontSize: 10, color: "#84CC16", fontWeight: 600 }}>40+ fields extracted →</div>
                     </div>
-
-                    {/* Score breakdown */}
-                    <div style={{ background: "#16161f", borderRadius: 12, border: "1px solid rgba(255,255,255,0.08)", padding: 20 }}>
-                      <h3 style={{ fontSize: 13, fontWeight: 700, color: "#ffffff", margin: "0 0 12px", display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 1 }} />
-                        Score Breakdown
-                      </h3>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  ),
+                },
+                {
+                  num: "02", title: "Pre-Diligence Signal", desc: "Get an immediate read on the deal before underwriting — risks, upside, and overall signal in seconds.",
+                  visual: (
+                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "28px", border: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
+                      <div style={{ width: 80, height: 80, borderRadius: "50%", border: "3px solid #84CC16", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", boxShadow: "0 0 30px rgba(132,204,22,0.15)" }}>
+                        <span style={{ fontSize: 28, fontWeight: 800, color: "#84CC16" }}>74</span>
+                      </div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#84CC16", marginBottom: 16 }}>BUY SIGNAL</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
                         {[
-                          { name: "Pricing", score: 62 },
-                          { name: "Cashflow", score: 78 },
-                          { name: "Tenant", score: 82 },
-                          { name: "Location", score: 78 },
-                        ].map(cat => {
-                          const barColor = cat.score >= 70 ? "#059669" : cat.score >= 50 ? "#D97706" : "#DC2626";
-                          return (
-                            <div key={cat.name} style={{ padding: "10px 12px", background: "#1e1e28", borderRadius: 8 }}>
-                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                                <span style={{ fontSize: 11, fontWeight: 700, color: "#ffffff" }}>{cat.name}</span>
-                                <span style={{ fontSize: 11, fontWeight: 800, color: barColor }}>{cat.score}</span>
-                              </div>
-                              <div style={{ height: 4, background: "#e2e8f0", borderRadius: 2, overflow: "hidden" }}>
-                                <div style={{ width: `${cat.score}%`, height: "100%", background: barColor, borderRadius: 2 }} />
-                              </div>
-                            </div>
-                          );
-                        })}
+                          { label: "Strong Location", color: "#84CC16" },
+                          { label: "Below Market Rents", color: "#D97706" },
+                          { label: "Rollover Risk", color: "#ef4444" },
+                          { label: "Investment Grade Tenant", color: "#84CC16" },
+                          { label: "Low DSCR", color: "#D97706" },
+                        ].map(t => (
+                          <span key={t.label} style={{ fontSize: 10, fontWeight: 600, padding: "4px 10px", borderRadius: 50, background: `${t.color}14`, color: t.color, border: `1px solid ${t.color}30` }}>{t.label}</span>
+                        ))}
                       </div>
                     </div>
+                  ),
+                },
+                {
+                  num: "03", title: "Deal Signals Scoring", desc: "Every deal is scored across key investment factors so you can quickly decide what to pursue.",
+                  visual: (
+                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      {[
+                        { label: "Pricing", score: 62, color: "#D97706" },
+                        { label: "Cashflow", score: 78, color: "#84CC16" },
+                        { label: "Tenant", score: 82, color: "#84CC16" },
+                        { label: "Rollover", score: 45, color: "#ef4444" },
+                        { label: "Location", score: 88, color: "#84CC16" },
+                        { label: "Upside", score: 71, color: "#84CC16" },
+                      ].map(s => (
+                        <div key={s.label} style={{ marginBottom: 12 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af" }}>{s.label}</span>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: s.color }}>{s.score}/100</span>
+                          </div>
+                          <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.06)" }}>
+                            <div style={{ height: "100%", borderRadius: 3, background: s.color, width: `${s.score}%`, transition: "width 1.2s ease" }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ),
+                },
+                {
+                  num: "04", title: "Full Financial Outputs", desc: "Instantly generate structured Excel workbooks with full underwriting-ready data — 6 tabs, one click.",
+                  visual: (
+                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <div style={{ display: "flex", gap: 4, marginBottom: 16 }}>
+                        {["Summary", "Rent Roll", "Operating", "Debt", "Scenarios", "Comps"].map((tab, i) => (
+                          <span key={tab} style={{ fontSize: 9, fontWeight: 600, padding: "5px 10px", borderRadius: "6px 6px 0 0", background: i === 0 ? "rgba(132,204,22,0.12)" : "rgba(255,255,255,0.03)", color: i === 0 ? "#84CC16" : "#6b7280", border: `1px solid ${i === 0 ? "rgba(132,204,22,0.2)" : "rgba(255,255,255,0.04)"}`, borderBottom: "none" }}>{tab}</span>
+                        ))}
+                      </div>
+                      <div style={{ border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, overflow: "hidden" }}>
+                        {[
+                          ["Property Name", "Walgreens NNN"],
+                          ["Purchase Price", "$7,050,000"],
+                          ["Cap Rate (Going-In)", "5.85%"],
+                          ["Net Operating Income", "$412,425"],
+                          ["DSCR", "1.42x"],
+                        ].map(([k, v], i) => (
+                          <div key={k} style={{ display: "flex", borderBottom: i < 4 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                            <div style={{ flex: 1, padding: "7px 12px", fontSize: 10, fontWeight: 600, color: "#6b7280", background: "rgba(255,255,255,0.02)" }}>{k}</div>
+                            <div style={{ flex: 1, padding: "7px 12px", fontSize: 10, fontWeight: 700, color: "#fff" }}>{v}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ padding: "6px 14px", borderRadius: 8, background: "#84CC16", color: "#0d0d14", fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                          Download .xlsx
+                        </div>
+                        <span style={{ fontSize: 10, color: "#6b7280" }}>6 sheets · 42 rows</span>
+                      </div>
+                    </div>
+                  ),
+                },
+                {
+                  num: "05", title: "DealBoard Workspace", desc: "Save, organize, and track deals across clients, strategies, and pipelines — all in one place.",
+                  visual: (
+                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "20px 24px", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 0.6, marginBottom: 12 }}>My DealBoard</div>
+                      {[
+                        { name: "Walgreens NNN", loc: "Cedar Park, TX", score: 74, type: "Retail", color: "#84CC16" },
+                        { name: "Flex Industrial", loc: "Schaumburg, IL", score: 68, type: "Industrial", color: "#D97706" },
+                        { name: "Dollar General", loc: "Lawrenceville, GA", score: 61, type: "Retail", color: "#eab308" },
+                      ].map(d => (
+                        <div key={d.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", borderRadius: 8, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", marginBottom: 6 }}>
+                          <div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{d.name}</div>
+                            <div style={{ fontSize: 10, color: "#6b7280" }}>{d.loc} · {d.type}</div>
+                          </div>
+                          <div style={{ width: 32, height: 32, borderRadius: "50%", border: `2px solid ${d.color}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: d.color }}>{d.score}</div>
+                        </div>
+                      ))}
+                      <div style={{ marginTop: 8, padding: "8px", border: "1px dashed rgba(255,255,255,0.08)", borderRadius: 8, textAlign: "center", fontSize: 10, color: "#6b7280" }}>+ Add Property</div>
+                    </div>
+                  ),
+                },
+                {
+                  num: "06", title: "Compare Deals Side-by-Side", desc: "Quickly evaluate multiple deals with a sortable comparison scoreboard.",
+                  visual: (
+                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "20px 24px", border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "80px 1fr 1fr 1fr", gap: 0, fontSize: 10 }}>
+                        <div style={{ padding: "8px 0", fontWeight: 600, color: "#6b7280" }}>Metric</div>
+                        <div style={{ padding: "8px 6px", fontWeight: 700, color: "#fff", textAlign: "center" }}>Walgreens</div>
+                        <div style={{ padding: "8px 6px", fontWeight: 700, color: "#fff", textAlign: "center" }}>Flex Ind.</div>
+                        <div style={{ padding: "8px 6px", fontWeight: 700, color: "#fff", textAlign: "center" }}>Dollar Gen.</div>
+                        {[
+                          { m: "Score", v: ["74", "68", "61"], c: ["#84CC16", "#D97706", "#eab308"] },
+                          { m: "Cap Rate", v: ["5.85%", "7.20%", "6.50%"], c: ["#fff", "#fff", "#fff"] },
+                          { m: "NOI", v: ["$412K", "$305K", "$187K"], c: ["#fff", "#fff", "#fff"] },
+                          { m: "DSCR", v: ["1.42x", "1.35x", "1.08x"], c: ["#84CC16", "#84CC16", "#ef4444"] },
+                          { m: "Signal", v: ["BUY", "HOLD", "HOLD"], c: ["#84CC16", "#D97706", "#eab308"] },
+                        ].map(row => (
+                          <React.Fragment key={row.m}>
+                            <div style={{ padding: "7px 0", fontWeight: 600, color: "#6b7280", borderTop: "1px solid rgba(255,255,255,0.04)" }}>{row.m}</div>
+                            {row.v.map((v, i) => (
+                              <div key={i} style={{ padding: "7px 6px", fontWeight: 700, color: row.c[i], textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.04)" }}>{v}</div>
+                            ))}
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    </div>
+                  ),
+                },
+                {
+                  num: "07", title: "Map + Location Intelligence", desc: "Understand where your deals sit with interactive mapping and location context.",
+                  visual: (
+                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "0", border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                      <div style={{ height: 160, background: "linear-gradient(135deg, #1a2332, #0f1922)", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(132,204,22,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(132,204,22,0.04) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+                        {[
+                          { left: "30%", top: "35%", label: "74", active: true },
+                          { left: "55%", top: "55%", label: "68", active: false },
+                          { left: "72%", top: "40%", label: "61", active: false },
+                        ].map((pin, i) => (
+                          <div key={i} style={{ position: "absolute", left: pin.left, top: pin.top, transform: "translate(-50%, -50%)" }}>
+                            <div style={{ width: pin.active ? 28 : 22, height: pin.active ? 28 : 22, borderRadius: "50%", background: pin.active ? "#84CC16" : "rgba(132,204,22,0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: pin.active ? "#0d0d14" : "#fff", boxShadow: pin.active ? "0 0 16px rgba(132,204,22,0.4)" : "none" }}>{pin.label}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>Walgreens NNN</div>
+                          <div style={{ fontSize: 10, color: "#6b7280" }}>Cedar Park, TX · Retail</div>
+                        </div>
+                        <span style={{ fontSize: 10, color: "#84CC16", fontWeight: 600 }}>View Deal →</span>
+                      </div>
+                    </div>
+                  ),
+                },
+                {
+                  num: "08", title: "Share with Clients", desc: "Send clean, branded deal links to clients with full analysis and insights — no login required.",
+                  visual: (
+                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                        <div style={{ flex: 1, padding: "10px 14px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", fontSize: 11, color: "#9ca3af", fontFamily: "monospace" }}>dealsignals.app/share/NRC7wA...</div>
+                        <div style={{ padding: "10px 16px", borderRadius: 8, background: "#84CC16", color: "#0d0d14", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" as const }}>Copy Link</div>
+                      </div>
+                      <div style={{ borderRadius: 10, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                        <div style={{ padding: "12px 16px", background: "rgba(255,255,255,0.02)" }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: "#fff", marginBottom: 2 }}>Walgreens NNN — Cedar Park, TX</div>
+                          <div style={{ fontSize: 10, color: "#6b7280" }}>Score: 74 · Cap Rate: 5.85% · NOI: $412K</div>
+                        </div>
+                        <div style={{ padding: "10px 16px", display: "flex", justifyContent: "space-between", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                          <span style={{ fontSize: 9, color: "#6b7280" }}>Shared by Deal Signals</span>
+                          <span style={{ fontSize: 9, color: "#84CC16", fontWeight: 600 }}>View Full Report</span>
+                        </div>
+                      </div>
+                    </div>
+                  ),
+                },
+              ].map((feature, idx) => (
+                <div key={feature.num} className="ds-feature-block" style={{
+                  display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center",
+                  marginBottom: idx < 7 ? 80 : 0,
+                  direction: idx % 2 === 1 ? "rtl" as const : "ltr" as const,
+                }}>
+                  <div style={{ direction: "ltr" }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(132,204,22,0.4)", letterSpacing: 2, marginBottom: 12 }}>{feature.num}</div>
+                    <h3 style={{ fontSize: 26, fontWeight: 800, color: "#ffffff", marginBottom: 10, lineHeight: 1.2, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{feature.title}</h3>
+                    <p style={{ fontSize: 15, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{feature.desc}</p>
                   </div>
-                </main>
-              </div>
-            </div>
+                  <div style={{ direction: "ltr" }}>{feature.visual}</div>
+                </div>
+              ))}
 
-            {/* CTA */}
-            <div style={{ textAlign: "center" }}>
-              <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-                <Link href="/workspace" className="ds-btn ds-btn-primary" style={{ fontSize: 14, padding: "12px 28px" }}>
-                  Try Pro Free
-                </Link>
-                <Link href="/#pricing" className="ds-btn" style={{ fontSize: 14, padding: "12px 28px" }}>
-                  See Plans
-                </Link>
+              {/* ── Secondary features row ── */}
+              <div style={{ marginTop: 100, padding: "40px 0", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                <div className="ds-secondary-features" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24 }}>
+                  {[
+                    { icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12", label: "Bulk Portfolio Uploads" },
+                    { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", label: "Up to 40 Deals / Month" },
+                    { icon: "M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01", label: "White-Label Sharing" },
+                    { icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z", label: "Deal History Tracking" },
+                  ].map(f => (
+                    <div key={f.label} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(132,204,22,0.06)", border: "1px solid rgba(132,204,22,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={f.icon} /></svg>
+                      </div>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "#9ca3af" }}>{f.label}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
+
             </div>
           </div>
 
