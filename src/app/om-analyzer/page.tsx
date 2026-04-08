@@ -448,6 +448,38 @@ export default function OmAnalyzerPage() {
         @keyframes omScanLine { 0% { top: 10%; opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { top: 85%; opacity: 0; } }
         @keyframes omFlowDot { 0% { left: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { left: calc(100% - 6px); opacity: 0; } }
         .ds-om-outputs > div:hover { cursor: default; }
+        /* Reusable curved green underline callout */
+        .ds-callout {
+          color: #84CC16;
+          position: relative;
+          display: inline-block;
+        }
+        .ds-callout::after {
+          content: '';
+          position: absolute;
+          bottom: -6px;
+          left: -2%;
+          width: 104%;
+          height: 8px;
+          background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'%3E%3Cpath d='M2 8 C40 2, 80 2, 100 4 S160 10, 198 4' stroke='%2384CC16' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center;
+          background-size: 100% 100%;
+        }
+        /* Light bg variant */
+        .ds-callout-dark {
+          color: #4D7C0F;
+          position: relative;
+          display: inline-block;
+        }
+        .ds-callout-dark::after {
+          content: '';
+          position: absolute;
+          bottom: -6px;
+          left: -2%;
+          width: 104%;
+          height: 8px;
+          background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'%3E%3Cpath d='M2 8 C40 2, 80 2, 100 4 S160 10, 198 4' stroke='%234D7C0F' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center;
+          background-size: 100% 100%;
+        }
         .om-insight-card { opacity: 0; animation: omCardFadeIn 0.5s ease-out forwards; transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .om-insight-card:hover { transform: translateY(-3px) !important; box-shadow: 0 12px 32px rgba(0,0,0,0.08) !important; }
         /* Global grid overlay */
@@ -747,7 +779,7 @@ export default function OmAnalyzerPage() {
                   marginBottom: 20, letterSpacing: -1.5,
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                 }}>
-                  Analyze Any Commercial<br />Property With <span style={{ color: "#84CC16", position: "relative", display: "inline-block" }}>One Upload<span style={{ position: "absolute", bottom: -6, left: 0, width: "100%", height: 3, background: "#84CC16", borderRadius: 2 }} /></span>.
+                  Analyze Any Commercial<br />Property With <span className="ds-callout">One Upload</span>.
                 </h1>
                 <p style={{
                   fontSize: 19, color: "#9ca3af", lineHeight: 1.7,
@@ -1046,7 +1078,7 @@ export default function OmAnalyzerPage() {
                 How It Works
               </div>
               <h2 style={{ fontSize: 34, fontWeight: 800, color: "#151b2b", marginBottom: 12, lineHeight: 1.2, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                From offering memo to<br /><span style={{ color: "#4D7C0F" }}>scored deal</span> in seconds
+                From offering memo to<br /><span className="ds-callout-dark">scored deal</span> in seconds
               </h2>
               <p style={{ fontSize: 16, color: "#585e70", marginBottom: 48, lineHeight: 1.7, maxWidth: 580, margin: "0 auto 48px" }}>
                 Upload any OM, rent roll, or broker package. Deal Signals extracts every key metric, scores the deal, and delivers it straight to your DealBoard.
@@ -1106,7 +1138,7 @@ export default function OmAnalyzerPage() {
               <div className="ds-report-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 56, flexWrap: "wrap", gap: 24 }}>
                 <div>
                   <h2 style={{ fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15, marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                    Everything in your<br />Deal <span style={{ position: "relative", display: "inline-block" }}>Signals<span style={{ position: "absolute", bottom: -4, left: 0, width: "100%", height: 3, background: "#84CC16", borderRadius: 2 }} /></span> report
+                    Everything in your<br />Deal <span className="ds-callout">Signals</span> report
                   </h2>
                   <p style={{ fontSize: 16, color: "#9ca3af", lineHeight: 1.7, maxWidth: 520 }}>
                     Stop manual data entry. Start making decisions with institutional-grade intelligence.
@@ -1171,7 +1203,7 @@ export default function OmAnalyzerPage() {
             }} />
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <h2 style={{ fontSize: 34, fontWeight: 800, color: "#ffffff", marginBottom: 10 }}>
-                Your full deal <span style={{ color: "#84CC16" }}>DealBoard</span>
+                Your full deal <span className="ds-callout">DealBoard</span>
               </h2>
               <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.7 }}>
                 Deep research on tenant credit, location intel, comp analysis, and everything the OM doesn&apos;t mention.
