@@ -505,6 +505,8 @@ export default function OmAnalyzerPage() {
           .ds-workflow-steps { grid-template-columns: repeat(2, 1fr) !important; }
           .ds-process-strip { transform: scale(0.85); transform-origin: left center; }
           .ds-om-outputs { grid-template-columns: repeat(2, 1fr) !important; }
+          .ds-report-cards { grid-template-columns: repeat(2, 1fr) !important; }
+          .ds-report-header { text-align: center; justify-content: center !important; }
         }
         @media (max-width: 480px) {
           .ds-footer-grid { grid-template-columns: 1fr !important; }
@@ -745,7 +747,7 @@ export default function OmAnalyzerPage() {
                   marginBottom: 20, letterSpacing: -1.5,
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                 }}>
-                  Analyze Any Commercial<br />Property With <span style={{ color: "#84CC16" }}>One Upload</span>.
+                  Analyze Any Commercial<br />Property With <span style={{ color: "#84CC16", position: "relative", display: "inline-block" }}>One Upload<span style={{ position: "absolute", bottom: -6, left: 0, width: "100%", height: 3, background: "#84CC16", borderRadius: 2 }} /></span>.
                 </h1>
                 <p style={{
                   fontSize: 19, color: "#9ca3af", lineHeight: 1.7,
@@ -1094,52 +1096,67 @@ export default function OmAnalyzerPage() {
 
           {/* testimonials section removed */}
 
-          {/* ── 6. FEATURES GRID (detailed) ── */}
-          <div id="features" style={{ maxWidth: 1000, margin: "0 auto", padding: "120px 32px 80px" }}>
-            {/* Section divider */}
-            <div style={{
-              height: 1,
-              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06) 50%, transparent)",
-              maxWidth: 600,
-              margin: "-100px auto 60px",
-            }} />
-            <div style={{ textAlign: "center", marginBottom: 56 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 800, color: "#ffffff", marginBottom: 10 }}>
-                Everything in your <span style={{ color: "#84CC16" }}>Deal Signals</span> report
-              </h2>
-            </div>
-            <div className="ds-features-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 20 }}>
-              {[
-                { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", title: "Extracted Financials", desc: "Cap rate, NOI, DSCR, price/SF, rent/SF, occupancy, lease terms, and 40+ more fields.", color: "#84CC16", bgColor: "rgba(132,204,22,0.08)", metrics: ["Cap Rate 6.25%", "NOI $412K", "DSCR 1.45x"] },
-                { icon: "M22 12h-4l-3 9L9 3l-3 9H2", title: "Deal Signals Score", desc: "A weighted 0-100 score across pricing, cashflow, tenant, rollover, location, and upside.", color: "#059669", bgColor: "rgba(5,150,105,0.08)", metrics: ["Score 74", "Band BUY", "Confidence HIGH"] },
-                { icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z", title: "Risk Flags & Signals", desc: "Color-coded signals for cap rate, DSCR, occupancy, tenant quality, basis, and rollover risk.", color: "#D97706", bgColor: "rgba(217,119,6,0.08)", metrics: ["Rollover YELLOW", "Tenant GREEN", "Basis RED"] },
-                { icon: "M4 6h16M4 10h16M4 14h16M4 18h16", title: "Investment Thesis", desc: "A concise buy/hold/pass recommendation with supporting rationale for your team.", color: "#6366F1", bgColor: "rgba(99,102,241,0.08)", metrics: ["Summary", "Recommendation", "Key Risks"] },
-              ].map(f => (
-                <div key={f.title} style={{
-                  background: "rgba(30,30,40,0.6)", borderRadius: 20, padding: "28px 24px",
-                  border: "1px solid rgba(255,255,255,0.06)", display: "flex", gap: 18,
-                  backdropFilter: "blur(10px)", transition: "all 0.25s ease",
-                  cursor: "pointer",
-                }}
-                className="om-feature-card">
-                  <div style={{
-                    width: 48, height: 48, borderRadius: 14, flexShrink: 0,
-                    background: f.bgColor, border: `1px solid ${f.color}40`,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={f.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={f.icon} /></svg>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "#ffffff", marginBottom: 4 }}>{f.title}</h3>
-                    <p style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.6, margin: "0 0 10px" }}>{f.desc}</p>
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      {f.metrics.map(m => (
-                        <span key={m} style={{ fontSize: 10, fontWeight: 600, padding: "4px 10px", borderRadius: 50, background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.08)" }}>{m}</span>
-                      ))}
-                    </div>
-                  </div>
+          {/* ── 6. EVERYTHING IN YOUR DEAL SIGNALS REPORT ── */}
+          <div id="features" style={{ padding: "120px 32px 100px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
+            {/* Subtle gradient bg */}
+            <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "rgba(132,204,22,0.04)", filter: "blur(160px)", pointerEvents: "none" }} />
+
+            <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
+              {/* Header row: left text + right CTA */}
+              <div className="ds-report-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 56, flexWrap: "wrap", gap: 24 }}>
+                <div>
+                  <h2 style={{ fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15, marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    Everything in your<br />Deal <span style={{ position: "relative", display: "inline-block" }}>Signals<span style={{ position: "absolute", bottom: -4, left: 0, width: "100%", height: 3, background: "#84CC16", borderRadius: 2 }} /></span> report
+                  </h2>
+                  <p style={{ fontSize: 16, color: "#9ca3af", lineHeight: 1.7, maxWidth: 520 }}>
+                    Stop manual data entry. Start making decisions with institutional-grade intelligence.
+                  </p>
                 </div>
-              ))}
+                <a href="#demo" style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  padding: "12px 24px", borderRadius: 10,
+                  border: "1.5px solid rgba(132,204,22,0.4)", background: "transparent",
+                  color: "#84CC16", fontSize: 14, fontWeight: 600, textDecoration: "none",
+                  transition: "all 0.25s ease", cursor: "pointer",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.08)"; e.currentTarget.style.borderColor = "#84CC16"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(132,204,22,0.4)"; }}
+                >
+                  See a Sample Report
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+                </a>
+              </div>
+
+              {/* 4-column card grid */}
+              <div className="ds-report-cards" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18 }}>
+                {[
+                  { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", title: "Extracted Financials", desc: "Cap rate, NOI, DSCR, price/SF, occupancy, and 40+ more fields extracted instantly." },
+                  { icon: "M22 12h-4l-3 9L9 3l-3 9H2", title: "Deal Signals Score", desc: "A weighted 0-100 score across pricing, cashflow, tenant, and location metrics." },
+                  { icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z", title: "Risk Flags", desc: "Color-coded signals for cap rate, basis, and rollover risk to spot red flags early." },
+                  { icon: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z", title: "Investment Thesis", desc: "A concise buy/hold/pass recommendation with supporting rationale for your team." },
+                ].map((card, i) => (
+                  <div key={card.title} className="ds-report-card" style={{
+                    background: "rgba(22,26,35,0.7)", borderRadius: 16, padding: "28px 24px",
+                    border: "1px solid rgba(132,204,22,0.12)",
+                    transition: "all 0.3s ease", cursor: "default",
+                    animation: `fadeInUp 0.5s ease-out ${0.1 + i * 0.1}s both`,
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(132,204,22,0.35)"; e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(0,0,0,0.3)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(132,204,22,0.12)"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
+                  >
+                    <div style={{
+                      width: 48, height: 48, borderRadius: 12,
+                      background: "rgba(132,204,22,0.08)", border: "1px solid rgba(132,204,22,0.15)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      marginBottom: 20,
+                    }}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={card.icon} /></svg>
+                    </div>
+                    <h3 style={{ fontSize: 17, fontWeight: 700, color: "#ffffff", marginBottom: 8 }}>{card.title}</h3>
+                    <p style={{ fontSize: 13.5, color: "#9ca3af", lineHeight: 1.65, margin: 0 }}>{card.desc}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
