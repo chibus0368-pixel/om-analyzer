@@ -763,7 +763,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             <img
               src="/images/dealsignals-full-logo.png"
               alt="Deal Signals"
-              style={{ height: 36, width: "auto", display: "block" }}
+              style={{ height: 44, width: "auto", display: "block" }}
             />
           </Link>
 

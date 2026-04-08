@@ -66,7 +66,7 @@ export default function DealSignalNav() {
       }}>
         {/* Logo */}
         <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <DealSignalLogo size={40} fontSize={18} gap={8} />
+          <DealSignalLogo size={48} fontSize={18} gap={8} />
         </Link>
 
         {/* Center nav links */}
