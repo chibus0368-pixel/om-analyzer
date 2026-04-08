@@ -748,7 +748,7 @@ export default function OmAnalyzerPage() {
                   fontSize: 19, color: "#9ca3af", lineHeight: 1.7,
                   maxWidth: 500, marginBottom: 36,
                 }}>
-                  Deal Signals turns complex Offering Memorandums into actionable investment intelligence. Scoring, pro formas, and insights, delivered in seconds.
+                  Deal Signals turns complex Offering Memorandums into actionable investment intelligence.
                 </p>
                 <div className="ds-hero-btns" style={{ display: "flex", gap: 12 }}>
                   <button onClick={() => fileRef.current?.click()} className="ds-btn ds-btn-primary" style={{
