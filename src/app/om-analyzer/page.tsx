@@ -250,6 +250,13 @@ export default function OmAnalyzerPage() {
   // Fetch usage on mount
   useEffect(() => { fetchUsage(); }, [fetchUsage]);
 
+  // Safety: auto-dismiss drag overlay after 3s to prevent stuck state
+  useEffect(() => {
+    if (!globalDragging) return;
+    const timeout = setTimeout(() => { dragCounter.current = 0; setGlobalDragging(false); }, 3000);
+    return () => clearTimeout(timeout);
+  }, [globalDragging]);
+
   /* Intersection Observer: trigger process strip animation when visible */
   useEffect(() => {
     const el = stripRef.current;
@@ -446,16 +453,19 @@ export default function OmAnalyzerPage() {
     <div className="ds-page-wrapper"
       onDragEnter={e => { e.preventDefault(); dragCounter.current++; if (view === "upload") setGlobalDragging(true); }}
       onDragOver={e => { e.preventDefault(); }}
-      onDragLeave={e => { e.preventDefault(); dragCounter.current--; if (dragCounter.current === 0) setGlobalDragging(false); }}
+      onDragLeave={e => { e.preventDefault(); dragCounter.current--; if (dragCounter.current <= 0) { dragCounter.current = 0; setGlobalDragging(false); } }}
       onDrop={e => { e.preventDefault(); dragCounter.current = 0; setGlobalDragging(false); setDragging(false); if (view === "upload" && e.dataTransfer.files?.length) handleFile(e.dataTransfer.files[0]); }}
     >
       {/* Global drag overlay */}
       {globalDragging && (
-        <div style={{
+        <div
+          onDragOver={e => e.preventDefault()}
+          onDragLeave={e => { e.preventDefault(); dragCounter.current = 0; setGlobalDragging(false); }}
+          onDrop={e => { e.preventDefault(); dragCounter.current = 0; setGlobalDragging(false); setDragging(false); if (view === "upload" && e.dataTransfer.files?.length) handleFile(e.dataTransfer.files[0]); }}
+          style={{
           position: "fixed", inset: 0, zIndex: 9998,
           background: "rgba(13,13,20,0.85)", backdropFilter: "blur(8px)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          pointerEvents: "none",
         }}>
           <div style={{
             padding: "48px 64px", borderRadius: 20,
