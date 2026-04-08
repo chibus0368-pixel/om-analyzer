@@ -901,10 +901,10 @@ export default function OmAnalyzerPage() {
                   One-Click Intelligence
                 </div>
                 <h2 style={{ fontSize: 40, fontWeight: 800, color: "#ffffff", marginBottom: 12, letterSpacing: -0.5, lineHeight: 1.15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  From OM to Insight in Seconds
+                  Deal <span className="ds-callout">Insight</span> in Less Than 60 Seconds
                 </h2>
                 <p style={{ fontSize: 17, color: "#9ca3af", lineHeight: 1.7, maxWidth: 560, margin: "0 auto" }}>
-                  Upload a single Offering Memorandum and let our AI engine generate everything you need to make a decision.
+                  Upload a single Offering Memorandum and get a full pre-diligence report before your coffee gets cold.
                 </p>
               </div>
 
@@ -1021,46 +1021,92 @@ export default function OmAnalyzerPage() {
                   </div>
                 </div>
 
-                {/* ── Row 2: Output cards ── */}
-                <div className="ds-om-outputs" style={{
-                  display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16,
-                }}>
-                  {[
-                    { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", label: "Financials", detail: "Cap rate, NOI, DSCR, rent/SF", color: "#84CC16" },
-                    { icon: "M22 12h-4l-3 9L9 3l-3 9H2", label: "Deal Score", detail: "Weighted 0–100 with signals", color: "#059669" },
-                    { icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z", label: "Risk Flags", detail: "Color-coded risk signals", color: "#D97706" },
-                    { icon: "M4 6h16M4 10h16M4 14h16M4 18h16", label: "Investment Thesis", detail: "Buy / hold / pass rationale", color: "#6366F1" },
-                  ].map((card, i) => (
-                    <div key={card.label} style={{
-                      background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
-                      borderRadius: 14, padding: "22px 18px", textAlign: "center",
-                      animation: `fadeInUp 0.5s ease-out ${0.9 + i * 0.12}s both`,
-                      transition: "border-color 0.3s, background 0.3s, transform 0.3s",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = `${card.color}33`; e.currentTarget.style.background = `${card.color}08`; e.currentTarget.style.transform = "translateY(-4px)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.transform = "translateY(0)"; }}
-                    >
-                      <div style={{
-                        width: 42, height: 42, borderRadius: 12,
-                        background: `${card.color}14`, display: "flex", alignItems: "center", justifyContent: "center",
-                        margin: "0 auto 12px",
-                      }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={card.color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                          <path d={card.icon} />
-                        </svg>
-                      </div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: "#ffffff", marginBottom: 3 }}>{card.label}</div>
-                      <div style={{ fontSize: 11.5, color: "#9ca3af", lineHeight: 1.4 }}>{card.detail}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Connecting lines from AI engine down to output cards */}
+                {/* ── Row 2: Deal Comparison Infographic ── */}
                 <div style={{
-                  position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -8px)",
-                  width: 2, height: 40, background: "linear-gradient(to bottom, rgba(132,204,22,0.3), rgba(132,204,22,0.08))",
-                  animation: "fadeInUp 0.5s ease-out 0.85s both",
-                }} />
+                  background: "rgba(22,26,35,0.6)", border: "1px solid rgba(132,204,22,0.12)",
+                  borderRadius: 20, padding: "32px 36px", position: "relative", overflow: "hidden",
+                  animation: "fadeInUp 0.6s ease-out 0.9s both",
+                }}>
+                  {/* Subtle glow */}
+                  <div style={{ position: "absolute", top: -60, right: -60, width: 200, height: 200, borderRadius: "50%", background: "rgba(132,204,22,0.04)", filter: "blur(60px)", pointerEvents: "none" }} />
+
+                  {/* Header row */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#84CC16" }} />
+                      <span style={{ fontSize: 14, fontWeight: 700, color: "#ffffff", letterSpacing: 0.3 }}>Deal Comparison</span>
+                      <span style={{ fontSize: 10, fontWeight: 600, padding: "3px 10px", borderRadius: 50, background: "rgba(132,204,22,0.1)", color: "#84CC16" }}>LIVE</span>
+                    </div>
+                    <span style={{ fontSize: 11, color: "#6b7280" }}>2 deals scored</span>
+                  </div>
+
+                  {/* Deal comparison table */}
+                  <div style={{ display: "grid", gridTemplateColumns: "140px 1fr 1fr", gap: 0 }}>
+                    {/* Column headers */}
+                    <div style={{ padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.06)" }} />
+                    <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#ffffff" }}>Walgreens NNN</div>
+                      <div style={{ fontSize: 10, color: "#9ca3af" }}>Cedar Park, TX</div>
+                    </div>
+                    <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#ffffff" }}>Dollar General</div>
+                      <div style={{ fontSize: 10, color: "#9ca3af" }}>Lawrenceville, GA</div>
+                    </div>
+
+                    {/* Score row */}
+                    <div style={{ padding: "14px 0", fontSize: 12, fontWeight: 600, color: "#9ca3af", display: "flex", alignItems: "center" }}>Deal Score</div>
+                    <div style={{ padding: "14px 16px", textAlign: "center" }}>
+                      <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, #84CC16, #4D7C0F)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#fff" }}>84</div>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", padding: "2px 8px", borderRadius: 4, background: "rgba(132,204,22,0.1)" }}>BUY</span>
+                      </div>
+                    </div>
+                    <div style={{ padding: "14px 16px", textAlign: "center" }}>
+                      <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, #eab308, #a16207)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#fff" }}>61</div>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#eab308", padding: "2px 8px", borderRadius: 4, background: "rgba(234,179,8,0.1)" }}>HOLD</span>
+                      </div>
+                    </div>
+
+                    {/* Metric rows */}
+                    {[
+                      { label: "Cap Rate", v1: "5.85%", v2: "6.50%", bar1: 72, bar2: 82, color1: "#84CC16", color2: "#84CC16" },
+                      { label: "NOI", v1: "$412K", v2: "$187K", bar1: 85, bar2: 48, color1: "#84CC16", color2: "#D97706" },
+                      { label: "DSCR", v1: "1.42x", v2: "1.08x", bar1: 78, bar2: 38, color1: "#84CC16", color2: "#ef4444" },
+                      { label: "Tenant Risk", v1: "Low", v2: "Medium", bar1: 90, bar2: 55, color1: "#059669", color2: "#D97706" },
+                      { label: "Rollover", v1: "8.2 yrs", v2: "3.1 yrs", bar1: 88, bar2: 35, color1: "#84CC16", color2: "#ef4444" },
+                    ].map((row, i) => (
+                      <React.Fragment key={row.label}>
+                        <div style={{ padding: "12px 0", fontSize: 12, fontWeight: 600, color: "#9ca3af", display: "flex", alignItems: "center", borderTop: i === 0 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>{row.label}</div>
+                        <div style={{ padding: "12px 16px", borderTop: i === 0 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: "#ffffff" }}>{row.v1}</span>
+                          </div>
+                          <div style={{ height: 4, borderRadius: 2, background: "rgba(255,255,255,0.06)" }}>
+                            <div style={{ height: "100%", borderRadius: 2, background: row.color1, width: `${row.bar1}%`, transition: "width 1s ease" }} />
+                          </div>
+                        </div>
+                        <div style={{ padding: "12px 16px", borderTop: i === 0 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: "#ffffff" }}>{row.v2}</span>
+                          </div>
+                          <div style={{ height: 4, borderRadius: 2, background: "rgba(255,255,255,0.06)" }}>
+                            <div style={{ height: "100%", borderRadius: 2, background: row.color2, width: `${row.bar2}%`, transition: "width 1s ease" }} />
+                          </div>
+                        </div>
+                      </React.Fragment>
+                    ))}
+                  </div>
+
+                  {/* Bottom verdict */}
+                  <div style={{ marginTop: 20, padding: "14px 20px", borderRadius: 12, background: "rgba(132,204,22,0.06)", border: "1px solid rgba(132,204,22,0.12)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#ffffff" }}>Walgreens NNN wins on 5 of 5 metrics</span>
+                    </div>
+                    <span style={{ fontSize: 11, color: "#84CC16", fontWeight: 600 }}>View Full Report →</span>
+                  </div>
+                </div>
               </div>
 
             </div>
