@@ -718,11 +718,6 @@ export default function OmAnalyzerPage() {
                   }}>
                     Upload a Deal
                   </button>
-                  <button onClick={() => { setData(generateDemoResult("Walgreens-NNN-Texas")); setView("result"); }} className="ds-btn ds-btn-outline" style={{
-                    fontSize: 15, padding: "14px 32px",
-                  }}>
-                    See a Demo
-                  </button>
                 </div>
               </div>
 
@@ -789,6 +784,21 @@ export default function OmAnalyzerPage() {
               </div>
               <input ref={fileRef} type="file" style={{ display: "none" }} accept={ACCEPTED_EXT}
                 onChange={(e) => { if (e.target.files?.length) handleFile(e.target.files[0]); }} />
+
+              {/* Usage counter */}
+              {usageData && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 12 }}>
+                  <div style={{ height: 4, width: 56, background: "rgba(255,255,255,0.1)", borderRadius: 2, overflow: "hidden" }}>
+                    <div style={{ height: "100%", borderRadius: 2, transition: "width 0.3s ease",
+                      width: `${Math.min(100, (usageData.uploadsUsed / usageData.uploadLimit) * 100)}%`,
+                      background: usageData.uploadsUsed >= usageData.uploadLimit ? "#84CC16" : usageData.uploadsUsed >= usageData.uploadLimit - 1 ? "#eab308" : "#10b981",
+                    }} />
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: usageData.uploadsUsed >= usageData.uploadLimit ? "#84CC16" : "#9ca3af" }}>
+                    {usageData.uploadsUsed} / {usageData.uploadLimit} free
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
