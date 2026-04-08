@@ -958,8 +958,8 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── TRUST BAR ── */}
-          <div style={{ padding: "20px 32px", background: "rgba(132,204,22,0.03)", borderTop: "1px solid rgba(132,204,22,0.06)", borderBottom: "1px solid rgba(132,204,22,0.06)" }}>
-            <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", justifyContent: "center", alignItems: "center", gap: 32, flexWrap: "wrap" }}>
+          <div style={{ padding: "20px 32px", maxWidth: 1100, margin: "0 auto" }}>
+            <div style={{ padding: "16px 32px", background: "rgba(132,204,22,0.03)", border: "1px solid rgba(132,204,22,0.06)", borderRadius: 12, display: "flex", justifyContent: "center", alignItems: "center", gap: 32, flexWrap: "wrap" }}>
               {[
                 "Built for real-world acquisition workflows",
                 "90%+ extraction accuracy on standard CRE metrics",
@@ -2308,7 +2308,7 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
   ];
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto" }}>
+    <div style={{ maxWidth: 1100, margin: "0 auto" }}>
       {/* ===== HERO SECTION — Property Info + Asset Type Badge ===== */}
       <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", marginBottom: 20, overflow: "hidden" }}>
         <div style={{ padding: "32px 28px" }}>
@@ -2348,12 +2348,22 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
             </div>
           )}
 
-          {/* Combined Hero Card: Brief + Image + Score */}
+          {/* Image + Score */}
           <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, color: "#0F172A", lineHeight: 1.8 }}>
-                {brief.split("\n").filter((p: string) => p.trim()).slice(0, 2).map((p: string, i: number) => (
-                  <p key={i} style={{ margin: i === 0 ? "0" : "12px 0 0" }}>{p}</p>
+              {/* Property metadata */}
+              <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                {[
+                  { label: "Type", value: d.assetType },
+                  { label: "Built", value: d.yearBuilt },
+                  { label: "Tenants", value: d.tenantCount },
+                  { label: "WALE", value: d.wale ? `${d.wale} yrs` : null },
+                  { label: "Traffic", value: d.traffic },
+                ].filter((x) => x.value).map((x) => (
+                  <div key={x.label}>
+                    <div style={{ fontSize: 9, color: "#6B7280", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{x.label}</div>
+                    <div style={{ fontSize: 12, color: "#0F172A", marginTop: 1, fontWeight: 500 }}>{x.value}</div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -2393,7 +2403,8 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: "'Inter', sans-serif" }}>
             <thead>
               <tr>
-                <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.06)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Price Adj.</th>
+                <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.06)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Scenario</th>
+                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.06)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Purchase Price</th>
                 <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.06)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Cap Rate</th>
                 <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.06)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>DSCR</th>
                 <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.06)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Cash-on-Cash</th>
@@ -2417,6 +2428,7 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
                     <td style={{ padding: "10px 12px", fontWeight: row.isOM ? 700 : 500, color: "#0F172A" }}>
                       {row.isOM ? <span style={{ color: "#84CC16", fontWeight: 700 }}>⭐ {row.label}</span> : row.label}
                     </td>
+                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{fmt$((d.askingPrice || 0) * (1 + row.adjustment))}</td>
                     <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: capRateColor, fontVariantNumeric: "tabular-nums" }}>{sens.capRate.toFixed(2)}%</td>
                     <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: dscrColor, fontVariantNumeric: "tabular-nums" }}>{sens.dscr.toFixed(2)}x</td>
                     <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: cocColor, fontVariantNumeric: "tabular-nums" }}>{sens.coc.toFixed(2)}%</td>
@@ -2431,43 +2443,87 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
         </div>
       )}
 
-      {/* ===== STRENGTHS & RISKS SECTION ===== */}
+      {/* ===== STRENGTHS & RISKS — matching pro layout ===== */}
       {(strengths.length > 0 || risks.length > 0) && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
-          {strengths.length > 0 && (
-            <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: "20px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-                <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-                <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Strengths</h3>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {strengths.map((strength, idx) => (
-                  <div key={idx} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                    <span style={{ color: "#059669", fontWeight: 700, flexShrink: 0, marginTop: 2 }}>✓</span>
-                    <span style={{ fontSize: 13, color: "#0F172A", lineHeight: 1.5 }}>{strength}</span>
-                  </div>
-                ))}
-              </div>
+        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden", marginBottom: 20 }}>
+          <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0,0,0,0.04)", background: "#F9FAFB" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Inter', sans-serif" }}>Strengths &amp; Risks</h3>
             </div>
-          )}
-          {risks.length > 0 && (
-            <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: "20px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-                <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-                <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Risks & Considerations</h3>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {risks.map((risk, idx) => (
-                  <div key={idx} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                    <span style={{ color: "#D97706", fontWeight: 700, flexShrink: 0, marginTop: 2 }}>⚠</span>
-                    <span style={{ fontSize: 13, color: "#0F172A", lineHeight: 1.5 }}>{risk}</span>
-                  </div>
-                ))}
-              </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 100 }}>
+            {/* Strengths */}
+            <div style={{ padding: "16px 20px", borderRight: "1px solid rgba(0,0,0,0.05)" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#059669", marginBottom: 12 }}>Strengths</div>
+              {strengths.map((s, i) => (
+                <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 10 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" style={{ flexShrink: 0, marginTop: 2 }}><polyline points="20 6 9 17 4 12" /></svg>
+                  <span style={{ fontSize: 13, color: "#0F172A", lineHeight: 1.5 }}>{s}</span>
+                </div>
+              ))}
+              {strengths.length === 0 && <span style={{ fontSize: 12, color: "#9ca3af" }}>No strong signals detected</span>}
             </div>
-          )}
+            {/* Risks */}
+            <div style={{ padding: "16px 20px" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#DC2626", marginBottom: 12 }}>Risks</div>
+              {risks.map((r, i) => (
+                <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 10 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" style={{ flexShrink: 0, marginTop: 2 }}><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                  <span style={{ fontSize: 13, color: "#0F172A", lineHeight: 1.5 }}>{r}</span>
+                </div>
+              ))}
+              {risks.length === 0 && <span style={{ fontSize: 12, color: "#9ca3af" }}>No risk signals detected</span>}
+            </div>
+          </div>
         </div>
       )}
+
+      {/* ===== VALUE-ADD OPPORTUNITIES ===== */}
+      {(() => {
+        const vaFlags: { type: string; strength: string; summary: string }[] = [];
+        // Derive value-add signals from available data
+        const occupancy = Number(d.occupancyPct) || 0;
+        const noiOm = Number(d.noiOm) || 0;
+        const noiAdj = Number(d.noiAdjusted) || 0;
+        if (occupancy > 0 && occupancy < 90) vaFlags.push({ type: "Vacancy Lease-Up", strength: occupancy < 75 ? "strong" : "moderate", summary: `Current occupancy at ${occupancy}%. Lease-up to market could significantly increase NOI.` });
+        if (noiAdj > 0 && noiOm > 0 && noiAdj > noiOm * 1.05) vaFlags.push({ type: "Expense Optimization", strength: noiAdj > noiOm * 1.15 ? "strong" : "moderate", summary: `Adjusted NOI (${fmt$(noiAdj)}) exceeds OM NOI (${fmt$(noiOm)}), suggesting expense inefficiencies to address.` });
+        if (d.signals?.rollover_risk && String(d.signals.rollover_risk).includes("🔴")) vaFlags.push({ type: "Lease Rollover", strength: "moderate", summary: "Near-term lease expirations create opportunity to negotiate at current or higher market rents." });
+        if (d.signals?.basis && String(d.signals.basis).includes("🟢")) vaFlags.push({ type: "Below-Market Basis", strength: "strong", summary: "Entry basis appears favorable relative to market comps. Potential for immediate equity upside." });
+        if (vaFlags.length === 0) return null;
+        const strengthStyle: Record<string, { color: string; bg: string }> = {
+          strong: { color: "#059669", bg: "rgba(5,150,105,0.08)" },
+          moderate: { color: "#D97706", bg: "rgba(217,119,6,0.08)" },
+        };
+        return (
+          <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(5,150,105,0.15)", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", overflow: "hidden", marginBottom: 20 }}>
+            <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0,0,0,0.04)", background: "rgba(5,150,105,0.03)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ width: 3, height: 14, background: "#059669", borderRadius: 2 }} />
+                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Inter', sans-serif" }}>Value-Add Opportunities</h3>
+              </div>
+              <p style={{ fontSize: 12, color: "#6B7280", margin: "4px 0 0 11px", lineHeight: 1.4 }}>Actionable signals that indicate NOI improvement potential</p>
+            </div>
+            <div style={{ padding: "12px 20px" }}>
+              {vaFlags.map((flag, i) => {
+                const s = strengthStyle[flag.strength] || strengthStyle.moderate;
+                return (
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 12px", marginBottom: i < vaFlags.length - 1 ? 6 : 0, borderRadius: 8, background: s.bg }}>
+                    <span style={{ fontSize: 16, lineHeight: 1, marginTop: 1, flexShrink: 0 }}>{flag.strength === "strong" ? "📈" : "📊"}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280" }}>{flag.type}</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: s.color, background: "rgba(255,255,255,0.6)", padding: "1px 6px", borderRadius: 3 }}>{flag.strength}</span>
+                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", lineHeight: 1.4 }}>{flag.summary}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ===== DISCLAIMER ===== */}
       <p style={{ fontSize: 10, color: "#6B7280", margin: "0 0 16px", fontStyle: "italic", textAlign: "center" }}>
@@ -2691,16 +2747,6 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
       }}>
         <div style={{ position: "absolute", top: "-50%", left: "50%", transform: "translateX(-50%)", width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.08)", filter: "blur(120px)", pointerEvents: "none" }} />
         <div style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
-            <svg width={40} height={40} viewBox="0 0 100 100" fill="none">
-              <rect x="10" y="62" width="14" height="28" rx="2" fill="#84CC16" />
-              <rect x="30" y="48" width="14" height="42" rx="2" fill="#84CC16" />
-              <rect x="50" y="32" width="14" height="58" rx="2" fill="#84CC16" />
-              <rect x="70" y="16" width="14" height="74" rx="2" fill="#84CC16" />
-              <circle cx="77" cy="8" r="5" fill="#84CC16" />
-              <path d="M5 95 Q50 82 95 95" stroke="#84CC16" strokeWidth="2.5" fill="none" />
-            </svg>
-          </div>
           <h2 style={{
             fontSize: 28, fontWeight: 800, color: "#ffffff", marginBottom: 12,
             fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.3,
