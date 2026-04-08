@@ -434,7 +434,7 @@ export default function OmAnalyzerPage() {
         @keyframes connectorGrow { from { width: 0; } to { width: 100%; } }
         @keyframes docSlide { 0% { transform: translateY(6px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
         @keyframes extractPulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
-        @keyframes scoreFill { from { stroke-dashoffset: 126; } to { stroke-dashoffset: var(--score-offset); } }
+        @keyframes scoreFill { from { stroke-dashoffset: 75.4; } to { stroke-dashoffset: var(--score-offset); } }
         @keyframes metricBar { from { width: 0; } to { width: var(--bar-w); } }
         @keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: 200px 0; } }
         @keyframes omPulse {
@@ -466,7 +466,12 @@ export default function OmAnalyzerPage() {
         }
         .ds-process-strip { opacity: 1; }
         .ds-process-step { opacity: 0; }
-        .ds-strip-animate .ds-process-step { animation: stepFadeIn 0.5s ease-out forwards; }
+        .ds-strip-animate .ds-process-step {
+          animation-name: stepFadeIn;
+          animation-duration: 0.5s;
+          animation-timing-function: ease-out;
+          animation-fill-mode: forwards;
+        }
         .ds-process-connector { position: relative; height: 2px; flex: 1; min-width: 32px; background: rgba(255,255,255,0.1); overflow: hidden; border-radius: 1px; align-self: center; }
         .ds-process-connector::after { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 0; background: #84CC16; border-radius: 1px; }
         .ds-strip-animate .ds-process-connector::after { animation: connectorGrow 0.6s ease-out forwards; }
@@ -604,7 +609,7 @@ export default function OmAnalyzerPage() {
                   {/* Step 1: Upload */}
                   <div className="ds-process-step" style={{
                     display: "flex", alignItems: "center", gap: 10,
-                    background: "#1e1e28", borderRadius: 14, padding: "10px 16px",
+                    background: "#1e1e28", borderRadius: 14, padding: "10px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.3), 0 0 0 1px rgba(132,204,22,0.08)",
                     border: "1.5px solid rgba(255,255,255,0.1)", animationDelay: "0.3s",
                   }}>
                     <div style={{
@@ -646,7 +651,7 @@ export default function OmAnalyzerPage() {
                   {/* Step 2: Extract */}
                   <div className="ds-process-step" style={{
                     display: "flex", alignItems: "center", gap: 10,
-                    background: "#1e1e28", borderRadius: 14, padding: "10px 16px",
+                    background: "#1e1e28", borderRadius: 14, padding: "10px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.3), 0 0 0 1px rgba(132,204,22,0.08)",
                     border: "1.5px solid rgba(255,255,255,0.1)", animationDelay: "1.6s",
                   }}>
                     <div style={{
@@ -688,7 +693,7 @@ export default function OmAnalyzerPage() {
                   {/* Step 3: Score */}
                   <div className="ds-process-step" style={{
                     display: "flex", alignItems: "center", gap: 10,
-                    background: "#1e1e28", borderRadius: 14, padding: "10px 16px",
+                    background: "#1e1e28", borderRadius: 14, padding: "10px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.3), 0 0 0 1px rgba(132,204,22,0.08)",
                     border: "1.5px solid rgba(255,255,255,0.1)", animationDelay: "2.8s",
                   }}>
                     <div style={{
