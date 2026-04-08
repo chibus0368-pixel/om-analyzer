@@ -533,6 +533,7 @@ export default function OmAnalyzerPage() {
           .ds-pro-grid { grid-template-columns: 1fr !important; }
           .ds-pricing-grid { grid-template-columns: 1fr !important; }
           .ds-steps-grid { grid-template-columns: 1fr !important; }
+          .ds-why-grid { grid-template-columns: 1fr !important; }
           .ds-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
           .ds-nav-links { display: none !important; }
           .ds-pro-features { grid-template-columns: 1fr 1fr !important; }
@@ -905,317 +906,120 @@ export default function OmAnalyzerPage() {
             </div>
           </div>
 
-          {/* ── 2. FROM OM TO INSIGHT IN SECONDS ── */}
-          <div id="how-it-works" style={{ padding: "100px 32px 100px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
-            <div style={{ maxWidth: 1120, margin: "0 auto", position: "relative", zIndex: 1 }}>
+          {/* ── 2. WHY DEALSIGNALS ── */}
+          <div id="how-it-works" style={{ padding: "120px 32px 100px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
+            {/* Subtle background depth */}
+            <div style={{ position: "absolute", top: -100, left: "50%", transform: "translateX(-50%)", width: 800, height: 800, borderRadius: "50%", background: "rgba(132,204,22,0.03)", filter: "blur(180px)", pointerEvents: "none" }} />
+
+            <div style={{ maxWidth: 1000, margin: "0 auto", position: "relative", zIndex: 1 }}>
 
               {/* Section header */}
-              <div style={{ textAlign: "center", marginBottom: 56 }}>
+              <div style={{ textAlign: "center", marginBottom: 72 }}>
                 <div style={{
-                  display: "inline-flex", alignItems: "center", padding: "8px 18px",
+                  display: "inline-flex", alignItems: "center", padding: "6px 16px",
                   borderRadius: 50, background: "rgba(132,204,22,0.06)", color: "#84CC16",
-                  fontSize: 13, fontWeight: 600, marginBottom: 16, gap: 6,
+                  fontSize: 12, fontWeight: 700, marginBottom: 16, gap: 6,
+                  letterSpacing: 0.5, textTransform: "uppercase" as const,
                 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                  One-Click Intelligence
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
+                  Why DealSignals
                 </div>
-                <h2 style={{ fontSize: 40, fontWeight: 800, color: "#ffffff", marginBottom: 12, letterSpacing: -0.5, lineHeight: 1.15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  Deal <span className="ds-callout">Insight</span> in Less Than 60 Seconds
+                <h2 style={{ fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15, marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  Stop reading OMs.<br />Start <span className="ds-callout">making decisions</span>.
                 </h2>
-                <p style={{ fontSize: 17, color: "#9ca3af", lineHeight: 1.7, maxWidth: 560, margin: "0 auto" }}>
-                  Upload a single Offering Memorandum and get a full pre-diligence report before your coffee gets cold.
+                <p style={{ fontSize: 17, color: "#9ca3af", lineHeight: 1.7, maxWidth: 600, margin: "0 auto" }}>
+                  You don&apos;t need another tool. You need a faster way to filter deals, get a second opinion, and focus your time on what actually pencils.
                 </p>
               </div>
 
-              {/* Animated workflow graphic */}
-              <div style={{ position: "relative", maxWidth: 1000, margin: "0 auto" }}>
-
-                {/* ── Row 1: Upload OM → Pre-Diligence Engine → DealBoard ── */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, marginBottom: 56 }}>
-
-                  {/* Upload OM card */}
-                  <div style={{
-                    background: "rgba(132,204,22,0.06)", border: "1px solid rgba(132,204,22,0.2)",
-                    borderRadius: 16, padding: "28px 32px", minWidth: 180, textAlign: "center",
-                    animation: "fadeInUp 0.6s ease-out both",
-                  }}>
-                    <div style={{
-                      width: 52, height: 52, borderRadius: 14, background: "rgba(132,204,22,0.1)",
-                      display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px",
-                    }}>
-                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><polyline points="9 15 12 12 15 15" />
-                      </svg>
-                    </div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: "#ffffff", marginBottom: 4 }}>Upload OM</div>
-                    <div style={{ fontSize: 12, color: "#9ca3af" }}>PDF, DOCX, or XLS</div>
-                  </div>
-
-                  {/* Animated connector arrow 1 */}
-                  <div style={{ width: 80, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-                    <div style={{
-                      height: 2, background: "linear-gradient(90deg, #84CC16, rgba(132,204,22,0.3))",
-                      width: "100%", animation: "connectorGrow 0.8s ease-out 0.4s both",
-                    }} />
-                    <div style={{
-                      position: "absolute", right: -4, width: 8, height: 8, borderTop: "2px solid #84CC16",
-                      borderRight: "2px solid #84CC16", transform: "rotate(45deg)", animation: "fadeInUp 0.3s ease-out 1s both",
-                    }} />
-                    {/* Flowing dots */}
-                    <div style={{
-                      position: "absolute", width: 6, height: 6, borderRadius: "50%", background: "#84CC16",
-                      animation: "omFlowDot 1.8s ease-in-out 1.2s infinite",
-                    }} />
-                  </div>
-
-                  {/* Pre-Diligence Engine (center piece) */}
-                  <div style={{
-                    background: "linear-gradient(135deg, rgba(132,204,22,0.12), rgba(132,204,22,0.04))",
-                    border: "1.5px solid rgba(132,204,22,0.3)", borderRadius: 20,
-                    padding: "32px 40px", textAlign: "center", position: "relative",
-                    animation: "fadeInUp 0.6s ease-out 0.3s both",
-                    boxShadow: "0 0 60px rgba(132,204,22,0.08), inset 0 1px 0 rgba(255,255,255,0.05)",
-                  }}>
-                    {/* Scanning line effect */}
-                    <div style={{
-                      position: "absolute", top: 0, left: "10%", right: "10%", height: 1,
-                      background: "linear-gradient(90deg, transparent, #84CC16, transparent)",
-                      animation: "omScanLine 3s ease-in-out 1.5s infinite", opacity: 0.4,
-                    }} />
-                    <div style={{
-                      width: 60, height: 60, borderRadius: 16,
-                      background: "linear-gradient(135deg, #84CC16, #4D7C0F)",
-                      display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px",
-                      boxShadow: "0 4px 20px rgba(132,204,22,0.3)",
-                    }}>
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                      </svg>
-                    </div>
-                    <div style={{ fontSize: 17, fontWeight: 800, color: "#ffffff", marginBottom: 4 }}>Pre-Diligence Engine</div>
-                    <div style={{ fontSize: 12, color: "#84CC16", fontWeight: 600, letterSpacing: 0.5 }}>CRE INTELLIGENCE</div>
-                    {/* Processing dots */}
-                    <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 12 }}>
-                      {[0,1,2].map(i => (
-                        <div key={i} style={{
-                          width: 5, height: 5, borderRadius: "50%", background: "#84CC16",
-                          animation: `omProcessDot 1.2s ease-in-out ${i * 0.2}s infinite`,
-                        }} />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Animated connector arrow 2 */}
-                  <div style={{ width: 80, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-                    <div style={{
-                      height: 2, background: "linear-gradient(90deg, rgba(132,204,22,0.3), #84CC16)",
-                      width: "100%", animation: "connectorGrow 0.8s ease-out 0.8s both",
-                    }} />
-                    <div style={{
-                      position: "absolute", right: -4, width: 8, height: 8, borderTop: "2px solid #84CC16",
-                      borderRight: "2px solid #84CC16", transform: "rotate(45deg)", animation: "fadeInUp 0.3s ease-out 1.4s both",
-                    }} />
-                    <div style={{
-                      position: "absolute", width: 6, height: 6, borderRadius: "50%", background: "#84CC16",
-                      animation: "omFlowDot 1.8s ease-in-out 1.6s infinite",
-                    }} />
-                  </div>
-
-                  {/* DealBoard card */}
-                  <div style={{
-                    background: "rgba(132,204,22,0.06)", border: "1px solid rgba(132,204,22,0.2)",
-                    borderRadius: 16, padding: "28px 32px", minWidth: 180, textAlign: "center",
-                    animation: "fadeInUp 0.6s ease-out 0.6s both",
-                  }}>
-                    <div style={{
-                      width: 52, height: 52, borderRadius: 14, background: "rgba(132,204,22,0.1)",
-                      display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px",
-                    }}>
-                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
-                      </svg>
-                    </div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: "#ffffff", marginBottom: 4 }}>DealBoard</div>
-                    <div style={{ fontSize: 12, color: "#9ca3af" }}>Score, share, export</div>
-                  </div>
-                </div>
-
-                {/* ── Row 2: App Preview (matches actual Pro UI) ── */}
-                <div style={{
-                  borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)",
-                  boxShadow: "0 20px 60px rgba(0,0,0,0.4)", animation: "fadeInUp 0.6s ease-out 0.9s both",
-                  background: "rgba(22,22,31,0.8)", backdropFilter: "blur(10px)",
-                }}>
-                  {/* App header bar */}
-                  <div style={{
-                    height: 44, background: "#16161f", borderBottom: "1px solid rgba(255,255,255,0.08)",
-                    display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px",
-                  }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: "#ffffff" }}>Deal Signals</span>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ padding: "4px 12px", borderRadius: 50, fontSize: 10, fontWeight: 700, background: "#84CC16", color: "#0d0d14" }}>Upgrade to Pro</span>
-                      <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#84CC16", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#0d0d14" }}>B</div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: "flex", minHeight: 340 }}>
-                    {/* Sidebar */}
-                    <div style={{ width: 200, borderRight: "1px solid rgba(255,255,255,0.06)", padding: "16px 14px", flexShrink: 0 }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#84CC16", marginBottom: 12 }}>My DealBoard</div>
-                      {["DealBoard", "Scoreboard"].map(item => (
-                        <div key={item} style={{ padding: "8px 10px", fontSize: 12, color: "#9ca3af", borderRadius: 6, marginBottom: 2, display: "flex", alignItems: "center", gap: 8 }}>
-                          <div style={{ width: 4, height: 4, borderRadius: 1, background: item === "DealBoard" ? "#84CC16" : "#6366F1" }} />
-                          {item}
-                        </div>
-                      ))}
-                      <div style={{ padding: "8px 10px", fontSize: 12, color: "#84CC16", borderRadius: 6, background: "rgba(132,204,22,0.06)", marginBottom: 16, display: "flex", alignItems: "center", gap: 8, fontWeight: 600 }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><polyline points="9 15 12 12 15 15" /></svg>
-                        Upload Deal
-                      </div>
-
-                      <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6, color: "#6b7280", marginBottom: 8 }}>Properties (2)</div>
-                      {[
-                        { name: "Walgreens — Cedar...", score: 74, color: "#84CC16" },
-                        { name: "Flex Industrial — Sc...", score: 68, color: "#D97706" },
-                      ].map(p => (
-                        <div key={p.name} style={{ padding: "7px 10px", fontSize: 11, color: p.score === 74 ? "#ffffff" : "#9ca3af", borderRadius: 6, marginBottom: 2, display: "flex", justifyContent: "space-between", alignItems: "center", background: p.score === 74 ? "rgba(255,255,255,0.04)" : "transparent" }}>
-                          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 120 }}>{p.name}</span>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: p.color }}>{p.score}</span>
-                        </div>
-                      ))}
-
-                      <div style={{ marginTop: 12, padding: "8px", border: "1px dashed rgba(255,255,255,0.1)", borderRadius: 8, textAlign: "center", fontSize: 11, color: "#6b7280" }}>+ Add Property</div>
-                    </div>
-
-                    {/* Main content area */}
-                    <div style={{ flex: 1, padding: "20px 24px" }}>
-                      {/* Property header card */}
-                      <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
-                        {/* Map placeholder */}
-                        <div style={{ width: 160, height: 120, borderRadius: 10, background: "linear-gradient(135deg, #e8e8e0, #d4d4cc)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-                          <div style={{ width: 10, height: 14, background: "#ef8a8a", borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%", position: "relative", top: -4 }} />
-                          <div style={{ position: "absolute", bottom: 8, fontSize: 9, color: "#6b7280", fontWeight: 600 }}>Cedar Park, TX</div>
-                        </div>
-                        {/* Property info */}
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                            <div>
-                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                                <span style={{ fontSize: 16, fontWeight: 800, color: "#ffffff" }}>Walgreens NNN</span>
-                                <span style={{ padding: "2px 8px", borderRadius: 4, fontSize: 9, fontWeight: 700, background: "rgba(5,150,105,0.15)", color: "#059669", textTransform: "uppercase" }}>Retail</span>
-                              </div>
-                              <div style={{ fontSize: 11, color: "#9ca3af" }}>1301 E Whitestone Blvd</div>
-                            </div>
-                            <div style={{ textAlign: "center" }}>
-                              <div style={{ width: 42, height: 42, borderRadius: "50%", border: "2.5px solid #84CC16", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "#84CC16" }}>74</div>
-                              <div style={{ fontSize: 9, fontWeight: 700, color: "#84CC16", marginTop: 2 }}>BUY</div>
-                            </div>
-                          </div>
-                          {/* Metric pills */}
-                          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                            {[
-                              { label: "PRICE", value: "$7.05M" },
-                              { label: "CAP RATE", value: "5.85%" },
-                              { label: "NOI", value: "$412K" },
-                              { label: "DSCR", value: "1.42x" },
-                            ].map(m => (
-                              <div key={m.label} style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)", flex: 1 }}>
-                                <div style={{ fontSize: 8, fontWeight: 600, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>{m.label}</div>
-                                <div style={{ fontSize: 14, fontWeight: 800, color: "#ffffff", marginTop: 2 }}>{m.value}</div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Score Breakdown */}
-                      <div style={{ background: "rgba(255,255,255,0.02)", borderRadius: 12, padding: "16px 20px", border: "1px solid rgba(255,255,255,0.05)" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 14 }}>
-                          <div style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-                          <span style={{ fontSize: 13, fontWeight: 700, color: "#ffffff" }}>Score Breakdown</span>
-                        </div>
-                        {[
-                          { label: "Pricing", score: 62, color: "#D97706" },
-                          { label: "Cashflow", score: 78, color: "#84CC16" },
-                          { label: "Tenant", score: 82, color: "#84CC16" },
-                          { label: "Location", score: 78, color: "#84CC16" },
-                        ].map(s => (
-                          <div key={s.label} style={{ marginBottom: 10 }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                              <span style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af" }}>{s.label}</span>
-                              <span style={{ fontSize: 11, fontWeight: 700, color: s.color }}>{s.score}</span>
-                            </div>
-                            <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.06)" }}>
-                              <div style={{ height: "100%", borderRadius: 3, background: s.color, width: `${s.score}%` }} />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* ── 4. HOW IT WORKS — WORKFLOW VISUAL ── */}
-          <div id="workflow" style={{ padding: "88px 32px 72px", background: "#f5f5f0" }}>
-            <div style={{ maxWidth: 1100, margin: "0 auto", textAlign: "center" }}>
-              <div style={{
-                display: "inline-block", padding: "5px 14px", borderRadius: 20,
-                background: "rgba(132,204,22,0.12)", color: "#4D7C0F",
-                fontSize: 12, fontWeight: 700, letterSpacing: 0.5, marginBottom: 16,
-                textTransform: "uppercase",
-              }}>
-                How It Works
-              </div>
-              <h2 style={{ fontSize: 34, fontWeight: 800, color: "#151b2b", marginBottom: 12, lineHeight: 1.2, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                From offering memo to<br /><span className="ds-callout-dark">scored deal</span> in seconds
-              </h2>
-              <p style={{ fontSize: 16, color: "#585e70", marginBottom: 48, lineHeight: 1.7, maxWidth: 580, margin: "0 auto 48px" }}>
-                Upload any OM, rent roll, or broker package. Deal Signals extracts every key metric, scores the deal, and delivers it straight to your DealBoard.
-              </p>
-
-              {/* Workflow image */}
-              <div style={{
-                position: "relative", maxWidth: 1060, margin: "0 auto",
-                borderRadius: 20, overflow: "hidden",
-                border: "1px solid rgba(0,0,0,0.1)",
-                boxShadow: "0 12px 48px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08)",
-              }}>
-                <img
-                  src="/images/deal-signals-workflow.png"
-                  alt="Deal Signals workflow — from OM upload to scored deal on your DealBoard"
-                  style={{ width: "100%", height: "auto", display: "block" }}
-                />
-              </div>
-
-              {/* Step indicators below */}
-              <div className="ds-workflow-steps" style={{
-                display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24,
-                maxWidth: 900, margin: "48px auto 0",
-              }}>
+              {/* Three value prop cards */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, marginBottom: 80 }} className="ds-why-grid">
                 {[
-                  { num: "1", title: "Upload", desc: "Drop in an OM, rent roll, or broker flyer — PDF, DOCX, or XLS." },
-                  { num: "2", title: "Extract", desc: "AI parses cap rate, NOI, tenant, lease terms, price & 40+ fields." },
-                  { num: "3", title: "Score", desc: "Weighted Deal Score (0–100) with buy/hold/pass recommendation." },
-                  { num: "4", title: "Act", desc: "View on your DealBoard, share with investors, or export reports." },
-                ].map(step => (
-                  <div key={step.num} style={{ textAlign: "center" }}>
+                  {
+                    icon: "M13 10V3L4 14h7v7l9-11h-7z",
+                    headline: "Pre-diligence in seconds",
+                    subline: "Not hours. Not days.",
+                    body: "Every deal you touch gets scored, extracted, and summarized before you finish reading the first page of the OM. Know if it's worth pursuing in under 60 seconds.",
+                    stat: "< 60s",
+                    statLabel: "avg. time to signal",
+                  },
+                  {
+                    icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
+                    headline: "A second opinion in minutes",
+                    subline: "Built on real CRE logic.",
+                    body: "DealSignals isn't guessing. It scores across 6 investment dimensions — pricing, cashflow, tenant quality, rollover risk, location, and upside. A standardized lens on every deal.",
+                    stat: "6",
+                    statLabel: "scoring dimensions",
+                  },
+                  {
+                    icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4",
+                    headline: "Focus your time where it counts",
+                    subline: "Filter. Compare. Decide.",
+                    body: "Stop spending hours on deals that don't pencil. Upload your pipeline, score everything, and put your energy into the deals that actually matter. One place. One system.",
+                    stat: "100+",
+                    statLabel: "deals / month on Pro",
+                  },
+                ].map((card, i) => (
+                  <div key={card.headline} style={{
+                    background: "rgba(22,26,35,0.6)", borderRadius: 16,
+                    border: "1px solid rgba(255,255,255,0.06)", padding: "36px 28px",
+                    position: "relative", overflow: "hidden",
+                    animation: `fadeInUp 0.5s ease-out ${0.1 + i * 0.15}s both`,
+                  }}>
+                    {/* Glow accent */}
+                    <div style={{ position: "absolute", top: -40, right: -40, width: 120, height: 120, borderRadius: "50%", background: "rgba(132,204,22,0.04)", filter: "blur(40px)", pointerEvents: "none" }} />
+
+                    {/* Icon */}
                     <div style={{
-                      width: 40, height: 40, borderRadius: "50%",
-                      background: "#84CC16", color: "#fff",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 16, fontWeight: 800, margin: "0 auto 12px",
+                      width: 48, height: 48, borderRadius: 14,
+                      background: "rgba(132,204,22,0.08)", border: "1px solid rgba(132,204,22,0.15)",
+                      display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20,
                     }}>
-                      {step.num}
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={card.icon} /></svg>
                     </div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: "#151b2b", marginBottom: 4 }}>{step.title}</div>
-                    <div style={{ fontSize: 13, color: "#585e70", lineHeight: 1.5 }}>{step.desc}</div>
+
+                    {/* Stat callout */}
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 16 }}>
+                      <span style={{ fontSize: 32, fontWeight: 800, color: "#84CC16", lineHeight: 1, letterSpacing: -1 }}>{card.stat}</span>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(132,204,22,0.6)" }}>{card.statLabel}</span>
+                    </div>
+
+                    {/* Copy */}
+                    <h3 style={{ fontSize: 18, fontWeight: 800, color: "#ffffff", marginBottom: 4, lineHeight: 1.3 }}>{card.headline}</h3>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "#84CC16", marginBottom: 12 }}>{card.subline}</p>
+                    <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{card.body}</p>
                   </div>
                 ))}
               </div>
+
+              {/* Bottom positioning statement */}
+              <div style={{
+                textAlign: "center", padding: "40px 32px",
+                borderRadius: 16, border: "1px solid rgba(255,255,255,0.06)",
+                background: "rgba(132,204,22,0.02)",
+              }}>
+                <div style={{ display: "flex", justifyContent: "center", gap: 40, flexWrap: "wrap", marginBottom: 24 }}>
+                  {[
+                    { label: "Not an AI parser", cross: true },
+                    { label: "A deal filtering engine", check: true },
+                    { label: "A speed advantage tool", check: true },
+                    { label: "A pre-diligence system", check: true },
+                  ].map(item => (
+                    <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      {(item as any).cross ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                      ) : (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+                      )}
+                      <span style={{ fontSize: 14, fontWeight: 600, color: (item as any).cross ? "rgba(255,255,255,0.4)" : "#ffffff" }}>{item.label}</span>
+                    </div>
+                  ))}
+                </div>
+                <p style={{ fontSize: 15, color: "#9ca3af", lineHeight: 1.7, maxWidth: 560, margin: "0 auto" }}>
+                  Everything on DealSignals is built to help you move faster than the market. Upload a deal. Get a signal. Decide in minutes, not days.
+                </p>
+              </div>
+
             </div>
           </div>
 
