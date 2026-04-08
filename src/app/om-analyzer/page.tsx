@@ -1197,8 +1197,46 @@ export default function OmAnalyzerPage() {
 
           {/* ── 6. EVERYTHING IN YOUR DEAL SIGNALS REPORT ── */}
           <div id="features" style={{ padding: "120px 32px 100px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
-            {/* Subtle gradient bg */}
-            <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "rgba(132,204,22,0.04)", filter: "blur(160px)", pointerEvents: "none" }} />
+            {/* Gradient orbs for depth */}
+            <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "rgba(132,204,22,0.06)", filter: "blur(160px)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", bottom: -150, left: -100, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.04)", filter: "blur(140px)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", top: "40%", left: "50%", transform: "translateX(-50%)", width: 800, height: 400, borderRadius: "50%", background: "rgba(132,204,22,0.02)", filter: "blur(120px)", pointerEvents: "none" }} />
+
+            {/* Subtle grid pattern */}
+            <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(132,204,22,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(132,204,22,0.03) 1px, transparent 1px)", backgroundSize: "80px 80px", pointerEvents: "none", zIndex: 0 }} />
+
+            {/* Line-drawing accent — abstract document outlines */}
+            <svg style={{ position: "absolute", top: 40, left: 40, width: 120, height: 160, pointerEvents: "none", zIndex: 0, opacity: 0.04 }} viewBox="0 0 120 160" fill="none" stroke="#84CC16" strokeWidth="1">
+              <rect x="10" y="10" width="80" height="110" rx="4" />
+              <line x1="25" y1="35" x2="75" y2="35" />
+              <line x1="25" y1="50" x2="65" y2="50" />
+              <line x1="25" y1="65" x2="70" y2="65" />
+              <line x1="25" y1="80" x2="55" y2="80" />
+              <rect x="25" y="90" width="20" height="15" rx="2" />
+              <rect x="50" y="90" width="20" height="15" rx="2" />
+            </svg>
+            <svg style={{ position: "absolute", bottom: 60, right: 60, width: 140, height: 120, pointerEvents: "none", zIndex: 0, opacity: 0.04 }} viewBox="0 0 140 120" fill="none" stroke="#84CC16" strokeWidth="1">
+              {/* Bar chart outline */}
+              <line x1="20" y1="100" x2="120" y2="100" />
+              <line x1="20" y1="100" x2="20" y2="20" />
+              <rect x="30" y="60" width="14" height="40" rx="2" />
+              <rect x="50" y="40" width="14" height="60" rx="2" />
+              <rect x="70" y="50" width="14" height="50" rx="2" />
+              <rect x="90" y="30" width="14" height="70" rx="2" />
+            </svg>
+            <svg style={{ position: "absolute", top: "50%", right: 30, width: 100, height: 100, pointerEvents: "none", zIndex: 0, opacity: 0.03, transform: "translateY(-50%)" }} viewBox="0 0 100 100" fill="none" stroke="#84CC16" strokeWidth="1">
+              {/* Pie/donut chart outline */}
+              <circle cx="50" cy="50" r="38" />
+              <circle cx="50" cy="50" r="24" />
+              <line x1="50" y1="12" x2="50" y2="26" />
+              <line x1="83" y1="68" x2="71" y2="60" />
+              <line x1="17" y1="68" x2="29" y2="60" />
+            </svg>
+            <svg style={{ position: "absolute", bottom: 40, left: "35%", width: 160, height: 60, pointerEvents: "none", zIndex: 0, opacity: 0.03 }} viewBox="0 0 160 60" fill="none" stroke="#84CC16" strokeWidth="1">
+              {/* Line chart outline */}
+              <polyline points="10,50 40,30 70,40 100,15 130,25 150,10" strokeLinecap="round" />
+              <line x1="10" y1="55" x2="150" y2="55" />
+            </svg>
 
             <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
               {/* Header row: left text + right CTA */}
