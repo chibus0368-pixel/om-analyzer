@@ -911,7 +911,7 @@ export default function OmAnalyzerPage() {
               {/* Animated workflow graphic */}
               <div style={{ position: "relative", maxWidth: 1000, margin: "0 auto" }}>
 
-                {/* ── Row 1: Upload OM → AI Engine → DealBoard ── */}
+                {/* ── Row 1: Upload OM → Pre-Diligence Engine → DealBoard ── */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, marginBottom: 56 }}>
 
                   {/* Upload OM card */}
@@ -949,7 +949,7 @@ export default function OmAnalyzerPage() {
                     }} />
                   </div>
 
-                  {/* AI Engine (center piece) */}
+                  {/* Pre-Diligence Engine (center piece) */}
                   <div style={{
                     background: "linear-gradient(135deg, rgba(132,204,22,0.12), rgba(132,204,22,0.04))",
                     border: "1.5px solid rgba(132,204,22,0.3)", borderRadius: 20,
@@ -973,7 +973,7 @@ export default function OmAnalyzerPage() {
                         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                       </svg>
                     </div>
-                    <div style={{ fontSize: 17, fontWeight: 800, color: "#ffffff", marginBottom: 4 }}>AI Engine</div>
+                    <div style={{ fontSize: 17, fontWeight: 800, color: "#ffffff", marginBottom: 4 }}>Pre-Diligence Engine</div>
                     <div style={{ fontSize: 12, color: "#84CC16", fontWeight: 600, letterSpacing: 0.5 }}>GPT-4o POWERED</div>
                     {/* Processing dots */}
                     <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 12 }}>
