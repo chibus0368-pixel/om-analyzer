@@ -1720,7 +1720,7 @@ export default function OmAnalyzerPage() {
       }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", gap: 48, marginBottom: 48 }}>
           <div>
-            <DealSignalLogo size={24} fontSize={15} gap={7} />
+            <DealSignalLogo size={36} fontSize={18} gap={9} />
             <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.7, marginTop: 14, maxWidth: 260 }}>
               Analyze CRE deals with AI-powered intelligence. Get real signals, not guesses.
             </p>
