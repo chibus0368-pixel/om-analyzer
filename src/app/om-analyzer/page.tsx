@@ -1012,20 +1012,20 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 4. HOW IT WORKS — WORKFLOW VISUAL ── */}
-          <div id="how-it-works" style={{ padding: "88px 32px 72px", background: "#0d0d14" }}>
+          <div id="how-it-works" style={{ padding: "88px 32px 72px", background: "#f5f5f0" }}>
             <div style={{ maxWidth: 1100, margin: "0 auto", textAlign: "center" }}>
               <div style={{
                 display: "inline-block", padding: "5px 14px", borderRadius: 20,
-                background: "rgba(132,204,22,0.06)", color: "#84CC16",
+                background: "rgba(132,204,22,0.12)", color: "#4D7C0F",
                 fontSize: 12, fontWeight: 700, letterSpacing: 0.5, marginBottom: 16,
                 textTransform: "uppercase",
               }}>
                 How It Works
               </div>
-              <h2 style={{ fontSize: 34, fontWeight: 800, color: "#ffffff", marginBottom: 12, lineHeight: 1.2, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                From offering memo to<br /><span style={{ color: "#84CC16" }}>scored deal</span> in seconds
+              <h2 style={{ fontSize: 34, fontWeight: 800, color: "#151b2b", marginBottom: 12, lineHeight: 1.2, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                From offering memo to<br /><span style={{ color: "#4D7C0F" }}>scored deal</span> in seconds
               </h2>
-              <p style={{ fontSize: 16, color: "#9ca3af", marginBottom: 48, lineHeight: 1.7, maxWidth: 580, margin: "0 auto 48px" }}>
+              <p style={{ fontSize: 16, color: "#585e70", marginBottom: 48, lineHeight: 1.7, maxWidth: 580, margin: "0 auto 48px" }}>
                 Upload any OM, rent roll, or broker package. Deal Signals extracts every key metric, scores the deal, and delivers it straight to your DealBoard.
               </p>
 
@@ -1033,20 +1033,14 @@ export default function OmAnalyzerPage() {
               <div style={{
                 position: "relative", maxWidth: 1060, margin: "0 auto",
                 borderRadius: 20, overflow: "hidden",
-                border: "1.5px solid rgba(255,255,255,0.12)",
-                boxShadow: "0 8px 60px rgba(0,0,0,0.5), 0 0 40px rgba(132,204,22,0.08)",
-                background: "#111118",
+                border: "1px solid rgba(0,0,0,0.1)",
+                boxShadow: "0 12px 48px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08)",
               }}>
                 <img
                   src="/images/deal-signals-workflow.png"
                   alt="Deal Signals workflow — from OM upload to scored deal on your DealBoard"
                   style={{ width: "100%", height: "auto", display: "block" }}
                 />
-                {/* Subtle green glow on top edge */}
-                <div style={{
-                  position: "absolute", top: 0, left: "10%", right: "10%", height: 1,
-                  background: "linear-gradient(90deg, transparent, rgba(132,204,22,0.4), transparent)",
-                }} />
               </div>
 
               {/* Step indicators below */}
@@ -1063,14 +1057,14 @@ export default function OmAnalyzerPage() {
                   <div key={step.num} style={{ textAlign: "center" }}>
                     <div style={{
                       width: 40, height: 40, borderRadius: "50%",
-                      background: "#84CC16", color: "#0d0d14",
+                      background: "#84CC16", color: "#fff",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       fontSize: 16, fontWeight: 800, margin: "0 auto 12px",
                     }}>
                       {step.num}
                     </div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: "#ffffff", marginBottom: 4 }}>{step.title}</div>
-                    <div style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.5 }}>{step.desc}</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#151b2b", marginBottom: 4 }}>{step.title}</div>
+                    <div style={{ fontSize: 13, color: "#585e70", lineHeight: 1.5 }}>{step.desc}</div>
                   </div>
                 ))}
               </div>
