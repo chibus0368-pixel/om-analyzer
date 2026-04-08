@@ -587,9 +587,148 @@ export default function OmAnalyzerPage() {
 
           {/* ── 1. HERO ── */}
           <div style={{ padding: "100px 32px 120px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
+            {/* Subtle line-drawing cityscape background */}
+            <svg
+              style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "70%", pointerEvents: "none", zIndex: 0, opacity: 0.04 }}
+              viewBox="0 0 1440 600" preserveAspectRatio="xMidYMax slice" fill="none" xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* Skyline buildings */}
+              <g stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                {/* Far left - short building */}
+                <rect x="20" y="340" width="60" height="260" />
+                <line x1="35" y1="360" x2="35" y2="380" /><line x1="55" y1="360" x2="55" y2="380" />
+                <line x1="35" y1="400" x2="35" y2="420" /><line x1="55" y1="400" x2="55" y2="420" />
+                <line x1="35" y1="440" x2="35" y2="460" /><line x1="55" y1="440" x2="55" y2="460" />
+
+                {/* Tall tower */}
+                <rect x="100" y="180" width="50" height="420" />
+                <rect x="110" y="160" width="30" height="20" />
+                <line x1="125" y1="140" x2="125" y2="160" />
+                <line x1="115" y1="200" x2="115" y2="220" /><line x1="135" y1="200" x2="135" y2="220" />
+                <line x1="115" y1="240" x2="115" y2="260" /><line x1="135" y1="240" x2="135" y2="260" />
+                <line x1="115" y1="280" x2="115" y2="300" /><line x1="135" y1="280" x2="135" y2="300" />
+                <line x1="115" y1="320" x2="115" y2="340" /><line x1="135" y1="320" x2="135" y2="340" />
+                <line x1="115" y1="360" x2="115" y2="380" /><line x1="135" y1="360" x2="135" y2="380" />
+
+                {/* Wide office block */}
+                <rect x="170" y="290" width="90" height="310" />
+                <line x1="170" y1="350" x2="260" y2="350" />
+                <line x1="170" y1="410" x2="260" y2="410" />
+                <line x1="170" y1="470" x2="260" y2="470" />
+                <line x1="190" y1="290" x2="190" y2="600" /><line x1="215" y1="290" x2="215" y2="600" />
+                <line x1="240" y1="290" x2="240" y2="600" />
+
+                {/* Modern tower with setback */}
+                <rect x="290" y="220" width="55" height="380" />
+                <rect x="295" y="200" width="45" height="20" />
+                <rect x="300" y="240" width="10" height="15" /><rect x="320" y="240" width="10" height="15" />
+                <rect x="300" y="280" width="10" height="15" /><rect x="320" y="280" width="10" height="15" />
+                <rect x="300" y="320" width="10" height="15" /><rect x="320" y="320" width="10" height="15" />
+                <rect x="300" y="360" width="10" height="15" /><rect x="320" y="360" width="10" height="15" />
+                <rect x="300" y="400" width="10" height="15" /><rect x="320" y="400" width="10" height="15" />
+
+                {/* Skyscraper with spire */}
+                <rect x="370" y="130" width="45" height="470" />
+                <polygon points="380,130 392,80 405,130" />
+                <line x1="392" y1="50" x2="392" y2="80" />
+                <line x1="382" y1="160" x2="382" y2="175" /><line x1="402" y1="160" x2="402" y2="175" />
+                <line x1="382" y1="200" x2="382" y2="215" /><line x1="402" y1="200" x2="402" y2="215" />
+                <line x1="382" y1="240" x2="382" y2="255" /><line x1="402" y1="240" x2="402" y2="255" />
+                <line x1="382" y1="280" x2="382" y2="295" /><line x1="402" y1="280" x2="402" y2="295" />
+                <line x1="382" y1="320" x2="382" y2="335" /><line x1="402" y1="320" x2="402" y2="335" />
+                <line x1="382" y1="360" x2="382" y2="375" /><line x1="402" y1="360" x2="402" y2="375" />
+
+                {/* Short retail building */}
+                <rect x="440" y="420" width="70" height="180" />
+                <rect x="455" y="440" width="15" height="25" /><rect x="480" y="440" width="15" height="25" />
+                <rect x="455" y="490" width="15" height="25" /><rect x="480" y="490" width="15" height="25" />
+                <rect x="460" y="540" width="40" height="60" />
+
+                {/* Mid-rise with flat roof */}
+                <rect x="530" y="320" width="65" height="280" />
+                <line x1="545" y1="340" x2="545" y2="355" /><line x1="565" y1="340" x2="565" y2="355" /><line x1="580" y1="340" x2="580" y2="355" />
+                <line x1="545" y1="375" x2="545" y2="390" /><line x1="565" y1="375" x2="565" y2="390" /><line x1="580" y1="375" x2="580" y2="390" />
+                <line x1="545" y1="410" x2="545" y2="425" /><line x1="565" y1="410" x2="565" y2="425" /><line x1="580" y1="410" x2="580" y2="425" />
+                <line x1="545" y1="445" x2="545" y2="460" /><line x1="565" y1="445" x2="565" y2="460" /><line x1="580" y1="445" x2="580" y2="460" />
+
+                {/* Glass tower */}
+                <rect x="620" y="200" width="50" height="400" />
+                <line x1="620" y1="240" x2="670" y2="240" /><line x1="620" y1="280" x2="670" y2="280" />
+                <line x1="620" y1="320" x2="670" y2="320" /><line x1="620" y1="360" x2="670" y2="360" />
+                <line x1="620" y1="400" x2="670" y2="400" /><line x1="620" y1="440" x2="670" y2="440" />
+                <line x1="620" y1="480" x2="670" y2="480" /><line x1="620" y1="520" x2="670" y2="520" />
+                <line x1="645" y1="200" x2="645" y2="600" />
+
+                {/* Twin towers */}
+                <rect x="700" y="250" width="35" height="350" /><rect x="745" y="270" width="35" height="330" />
+                <line x1="710" y1="275" x2="710" y2="290" /><line x1="725" y1="275" x2="725" y2="290" />
+                <line x1="710" y1="310" x2="710" y2="325" /><line x1="725" y1="310" x2="725" y2="325" />
+                <line x1="710" y1="345" x2="710" y2="360" /><line x1="725" y1="345" x2="725" y2="360" />
+                <line x1="755" y1="295" x2="755" y2="310" /><line x1="770" y1="295" x2="770" y2="310" />
+                <line x1="755" y1="330" x2="755" y2="345" /><line x1="770" y1="330" x2="770" y2="345" />
+                <line x1="755" y1="365" x2="755" y2="380" /><line x1="770" y1="365" x2="770" y2="380" />
+
+                {/* Warehouse / industrial */}
+                <rect x="810" y="400" width="80" height="200" />
+                <line x1="810" y1="400" x2="850" y2="370" /><line x1="850" y1="370" x2="890" y2="400" />
+                <rect x="830" y="500" width="20" height="30" /><rect x="860" y="500" width="20" height="30" />
+
+                {/* Tall modern */}
+                <rect x="920" y="170" width="45" height="430" />
+                <rect x="925" y="155" width="35" height="15" />
+                <line x1="942" y1="135" x2="942" y2="155" />
+                {[0,1,2,3,4,5,6,7,8].map(i => <line key={`tm${i}`} x1="932" y1={195+i*45} x2="932" y2={210+i*45} />)}
+                {[0,1,2,3,4,5,6,7,8].map(i => <line key={`tm2${i}`} x1="952" y1={195+i*45} x2="952" y2={210+i*45} />)}
+
+                {/* Right cluster */}
+                <rect x="990" y="310" width="55" height="290" />
+                <line x1="1005" y1="330" x2="1005" y2="350" /><line x1="1025" y1="330" x2="1025" y2="350" />
+                <line x1="1005" y1="370" x2="1005" y2="390" /><line x1="1025" y1="370" x2="1025" y2="390" />
+                <line x1="1005" y1="410" x2="1005" y2="430" /><line x1="1025" y1="410" x2="1025" y2="430" />
+
+                <rect x="1060" y="260" width="40" height="340" />
+                <line x1="1075" y1="280" x2="1075" y2="295" /><line x1="1090" y1="280" x2="1090" y2="295" />
+                <line x1="1075" y1="315" x2="1075" y2="330" /><line x1="1090" y1="315" x2="1090" y2="330" />
+                <line x1="1075" y1="350" x2="1075" y2="365" /><line x1="1090" y1="350" x2="1090" y2="365" />
+
+                {/* Far right buildings */}
+                <rect x="1120" y="380" width="60" height="220" />
+                <rect x="1130" y="400" width="15" height="20" /><rect x="1155" y="400" width="15" height="20" />
+                <rect x="1130" y="440" width="15" height="20" /><rect x="1155" y="440" width="15" height="20" />
+
+                <rect x="1200" y="300" width="50" height="300" />
+                <line x1="1215" y1="320" x2="1215" y2="340" /><line x1="1235" y1="320" x2="1235" y2="340" />
+                <line x1="1215" y1="360" x2="1215" y2="380" /><line x1="1235" y1="360" x2="1235" y2="380" />
+                <line x1="1215" y1="400" x2="1215" y2="420" /><line x1="1235" y1="400" x2="1235" y2="420" />
+
+                <rect x="1270" y="350" width="70" height="250" />
+                <line x1="1270" y1="350" x2="1305" y2="320" /><line x1="1305" y1="320" x2="1340" y2="350" />
+                <rect x="1290" y="500" width="25" height="40" />
+
+                <rect x="1360" y="420" width="60" height="180" />
+                <line x1="1375" y1="440" x2="1375" y2="455" /><line x1="1400" y1="440" x2="1400" y2="455" />
+                <line x1="1375" y1="475" x2="1375" y2="490" /><line x1="1400" y1="475" x2="1400" y2="490" />
+              </g>
+
+              {/* Ground line */}
+              <line x1="0" y1="600" x2="1440" y2="600" stroke="#ffffff" strokeWidth="1" opacity="0.5" />
+
+              {/* Dot grid pattern in sky */}
+              <g fill="#ffffff" opacity="0.3">
+                {[0,1,2,3,4,5,6,7,8,9,10,11].map(row =>
+                  [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14].map(col => (
+                    <circle key={`d${row}-${col}`} cx={100 + col * 95} cy={40 + row * 45} r="1" />
+                  ))
+                )}
+              </g>
+            </svg>
+
+            {/* Soft gradient fade at bottom of cityscape */}
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "30%", background: "linear-gradient(to top, #0d0d14, transparent)", pointerEvents: "none", zIndex: 0 }} />
+
             {/* Gradient orbs for hero depth */}
-            <div style={{ position: "absolute", top: -100, left: -200, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.15)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
-            <div style={{ position: "absolute", bottom: -100, right: -150, width: 400, height: 400, borderRadius: "50%", background: "rgba(132,204,22,0.08)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
+            <div style={{ position: "absolute", top: -100, left: -200, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.12)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
+            <div style={{ position: "absolute", bottom: -100, right: -150, width: 400, height: 400, borderRadius: "50%", background: "rgba(132,204,22,0.06)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
             <div className="ds-hero-grid" style={{
               maxWidth: 1100, margin: "0 auto",
               display: "grid", gridTemplateColumns: "1fr 420px", gap: 64, alignItems: "center",
@@ -624,7 +763,7 @@ export default function OmAnalyzerPage() {
               <div style={{ animation: "fadeInUp 0.5s ease-out 0.1s both" }}>
                 {/* "Try now" label */}
                 <div style={{ textAlign: "center", marginBottom: 14 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "#84CC16" }}>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: "#ffffff", textTransform: "uppercase" as const, letterSpacing: 1.5 }}>
                     Try now — two deals free
                   </span>
                 </div>
