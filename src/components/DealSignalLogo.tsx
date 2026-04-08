@@ -19,7 +19,7 @@ export default function DealSignalLogo({
   style,
   iconOnly = false,
 }: DealSignalLogoProps) {
-  // Icon-only mode: just the bars + dot (SVG)
+  // Icon-only mode: just the bars + dot
   if (iconOnly || !showText) {
     return (
       <span style={{ display: "inline-flex", alignItems: "center", textDecoration: "none", ...style }}>
@@ -35,19 +35,31 @@ export default function DealSignalLogo({
     );
   }
 
-  // Full logo with text — PNG (993x253, ratio ~3.93:1)
-  const logoHeight = size;
-  const logoWidth = Math.round(logoHeight * (993 / 253));
+  // Full logo: bars + dot + curved baseline + "DealSignals" text
+  // viewBox ratio: 420x120 → 3.5:1
+  const h = size;
+  const w = Math.round(h * 3.5);
 
   return (
     <span style={{ display: "inline-flex", alignItems: "center", textDecoration: "none", ...style }}>
-      <img
-        src="/images/dealsignals-full-logo.svg"
-        alt="Deal Signals"
-        height={logoHeight}
-        width={logoWidth}
-        style={{ display: "block", height: logoHeight, width: "auto" }}
-      />
+      <svg width={w} height={h} viewBox="0 0 420 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Bars */}
+        <rect x="20" y="70" width="12" height="30" rx="1.5" fill="#84CC16" />
+        <rect x="38" y="55" width="12" height="45" rx="1.5" fill="#84CC16" />
+        <rect x="56" y="40" width="12" height="60" rx="1.5" fill="#84CC16" />
+        <rect x="74" y="25" width="12" height="75" rx="1.5" fill="#84CC16" />
+        {/* Dot */}
+        <circle cx="80" cy="18" r="6" fill="#84CC16" />
+        {/* Curved baseline */}
+        <path d="M15 105 Q60 95 105 105" stroke="#84CC16" strokeWidth="2" fill="none" />
+        {/* Text */}
+        <text x="120" y="72" fontFamily="'Plus Jakarta Sans', Inter, Arial, sans-serif" fontSize="38" fontWeight="700" fill="#84CC16">
+          Deal
+        </text>
+        <text x="210" y="72" fontFamily="'Plus Jakarta Sans', Inter, Arial, sans-serif" fontSize="38" fontWeight="700" fill="#ffffff">
+          Signals
+        </text>
+      </svg>
     </span>
   );
 }

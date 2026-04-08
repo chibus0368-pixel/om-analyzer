@@ -868,7 +868,10 @@ export default function OmAnalyzerPage() {
               <div style={{ animation: "fadeInUp 0.5s ease-out 0.1s both", marginTop: -40 }}>
                 {/* "Try now" label */}
                 <div style={{ textAlign: "center", marginBottom: 14 }}>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: "#ffffff", textTransform: "uppercase" as const, letterSpacing: 1.5 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "#ffffff", marginBottom: 4 }}>
+                    Pre-Diligence Analysis
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "#84CC16", letterSpacing: 0.5 }}>
                     Try now - two deals free
                   </span>
                 </div>
@@ -1104,7 +1107,12 @@ export default function OmAnalyzerPage() {
             {/* Background depth */}
             <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "rgba(132,204,22,0.05)", filter: "blur(160px)", pointerEvents: "none" }} />
             <div style={{ position: "absolute", bottom: -150, left: -100, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.03)", filter: "blur(140px)", pointerEvents: "none" }} />
-            <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(132,204,22,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(132,204,22,0.02) 1px, transparent 1px)", backgroundSize: "80px 80px", pointerEvents: "none" }} />
+            {/* Subtle city skyline silhouette at bottom */}
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 220, pointerEvents: "none", opacity: 0.04 }}>
+              <svg width="100%" height="100%" viewBox="0 0 1200 220" preserveAspectRatio="none" fill="#84CC16">
+                <path d="M0 220 V180 H30 V140 H50 V180 H70 V120 H80 V100 H90 V120 H110 V160 H130 V130 H140 V90 H150 V60 H160 V90 H170 V130 H190 V180 H220 V150 H240 V110 H250 V80 H260 V50 H270 V80 H280 V110 H300 V160 H330 V180 H360 V140 H370 V100 H380 V70 H390 V40 H400 V70 H410 V100 H420 V140 H450 V170 H480 V130 H500 V90 H510 V60 H520 V30 H530 V60 H540 V90 H560 V150 H590 V180 H620 V140 H640 V100 H650 V70 H660 V100 H670 V140 H700 V170 H730 V120 H750 V80 H760 V50 H770 V80 H780 V120 H810 V160 H840 V130 H860 V90 H870 V55 H880 V90 H890 V130 H920 V170 H950 V140 H970 V100 H980 V70 H990 V45 H1000 V70 H1010 V100 H1030 V150 H1060 V180 H1090 V140 H1110 V110 H1120 V80 H1130 V110 H1140 V140 H1170 V180 H1200 V220 Z" />
+              </svg>
+            </div>
 
             <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
 
@@ -1790,7 +1798,7 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 9. FAQ ── */}
-          <div id="faq" style={{ maxWidth: 1100, margin: "0 auto", padding: "120px 32px 80px" }}>
+          <div id="faq" style={{ maxWidth: 1100, margin: "0 auto", padding: "120px 32px 80px", position: "relative", zIndex: 2 }}>
             {/* Section divider */}
             <div style={{
               height: 1,
@@ -1829,22 +1837,27 @@ export default function OmAnalyzerPage() {
                 ].map((item, i) => {
                   const faqIdx = i;
                   return (
-                    <div key={faqIdx} onClick={() => setOpenFaq(openFaq === faqIdx ? null : faqIdx)} style={{
+                    <div key={faqIdx} style={{
                       borderRadius: 12, border: openFaq === faqIdx ? "1px solid rgba(132,204,22,0.15)" : "1px solid rgba(255,255,255,0.06)",
                       background: openFaq === faqIdx ? "rgba(132,204,22,0.03)" : "rgba(22,26,35,0.4)",
                       transition: "all 0.2s ease",
-                      cursor: "pointer",
-                      userSelect: "none" as const,
+                      overflow: "hidden",
                     }}>
-                      <div style={{
-                        width: "100%", padding: "16px 20px",
-                        display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
-                      }}>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); setOpenFaq(openFaq === faqIdx ? null : faqIdx); }}
+                        style={{
+                          width: "100%", padding: "16px 20px", background: "none",
+                          border: "none", textAlign: "left" as const, cursor: "pointer",
+                          display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
+                          color: "inherit", font: "inherit", outline: "none",
+                        }}
+                      >
                         <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#84CC16" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#84CC16" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
                           <polyline points="6 9 12 15 18 9" />
                         </svg>
-                      </div>
+                      </button>
                       {openFaq === faqIdx && (
                         <div style={{ padding: "0 20px 16px" }}>
                           <p style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{item.a}</p>
@@ -1864,22 +1877,27 @@ export default function OmAnalyzerPage() {
                 ].map((item, i) => {
                   const faqIdx = 5 + i;
                   return (
-                    <div key={faqIdx} onClick={() => setOpenFaq(openFaq === faqIdx ? null : faqIdx)} style={{
+                    <div key={faqIdx} style={{
                       borderRadius: 12, border: openFaq === faqIdx ? "1px solid rgba(132,204,22,0.15)" : "1px solid rgba(255,255,255,0.06)",
                       background: openFaq === faqIdx ? "rgba(132,204,22,0.03)" : "rgba(22,26,35,0.4)",
                       transition: "all 0.2s ease",
-                      cursor: "pointer",
-                      userSelect: "none" as const,
+                      overflow: "hidden",
                     }}>
-                      <div style={{
-                        width: "100%", padding: "16px 20px",
-                        display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
-                      }}>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); setOpenFaq(openFaq === faqIdx ? null : faqIdx); }}
+                        style={{
+                          width: "100%", padding: "16px 20px", background: "none",
+                          border: "none", textAlign: "left" as const, cursor: "pointer",
+                          display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
+                          color: "inherit", font: "inherit", outline: "none",
+                        }}
+                      >
                         <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#84CC16" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#84CC16" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
                           <polyline points="6 9 12 15 18 9" />
                         </svg>
-                      </div>
+                      </button>
                       {openFaq === faqIdx && (
                         <div style={{ padding: "0 20px 16px" }}>
                           <p style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{item.a}</p>
@@ -1904,22 +1922,27 @@ export default function OmAnalyzerPage() {
                 ].map((item, i) => {
                   const faqIdx = 8 + i;
                   return (
-                    <div key={faqIdx} onClick={() => setOpenFaq(openFaq === faqIdx ? null : faqIdx)} style={{
+                    <div key={faqIdx} style={{
                       borderRadius: 12, border: openFaq === faqIdx ? "1px solid rgba(132,204,22,0.15)" : "1px solid rgba(255,255,255,0.06)",
                       background: openFaq === faqIdx ? "rgba(132,204,22,0.03)" : "rgba(22,26,35,0.4)",
                       transition: "all 0.2s ease",
-                      cursor: "pointer",
-                      userSelect: "none" as const,
+                      overflow: "hidden",
                     }}>
-                      <div style={{
-                        width: "100%", padding: "16px 20px",
-                        display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
-                      }}>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); setOpenFaq(openFaq === faqIdx ? null : faqIdx); }}
+                        style={{
+                          width: "100%", padding: "16px 20px", background: "none",
+                          border: "none", textAlign: "left" as const, cursor: "pointer",
+                          display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
+                          color: "inherit", font: "inherit", outline: "none",
+                        }}
+                      >
                         <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#84CC16" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#84CC16" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
                           <polyline points="6 9 12 15 18 9" />
                         </svg>
-                      </div>
+                      </button>
                       {openFaq === faqIdx && (
                         <div style={{ padding: "0 20px 16px" }}>
                           <p style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{item.a}</p>
@@ -1938,22 +1961,27 @@ export default function OmAnalyzerPage() {
                 ].map((item, i) => {
                   const faqIdx = 13 + i;
                   return (
-                    <div key={faqIdx} onClick={() => setOpenFaq(openFaq === faqIdx ? null : faqIdx)} style={{
+                    <div key={faqIdx} style={{
                       borderRadius: 12, border: openFaq === faqIdx ? "1px solid rgba(132,204,22,0.15)" : "1px solid rgba(255,255,255,0.06)",
                       background: openFaq === faqIdx ? "rgba(132,204,22,0.03)" : "rgba(22,26,35,0.4)",
                       transition: "all 0.2s ease",
-                      cursor: "pointer",
-                      userSelect: "none" as const,
+                      overflow: "hidden",
                     }}>
-                      <div style={{
-                        width: "100%", padding: "16px 20px",
-                        display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
-                      }}>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); setOpenFaq(openFaq === faqIdx ? null : faqIdx); }}
+                        style={{
+                          width: "100%", padding: "16px 20px", background: "none",
+                          border: "none", textAlign: "left" as const, cursor: "pointer",
+                          display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
+                          color: "inherit", font: "inherit", outline: "none",
+                        }}
+                      >
                         <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#84CC16" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#84CC16" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
                           <polyline points="6 9 12 15 18 9" />
                         </svg>
-                      </div>
+                      </button>
                       {openFaq === faqIdx && (
                         <div style={{ padding: "0 20px 16px" }}>
                           <p style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{item.a}</p>
@@ -2205,13 +2233,13 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
   const scoreCategories = d.proScore?.categories || [];
   const detectedType = d.analysisType || d.assetType || "retail";
 
-  const heroStats = [
-    { label: "Asking Price", value: fmt$(d.askingPrice) },
+  const metricsStripItems = [
+    { label: "Price", value: fmt$(d.askingPrice) },
     { label: "Cap Rate", value: fmtPct(d.capRateOm) },
-    { label: "GLA", value: fmtSF(d.buildingSf) },
-    { label: "Occupancy", value: fmtPct(d.occupancyPct) },
     { label: "NOI", value: fmt$(d.noiOm) },
     { label: "DSCR", value: fmtX(d.dscrOm) },
+    { label: "Price/SF", value: d.pricePerSf ? `$${Number(d.pricePerSf).toFixed(2)}` : "--" },
+    { label: "Cash-on-Cash", value: fmtPct(d.cashOnCashOm) },
   ].filter(s => s.value !== "--");
 
   const metrics: [string, string, string?][] = ([
@@ -2243,69 +2271,222 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
 
   const hasData = metrics.length > 0 || signals.length > 0;
 
+  // Extract strengths (🟢) and risks (🔴/🟡) from signals
+  const strengths: string[] = [];
+  const risks: string[] = [];
+  signals.forEach(([, val]) => {
+    const raw = String(val || "");
+    if (raw.includes("🟢")) {
+      const text = raw.replace(/^🟢\s*/, "").trim();
+      strengths.push(text);
+    } else if (raw.includes("🔴") || raw.includes("🟡")) {
+      const text = raw.replace(/^[🔴🟡]\s*/, "").trim();
+      risks.push(text);
+    }
+  });
+
+  // Price sensitivity table calculation
+  const calculateSensitivity = (priceAdjustment: number) => {
+    const adjustedPrice = (d.askingPrice || 0) * (1 + priceAdjustment);
+    const noi = d.noiOm || 0;
+    const capRate = adjustedPrice > 0 ? (noi / adjustedPrice) * 100 : 0;
+
+    // Debt assumptions: LTV 75%, Interest 6.5%, 30-year amortization, 2% closing costs
+    const ltv = 0.75;
+    const interestRate = 0.065;
+    const amortYears = 30;
+    const closingCostsPct = 0.02;
+
+    const loanAmount = adjustedPrice * ltv;
+    const monthlyRate = interestRate / 12;
+    const numPayments = amortYears * 12;
+    const monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+    const annualDS = monthlyPayment * 12;
+    const dscr = noi > 0 ? noi / annualDS : 0;
+
+    const downPayment = adjustedPrice * (1 - ltv);
+    const closingCosts = adjustedPrice * closingCostsPct;
+    const totalCash = downPayment + closingCosts;
+    const cashFlow = noi - annualDS;
+    const coc = totalCash > 0 ? (cashFlow / totalCash) * 100 : 0;
+
+    return { capRate, dscr, coc };
+  };
+
+  const sensitivityRows = [
+    { label: "-30%", adjustment: -0.30 },
+    { label: "-20%", adjustment: -0.20 },
+    { label: "-10%", adjustment: -0.10 },
+    { label: "-5%", adjustment: -0.05 },
+    { label: "OM Price", adjustment: 0, isOM: true },
+    { label: "+5%", adjustment: 0.05 },
+    { label: "+10%", adjustment: 0.10 },
+  ];
+
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
-      {/* ===== HERO SECTION — Property Info + Deal Score ===== */}
-      <div style={{ background: "#ffffff", borderRadius: 6, boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)", marginBottom: 20, overflow: "hidden" }}>
-        <div style={{ display: "flex" }}>
-          <div style={{ flex: 1, padding: "28px 28px 20px" }}>
-            <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 700, color: "#151b2b", margin: 0, lineHeight: 1.2 }}>{d.propertyName}</h1>
-            {location && (
-              <div style={{ marginTop: 8 }}>
-                <span style={{ fontSize: 13, color: "#9ca3af" }}>{location}</span>
-                <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-                  {[
-                    { label: "Google Maps", url: `https://www.google.com/maps/search/?api=1&query=${encodedAddress}` },
-                    { label: "Google Earth", url: `https://earth.google.com/web/search/${encodedAddress}/` },
-                  ].map(link => (
-                    <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer" style={{
-                      padding: "4px 10px", background: "#f2f3ff", borderRadius: 6,
-                      fontSize: 11, color: "#9ca3af", textDecoration: "none", fontWeight: 500,
-                    }}>{link.label} &rarr;</a>
-                  ))}
-                </div>
+      {/* ===== HERO SECTION — Property Info + Asset Type Badge ===== */}
+      <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", marginBottom: 20, overflow: "hidden" }}>
+        <div style={{ padding: "32px 28px" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 16 }}>
+            <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 700, color: "#0F172A", margin: 0, lineHeight: 1.2, flex: 1 }}>{d.propertyName}</h1>
+            <span style={{
+              padding: "6px 12px",
+              background: "#84CC16",
+              color: "#0F172A",
+              borderRadius: 20,
+              fontSize: 11,
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+              flexShrink: 0,
+              whiteSpace: "nowrap",
+            }}>
+              {detectedType.toUpperCase()}
+            </span>
+          </div>
+          <div style={{ fontSize: 11, color: "#6B7280", fontWeight: 500, marginBottom: 2, textTransform: "uppercase", letterSpacing: 0.5 }}>Auto-detected</div>
+
+          {location && (
+            <div style={{ marginBottom: 20 }}>
+              <span style={{ fontSize: 13, color: "#6B7280" }}>{location}</span>
+              <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+                {[
+                  { label: "Google Maps", url: `https://www.google.com/maps/search/?api=1&query=${encodedAddress}` },
+                  { label: "Google Earth", url: `https://earth.google.com/web/search/${encodedAddress}/` },
+                ].map(link => (
+                  <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer" style={{
+                    padding: "4px 10px", background: "#f2f3ff", borderRadius: 6,
+                    fontSize: 11, color: "#6B7280", textDecoration: "none", fontWeight: 500,
+                  }}>{link.label} &rarr;</a>
+                ))}
               </div>
-            )}
-            <div style={{ display: "flex", gap: 16, marginTop: 14, flexWrap: "wrap" }}>
-              {[
-                { label: "Type", value: d.assetType },
-                { label: "Built", value: d.yearBuilt },
-                { label: "Tenants", value: d.tenantCount },
-                { label: "WALE", value: d.wale ? `${d.wale} yrs` : null },
-                { label: "Traffic", value: d.traffic },
-              ].filter((x) => x.value).map((x) => (
-                <div key={x.label}>
-                  <div style={{ fontSize: 9, color: "#9ca3af", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{x.label}</div>
-                  <div style={{ fontSize: 12, color: "#151b2b", marginTop: 1, fontWeight: 500 }}>{x.value}</div>
-                </div>
-              ))}
+            </div>
+          )}
+
+          {/* Combined Hero Card: Brief + Image + Score */}
+          <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, color: "#0F172A", lineHeight: 1.8 }}>
+                {brief.split("\n").filter((p: string) => p.trim()).slice(0, 2).map((p: string, i: number) => (
+                  <p key={i} style={{ margin: i === 0 ? "0" : "12px 0 0" }}>{p}</p>
+                ))}
+              </div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, flexShrink: 0 }}>
+              <PropertyImage heroImageUrl={heroImageUrl} location={location} encodedAddress={encodedAddress} propertyName={d.propertyName} />
+              <div style={{ display: "flex", justifyContent: "center" }}>
+                <DealScoreRing score={dealScore} label="Deal Score" />
+              </div>
             </div>
           </div>
-          {/* Deal Score Ring */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 28px" }}>
-            <DealScoreRing score={dealScore} label="Deal Score" />
-          </div>
-          <PropertyImage heroImageUrl={heroImageUrl} location={location} encodedAddress={encodedAddress} propertyName={d.propertyName} />
         </div>
       </div>
 
-      {/* ===== METRIC CARDS — Grid layout ===== */}
-      {heroStats.length > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
-          {heroStats.map(s => (
-            <div key={s.label} style={{
-              background: "#ffffff", borderRadius: 6, padding: "16px 18px",
-              boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)",
+      {/* ===== METRICS STRIP — Horizontal single-row key metrics ===== */}
+      {metricsStripItems.length > 0 && (
+        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: "16px 0", marginBottom: 20, display: "grid", gridTemplateColumns: `repeat(${metricsStripItems.length}, 1fr)` }}>
+          {metricsStripItems.map((item, idx) => (
+            <div key={item.label} style={{
+              padding: "12px 16px",
+              borderRight: idx < metricsStripItems.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+              textAlign: "center",
             }}>
-              <div style={{ fontSize: 10, color: "#9ca3af", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.label}</div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: "#84CC16", letterSpacing: -0.3, fontVariantNumeric: "tabular-nums" }}>{s.value}</div>
+              <div style={{ fontSize: 9, color: "#6B7280", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4, fontFamily: "'Inter', sans-serif" }}>{item.label}</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#84CC16", fontVariantNumeric: "tabular-nums", fontFamily: "'Inter', sans-serif" }}>{item.value}</div>
             </div>
           ))}
         </div>
       )}
 
+      {/* ===== PRICE SENSITIVITY TABLE ===== */}
+      {(d.askingPrice && d.noiOm) && (
+        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: "20px", marginBottom: 20, overflow: "auto" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+            <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
+            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Price Sensitivity Analysis</h3>
+          </div>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: "'Inter', sans-serif" }}>
+            <thead>
+              <tr>
+                <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.06)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Price Adj.</th>
+                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.06)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Cap Rate</th>
+                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.06)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>DSCR</th>
+                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.06)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Cash-on-Cash</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sensitivityRows.map((row, idx) => {
+                const sens = calculateSensitivity(row.adjustment);
+                const capRateGood = sens.capRate >= 7;
+                const dscrGood = sens.dscr >= 1.25;
+                const cocGood = sens.coc >= 8;
+                const capRateColor = capRateGood ? "#059669" : sens.capRate >= 6.5 ? "#D97706" : "#DC2626";
+                const dscrColor = dscrGood ? "#059669" : sens.dscr >= 1.15 ? "#D97706" : "#DC2626";
+                const cocColor = cocGood ? "#059669" : sens.coc >= 5 ? "#D97706" : "#DC2626";
+
+                return (
+                  <tr key={row.label} style={{
+                    background: row.isOM ? "rgba(132,204,22,0.08)" : idx % 2 === 1 ? "rgba(0,0,0,0.02)" : "transparent",
+                    borderBottom: row.isOM ? "2px solid #84CC16" : "1px solid rgba(0,0,0,0.05)",
+                  }}>
+                    <td style={{ padding: "10px 12px", fontWeight: row.isOM ? 700 : 500, color: "#0F172A" }}>
+                      {row.isOM ? <span style={{ color: "#84CC16", fontWeight: 700 }}>⭐ {row.label}</span> : row.label}
+                    </td>
+                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: capRateColor, fontVariantNumeric: "tabular-nums" }}>{sens.capRate.toFixed(2)}%</td>
+                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: dscrColor, fontVariantNumeric: "tabular-nums" }}>{sens.dscr.toFixed(2)}x</td>
+                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: cocColor, fontVariantNumeric: "tabular-nums" }}>{sens.coc.toFixed(2)}%</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          <div style={{ marginTop: 12, fontSize: 10, color: "#6B7280", fontStyle: "italic" }}>
+            Assumptions: LTV 75%, Rate 6.5%, 30-yr amortization, 2% closing costs. Green ≥ 7% cap, 1.25x DSCR, 8% CoC.
+          </div>
+        </div>
+      )}
+
+      {/* ===== STRENGTHS & RISKS SECTION ===== */}
+      {(strengths.length > 0 || risks.length > 0) && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+          {strengths.length > 0 && (
+            <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: "20px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
+                <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Strengths</h3>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {strengths.map((strength, idx) => (
+                  <div key={idx} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <span style={{ color: "#059669", fontWeight: 700, flexShrink: 0, marginTop: 2 }}>✓</span>
+                    <span style={{ fontSize: 13, color: "#0F172A", lineHeight: 1.5 }}>{strength}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {risks.length > 0 && (
+            <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: "20px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
+                <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Risks & Considerations</h3>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {risks.map((risk, idx) => (
+                  <div key={idx} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <span style={{ color: "#D97706", fontWeight: 700, flexShrink: 0, marginTop: 2 }}>⚠</span>
+                    <span style={{ fontSize: 13, color: "#0F172A", lineHeight: 1.5 }}>{risk}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ===== DISCLAIMER ===== */}
-      <p style={{ fontSize: 10, color: "#B4C1D1", margin: "0 0 16px", fontStyle: "italic", textAlign: "center" }}>
+      <p style={{ fontSize: 10, color: "#6B7280", margin: "0 0 16px", fontStyle: "italic", textAlign: "center" }}>
         First-pass underwriting screen &middot; Directional only &middot; Verify all data independently
       </p>
 
@@ -2325,14 +2506,14 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
 
       {/* ===== SCORE BREAKDOWN — from Pro scoring model ===== */}
       {scoreCategories.length > 0 && (
-        <div style={{ background: "#ffffff", borderRadius: 6, boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)", padding: 24, marginBottom: 16 }}>
+        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: 24, marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0, color: "#151b2b", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0, color: "#0F172A", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               <span style={{ width: 3, height: 20, background: "#84CC16", borderRadius: 2 }} />
               Deal Signals Score Breakdown
             </h2>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#8899B0", textTransform: "uppercase", letterSpacing: 0.5 }}>{detectedType} model</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.5 }}>{detectedType} model</span>
               <span style={{
                 fontSize: 11, fontWeight: 800, padding: "3px 10px", borderRadius: 4, letterSpacing: 0.5,
                 background: scoreBand === "strong_buy" || scoreBand === "buy" ? "rgba(5,150,105,0.1)" : scoreBand === "hold" ? "rgba(196,154,60,0.1)" : "rgba(132,204,22,0.1)",
@@ -2342,7 +2523,7 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
             </div>
           </div>
           {scoreRecommendation && (
-            <p style={{ fontSize: 13, color: "#3B4C68", lineHeight: 1.6, margin: "0 0 16px", padding: "12px 16px", background: "#f8f9fb", borderRadius: 8 }}>
+            <p style={{ fontSize: 13, color: "#0F172A", lineHeight: 1.6, margin: "0 0 16px", padding: "12px 16px", background: "#f8f9fb", borderRadius: 8 }}>
               {scoreRecommendation}
             </p>
           )}
@@ -2352,14 +2533,14 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
               return (
                 <div key={cat.name} style={{ padding: "10px 14px", background: "#f8f9fb", borderRadius: 8 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#151b2b", textTransform: "capitalize" }}>{cat.name}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#0F172A", textTransform: "capitalize" }}>{cat.name}</span>
                     <span style={{ fontSize: 12, fontWeight: 800, color: barColor }}>{cat.score}</span>
                   </div>
                   <div style={{ height: 4, background: "rgba(0,0,0,0.06)", borderRadius: 2, overflow: "hidden" }}>
                     <div style={{ width: `${cat.score}%`, height: "100%", background: barColor, borderRadius: 2, animation: "barGrow 0.8s ease-out" }} />
                   </div>
                   {cat.explanation && (
-                    <div style={{ fontSize: 10, color: "#8899B0", marginTop: 3 }}>{cat.explanation}</div>
+                    <div style={{ fontSize: 10, color: "#6B7280", marginTop: 3 }}>{cat.explanation}</div>
                   )}
                 </div>
               );
@@ -2370,13 +2551,13 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
 
       {/* ===== BRIEF / INITIAL ASSESSMENT ===== */}
       {brief && (
-        <div style={{ background: "#ffffff", borderRadius: 6, boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)", padding: 24, marginBottom: 16 }}>
-          <h2 style={{ fontSize: 17, fontWeight: 700, margin: "0 0 4px", color: "#151b2b", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: 24, marginBottom: 16 }}>
+          <h2 style={{ fontSize: 17, fontWeight: 700, margin: "0 0 4px", color: "#0F172A", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             <span style={{ width: 3, height: 20, background: "#84CC16", borderRadius: 2 }} />
             Initial Assessment
           </h2>
-          <p style={{ fontSize: 11, color: "#9ca3af", margin: "0 0 14px" }}>AI-generated first-pass analysis based on uploaded documents</p>
-          <div style={{ fontSize: 14, color: "#151b2b", lineHeight: 1.8 }}>
+          <p style={{ fontSize: 11, color: "#6B7280", margin: "0 0 14px" }}>AI-generated first-pass analysis based on uploaded documents</p>
+          <div style={{ fontSize: 14, color: "#0F172A", lineHeight: 1.8 }}>
             {brief.split("\n").filter((p: string) => p.trim()).map((p: string, i: number) => (
               <p key={i} style={{ margin: "0 0 14px" }}>{p}</p>
             ))}
@@ -2388,30 +2569,30 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
       {hasData && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
           {metrics.length > 0 && (
-            <div style={{ background: "#ffffff", borderRadius: 6, boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)", overflow: "hidden" }}>
+            <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden" }}>
               <div style={{ padding: "12px 18px", background: "#f2f3ff", display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#151b2b", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Key Metrics</h3>
+                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Key Metrics</h3>
               </div>
               {metrics.map(([label, val, tooltip], i) => (
                 <div key={String(label)} style={{
                   display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 18px",
                   background: i % 2 === 1 ? "#f2f3ff" : "transparent",
                 }}>
-                  <span style={{ fontSize: 12, color: "#9ca3af", display: "flex", alignItems: "center", gap: 5 }}>
+                  <span style={{ fontSize: 12, color: "#6B7280", display: "flex", alignItems: "center", gap: 5 }}>
                     {String(label)}
                     {tooltip && <MetricTooltip text={String(tooltip)} />}
                   </span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "#151b2b", fontVariantNumeric: "tabular-nums" }}>{String(val)}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{String(val)}</span>
                 </div>
               ))}
             </div>
           )}
           {signals.length > 0 && (
-            <div style={{ background: "#ffffff", borderRadius: 6, boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)", overflow: "hidden" }}>
+            <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden" }}>
               <div style={{ padding: "12px 18px", background: "#f2f3ff", display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#151b2b", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Signal Assessment</h3>
+                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Signal Assessment</h3>
               </div>
               {signals.map(([label, val], i) => {
                 const raw = String(val);
@@ -2427,9 +2608,9 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
                   }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#151b2b", textTransform: "uppercase", letterSpacing: 0.3 }}>{String(label)}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", textTransform: "uppercase", letterSpacing: 0.3 }}>{String(label)}</span>
                     </div>
-                    <span style={{ fontSize: 13, color: "#3B4C68", lineHeight: 1.5, paddingLeft: 14 }}>{text}</span>
+                    <span style={{ fontSize: 13, color: "#0F172A", lineHeight: 1.5, paddingLeft: 14 }}>{text}</span>
                   </div>
                 );
               })}
@@ -2440,29 +2621,29 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
 
       {/* ===== TENANT SUMMARY ===== */}
       {tenants.length > 0 && (
-        <div style={{ background: "#ffffff", borderRadius: 6, boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)", overflow: "hidden", marginBottom: 16 }}>
+        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden", marginBottom: 16 }}>
           <div style={{ padding: "12px 18px", background: "#f2f3ff" }}>
-            <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#151b2b", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Tenant Summary</h3>
+            <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Tenant Summary</h3>
           </div>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
               <tr>
-                <th style={{ padding: "6px 16px", textAlign: "left", fontWeight: 600, color: "#9ca3af" }}>Tenant</th>
-                <th style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, color: "#9ca3af" }}>SF</th>
-                <th style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, color: "#9ca3af" }}>Annual Rent</th>
-                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#9ca3af" }}>Type</th>
-                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#9ca3af" }}>Lease End</th>
-                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#9ca3af" }}>Status</th>
+                <th style={{ padding: "6px 16px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Tenant</th>
+                <th style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280" }}>SF</th>
+                <th style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280" }}>Annual Rent</th>
+                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Type</th>
+                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Lease End</th>
+                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Status</th>
               </tr>
             </thead>
             <tbody>
               {tenants.map((t: any, i: number) => (
                 <tr key={i} style={{ background: i % 2 === 1 ? "#f2f3ff" : "transparent" }}>
-                  <td style={{ padding: "6px 16px", fontWeight: 600, color: "#151b2b" }}>{t.name}</td>
+                  <td style={{ padding: "6px 16px", fontWeight: 600, color: "#0F172A" }}>{t.name}</td>
                   <td style={{ padding: "6px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{t.sf ? Math.round(Number(t.sf)).toLocaleString() : "--"}</td>
                   <td style={{ padding: "6px 12px", textAlign: "right", fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>{fmt$(t.rent)}</td>
-                  <td style={{ padding: "6px 12px", color: "#9ca3af" }}>{t.type || "--"}</td>
-                  <td style={{ padding: "6px 12px", color: "#9ca3af" }}>{t.end || "--"}</td>
+                  <td style={{ padding: "6px 12px", color: "#6B7280" }}>{t.type || "--"}</td>
+                  <td style={{ padding: "6px 12px", color: "#6B7280" }}>{t.end || "--"}</td>
                   <td style={{ padding: "6px 12px" }}>
                     <span style={{
                       fontSize: 10, fontWeight: 600, padding: "2px 6px", borderRadius: 8,
@@ -2479,10 +2660,10 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
 
       {/* ===== DOWNLOAD ASSETS ===== */}
       {hasData && (
-        <div style={{ background: "#ffffff", borderRadius: 6, boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)", padding: 20, marginBottom: 16 }}>
+        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: 20, marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
             <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#151b2b" }}>Download Assets{d.propertyName ? ` — ${d.propertyName}` : ""}</h3>
+            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Download Assets</h3>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <button className="dl-btn" onClick={() => downloadLiteXLSX(d)} style={{
