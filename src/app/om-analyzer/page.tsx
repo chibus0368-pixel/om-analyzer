@@ -779,7 +779,7 @@ export default function OmAnalyzerPage() {
                   marginBottom: 20, letterSpacing: -1.5,
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                 }}>
-                  Analyze Any Commercial<br />Property With <span className="ds-callout">One Upload</span>.
+                  Analyze Any Commercial<br />Property With <span style={{ color: "#84CC16" }}>One <span className="ds-callout">Upload</span></span>.
                 </h1>
                 <p style={{
                   fontSize: 19, color: "#9ca3af", lineHeight: 1.7,
@@ -1124,7 +1124,7 @@ export default function OmAnalyzerPage() {
                 How It Works
               </div>
               <h2 style={{ fontSize: 34, fontWeight: 800, color: "#151b2b", marginBottom: 12, lineHeight: 1.2, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                From offering memo to<br /><span className="ds-callout-dark">scored deal</span> in seconds
+                From offering memo to<br /><span style={{ color: "#4D7C0F" }}>scored <span className="ds-callout-dark">deal</span></span> in seconds
               </h2>
               <p style={{ fontSize: 16, color: "#585e70", marginBottom: 48, lineHeight: 1.7, maxWidth: 580, margin: "0 auto 48px" }}>
                 Upload any OM, rent roll, or broker package. Deal Signals extracts every key metric, scores the deal, and delivers it straight to your DealBoard.
