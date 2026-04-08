@@ -2072,7 +2072,7 @@ export default function OmAnalyzerPage() {
       {view === "result" && data && (
         <section style={{ padding: "24px 0 60px", background: "#faf8ff" }}>
           <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
-            <PropertyOutput data={data} heroImageUrl={heroImageUrl} />
+            <PropertyOutput data={data} heroImageUrl={heroImageUrl} usageData={usageData} />
             <div style={{ textAlign: "center", marginTop: 24 }}>
               <button onClick={resetAnalyzer} style={{
                 padding: "12px 28px", background: "#16161f", border: "1.5px solid rgba(227, 190, 189, 0.2)",
@@ -2204,7 +2204,7 @@ function computeDealScore(d: any): number {
   return Math.round(total / count);
 }
 
-function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroImageUrl?: string }) {
+function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisData; heroImageUrl?: string; usageData?: { uploadsUsed: number; uploadLimit: number } | null }) {
   const location = [d.address, d.city, d.state].filter(Boolean).join(", ");
   const encodedAddress = encodeURIComponent(location || d.propertyName);
   const recommendation = typeof d.signals?.recommendation === "string" ? d.signals.recommendation : d.signals?.recommendation?.text ? String(d.signals.recommendation.text) : String(d.signals?.recommendation || "");
@@ -2781,6 +2781,14 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
               View Plans
             </a>
           </div>
+          {usageData && (
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 16, fontFamily: "'Inter', sans-serif" }}>
+              <span style={{ color: usageData.uploadsUsed >= usageData.uploadLimit ? "#f87171" : "#84CC16", fontWeight: 700 }}>
+                {usageData.uploadsUsed}/{usageData.uploadLimit}
+              </span>{" "}
+              free {usageData.uploadLimit === 1 ? "analysis" : "analyses"} used
+            </p>
+          )}
         </div>
       </div>
 
