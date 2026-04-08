@@ -95,13 +95,13 @@ export default function DealSignalNav() {
             <Link href="/workspace" style={{
               display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
               fontSize: 14, fontWeight: 600, color: "#0d0d14", textDecoration: "none",
-              padding: "0 14px", borderRadius: 8, background: "#c8ff00",
+              padding: "0 14px", borderRadius: 8, background: "#84CC16",
               height: 32, transition: "all 0.2s",
               fontFamily: "'Plus Jakarta Sans', sans-serif",
-              boxShadow: "0 0 20px rgba(200,255,0,0.3), 0 0 40px rgba(200,255,0,0.1)",
+              boxShadow: "0 0 20px rgba(132,204,22,0.3), 0 0 40px rgba(132,204,22,0.1)",
             }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 25px rgba(200,255,0,0.5), 0 0 50px rgba(200,255,0,0.2)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(200,255,0,0.3), 0 0 40px rgba(200,255,0,0.1)"; }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 25px rgba(132,204,22,0.5), 0 0 50px rgba(132,204,22,0.2)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(132,204,22,0.3), 0 0 40px rgba(132,204,22,0.1)"; }}
             >
               Open App
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
@@ -119,13 +119,13 @@ export default function DealSignalNav() {
               <Link href="/workspace/login" style={{
                 display: "inline-flex", alignItems: "center", justifyContent: "center",
                 fontSize: 14, fontWeight: 600, color: "#0d0d14", textDecoration: "none",
-                padding: "0 14px", borderRadius: 8, background: "#c8ff00",
+                padding: "0 14px", borderRadius: 8, background: "#84CC16",
                 height: 32, transition: "all 0.2s",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
-                boxShadow: "0 0 20px rgba(200,255,0,0.3), 0 0 40px rgba(200,255,0,0.1)",
+                boxShadow: "0 0 20px rgba(132,204,22,0.3), 0 0 40px rgba(132,204,22,0.1)",
               }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 25px rgba(200,255,0,0.5), 0 0 50px rgba(200,255,0,0.2)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(200,255,0,0.3), 0 0 40px rgba(200,255,0,0.1)"; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 25px rgba(132,204,22,0.5), 0 0 50px rgba(132,204,22,0.2)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(132,204,22,0.3), 0 0 40px rgba(132,204,22,0.1)"; }}
               >Get Started Free</Link>
             </>
           )}

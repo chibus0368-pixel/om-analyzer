@@ -9,6 +9,8 @@ interface DealSignalLogoProps {
   showText?: boolean;
   light?: boolean; // for dark backgrounds
   style?: React.CSSProperties;
+  /** Show only the icon (no text), using the square icon image */
+  iconOnly?: boolean;
 }
 
 export default function DealSignalLogo({
@@ -18,71 +20,52 @@ export default function DealSignalLogo({
   showText = true,
   light = false,
   style,
+  iconOnly = false,
 }: DealSignalLogoProps) {
+  // Icon-only mode: just the square icon
+  if (iconOnly || !showText) {
+    return (
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          textDecoration: "none",
+          ...style,
+        }}
+      >
+        <img
+          src="/images/dealsignals-logo-icon.png"
+          alt="Deal Signals"
+          width={size}
+          height={size}
+          style={{ display: "block" }}
+        />
+      </span>
+    );
+  }
+
+  // Full logo with text — use the combined PNG
+  // Original image is 396x112, ratio ~3.54:1
+  // Height is driven by `size` (the icon height), width scales proportionally
+  const logoHeight = size;
+  const logoWidth = Math.round(logoHeight * (396 / 112));
+
   return (
     <span
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap,
         textDecoration: "none",
         ...style,
       }}
     >
-      {/* Modern mark: rounded square with signal pulse */}
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 36 36"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <linearGradient id="ds-mark-bg" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#c8ff00" />
-            <stop offset="100%" stopColor="#7da000" />
-          </linearGradient>
-        </defs>
-        <rect width="36" height="36" rx="9" fill="url(#ds-mark-bg)" />
-        {/* Signal pulse line */}
-        <polyline
-          points="6,22 11,22 14,14 18,26 22,10 25,22 30,22"
-          stroke="#FFFFFF"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-      </svg>
-
-      {showText && (
-        <span style={{ display: "inline-flex", alignItems: "baseline", gap: 3, whiteSpace: "nowrap" }}>
-          <span
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 800,
-              fontSize,
-              letterSpacing: "-0.03em",
-              color: "#ffffff",
-              lineHeight: 1,
-            }}
-          >
-            Deal
-          </span>
-          <span
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 800,
-              fontSize,
-              letterSpacing: "-0.03em",
-              color: "#c8ff00",
-              lineHeight: 1,
-            }}
-          >
-            Signals
-          </span>
-        </span>
-      )}
+      <img
+        src="/images/dealsignals-full-logo.png"
+        alt="Deal Signals"
+        height={logoHeight}
+        width={logoWidth}
+        style={{ display: "block", height: logoHeight, width: "auto" }}
+      />
     </span>
   );
 }
