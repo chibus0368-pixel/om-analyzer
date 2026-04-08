@@ -333,16 +333,12 @@ export default function SharedViewPage() {
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           {showBranding && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {/* Logo mark — green rounded square with pulse */}
-              <div style={{ background: "#84CC16", padding: 5, borderRadius: 5, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: 16, height: 16, color: "#000" }}>
-                  <path d="M3 12h3l3-9 6 18 3-9h3" />
-                </svg>
-              </div>
-              <span style={{ fontSize: 16, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", fontFamily: "'Inter', sans-serif" }}>
-                Deal <span style={{ color: "#84CC16" }}>Signals</span>
-              </span>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <img
+                src="/images/dealsignals-full-logo.png"
+                alt="Deal Signals"
+                style={{ height: 36, width: "auto", display: "block" }}
+              />
             </div>
           )}
           {showBranding && <div style={{ width: 1, height: 24, background: "rgba(255,255,255,0.12)" }} />}
