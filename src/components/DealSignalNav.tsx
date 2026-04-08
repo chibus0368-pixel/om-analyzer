@@ -112,19 +112,16 @@ export default function DealSignalNav() {
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
               style={{
-                fontSize: 14, fontWeight: 700, color: "#84CC16",
-                background: "none", border: "none", cursor: "pointer",
+                fontSize: 12, fontWeight: 700, color: "#0d0d14",
+                background: "#84CC16", border: "none", cursor: "pointer",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
-                height: 64, display: "inline-flex", alignItems: "center",
-                position: "relative", padding: 0,
+                height: 28, display: "inline-flex", alignItems: "center",
+                padding: "0 14px", borderRadius: 6,
                 animation: "fadeInUp 0.3s ease-out",
+                letterSpacing: 0.3,
               }}
             >
               Try It
-              <span style={{
-                position: "absolute", bottom: 0, left: 0, right: 0, height: 2,
-                background: "#84CC16", borderRadius: 1,
-              }} />
             </button>
           )}
           {NAV_LINKS.map(({ href, label, sectionId }) => {
