@@ -700,15 +700,7 @@ export default function OmAnalyzerPage() {
             }}>
               &larr; Analyze Another
             </button>
-            <svg width={120} height={28} viewBox="0 0 440 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="4" y="4" width="86" height="86" rx="16" fill="#0d0d14" stroke="rgba(132,204,22,0.12)" strokeWidth="1" />
-              <rect x="22" y="58" width="10" height="24" rx="1.5" fill="#84CC16" />
-              <rect x="36" y="46" width="10" height="36" rx="1.5" fill="#84CC16" />
-              <rect x="50" y="34" width="10" height="48" rx="1.5" fill="#84CC16" />
-              <rect x="64" y="22" width="10" height="60" rx="1.5" fill="#84CC16" />
-              <text x="104" y="62" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#84CC16">Deal</text>
-              <text x="196" y="62" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#ffffff">Signals</text>
-            </svg>
+            <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 28 }} />
           </div>
         </div>
       )}
@@ -2090,15 +2082,7 @@ export default function OmAnalyzerPage() {
           <div style={{ position: "relative", zIndex: 2, textAlign: "center", maxWidth: "600px", padding: "0 24px" }}>
             {/* DealSignals Logo */}
             <div style={{ marginBottom: 60 }}>
-              <svg width={140} height={32} viewBox="0 0 440 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="4" y="4" width="86" height="86" rx="16" fill="#0d0d14" stroke="rgba(132,204,22,0.12)" strokeWidth="1" />
-                <rect x="22" y="58" width="10" height="24" rx="1.5" fill="#84CC16" />
-                <rect x="36" y="46" width="10" height="36" rx="1.5" fill="#84CC16" />
-                <rect x="50" y="34" width="10" height="48" rx="1.5" fill="#84CC16" />
-                <rect x="64" y="22" width="10" height="60" rx="1.5" fill="#84CC16" />
-                <text x="104" y="62" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#84CC16">Deal</text>
-                <text x="196" y="62" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#ffffff">Signals</text>
-              </svg>
+              <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 32 }} />
             </div>
 
             {/* Animated percentage counter with circular progress ring */}
@@ -2287,15 +2271,7 @@ export default function OmAnalyzerPage() {
       }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", gap: 48, marginBottom: 48 }}>
           <div>
-            <svg width={160} height={36} viewBox="0 0 440 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="4" y="4" width="86" height="86" rx="16" fill="transparent" stroke="rgba(132,204,22,0.12)" strokeWidth="1" />
-              <rect x="22" y="58" width="10" height="24" rx="1.5" fill="#84CC16" />
-              <rect x="36" y="46" width="10" height="36" rx="1.5" fill="#84CC16" />
-              <rect x="50" y="34" width="10" height="48" rx="1.5" fill="#84CC16" />
-              <rect x="64" y="22" width="10" height="60" rx="1.5" fill="#84CC16" />
-              <text x="104" y="62" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#84CC16">Deal</text>
-              <text x="196" y="62" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#ffffff">Signals</text>
-            </svg>
+            <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 36 }} />
             <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.7, marginTop: 14, maxWidth: 260 }}>
               Analyze CRE deals with AI-powered intelligence. Get real signals, not guesses.
             </p>
