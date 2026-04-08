@@ -967,7 +967,7 @@ export default function OmAnalyzerPage() {
                       </svg>
                     </div>
                     <div style={{ fontSize: 17, fontWeight: 800, color: "#ffffff", marginBottom: 4 }}>Pre-Diligence Engine</div>
-                    <div style={{ fontSize: 12, color: "#84CC16", fontWeight: 600, letterSpacing: 0.5 }}>GPT-4o POWERED</div>
+                    <div style={{ fontSize: 12, color: "#84CC16", fontWeight: 600, letterSpacing: 0.5 }}>CRE INTELLIGENCE</div>
                     {/* Processing dots */}
                     <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 12 }}>
                       {[0,1,2].map(i => (
