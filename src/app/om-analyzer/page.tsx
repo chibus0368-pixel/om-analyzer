@@ -641,7 +641,7 @@ export default function OmAnalyzerPage() {
             }}>
               Upgrade to Pro - $40/mo
             </Link>
-            <Link href="/pricing" style={{
+            <Link href="/om-analyzer#pricing" style={{
               display: "block", padding: "10px 20px",
               color: "#9ca3af", fontSize: 13, fontWeight: 500, textDecoration: "none",
             }}>
@@ -2770,7 +2770,7 @@ function PropertyOutput({ data: d, heroImageUrl }: { data: AnalysisData; heroIma
               Upgrade to Pro
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
             </a>
-            <a href="/pricing" style={{
+            <a href="/om-analyzer#pricing" style={{
               display: "inline-flex", alignItems: "center",
               padding: "14px 28px", borderRadius: 10,
               background: "transparent", color: "#e0e0e6",

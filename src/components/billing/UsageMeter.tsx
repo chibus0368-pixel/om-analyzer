@@ -97,7 +97,7 @@ export default function UsageMeter({ collapsed }: { collapsed: boolean }) {
         {/* Upgrade prompt for free users near/at limit */}
         {!isPaid && (atLimit || nearLimit) && (
           <Link
-            href="/pricing"
+            href="/om-analyzer#pricing"
             style={{
               display: "block",
               marginTop: 8,
