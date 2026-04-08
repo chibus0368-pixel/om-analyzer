@@ -17,6 +17,7 @@ export default function DealSignalNav() {
   const [authedUser, setAuthedUser] = useState<{ displayName: string | null; email: string | null } | null>(null);
   const [activeSection, setActiveSection] = useState<string>("");
   const [scrolledPastHero, setScrolledPastHero] = useState(false);
+  const [resultShowing, setResultShowing] = useState(false);
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
@@ -36,11 +37,16 @@ export default function DealSignalNav() {
     return () => { if (unsubscribe) unsubscribe(); };
   }, []);
 
-  // Show "Try It" once user scrolls past the hero
+  // Show "Try It" once user scrolls past the hero; detect result view
   useEffect(() => {
-    const onScroll = () => setScrolledPastHero(window.scrollY > 500);
+    const onScroll = () => {
+      setScrolledPastHero(window.scrollY > 500);
+      setResultShowing(!!document.querySelector("[data-ds-result]"));
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    // Also check on mount and periodically for view changes
+    const interval = setInterval(() => setResultShowing(!!document.querySelector("[data-ds-result]")), 1000);
+    return () => { window.removeEventListener("scroll", onScroll); clearInterval(interval); };
   }, []);
 
   // Track which section is in view via IntersectionObserver
@@ -198,17 +204,19 @@ export default function DealSignalNav() {
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#84CC16"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#e0e0e6"; }}
               >Sign in</Link>
-              <Link href="/workspace/login" style={{
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-                fontSize: 14, fontWeight: 600, color: "#0d0d14", textDecoration: "none",
-                padding: "0 14px", borderRadius: 8, background: "#84CC16",
-                height: 32, transition: "all 0.2s",
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                boxShadow: "0 0 20px rgba(132,204,22,0.3), 0 0 40px rgba(132,204,22,0.1)",
-              }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 25px rgba(132,204,22,0.5), 0 0 50px rgba(132,204,22,0.2)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(132,204,22,0.3), 0 0 40px rgba(132,204,22,0.1)"; }}
-              >Get Started Free</Link>
+              {!resultShowing && (
+                <Link href="/workspace/login" style={{
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 14, fontWeight: 600, color: "#0d0d14", textDecoration: "none",
+                  padding: "0 14px", borderRadius: 8, background: "#84CC16",
+                  height: 32, transition: "all 0.2s",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  boxShadow: "0 0 20px rgba(132,204,22,0.3), 0 0 40px rgba(132,204,22,0.1)",
+                }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 25px rgba(132,204,22,0.5), 0 0 50px rgba(132,204,22,0.2)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(132,204,22,0.3), 0 0 40px rgba(132,204,22,0.1)"; }}
+                >Get Started Free</Link>
+              )}
             </>
           )}
         </div>

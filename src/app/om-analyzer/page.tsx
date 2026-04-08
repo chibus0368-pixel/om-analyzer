@@ -2070,7 +2070,7 @@ export default function OmAnalyzerPage() {
 
       {/* ===== RESULT STATE ===== */}
       {view === "result" && data && (
-        <section style={{ padding: "24px 0 60px", background: "#faf8ff" }}>
+        <section data-ds-result style={{ padding: "24px 0 60px", background: "#faf8ff" }}>
           <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
             <PropertyOutput data={data} heroImageUrl={heroImageUrl} usageData={usageData} />
             <div style={{ textAlign: "center", marginTop: 24 }}>
