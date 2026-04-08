@@ -692,11 +692,11 @@ export default function OmAnalyzerPage() {
 
       {/* ===== RESULT: minimal header bar ===== */}
       {view === "result" && (
-        <div style={{ padding: "12px 0", paddingTop: 76, borderBottom: "1px solid rgba(132,204,22,0.1)", background: "#0d0d14" }}>
+        <div style={{ padding: "12px 0", paddingTop: 76, borderBottom: "1px solid #EDF0F5", background: "transparent" }}>
           <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <button onClick={resetAnalyzer} style={{
-              padding: "8px 20px", background: "rgba(132,204,22,0.1)", border: "1px solid rgba(132,204,22,0.15)",
-              borderRadius: 6, fontSize: 13, fontWeight: 600, color: "#84CC16", cursor: "pointer",
+              padding: "8px 20px", background: "#16161f", border: "1.5px solid #D8DFE9",
+              borderRadius: 6, fontSize: 13, fontWeight: 600, color: "#9ca3af", cursor: "pointer",
             }}>
               &larr; Analyze Another
             </button>
@@ -1090,42 +1090,6 @@ export default function OmAnalyzerPage() {
                 ))}
               </div>
 
-              {/* Bottom positioning statement - prominent manifesto block */}
-              <div style={{
-                textAlign: "center", padding: "64px 40px",
-                borderRadius: 20, border: "1px solid rgba(132,204,22,0.12)",
-                background: "linear-gradient(135deg, rgba(132,204,22,0.04) 0%, rgba(20,20,30,0.8) 50%, rgba(132,204,22,0.03) 100%)",
-                position: "relative", overflow: "hidden",
-              }}>
-                {/* Subtle glow behind */}
-                <div style={{ position: "absolute", top: "-50%", left: "50%", transform: "translateX(-50%)", width: 400, height: 400, borderRadius: "50%", background: "rgba(132,204,22,0.06)", filter: "blur(100px)", pointerEvents: "none" }} />
-
-                <h3 style={{ fontSize: 28, fontWeight: 800, color: "#ffffff", marginBottom: 32, fontFamily: "'Plus Jakarta Sans', sans-serif", position: "relative", letterSpacing: -0.5 }}>
-                  Stop reading OMs. Start reading <span style={{ color: "#84CC16" }}>signals</span>.
-                </h3>
-
-                <div style={{ display: "flex", justifyContent: "center", gap: 20, flexWrap: "wrap", marginBottom: 40, position: "relative" }}>
-                  {[
-                    { label: "A deal filtering engine", icon: "M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" },
-                    { label: "A speed advantage tool", icon: "M13 10V3L4 14h7v7l9-11h-7z" },
-                    { label: "A pre-diligence system", icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" },
-                  ].map(item => (
-                    <div key={item.label} style={{
-                      display: "flex", alignItems: "center", gap: 10,
-                      padding: "12px 22px", borderRadius: 12,
-                      background: "rgba(132,204,22,0.06)", border: "1px solid rgba(132,204,22,0.12)",
-                    }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={item.icon} /></svg>
-                      <span style={{ fontSize: 15, fontWeight: 700, color: "#ffffff" }}>{item.label}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <p style={{ fontSize: 18, color: "#d1d5db", lineHeight: 1.8, maxWidth: 600, margin: "0 auto", position: "relative", fontWeight: 500 }}>
-                  Everything on DealSignals is built to help you move faster than the market.<br />
-                  <span style={{ color: "#84CC16", fontWeight: 700 }}>Upload a deal. Get a signal. Decide in minutes, not days.</span>
-                </p>
-              </div>
 
             </div>
           </div>
@@ -2042,6 +2006,7 @@ export default function OmAnalyzerPage() {
         <section style={{
           background: "#0d0d14",
           minHeight: "100vh",
+          paddingTop: 64,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -2081,12 +2046,12 @@ export default function OmAnalyzerPage() {
           {/* Content container */}
           <div style={{ position: "relative", zIndex: 2, textAlign: "center", maxWidth: "600px", padding: "0 24px" }}>
             {/* DealSignals Logo */}
-            <div style={{ marginBottom: 60 }}>
+            <div style={{ marginBottom: 40 }}>
               <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 32 }} />
             </div>
 
             {/* Animated percentage counter with circular progress ring */}
-            <div style={{ marginBottom: 60, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ marginBottom: 40, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg
                 width="200"
                 height="200"
@@ -2130,7 +2095,7 @@ export default function OmAnalyzerPage() {
             </div>
 
             {/* Stage labels: UPLOAD → EXTRACT → READ → ANALYZE → GENERATE */}
-            <div style={{ display: "flex", gap: 12, marginBottom: 50, justifyContent: "center", alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 12, marginBottom: 32, justifyContent: "center", alignItems: "center", flexWrap: "wrap" }}>
               {[
                 { label: "UPLOAD", done: statusMsg !== "Uploading files..." },
                 { label: "EXTRACT", done: !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
@@ -2181,7 +2146,7 @@ export default function OmAnalyzerPage() {
             </div>
 
             {/* Rotating status messages */}
-            <div style={{ marginBottom: 40, minHeight: 40 }}>
+            <div style={{ marginBottom: 28, minHeight: 30 }}>
               <p style={{
                 fontSize: 16,
                 fontWeight: 500,
@@ -2249,13 +2214,13 @@ export default function OmAnalyzerPage() {
 
       {/* ===== RESULT STATE ===== */}
       {view === "result" && data && (
-        <section data-ds-result style={{ padding: "24px 0 60px", background: "#0d0d14" }}>
+        <section data-ds-result style={{ padding: "24px 0 60px", background: "#faf8ff" }}>
           <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
             <PropertyOutput data={data} heroImageUrl={heroImageUrl} usageData={usageData} />
             <div style={{ textAlign: "center", marginTop: 24 }}>
               <button onClick={resetAnalyzer} style={{
-                padding: "12px 28px", background: "rgba(132,204,22,0.1)", border: "1px solid rgba(132,204,22,0.15)",
-                borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: "pointer", color: "#84CC16", fontFamily: "'Plus Jakarta Sans', sans-serif",
+                padding: "12px 28px", background: "#16161f", border: "1.5px solid rgba(227, 190, 189, 0.2)",
+                borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: "pointer", color: "#9ca3af", fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}>
                 &larr; Analyze Another OM
               </button>
@@ -2488,10 +2453,10 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto" }}>
       {/* ===== HERO SECTION — Property Info + Asset Type Badge ===== */}
-      <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", marginBottom: 20, overflow: "hidden" }}>
+      <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", marginBottom: 20, overflow: "hidden" }}>
         <div style={{ padding: "32px 28px" }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 16 }}>
-            <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 700, color: "#FFFFFF", margin: 0, lineHeight: 1.2, flex: 1 }}>{d.propertyName}</h1>
+            <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 700, color: "#0F172A", margin: 0, lineHeight: 1.2, flex: 1 }}>{d.propertyName}</h1>
             <span style={{
               padding: "6px 12px",
               background: "#84CC16",
@@ -2507,11 +2472,11 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
               {detectedType.toUpperCase()}
             </span>
           </div>
-          <div style={{ fontSize: 11, color: "#9CA3AF", fontWeight: 500, marginBottom: 2, textTransform: "uppercase", letterSpacing: 0.5 }}>Auto-detected</div>
+          <div style={{ fontSize: 11, color: "#6B7280", fontWeight: 500, marginBottom: 2, textTransform: "uppercase", letterSpacing: 0.5 }}>Auto-detected</div>
 
           {location && (
             <div style={{ marginBottom: 20 }}>
-              <span style={{ fontSize: 13, color: "#D1D5DB" }}>{location}</span>
+              <span style={{ fontSize: 13, color: "#374151" }}>{location}</span>
               <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
                 {[
                   { label: "Google Maps", url: `https://www.google.com/maps/search/?api=1&query=${encodedAddress}` },
@@ -2557,14 +2522,14 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== METRICS STRIP — Horizontal single-row key metrics ===== */}
       {metricsStripItems.length > 0 && (
-        <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", padding: "16px 0", marginBottom: 20, display: "grid", gridTemplateColumns: `repeat(${metricsStripItems.length}, 1fr)` }}>
+        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: "16px 0", marginBottom: 20, display: "grid", gridTemplateColumns: `repeat(${metricsStripItems.length}, 1fr)` }}>
           {metricsStripItems.map((item, idx) => (
             <div key={item.label} style={{
               padding: "12px 16px",
-              borderRight: idx < metricsStripItems.length - 1 ? "1px solid rgba(132,204,22,0.1)" : "none",
+              borderRight: idx < metricsStripItems.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
               textAlign: "center",
             }}>
-              <div style={{ fontSize: 9, color: "#9CA3AF", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4, fontFamily: "'Inter', sans-serif" }}>{item.label}</div>
+              <div style={{ fontSize: 9, color: "#6B7280", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4, fontFamily: "'Inter', sans-serif" }}>{item.label}</div>
               <div style={{ fontSize: 16, fontWeight: 700, color: "#84CC16", fontVariantNumeric: "tabular-nums", fontFamily: "'Inter', sans-serif" }}>{item.value}</div>
             </div>
           ))}
@@ -2573,19 +2538,19 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== PRICE SENSITIVITY TABLE ===== */}
       {(d.askingPrice && d.noiOm) && (
-        <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", padding: "20px", marginBottom: 20, overflow: "auto" }}>
+        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: "20px", marginBottom: 20, overflow: "auto" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
             <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#FFFFFF", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Price Sensitivity Analysis</h3>
+            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Price Sensitivity Analysis</h3>
           </div>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: "'Inter', sans-serif" }}>
             <thead>
               <tr>
-                <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#9CA3AF", borderBottom: "1px solid rgba(132,204,22,0.1)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Scenario</th>
-                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#9CA3AF", borderBottom: "1px solid rgba(132,204,22,0.1)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Purchase Price</th>
-                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#9CA3AF", borderBottom: "1px solid rgba(132,204,22,0.1)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Cap Rate</th>
-                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#9CA3AF", borderBottom: "1px solid rgba(132,204,22,0.1)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>DSCR</th>
-                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#9CA3AF", borderBottom: "1px solid rgba(132,204,22,0.1)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Cash-on-Cash</th>
+                <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.05)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Scenario</th>
+                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.05)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Purchase Price</th>
+                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.05)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Cap Rate</th>
+                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.05)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>DSCR</th>
+                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280", borderBottom: "1px solid rgba(0,0,0,0.05)", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>Cash-on-Cash</th>
               </tr>
             </thead>
             <tbody>
@@ -2600,13 +2565,13 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
                 return (
                   <tr key={row.label} style={{
-                    background: row.isOM ? "rgba(132,204,22,0.1)" : idx % 2 === 1 ? "rgba(132,204,22,0.03)" : "transparent",
-                    borderBottom: row.isOM ? "2px solid #84CC16" : "1px solid rgba(132,204,22,0.1)",
+                    background: row.isOM ? "rgba(0,0,0,0.02)" : idx % 2 === 1 ? "rgba(0,0,0,0.01)" : "transparent",
+                    borderBottom: row.isOM ? "2px solid #84CC16" : "1px solid rgba(0,0,0,0.05)",
                   }}>
-                    <td style={{ padding: "10px 12px", fontWeight: row.isOM ? 700 : 500, color: "#E5E7EB" }}>
+                    <td style={{ padding: "10px 12px", fontWeight: row.isOM ? 700 : 500, color: "#374151" }}>
                       {row.isOM ? <span style={{ color: "#84CC16", fontWeight: 700 }}>⭐ {row.label}</span> : row.label}
                     </td>
-                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 700, color: "#E5E7EB", fontVariantNumeric: "tabular-nums" }}>{fmt$((d.askingPrice || 0) * (1 + row.adjustment))}</td>
+                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 700, color: "#374151", fontVariantNumeric: "tabular-nums" }}>{fmt$((d.askingPrice || 0) * (1 + row.adjustment))}</td>
                     <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: capRateColor, fontVariantNumeric: "tabular-nums" }}>{sens.capRate.toFixed(2)}%</td>
                     <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: dscrColor, fontVariantNumeric: "tabular-nums" }}>{sens.dscr.toFixed(2)}x</td>
                     <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: cocColor, fontVariantNumeric: "tabular-nums" }}>{sens.coc.toFixed(2)}%</td>
@@ -2623,21 +2588,21 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== STRENGTHS & RISKS — matching pro layout ===== */}
       {(strengths.length > 0 || risks.length > 0) && (
-        <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", overflow: "hidden", marginBottom: 20 }}>
-          <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(132,204,22,0.1)", background: "rgba(132,204,22,0.03)" }}>
+        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden", marginBottom: 20 }}>
+          <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0,0,0,0.05)", background: "#F9FAFB" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>Strengths &amp; Risks</h3>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Inter', sans-serif" }}>Strengths &amp; Risks</h3>
             </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 100 }}>
             {/* Strengths */}
-            <div style={{ padding: "16px 20px", borderRight: "1px solid rgba(132,204,22,0.1)" }}>
+            <div style={{ padding: "16px 20px", borderRight: "1px solid rgba(0,0,0,0.05)" }}>
               <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#059669", marginBottom: 12 }}>Strengths</div>
               {strengths.map((s, i) => (
                 <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 10 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" style={{ flexShrink: 0, marginTop: 2 }}><polyline points="20 6 9 17 4 12" /></svg>
-                  <span style={{ fontSize: 13, color: "#D1D5DB", lineHeight: 1.5 }}>{s}</span>
+                  <span style={{ fontSize: 13, color: "#374151", lineHeight: 1.5 }}>{s}</span>
                 </div>
               ))}
               {strengths.length === 0 && <span style={{ fontSize: 12, color: "#6B7280" }}>No strong signals detected</span>}
@@ -2648,7 +2613,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
               {risks.map((r, i) => (
                 <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 10 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" style={{ flexShrink: 0, marginTop: 2 }}><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                  <span style={{ fontSize: 13, color: "#D1D5DB", lineHeight: 1.5 }}>{r}</span>
+                  <span style={{ fontSize: 13, color: "#374151", lineHeight: 1.5 }}>{r}</span>
                 </div>
               ))}
               {risks.length === 0 && <span style={{ fontSize: 12, color: "#6B7280" }}>No risk signals detected</span>}
@@ -2674,26 +2639,26 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
           moderate: { color: "#D97706", bg: "rgba(217,119,6,0.08)" },
         };
         return (
-          <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(5,150,105,0.2)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", overflow: "hidden", marginBottom: 20 }}>
-            <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(5,150,105,0.15)", background: "rgba(5,150,105,0.05)" }}>
+          <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(5,150,105,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden", marginBottom: 20 }}>
+            <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(5,150,105,0.1)", background: "#F9FAFB" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ width: 3, height: 14, background: "#059669", borderRadius: 2 }} />
-                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>Value-Add Opportunities</h3>
+                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Inter', sans-serif" }}>Value-Add Opportunities</h3>
               </div>
-              <p style={{ fontSize: 12, color: "#9CA3AF", margin: "4px 0 0 11px", lineHeight: 1.4 }}>Actionable signals that indicate NOI improvement potential</p>
+              <p style={{ fontSize: 12, color: "#6B7280", margin: "4px 0 0 11px", lineHeight: 1.4 }}>Actionable signals that indicate NOI improvement potential</p>
             </div>
             <div style={{ padding: "12px 20px" }}>
               {vaFlags.map((flag, i) => {
                 const s = strengthStyle[flag.strength] || strengthStyle.moderate;
                 return (
-                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 12px", marginBottom: i < vaFlags.length - 1 ? 6 : 0, borderRadius: 8, background: flag.strength === "strong" ? "rgba(5,150,105,0.08)" : "rgba(217,119,6,0.08)" }}>
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 12px", marginBottom: i < vaFlags.length - 1 ? 6 : 0, borderRadius: 8, background: flag.strength === "strong" ? "rgba(5,150,105,0.04)" : "rgba(217,119,6,0.04)" }}>
                     <span style={{ fontSize: 16, lineHeight: 1, marginTop: 1, flexShrink: 0 }}>{flag.strength === "strong" ? "📈" : "📊"}</span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#9CA3AF" }}>{flag.type}</span>
-                        <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: s.color, background: "rgba(0,0,0,0.3)", padding: "1px 6px", borderRadius: 3 }}>{flag.strength}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280" }}>{flag.type}</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: s.color, background: "rgba(0,0,0,0.08)", padding: "1px 6px", borderRadius: 3 }}>{flag.strength}</span>
                       </div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#D1D5DB", lineHeight: 1.4 }}>{flag.summary}</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#374151", lineHeight: 1.4 }}>{flag.summary}</div>
                     </div>
                   </div>
                 );
@@ -2725,24 +2690,24 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== SCORE BREAKDOWN — from Pro scoring model ===== */}
       {scoreCategories.length > 0 && (
-        <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", padding: 24, marginBottom: 16 }}>
+        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: 24, marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0, color: "#FFFFFF", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0, color: "#0F172A", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               <span style={{ width: 3, height: 20, background: "#84CC16", borderRadius: 2 }} />
               Deal Signals Score Breakdown
             </h2>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.5 }}>{detectedType} model</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.5 }}>{detectedType} model</span>
               <span style={{
                 fontSize: 11, fontWeight: 800, padding: "3px 10px", borderRadius: 4, letterSpacing: 0.5,
-                background: scoreBand === "strong_buy" || scoreBand === "buy" ? "rgba(5,150,105,0.1)" : scoreBand === "hold" ? "rgba(196,154,60,0.1)" : "rgba(132,204,22,0.1)",
+                background: scoreBand === "strong_buy" || scoreBand === "buy" ? "rgba(5,150,105,0.08)" : scoreBand === "hold" ? "rgba(196,154,60,0.08)" : "rgba(132,204,22,0.08)",
                 color: scoreBand === "strong_buy" || scoreBand === "buy" ? "#059669" : scoreBand === "hold" ? "#C49A3C" : "#84CC16",
                 textTransform: "uppercase",
               }}>{scoreBand === "hold" ? "neutral" : scoreBand.replace("_", " ")}</span>
             </div>
           </div>
           {scoreRecommendation && (
-            <p style={{ fontSize: 13, color: "#D1D5DB", lineHeight: 1.6, margin: "0 0 16px", padding: "12px 16px", background: "rgba(132,204,22,0.05)", borderRadius: 8 }}>
+            <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.6, margin: "0 0 16px", padding: "12px 16px", background: "#F9FAFB", borderRadius: 8 }}>
               {scoreRecommendation}
             </p>
           )}
@@ -2750,16 +2715,16 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
             {scoreCategories.map((cat: any) => {
               const barColor = cat.score >= 70 ? "#059669" : cat.score >= 50 ? "#C49A3C" : "#84CC16";
               return (
-                <div key={cat.name} style={{ padding: "10px 14px", background: "rgba(132,204,22,0.05)", borderRadius: 8 }}>
+                <div key={cat.name} style={{ padding: "10px 14px", background: "#F9FAFB", borderRadius: 8 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#E5E7EB", textTransform: "capitalize" }}>{cat.name}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#374151", textTransform: "capitalize" }}>{cat.name}</span>
                     <span style={{ fontSize: 12, fontWeight: 800, color: barColor }}>{cat.score}</span>
                   </div>
-                  <div style={{ height: 4, background: "rgba(132,204,22,0.15)", borderRadius: 2, overflow: "hidden" }}>
+                  <div style={{ height: 4, background: "rgba(0,0,0,0.05)", borderRadius: 2, overflow: "hidden" }}>
                     <div style={{ width: `${cat.score}%`, height: "100%", background: barColor, borderRadius: 2, animation: "barGrow 0.8s ease-out" }} />
                   </div>
                   {cat.explanation && (
-                    <div style={{ fontSize: 10, color: "#9CA3AF", marginTop: 3 }}>{cat.explanation}</div>
+                    <div style={{ fontSize: 10, color: "#6B7280", marginTop: 3 }}>{cat.explanation}</div>
                   )}
                 </div>
               );
@@ -2770,13 +2735,13 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== BRIEF / INITIAL ASSESSMENT ===== */}
       {brief && (
-        <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", padding: 24, marginBottom: 16 }}>
-          <h2 style={{ fontSize: 17, fontWeight: 700, margin: "0 0 4px", color: "#FFFFFF", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: 24, marginBottom: 16 }}>
+          <h2 style={{ fontSize: 17, fontWeight: 700, margin: "0 0 4px", color: "#0F172A", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             <span style={{ width: 3, height: 20, background: "#84CC16", borderRadius: 2 }} />
             Initial Assessment
           </h2>
-          <p style={{ fontSize: 11, color: "#9CA3AF", margin: "0 0 14px" }}>AI-generated first-pass analysis based on uploaded documents</p>
-          <div style={{ fontSize: 14, color: "#D1D5DB", lineHeight: 1.8 }}>
+          <p style={{ fontSize: 11, color: "#6B7280", margin: "0 0 14px" }}>AI-generated first-pass analysis based on uploaded documents</p>
+          <div style={{ fontSize: 14, color: "#374151", lineHeight: 1.8 }}>
             {brief.split("\n").filter((p: string) => p.trim()).map((p: string, i: number) => (
               <p key={i} style={{ margin: "0 0 14px" }}>{p}</p>
             ))}
@@ -2788,35 +2753,35 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
       {hasData && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
           {metrics.length > 0 && (
-            <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", overflow: "hidden" }}>
-              <div style={{ padding: "12px 18px", background: "rgba(132,204,22,0.05)", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+              <div style={{ padding: "12px 18px", background: "#F9FAFB", display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#FFFFFF", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Key Metrics</h3>
+                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Key Metrics</h3>
               </div>
               {metrics.map(([label, val, tooltip], i) => (
                 <div key={String(label)} style={{
                   display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 18px",
-                  background: i % 2 === 1 ? "rgba(132,204,22,0.03)" : "transparent",
+                  background: i % 2 === 1 ? "rgba(0,0,0,0.01)" : "transparent",
                 }}>
-                  <span style={{ fontSize: 12, color: "#9CA3AF", display: "flex", alignItems: "center", gap: 5 }}>
+                  <span style={{ fontSize: 12, color: "#6B7280", display: "flex", alignItems: "center", gap: 5 }}>
                     {String(label)}
                     {tooltip && <MetricTooltip text={String(tooltip)} />}
                   </span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "#E5E7EB", fontVariantNumeric: "tabular-nums" }}>{String(val)}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#374151", fontVariantNumeric: "tabular-nums" }}>{String(val)}</span>
                 </div>
               ))}
             </div>
           )}
           {signals.length > 0 && (
-            <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", overflow: "hidden" }}>
-              <div style={{ padding: "12px 18px", background: "rgba(132,204,22,0.05)", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+              <div style={{ padding: "12px 18px", background: "#F9FAFB", display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#FFFFFF", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Signal Assessment</h3>
+                <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Signal Assessment</h3>
               </div>
               {signals.map(([label, val], i) => {
                 const raw = String(val);
                 const color = signalColor(raw);
-                const bgColor = color === "#059669" ? "rgba(5,150,105,0.1)" : color === "#D97706" ? "rgba(217,119,6,0.1)" : color === "#DC2626" ? "rgba(220,38,38,0.1)" : "rgba(132,204,22,0.03)";
+                const bgColor = color === "#059669" ? "rgba(5,150,105,0.05)" : color === "#D97706" ? "rgba(217,119,6,0.05)" : color === "#DC2626" ? "rgba(220,38,38,0.05)" : "rgba(132,204,22,0.03)";
                 const borderLeft = color === "#059669" ? "3px solid #059669" : color === "#D97706" ? "3px solid #D97706" : color === "#DC2626" ? "3px solid #DC2626" : "3px solid #84CC16";
                 // Strip leading emoji + space for cleaner display
                 const text = raw.replace(/^[🟢🟡🔴]\s*/, "");
@@ -2827,9 +2792,9 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
                   }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#E5E7EB", textTransform: "uppercase", letterSpacing: 0.3 }}>{String(label)}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: 0.3 }}>{String(label)}</span>
                     </div>
-                    <span style={{ fontSize: 13, color: "#D1D5DB", lineHeight: 1.5, paddingLeft: 14 }}>{text}</span>
+                    <span style={{ fontSize: 13, color: "#374151", lineHeight: 1.5, paddingLeft: 14 }}>{text}</span>
                   </div>
                 );
               })}
@@ -2840,29 +2805,29 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== TENANT SUMMARY ===== */}
       {tenants.length > 0 && (
-        <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", overflow: "hidden", marginBottom: 16 }}>
-          <div style={{ padding: "12px 18px", background: "rgba(132,204,22,0.05)" }}>
-            <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#FFFFFF", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Tenant Summary</h3>
+        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden", marginBottom: 16 }}>
+          <div style={{ padding: "12px 18px", background: "#F9FAFB" }}>
+            <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Tenant Summary</h3>
           </div>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
               <tr>
-                <th style={{ padding: "6px 16px", textAlign: "left", fontWeight: 600, color: "#9CA3AF" }}>Tenant</th>
-                <th style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, color: "#9CA3AF" }}>SF</th>
-                <th style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, color: "#9CA3AF" }}>Annual Rent</th>
-                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#9CA3AF" }}>Type</th>
-                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#9CA3AF" }}>Lease End</th>
-                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#9CA3AF" }}>Status</th>
+                <th style={{ padding: "6px 16px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Tenant</th>
+                <th style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280" }}>SF</th>
+                <th style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, color: "#6B7280" }}>Annual Rent</th>
+                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Type</th>
+                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Lease End</th>
+                <th style={{ padding: "6px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Status</th>
               </tr>
             </thead>
             <tbody>
               {tenants.map((t: any, i: number) => (
-                <tr key={i} style={{ background: i % 2 === 1 ? "rgba(132,204,22,0.03)" : "transparent" }}>
-                  <td style={{ padding: "6px 16px", fontWeight: 600, color: "#E5E7EB" }}>{t.name}</td>
-                  <td style={{ padding: "6px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums", color: "#D1D5DB" }}>{t.sf ? Math.round(Number(t.sf)).toLocaleString() : "--"}</td>
-                  <td style={{ padding: "6px 12px", textAlign: "right", fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "#D1D5DB" }}>{fmt$(t.rent)}</td>
-                  <td style={{ padding: "6px 12px", color: "#9CA3AF" }}>{t.type || "--"}</td>
-                  <td style={{ padding: "6px 12px", color: "#9CA3AF" }}>{t.end || "--"}</td>
+                <tr key={i} style={{ background: i % 2 === 1 ? "rgba(0,0,0,0.01)" : "transparent" }}>
+                  <td style={{ padding: "6px 16px", fontWeight: 600, color: "#374151" }}>{t.name}</td>
+                  <td style={{ padding: "6px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums", color: "#374151" }}>{t.sf ? Math.round(Number(t.sf)).toLocaleString() : "--"}</td>
+                  <td style={{ padding: "6px 12px", textAlign: "right", fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "#374151" }}>{fmt$(t.rent)}</td>
+                  <td style={{ padding: "6px 12px", color: "#6B7280" }}>{t.type || "--"}</td>
+                  <td style={{ padding: "6px 12px", color: "#6B7280" }}>{t.end || "--"}</td>
                   <td style={{ padding: "6px 12px" }}>
                     <span style={{
                       fontSize: 10, fontWeight: 600, padding: "2px 6px", borderRadius: 8,
@@ -2879,38 +2844,38 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== DOWNLOAD ASSETS ===== */}
       {hasData && (
-        <div style={{ background: "#0d0d14", borderRadius: 12, border: "1px solid rgba(132,204,22,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.3)", padding: 20, marginBottom: 16 }}>
+        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: 20, marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
             <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#FFFFFF", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Download Assets</h3>
+            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Download Assets</h3>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <button className="dl-btn" onClick={() => downloadLiteXLSX(d)} style={{
               display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 18px",
-              background: "rgba(132,204,22,0.1)", border: "1px solid rgba(132,204,22,0.2)", borderRadius: 6,
-              color: "#D1D5DB", textAlign: "left", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+              background: "rgba(5,150,105,0.05)", border: "1px solid rgba(5,150,105,0.15)", borderRadius: 6,
+              color: "#374151", textAlign: "left", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
             }}>
-              <div style={{ width: 40, height: 40, borderRadius: 8, background: "rgba(5,150,105,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 8, background: "rgba(5,150,105,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
               </div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2, color: "#FFFFFF" }}>Underwriting Workbook <span style={{ marginLeft: 6, padding: "1px 5px", background: "rgba(5,150,105,0.15)", borderRadius: 4, fontSize: 9, fontWeight: 700, color: "#059669" }}>XLSX</span></div>
-                <div style={{ fontSize: 11, color: "#9CA3AF", lineHeight: 1.4 }}>6-sheet Excel: Inputs, Rent Roll, Operating Statement, Debt &amp; Returns, Breakeven, Cap Scenarios</div>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2, color: "#0F172A" }}>Underwriting Workbook <span style={{ marginLeft: 6, padding: "1px 5px", background: "rgba(5,150,105,0.1)", borderRadius: 4, fontSize: 9, fontWeight: 700, color: "#059669" }}>XLSX</span></div>
+                <div style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.4 }}>6-sheet Excel: Inputs, Rent Roll, Operating Statement, Debt &amp; Returns, Breakeven, Cap Scenarios</div>
               </div>
             </button>
             <button className="dl-btn" onClick={() => downloadLiteBrief(d)} style={{
               display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 18px",
-              background: "rgba(132,204,22,0.1)", border: "1px solid rgba(132,204,22,0.2)", borderRadius: 6,
-              color: "#D1D5DB", textAlign: "left", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+              background: "rgba(37,99,235,0.05)", border: "1px solid rgba(37,99,235,0.15)", borderRadius: 6,
+              color: "#374151", textAlign: "left", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
             }}>
-              <div style={{ width: 40, height: 40, borderRadius: 8, background: "rgba(37,99,235,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 8, background: "rgba(37,99,235,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
               </div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2, color: "#FFFFFF" }}>First-Pass Brief <span style={{ marginLeft: 6, padding: "1px 5px", background: "rgba(37,99,235,0.15)", borderRadius: 4, fontSize: 9, fontWeight: 700, color: "#2563EB" }}>DOC</span></div>
-                <div style={{ fontSize: 11, color: "#9CA3AF", lineHeight: 1.4 }}>Investment memo with assessment, key metrics, signal ratings, and recommendation</div>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2, color: "#0F172A" }}>First-Pass Brief <span style={{ marginLeft: 6, padding: "1px 5px", background: "rgba(37,99,235,0.1)", borderRadius: 4, fontSize: 9, fontWeight: 700, color: "#2563EB" }}>DOC</span></div>
+                <div style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.4 }}>Investment memo with assessment, key metrics, signal ratings, and recommendation</div>
               </div>
             </button>
           </div>
@@ -2932,7 +2897,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
           }}>
             Save this breakdown. Compare it. Share it.
           </h2>
-          <p style={{ fontSize: 16, color: "#9ca3af", lineHeight: 1.7, maxWidth: 520, margin: "0 auto 8px" }}>
+          <p style={{ fontSize: 16, color: "#d1d5db", lineHeight: 1.7, maxWidth: 520, margin: "0 auto 8px" }}>
             With DealSignals Pro, every analysis is saved to your DealBoard. Score side-by-side, export full workbooks, pin deals to a map, and send branded briefs to clients.
           </p>
           <p style={{ fontSize: 14, color: "#84CC16", fontWeight: 600, marginBottom: 28 }}>
