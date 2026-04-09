@@ -8,6 +8,7 @@ interface UsageData {
   tier: string;
   tierStatus: string;
   isAnonymous: boolean;
+  isLifetimeLimit?: boolean;
 }
 
 interface TrialStatusBarProps {
@@ -16,15 +17,13 @@ interface TrialStatusBarProps {
 
 /**
  * Persistent bar shown in workspace header showing trial/usage status.
- * Uses onAuthStateChanged to wait for Firebase auth before fetching,
- * so it correctly detects Pro/Pro+ users on initial load.
+ * Supports: anonymous trial, free (5 lifetime), pro trial, pro active, pro+ active.
  */
 export default function TrialStatusBar({ onUpgradeClick }: TrialStatusBarProps) {
   const [usage, setUsage] = useState<UsageData | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const unsubRef = useRef<(() => void) | null>(null);
 
-  // Stable fetch function that takes an optional Firebase user
   const fetchUsage = useCallback(async (fbUser?: any) => {
     try {
       if (fbUser) {
@@ -34,13 +33,12 @@ export default function TrialStatusBar({ onUpgradeClick }: TrialStatusBarProps) 
         });
         if (res.ok) setUsage(await res.json());
       } else {
-        // Anonymous user — check localStorage for anonId
         const anonId = typeof window !== "undefined" ? localStorage.getItem("nnn_anon_id") : null;
         if (anonId) {
           const res = await fetch(`/api/workspace/usage?anonId=${anonId}`);
           if (res.ok) setUsage(await res.json());
         } else {
-          setUsage({ uploadsUsed: 0, uploadLimit: 2, tier: "free", tierStatus: "none", isAnonymous: true });
+          setUsage({ uploadsUsed: 0, uploadLimit: 2, tier: "anonymous", tierStatus: "none", isAnonymous: true });
         }
       }
     } catch (err) {
@@ -48,7 +46,6 @@ export default function TrialStatusBar({ onUpgradeClick }: TrialStatusBarProps) 
     }
   }, []);
 
-  // Wait for Firebase auth to initialize before fetching usage
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -66,7 +63,6 @@ export default function TrialStatusBar({ onUpgradeClick }: TrialStatusBarProps) 
     };
   }, [fetchUsage]);
 
-  // Listen for usage updates (after upload, upgrade, or property changes)
   useEffect(() => {
     const handler = async () => {
       const { getAuth } = await import("firebase/auth");
@@ -83,32 +79,43 @@ export default function TrialStatusBar({ onUpgradeClick }: TrialStatusBarProps) 
 
   if (!usage) return null;
 
-  const { uploadsUsed, uploadLimit, tier, isAnonymous } = usage;
+  const { uploadsUsed, uploadLimit, tier, tierStatus, isAnonymous, isLifetimeLimit } = usage;
   const atLimit = uploadsUsed >= uploadLimit;
   const nearLimit = uploadsUsed >= uploadLimit - 1 && !atLimit;
   const isPaid = tier === "pro" || tier === "pro_plus";
+  const isTrial = tierStatus === "trialing";
 
-  // Don't show bar for paid users who are well under limit
-  if (isPaid && uploadsUsed < uploadLimit * 0.8) return null;
+  // Don't show bar for paid users who are well under limit (unless on trial)
+  if (isPaid && !isTrial && uploadsUsed < uploadLimit * 0.8) return null;
 
   const label = isAnonymous
     ? "Free Trial"
+    : tier === "pro" && isTrial
+    ? "Pro Trial"
     : tier === "pro"
     ? "Pro Plan"
+    : tier === "pro_plus" && isTrial
+    ? "Pro+ Trial"
     : tier === "pro_plus"
     ? "Pro+ Plan"
     : "Free Plan";
 
+  const suffix = isLifetimeLimit ? "total" : "/mo";
+
   const bgColor = atLimit
     ? "rgba(132, 204, 22, 0.08)"
+    : isTrial
+    ? "rgba(59, 130, 246, 0.06)"
     : nearLimit
     ? "rgba(234, 179, 8, 0.08)"
     : "rgba(148, 163, 184, 0.06)";
 
-  const textColor = atLimit ? "#84CC16" : nearLimit ? "#92400e" : "#585e70";
-  const barFillColor = atLimit ? "#84CC16" : nearLimit ? "#eab308" : "#10b981";
+  const textColor = atLimit ? "#84CC16" : isTrial ? "#3b82f6" : nearLimit ? "#92400e" : "#585e70";
+  const barFillColor = atLimit ? "#84CC16" : isTrial ? "#3b82f6" : nearLimit ? "#eab308" : "#10b981";
 
   const pct = Math.min(100, Math.round((uploadsUsed / uploadLimit) * 100));
+
+  const showUpgrade = (!isPaid && (atLimit || nearLimit)) || (isTrial);
 
   return (
     <div
@@ -149,18 +156,18 @@ export default function TrialStatusBar({ onUpgradeClick }: TrialStatusBarProps) 
           />
         </div>
         <span style={{ whiteSpace: "nowrap" }}>
-          {uploadsUsed} / {uploadLimit} deals
+          {uploadsUsed} / {uploadLimit} deals{isLifetimeLimit ? "" : " this month"}
         </span>
       </div>
 
-      {/* Upgrade CTA for free users at or near limit */}
-      {!isPaid && (atLimit || nearLimit) && (
+      {/* Upgrade CTA */}
+      {showUpgrade && (
         <button
           onClick={onUpgradeClick}
           style={{
             padding: "4px 12px",
-            background: "#84CC16",
-            color: "#0F172A",
+            background: isTrial ? "#3b82f6" : "#84CC16",
+            color: isTrial ? "#fff" : "#0F172A",
             border: "none",
             borderRadius: 4,
             fontSize: 11,
@@ -170,7 +177,7 @@ export default function TrialStatusBar({ onUpgradeClick }: TrialStatusBarProps) 
             fontFamily: "'Inter', sans-serif",
           }}
         >
-          Upgrade
+          {isTrial ? "Subscribe" : "Upgrade"}
         </button>
       )}
     </div>

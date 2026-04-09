@@ -1679,17 +1679,17 @@ export default function OmAnalyzerPage() {
                   period: "",
                   desc: "Try DealSignals on real deals.",
                   features: [
-                    { text: "2 Deal Analyses", included: true },
-                    { text: "Full Deal Signals scoring", included: true },
-                    { text: "Full Excel export", included: true },
-                    { text: "Save up to 5 deals", included: true },
-                    { text: "1 shareable link", included: true },
-                    { text: "DealBoard & history", included: false },
-                    { text: "Deal comparison", included: false },
-                    { text: "Bulk uploads", included: false },
+                    { text: "5 deal analyses (total)", included: true },
+                    { text: "Save deals to workspace", included: true },
+                    { text: "Deal Signals scoring", included: true },
+                    { text: "6-sheet Excel workbook", included: true },
+                    { text: "First-pass brief download", included: true },
+                    { text: "Property map", included: false },
+                    { text: "Scoreboard & comparison", included: false },
+                    { text: "Location Intelligence", included: false },
                   ],
-                  cta: "Try Your First Deal",
-                  ctaLink: "/",
+                  cta: "Sign Up Free",
+                  ctaLink: "/workspace/login?source=pricing",
                   highlight: false,
                 },
                 {
@@ -1697,10 +1697,10 @@ export default function OmAnalyzerPage() {
                   price: "40",
                   period: "/mo",
                   desc: "For active investors moving fast on deals.",
-                  valueCallout: "Less than $0.50 per deal",
+                  valueCallout: "7-day free trial · Less than $1 per deal",
                   features: [
-                    { text: "Up to 100 deals/month", included: true },
-                    { text: "Unlimited saved deals", included: true },
+                    { text: "Up to 40 deals/month", included: true },
+                    { text: "Save & organize deals", included: true },
                     { text: "Deal Signals scoring", included: true },
                     { text: "Full Excel workbooks (6 sheets)", included: true },
                     { text: "DealBoard with history", included: true },
@@ -1709,7 +1709,7 @@ export default function OmAnalyzerPage() {
                     { text: "Location Intelligence", included: true },
                     { text: "White-label shareable links", included: true },
                   ],
-                  cta: "Start Pro",
+                  cta: "Start 7-Day Free Trial",
                   ctaLink: "/workspace/login?upgrade=pro",
                   highlight: true,
                 },
@@ -1718,9 +1718,9 @@ export default function OmAnalyzerPage() {
                   price: "100",
                   period: "/mo",
                   desc: "For high-volume deal flow and serious operators.",
-                  valueCallout: "Less than $0.20 per deal",
+                  valueCallout: "7-day free trial · Less than $0.50 per deal",
                   features: [
-                    { text: "Up to 500 deals/month", included: true },
+                    { text: "Up to 200 deals/month", included: true },
                     { text: "Everything in Pro", included: true },
                     { text: "Bulk portfolio uploads", included: true },
                     { text: "Advanced Location Intelligence", included: true },
@@ -1728,7 +1728,7 @@ export default function OmAnalyzerPage() {
                     { text: "Priority support", included: true },
                     { text: "Custom branding", included: true },
                   ],
-                  cta: "Go Pro+",
+                  cta: "Start 7-Day Free Trial",
                   ctaLink: "/workspace/login?upgrade=pro_plus",
                   highlight: false,
                   bestValue: true,
@@ -1869,9 +1869,9 @@ export default function OmAnalyzerPage() {
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "16px 0 8px", marginBottom: 4 }}>Pricing &amp; Plans</div>
 
                 {[
-                  { q: "Is it really free?", a: "Yes. 2 full deal analyses with scoring, risk signals, and Excel export. No credit card, no signup. You see the exact same output that Pro users get." },
-                  { q: "What does Pro include?", a: "Pro ($40/month) gives you up to 100 deal analyses per month, unlimited saved deals, full 6-sheet Excel workbooks, DealBoard with deal history, comparison scoreboard, interactive property map, and shareable client links. Less than $0.50 per deal." },
-                  { q: "What about Pro+?", a: "Pro+ ($100/month) is for high-volume operators. Up to 500 deals/month plus bulk portfolio uploads, advanced Location Intelligence, custom branding, and priority processing and support. Less than $0.20 per deal." },
+                  { q: "Is it really free?", a: "Yes. Try 2 deals without signing up. Create a free account for 5 total analyses with scoring, risk signals, and Excel export. Same output Pro users get." },
+                  { q: "What does Pro include?", a: "Pro ($40/month) starts with a 7-day free trial. 40 deals/month, saved deals, full 6-sheet Excel workbooks, DealBoard with history, comparison scoreboard, interactive property map, Location Intelligence, and white-label shareable links." },
+                  { q: "What about Pro+?", a: "Pro+ ($100/month) also starts with a 7-day free trial. 200 deals/month plus bulk portfolio uploads, advanced Location Intelligence, custom branding, priority processing and support." },
                 ].map((item, i) => {
                   const faqIdx = 5 + i;
                   return (
@@ -2908,85 +2908,44 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
         </div>
       )}
 
-      {/* ===== EMAIL CAPTURE — Get report emailed ===== */}
+      {/* ===== SAVE DEAL CTA — Drive signup ===== */}
       <div style={{
-        background: "#ffffff", borderRadius: 14, border: "1px solid rgba(132,204,22,0.15)",
+        background: "#ffffff", borderRadius: 14, border: "1px solid rgba(132,204,22,0.2)",
         boxShadow: "0 4px 24px rgba(0,0,0,0.06)", padding: "28px 28px", marginBottom: 20,
         marginTop: 8,
       }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 20 }}>
           <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(132,204,22,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", margin: "0 0 4px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              Email this analysis to yourself
+              Save this deal to your workspace
             </h3>
             <p style={{ fontSize: 13, color: "#6B7280", margin: "0 0 14px", lineHeight: 1.5 }}>
-              Get a copy of this deal breakdown in your inbox. No account required.
+              Create a free account to save deals, compare scores, and build your pipeline. 5 deals free, no card required.
             </p>
-            {captureStatus === "sent" ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", background: "rgba(5,150,105,0.06)", borderRadius: 8, border: "1px solid rgba(5,150,105,0.15)" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
-                <span style={{ fontSize: 13, fontWeight: 600, color: "#065f46" }}>{captureMsg || "Check your inbox!"}</span>
-              </div>
-            ) : (
-              <form onSubmit={async (e) => {
-                e.preventDefault();
-                if (!captureEmail || captureStatus === "sending") return;
-                setCaptureStatus("sending");
-                try {
-                  const res = await fetch("/api/capture-lead", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      email: captureEmail,
-                      source: "lite_report",
-                      propertyName: d.propertyName || "",
-                      dealScore: dealScore,
-                    }),
-                  });
-                  const json = await res.json();
-                  if (res.ok) {
-                    setCaptureStatus("sent");
-                    setCaptureMsg(json.message || "Check your inbox!");
-                    trackLeadCapture("lite_report");
-                  } else {
-                    setCaptureStatus("error");
-                    setCaptureMsg(json.error || "Something went wrong");
-                  }
-                } catch {
-                  setCaptureStatus("error");
-                  setCaptureMsg("Network error. Please try again.");
-                }
-              }} style={{ display: "flex", gap: 8 }}>
-                <input
-                  type="email"
-                  required
-                  placeholder="you@company.com"
-                  value={captureEmail}
-                  onChange={(e) => { setCaptureEmail(e.target.value); if (captureStatus === "error") setCaptureStatus("idle"); }}
-                  style={{
-                    flex: 1, padding: "10px 14px", borderRadius: 8,
-                    border: captureStatus === "error" ? "1px solid #DC2626" : "1px solid #E5E7EB",
-                    fontSize: 14, fontFamily: "'Inter', sans-serif", outline: "none",
-                    background: "#F9FAFB", color: "#0F172A",
-                  }}
-                />
-                <button type="submit" disabled={captureStatus === "sending"} style={{
-                  padding: "10px 20px", borderRadius: 8, border: "none",
-                  background: "#84CC16", color: "#0d0d14", fontSize: 13,
-                  fontWeight: 700, cursor: captureStatus === "sending" ? "wait" : "pointer",
-                  fontFamily: "'Plus Jakarta Sans', sans-serif", whiteSpace: "nowrap",
-                  opacity: captureStatus === "sending" ? 0.7 : 1,
-                }}>
-                  {captureStatus === "sending" ? "Sending..." : "Send Report"}
-                </button>
-              </form>
-            )}
-            {captureStatus === "error" && captureMsg && (
-              <p style={{ fontSize: 11, color: "#DC2626", margin: "6px 0 0", fontWeight: 500 }}>{captureMsg}</p>
-            )}
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <a href="/workspace/login?source=save_deal" onClick={() => trackLeadCapture("save_deal_cta")} style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                padding: "10px 24px", borderRadius: 8, border: "none",
+                background: "#84CC16", color: "#0d0d14", fontSize: 14,
+                fontWeight: 700, textDecoration: "none",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /></svg>
+                Sign Up Free
+              </a>
+              <a href="/workspace/login?upgrade=pro" onClick={() => trackProCTAClick("save_deal_section")} style={{
+                display: "inline-flex", alignItems: "center",
+                padding: "10px 20px", borderRadius: 8,
+                border: "1px solid #e2e8f0", background: "#fff", color: "#0F172A",
+                fontSize: 13, fontWeight: 600, textDecoration: "none",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}>
+                Start 7-Day Pro Trial
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -3015,7 +2974,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
             With DealSignals Pro, every analysis is saved to your DealBoard. Score side-by-side, export full workbooks, pin deals to a map, and send branded briefs to clients.
           </p>
           <p style={{ fontSize: 14, color: "#84CC16", fontWeight: 600, marginBottom: 28 }}>
-            Decide before others even open Excel. 100 deals/month for less than $0.50 per deal.
+            Try Pro free for 7 days. 40 deals/month for $40 — less than $1 per deal.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <a href="/workspace/login?upgrade=pro" onClick={() => trackProCTAClick("lite_result_bottom")} style={{
@@ -3026,10 +2985,10 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
               fontFamily: "'Plus Jakarta Sans', sans-serif",
               boxShadow: "0 0 30px rgba(132,204,22,0.4), 0 0 60px rgba(132,204,22,0.15)",
             }}>
-              Upgrade to Pro
+              Start 7-Day Free Trial
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
             </a>
-            <a href="/om-analyzer#pricing" style={{
+            <a href="/workspace/login?source=save_deal" style={{
               display: "inline-flex", alignItems: "center",
               padding: "14px 28px", borderRadius: 10,
               background: "transparent", color: "#e0e0e6",
@@ -3037,7 +2996,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
               fontSize: 14, fontWeight: 600, textDecoration: "none",
               fontFamily: "'Plus Jakarta Sans', sans-serif",
             }}>
-              View Plans
+              Sign Up Free (5 Deals)
             </a>
           </div>
           {usageData && (

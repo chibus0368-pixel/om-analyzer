@@ -65,6 +65,15 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Create Checkout Session ────────────────────────────
+    const subscriptionData: any = {
+      metadata: { firebaseUid: uid, plan: planConfig.id },
+    };
+
+    // Add 7-day free trial (card collected upfront, auto-converts after trial)
+    if (planConfig.trialDays && planConfig.trialDays > 0) {
+      subscriptionData.trial_period_days = planConfig.trialDays;
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: "subscription",
@@ -72,9 +81,7 @@ export async function POST(req: NextRequest) {
       line_items: [{ price: planConfig.stripePriceId, quantity: 1 }],
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/workspace?upgraded=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/pricing`,
-      subscription_data: {
-        metadata: { firebaseUid: uid, plan: planConfig.id },
-      },
+      subscription_data: subscriptionData,
       metadata: { firebaseUid: uid, plan: planConfig.id },
       allow_promotion_codes: true,
     });

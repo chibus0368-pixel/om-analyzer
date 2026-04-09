@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
         tier: "free",
         tierStatus: "none",
         uploadsUsed: anonUploadsUsed,
-        uploadLimit: 2,
+        uploadLimit: 5,
         newsletterOptIn: false,
         productUpdatesOptIn: false,
         lastLoginAt: now,

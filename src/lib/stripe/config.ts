@@ -14,9 +14,13 @@ export interface PlanConfig {
   tier: "free" | "pro" | "pro_plus";
   priceMonthly: number;       // dollars
   uploadLimit: number;
+  isLifetimeLimit?: boolean;   // true = total ever, false/undefined = per month
+  trialDays?: number;          // Stripe trial_period_days
   stripePriceId: string | null; // null for free
   features: string[];
 }
+
+export const ANONYMOUS_LIMIT = 2; // analyses before signup required
 
 export const PLANS: Record<string, PlanConfig> = {
   free: {
@@ -24,13 +28,15 @@ export const PLANS: Record<string, PlanConfig> = {
     name: "Free",
     tier: "free",
     priceMonthly: 0,
-    uploadLimit: 2,
+    uploadLimit: 5,
+    isLifetimeLimit: true,     // 5 deals total, no monthly reset
     stripePriceId: null,
     features: [
-      "2 deal analyses",
-      "Standard PDF extraction",
-      "Basic Deal Signals score",
-      "First-pass brief",
+      "5 deal analyses (total)",
+      "Save deals to workspace",
+      "Deal Signals scoring",
+      "First-pass brief download",
+      "6-sheet Excel workbook",
     ],
   },
   pro: {
@@ -39,6 +45,7 @@ export const PLANS: Record<string, PlanConfig> = {
     tier: "pro",
     priceMonthly: 40,
     uploadLimit: 40,
+    trialDays: 7,
     stripePriceId: process.env.STRIPE_PRICE_PRO_MONTHLY || null,
     features: [
       "Up to 40 deals/month",
@@ -58,6 +65,7 @@ export const PLANS: Record<string, PlanConfig> = {
     tier: "pro_plus",
     priceMonthly: 100,
     uploadLimit: 200,
+    trialDays: 7,
     stripePriceId: process.env.STRIPE_PRICE_PRO_PLUS_MONTHLY || null,
     features: [
       "Up to 200 deals/month",

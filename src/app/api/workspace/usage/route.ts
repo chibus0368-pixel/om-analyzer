@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
-import { getUploadLimit } from "@/lib/stripe/config";
+import { getUploadLimit, ANONYMOUS_LIMIT, PLANS } from "@/lib/stripe/config";
 
 export const dynamic = "force-dynamic";
 
@@ -48,8 +48,8 @@ export async function GET(req: NextRequest) {
       const data = anonDoc.data();
       return NextResponse.json({
         uploadsUsed: data?.uploadsUsed || 0,
-        uploadLimit: 2,
-        tier: "free",
+        uploadLimit: ANONYMOUS_LIMIT,
+        tier: "anonymous",
         tierStatus: "none",
         isAnonymous: true,
       });
@@ -77,8 +77,12 @@ export async function GET(req: NextRequest) {
     let uploadsUsed = userData.uploadsUsed || 0;
     const uploadLimit = userData.uploadLimit || getUploadLimit(tier);
 
-    // ── Auto-reset if new billing period ──
-    if ((tier === "pro" || tier === "pro_plus") && shouldResetPeriod(userData)) {
+    // ── Auto-reset if new billing period (paid users only) ──
+    // Free tier has a lifetime limit (no monthly reset)
+    const planConfig = PLANS[tier];
+    const isLifetime = planConfig?.isLifetimeLimit ?? (tier === "free");
+
+    if (!isLifetime && (tier === "pro" || tier === "pro_plus") && shouldResetPeriod(userData)) {
       uploadsUsed = 0;
       // Persist the reset so it only happens once per period
       await userRef.update({
@@ -94,6 +98,7 @@ export async function GET(req: NextRequest) {
       tier,
       tierStatus,
       isAnonymous: false,
+      isLifetimeLimit: isLifetime,
       stripeSubscriptionId: userData.stripeSubscriptionId || null,
     });
   } catch (err: any) {
@@ -121,8 +126,12 @@ export async function POST(req: NextRequest) {
       const doc = await ref.get();
       const current = doc.data()?.uploadsUsed || 0;
 
-      if (current >= 2) {
-        return NextResponse.json({ error: "Free trial limit reached", upgradeRequired: true }, { status: 403 });
+      if (current >= ANONYMOUS_LIMIT) {
+        return NextResponse.json({
+          error: "Create a free account to keep analyzing deals",
+          upgradeRequired: true,
+          signupRequired: true,
+        }, { status: 403 });
       }
 
       await ref.set({
@@ -132,7 +141,7 @@ export async function POST(req: NextRequest) {
         updatedAt: new Date(),
       }, { merge: true });
 
-      return NextResponse.json({ uploadsUsed: current + 1, uploadLimit: 2 });
+      return NextResponse.json({ uploadsUsed: current + 1, uploadLimit: ANONYMOUS_LIMIT });
     }
 
     // ── Authenticated increment ─────────────────────────────
@@ -156,8 +165,10 @@ export async function POST(req: NextRequest) {
     const uploadLimit = userData.uploadLimit || getUploadLimit(tier);
     let currentUsed = userData.uploadsUsed || 0;
 
-    // ── Auto-reset if new billing period (paid users) ──
-    if ((tier === "pro" || tier === "pro_plus") && shouldResetPeriod(userData)) {
+    // ── Auto-reset if new billing period (paid users only, not free lifetime) ──
+    const postPlanConfig = PLANS[tier];
+    const postIsLifetime = postPlanConfig?.isLifetimeLimit ?? (tier === "free");
+    if (!postIsLifetime && (tier === "pro" || tier === "pro_plus") && shouldResetPeriod(userData)) {
       currentUsed = 0;
     }
 

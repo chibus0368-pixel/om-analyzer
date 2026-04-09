@@ -10,19 +10,19 @@ const TIERS = [
     name: "Free",
     price: "0",
     period: "",
-    desc: "For independent analysts and students evaluating deals.",
+    desc: "Try DealSignals on real deals. No card required.",
     features: [
-      { text: "2 Deal Analyses", included: true },
-      { text: "Standard PDF extraction", included: true },
-      { text: "Basic Deal Signals score", included: true },
+      { text: "5 deal analyses (total)", included: true },
+      { text: "Save deals to workspace", included: true },
+      { text: "Deal Signals scoring", included: true },
+      { text: "6-sheet Excel workbook", included: true },
       { text: "First-pass brief download", included: true },
-      { text: "Save & organize deals", included: false },
-      { text: "AI scoring models", included: false },
-      { text: "Full Excel exports", included: false },
-      { text: "DealBoard & history", included: false },
+      { text: "Property map", included: false },
+      { text: "Scoreboard & comparison", included: false },
+      { text: "Location Intelligence", included: false },
     ],
-    cta: "Get Started Free",
-    ctaLink: "/",
+    cta: "Sign Up Free",
+    ctaLink: "/workspace/login?source=pricing",
     highlight: false,
   },
   {
@@ -30,6 +30,7 @@ const TIERS = [
     price: "40",
     period: "/mo",
     desc: "For active investors and small acquisition teams.",
+    trialBadge: "7-Day Free Trial",
     features: [
       { text: "Up to 40 deals/month", included: true },
       { text: "Save & organize deals", included: true },
@@ -41,7 +42,7 @@ const TIERS = [
       { text: "Location Intelligence", included: true },
       { text: "White-label shareable links", included: true },
     ],
-    cta: "Start Pro",
+    cta: "Start 7-Day Free Trial",
     ctaLink: "/workspace/login?upgrade=pro",
     highlight: true,
   },
@@ -50,6 +51,7 @@ const TIERS = [
     price: "100",
     period: "/mo",
     desc: "For power users and teams with high deal flow.",
+    trialBadge: "7-Day Free Trial",
     features: [
       { text: "Up to 200 deals/month", included: true },
       { text: "Everything in Pro", included: true },
@@ -60,7 +62,7 @@ const TIERS = [
       { text: "Custom branding", included: true },
       { text: "Advanced exports", included: true },
     ],
-    cta: "Start Pro+",
+    cta: "Start 7-Day Free Trial",
     ctaLink: "/workspace/login?upgrade=pro_plus",
     highlight: false,
     bestValue: true,
@@ -68,10 +70,10 @@ const TIERS = [
 ];
 
 const FAQS = [
-  { q: "Can I try it before I pay?", a: "Yes — the Free tier gives you 2 deal analyses with no credit card required. Upload any OM and see the full analysis flow before committing to a paid plan." },
+  { q: "Can I try it before I pay?", a: "Absolutely. Try 2 deals without any account, then sign up free for 5 total analyses. When you're ready for more, Pro and Pro+ both start with a 7-day free trial — your card won't be charged until the trial ends." },
   { q: "What file types are supported?", a: "We support PDF (best results), Word documents (.docx), Excel files (.xlsx, .xls, .csv), and plain text. Our AI extracts property data from any standard Offering Memorandum format." },
   { q: "How accurate is the analysis?", a: "Our models achieve 99.8% precision on standard NNN retail OMs. Multi-tenant and complex documents may require manual verification. We always label outputs as first-pass directional analysis." },
-  { q: "Can I cancel anytime?", a: "Yes. No long-term contracts. Cancel your Pro or Pro+ subscription anytime and you'll retain access through the end of your billing period." },
+  { q: "Can I cancel anytime?", a: "Yes. Cancel during your 7-day trial and you won't be charged. After that, cancel anytime and you'll keep access through the end of your billing period." },
   { q: "What's the difference between Pro and Pro+?", a: "Pro gives you 40 deals/month with the full DealBoard, scoring, maps, Location Intelligence, white-label shareable links, and Excel exports. Pro+ scales to 200 deals/month and adds bulk portfolio uploads, custom branding, advanced exports, and priority processing." },
 ];
 
@@ -146,7 +148,12 @@ export default function PricingPage() {
                   </>
                 )}
               </div>
-              <p style={{ fontSize: 13, color: tier.highlight ? "#8899B0" : "#5A7091", marginBottom: 28, lineHeight: 1.5 }}>{tier.desc}</p>
+              <p style={{ fontSize: 13, color: tier.highlight ? "#8899B0" : "#5A7091", marginBottom: (tier as any).trialBadge ? 8 : 28, lineHeight: 1.5 }}>{tier.desc}</p>
+              {(tier as any).trialBadge && (
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#DC2626", marginBottom: 20, letterSpacing: 0.3 }}>
+                  {(tier as any).trialBadge} — no charge until trial ends
+                </div>
+              )}
 
               <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
                 {tier.features.map(f => (

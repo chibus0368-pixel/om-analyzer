@@ -626,7 +626,7 @@ export function purchaseConfirmationTemplate(data: { name: string; email: string
     </h2>
 
     <p style="margin: 0 0 15px 0; color: ${COLORS.textGray}; font-size: 14px; line-height: 1.6;">
-      Thanks for upgrading, ${displayName}! Your ${planDisplay} subscription is now active and all features are unlocked.
+      Thanks for starting your ${planDisplay} trial, ${displayName}! You have 7 days of full access — your card won't be charged until the trial ends.
     </p>
 
     <!-- Order Summary -->

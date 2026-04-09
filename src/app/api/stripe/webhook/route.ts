@@ -50,14 +50,24 @@ export async function POST(req: NextRequest) {
 
         console.log(`[stripe/webhook] checkout.session.completed uid=${uid} plan=${plan}`);
 
+        // Check if subscription is in trial period
+        let subStatus = "active";
+        try {
+          const sub = await stripe.subscriptions.retrieve(session.subscription as string);
+          if (sub.status === "trialing") subStatus = "trialing";
+        } catch { /* fallback to active */ }
+
         await db.collection("users").doc(uid).update({
           tier: planConfig.tier,
-          tierStatus: "active",
+          tierStatus: subStatus === "trialing" ? "trialing" : "active",
           stripeSubscriptionId: session.subscription as string,
           stripeCustomerId: session.customer as string,
           uploadLimit: planConfig.uploadLimit,
           uploadsUsed: 0,           // Reset on new subscription
           periodStart: new Date(),  // Start billing period tracking
+          trialEndsAt: subStatus === "trialing"
+            ? new Date(Date.now() + (planConfig.trialDays || 7) * 24 * 60 * 60 * 1000)
+            : null,
           updatedAt: new Date(),
         });
 
@@ -125,8 +135,10 @@ export async function POST(req: NextRequest) {
         let tierStatus: string;
         switch (status) {
           case "active":
-          case "trialing":
             tierStatus = "active";
+            break;
+          case "trialing":
+            tierStatus = "trialing";
             break;
           case "past_due":
             tierStatus = "past_due";
@@ -170,7 +182,8 @@ export async function POST(req: NextRequest) {
           tier: "free",
           tierStatus: "canceled",
           stripeSubscriptionId: null,
-          uploadLimit: 2,
+          uploadLimit: PLANS.free.uploadLimit, // 5 (lifetime)
+          trialEndsAt: null,
           updatedAt: new Date(),
         });
 
