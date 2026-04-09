@@ -1117,7 +1117,7 @@ export default function OmAnalyzerPage() {
                   How It Works
                 </div>
                 <h2 style={{ fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15, marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  Eight Steps to <span className="ds-callout">Deal Clarity</span>.
+                  How a Deal Becomes a <span className="ds-callout">Decision</span>.
                 </h2>
                 <p style={{ fontSize: 17, color: "#9ca3af", lineHeight: 1.7, maxWidth: 580, margin: "0 auto" }}>
                   Upload a deal. Get scored, organized, shareable pre-diligence back in seconds.
@@ -1127,7 +1127,7 @@ export default function OmAnalyzerPage() {
               {/* ── Feature blocks: alternating left/right ── */}
               {[
                 {
-                  num: "01", title: "Extract 40+ Fields", desc: "Upload an OM, flyer, rent roll, or broker package and watch 40+ fields populate in under a minute. Price, cap rate, NOI, tenant, lease terms, and more. Add multiple documents to the same deal and data coalesces automatically.",
+                  num: "01", title: "Extract 40+ Fields", desc: "Drop any OM, flyer, rent roll, or broker package. Price, cap rate, NOI, tenants, and lease terms populate in seconds.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
                       {/* Scan line animation overlay */}
@@ -1183,7 +1183,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "02", title: "Get a Buy/Pass Signal", desc: "Get a buy/hold/pass signal with risk tags before you spend time on full underwriting.",
+                  num: "02", title: "Get a Buy/Pass Signal", desc: "Instant buy, hold, or pass recommendation with risk tags. Know before you underwrite.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
                       {/* Subtle glow behind score */}
@@ -1232,7 +1232,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "03", title: "Score Every Deal", desc: "Six investment dimensions scored automatically: pricing, cashflow, tenant quality, rollover risk, location, and upside potential.",
+                  num: "03", title: "Score Every Deal", desc: "Six dimensions scored automatically: pricing, cashflow, tenant credit, rollover risk, location, and upside.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Scoreboard header */}
@@ -1280,7 +1280,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "04", title: "Export to Excel", desc: "Download a 6-sheet Excel workbook with inputs, rent roll, operating statement, debt & returns, breakeven, and cap scenarios.",
+                  num: "04", title: "Export to Excel", desc: "Download a 6-sheet workbook: inputs, rent roll, operating statement, debt, breakeven, and cap scenarios.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Excel tab bar */}
@@ -1337,7 +1337,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "05", title: "Organize Your Pipeline", desc: "Save deals to your DealBoard. Track across clients, strategies, and pipelines. Never lose a deal again.",
+                  num: "05", title: "Organize Your Pipeline", desc: "Save every deal to your DealBoard. Track by client, strategy, or market.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Asset type tabs */}
@@ -1397,7 +1397,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "06", title: "Compare Side-by-Side", desc: "Stack any deal against another on a sortable scoreboard. See which wins on price, cashflow, risk, and signal.",
+                  num: "06", title: "Compare Side-by-Side", desc: "Stack deals on a sortable scoreboard. See which wins on price, cashflow, and risk.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Header with asset type */}
@@ -1437,7 +1437,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "07", title: "Map Your Deals", desc: "Every deal pins to a map automatically. Hover to see scores and metrics at a glance. Share the view with clients via a unique link.",
+                  num: "07", title: "Map Your Deals", desc: "Every deal pins to a map. Hover for scores and metrics. Share the view with a link.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Map area - dark themed street map */}
@@ -1515,7 +1515,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "08", title: "Share with Clients", desc: "Generate a clean, branded share link with the partial or full analysis for clients. No login required.",
+                  num: "08", title: "Share with Clients", desc: "One-click branded share link. Full or partial analysis. No login required.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Share link generation */}
