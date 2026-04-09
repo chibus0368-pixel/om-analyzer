@@ -2346,6 +2346,9 @@ function computeDealScore(d: any): number {
 }
 
 function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisData; heroImageUrl?: string; usageData?: { uploadsUsed: number; uploadLimit: number } | null }) {
+  const [captureEmail, setCaptureEmail] = useState("");
+  const [captureStatus, setCaptureStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [captureMsg, setCaptureMsg] = useState("");
   const location = [d.address, d.city, d.state].filter(Boolean).join(", ");
   const encodedAddress = encodeURIComponent(location || d.propertyName);
   const recommendation = typeof d.signals?.recommendation === "string" ? d.signals.recommendation : d.signals?.recommendation?.text ? String(d.signals.recommendation.text) : String(d.signals?.recommendation || "");
@@ -2449,93 +2452,158 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-      {/* ===== HERO SECTION — Property Info + Asset Type Badge ===== */}
-      <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", marginBottom: 20, overflow: "hidden" }}>
-        <div style={{ padding: "32px 28px" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 16 }}>
-            <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 700, color: "#0F172A", margin: 0, lineHeight: 1.2, flex: 1 }}>{d.propertyName}</h1>
+      {/* ===== HERO CARD — Combined Deal Summary + Image + Score (like pro) ===== */}
+      <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", marginBottom: 20, overflow: "hidden" }}>
+        {/* Top bar: property name + asset badge + location */}
+        <div style={{ padding: "24px 28px 0" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 8 }}>
+            <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 800, color: "#0F172A", margin: 0, lineHeight: 1.2, flex: 1 }}>{d.propertyName}</h1>
             <span style={{
-              padding: "6px 12px",
-              background: "#84CC16",
-              color: "#0F172A",
-              borderRadius: 20,
-              fontSize: 11,
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
-              flexShrink: 0,
-              whiteSpace: "nowrap",
+              padding: "5px 12px", background: "rgba(132,204,22,0.12)", color: "#4d7c0f",
+              borderRadius: 20, fontSize: 10, fontWeight: 700, textTransform: "uppercase",
+              letterSpacing: 0.8, flexShrink: 0, whiteSpace: "nowrap", border: "1px solid rgba(132,204,22,0.2)",
             }}>
               {detectedType.toUpperCase()}
             </span>
           </div>
-          <div style={{ fontSize: 11, color: "#6B7280", fontWeight: 500, marginBottom: 2, textTransform: "uppercase", letterSpacing: 0.5 }}>Auto-detected</div>
-
           {location && (
-            <div style={{ marginBottom: 20 }}>
-              <span style={{ fontSize: 13, color: "#374151" }}>{location}</span>
-              <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
-                {[
-                  { label: "Google Maps", url: `https://www.google.com/maps/search/?api=1&query=${encodedAddress}` },
-                  { label: "Google Earth", url: `https://earth.google.com/web/search/${encodedAddress}/` },
-                ].map(link => (
-                  <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer" style={{
-                    padding: "4px 10px", background: "#f2f3ff", borderRadius: 6,
-                    fontSize: 11, color: "#6B7280", textDecoration: "none", fontWeight: 500,
-                  }}>{link.label} &rarr;</a>
-                ))}
-              </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
+              <span style={{ fontSize: 13, color: "#374151", fontWeight: 500 }}>{location}</span>
+              {[
+                { label: "Maps", url: `https://www.google.com/maps/search/?api=1&query=${encodedAddress}` },
+                { label: "Earth", url: `https://earth.google.com/web/search/${encodedAddress}/` },
+              ].map(link => (
+                <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer" style={{
+                  padding: "2px 8px", background: "#F3F4F6", borderRadius: 4,
+                  fontSize: 10, color: "#6B7280", textDecoration: "none", fontWeight: 600,
+                }}>{link.label} &rarr;</a>
+              ))}
             </div>
           )}
+        </div>
 
-          {/* Image + Score */}
-          <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
-            <div style={{ flex: 1 }}>
-              {/* Property metadata */}
-              <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-                {[
-                  { label: "Type", value: d.assetType },
-                  { label: "Built", value: d.yearBuilt },
-                  { label: "Tenants", value: d.tenantCount },
-                  { label: "WALE", value: d.wale ? `${d.wale} yrs` : null },
-                  { label: "Traffic", value: d.traffic },
-                ].filter((x) => x.value).map((x) => (
-                  <div key={x.label}>
-                    <div style={{ fontSize: 9, color: "#6B7280", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{x.label}</div>
-                    <div style={{ fontSize: 12, color: "#0F172A", marginTop: 1, fontWeight: 500 }}>{x.value}</div>
-                  </div>
+        {/* Divider */}
+        <div style={{ height: 1, background: "rgba(0,0,0,0.05)", margin: "16px 0 0" }} />
+
+        {/* Main content: Deal Summary (left) + Image/Score (right) */}
+        <div style={{ display: "flex", gap: 0 }}>
+          {/* Left: Deal Summary + metadata */}
+          <div style={{ flex: 1, padding: "24px 28px", minWidth: 0 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#84CC16", marginBottom: 10 }}>Deal Summary</div>
+            {brief ? (
+              <div style={{ fontSize: 14, color: "#374151", lineHeight: 1.75 }}>
+                {brief.split("\n").filter((p: string) => p.trim()).slice(0, 3).map((p: string, i: number) => (
+                  <p key={i} style={{ margin: i === 0 ? "0 0 12px" : "0 0 12px" }}>{p}</p>
                 ))}
               </div>
+            ) : (
+              <p style={{ fontSize: 13, color: "#9CA3AF", fontStyle: "italic" }}>Analysis summary will appear here once processing completes.</p>
+            )}
+
+            {/* Property metadata chips */}
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(0,0,0,0.04)" }}>
+              {[
+                { label: "Type", value: d.assetType },
+                { label: "Built", value: d.yearBuilt },
+                { label: "Tenants", value: d.tenantCount },
+                { label: "WALE", value: d.wale ? `${d.wale} yrs` : null },
+                { label: "Traffic", value: d.traffic },
+              ].filter((x) => x.value).map((x) => (
+                <div key={x.label} style={{ background: "#F9FAFB", borderRadius: 6, padding: "6px 10px", border: "1px solid rgba(0,0,0,0.04)" }}>
+                  <div style={{ fontSize: 8, color: "#9CA3AF", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 1 }}>{x.label}</div>
+                  <div style={{ fontSize: 12, color: "#0F172A", fontWeight: 600 }}>{x.value}</div>
+                </div>
+              ))}
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12, flexShrink: 0 }}>
-              <PropertyImage heroImageUrl={heroImageUrl} location={location} encodedAddress={encodedAddress} propertyName={d.propertyName} />
-              <div style={{ display: "flex", justifyContent: "center" }}>
-                <DealScoreRing score={dealScore} label="Deal Score" />
-              </div>
-            </div>
+          </div>
+
+          {/* Right: Image stacked on Score */}
+          <div style={{ width: 280, flexShrink: 0, borderLeft: "1px solid rgba(0,0,0,0.05)", display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 20px", gap: 16 }}>
+            <PropertyImage heroImageUrl={heroImageUrl} location={location} encodedAddress={encodedAddress} propertyName={d.propertyName} />
+            <DealScoreRing score={dealScore} label="Deal Score" />
           </div>
         </div>
       </div>
 
       {/* ===== METRICS STRIP — Horizontal single-row key metrics ===== */}
       {metricsStripItems.length > 0 && (
-        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: "16px 0", marginBottom: 20, display: "grid", gridTemplateColumns: `repeat(${metricsStripItems.length}, 1fr)` }}>
+        <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", padding: "14px 0", marginBottom: 20, display: "grid", gridTemplateColumns: `repeat(${metricsStripItems.length}, 1fr)` }}>
           {metricsStripItems.map((item, idx) => (
             <div key={item.label} style={{
-              padding: "12px 16px",
-              borderRight: idx < metricsStripItems.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+              padding: "10px 14px",
+              borderRight: idx < metricsStripItems.length - 1 ? "1px solid rgba(0,0,0,0.06)" : "none",
               textAlign: "center",
             }}>
-              <div style={{ fontSize: 9, color: "#6B7280", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4, fontFamily: "'Inter', sans-serif" }}>{item.label}</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#84CC16", fontVariantNumeric: "tabular-nums", fontFamily: "'Inter', sans-serif" }}>{item.value}</div>
+              <div style={{ fontSize: 9, color: "#9CA3AF", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 4, fontFamily: "'Inter', sans-serif" }}>{item.label}</div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums", fontFamily: "'Inter', sans-serif" }}>{item.value}</div>
             </div>
           ))}
         </div>
       )}
 
+      {/* ===== RECOMMENDATION BANNER ===== */}
+      {recommendation && (
+        <div style={{
+          padding: "16px 20px", borderRadius: 10, marginBottom: 20,
+          background: recommendation.includes("🟢") ? "rgba(5,150,105,0.06)" : recommendation.includes("🔴") ? "rgba(220,38,38,0.06)" : "rgba(217,119,6,0.06)",
+          color: recommendation.includes("🟢") ? "#065f46" : recommendation.includes("🔴") ? "#991b1b" : "#92400e",
+          border: recommendation.includes("🟢") ? "1px solid rgba(5,150,105,0.15)" : recommendation.includes("🔴") ? "1px solid rgba(220,38,38,0.15)" : "1px solid rgba(217,119,6,0.15)",
+          fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 10,
+        }}>
+          <span style={{ fontSize: 20 }}>{recommendation.includes("🟢") ? "🟢" : recommendation.includes("🔴") ? "🔴" : "🟡"}</span>
+          <span>{recommendation.replace(/🟢|🟡|🔴/g, "").trim()}</span>
+        </div>
+      )}
+
+      {/* ===== SCORE BREAKDOWN — from Pro scoring model ===== */}
+      {scoreCategories.length > 0 && (
+        <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", padding: 24, marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: "#0F172A", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <span style={{ width: 3, height: 18, background: "#84CC16", borderRadius: 2 }} />
+              Score Breakdown
+            </h2>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.5 }}>{detectedType} model</span>
+              <span style={{
+                fontSize: 11, fontWeight: 800, padding: "3px 10px", borderRadius: 4, letterSpacing: 0.5,
+                background: scoreBand === "strong_buy" || scoreBand === "buy" ? "rgba(5,150,105,0.08)" : scoreBand === "hold" ? "rgba(196,154,60,0.08)" : "rgba(132,204,22,0.08)",
+                color: scoreBand === "strong_buy" || scoreBand === "buy" ? "#059669" : scoreBand === "hold" ? "#C49A3C" : "#84CC16",
+                textTransform: "uppercase",
+              }}>{scoreBand === "hold" ? "neutral" : scoreBand.replace("_", " ")}</span>
+            </div>
+          </div>
+          {scoreRecommendation && (
+            <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.6, margin: "0 0 16px", padding: "12px 16px", background: "#F9FAFB", borderRadius: 8 }}>
+              {scoreRecommendation}
+            </p>
+          )}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {scoreCategories.map((cat: any) => {
+              const barColor = cat.score >= 70 ? "#059669" : cat.score >= 50 ? "#C49A3C" : "#84CC16";
+              return (
+                <div key={cat.name} style={{ padding: "10px 14px", background: "#F9FAFB", borderRadius: 8 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#374151", textTransform: "capitalize" }}>{cat.name}</span>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: barColor }}>{cat.score}</span>
+                  </div>
+                  <div style={{ height: 4, background: "rgba(0,0,0,0.05)", borderRadius: 2, overflow: "hidden" }}>
+                    <div style={{ width: `${cat.score}%`, height: "100%", background: barColor, borderRadius: 2, animation: "barGrow 0.8s ease-out" }} />
+                  </div>
+                  {cat.explanation && (
+                    <div style={{ fontSize: 10, color: "#6B7280", marginTop: 3 }}>{cat.explanation}</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ===== PRICE SENSITIVITY TABLE ===== */}
       {(d.askingPrice && d.noiOm) && (
-        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: "20px", marginBottom: 20, overflow: "auto" }}>
+        <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", padding: "20px", marginBottom: 20, overflow: "auto" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
             <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
             <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Price Sensitivity Analysis</h3>
@@ -2585,7 +2653,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== STRENGTHS & RISKS — matching pro layout ===== */}
       {(strengths.length > 0 || risks.length > 0) && (
-        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden", marginBottom: 20 }}>
+        <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", overflow: "hidden", marginBottom: 20 }}>
           <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0,0,0,0.05)", background: "#F9FAFB" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
@@ -2665,92 +2733,13 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
         );
       })()}
 
-      {/* ===== DISCLAIMER ===== */}
-      <p style={{ fontSize: 10, color: "#6B7280", margin: "0 0 16px", fontStyle: "italic", textAlign: "center" }}>
-        First-pass underwriting screen &middot; Directional only &middot; Verify all data independently
-      </p>
 
-      {/* ===== RECOMMENDATION BANNER ===== */}
-      {recommendation && (
-        <div style={{
-          padding: "14px 20px", borderRadius: 6, marginBottom: 16,
-          background: recommendation.includes("🟢") ? "linear-gradient(135deg, rgba(5,150,105,0.15), rgba(5,150,105,0.08))" : recommendation.includes("🔴") ? "linear-gradient(135deg, rgba(220,38,38,0.15), rgba(220,38,38,0.08))" : "linear-gradient(135deg, rgba(217,119,6,0.15), rgba(217,119,6,0.08))",
-          color: recommendation.includes("🟢") ? "#A7F3D0" : recommendation.includes("🔴") ? "#FCA5A5" : "#FED7AA",
-          border: recommendation.includes("🟢") ? "1px solid rgba(5,150,105,0.2)" : recommendation.includes("🔴") ? "1px solid rgba(220,38,38,0.2)" : "1px solid rgba(217,119,6,0.2)",
-          fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 10,
-          boxShadow: "0 8px 30px rgba(0,0,0,0.3)",
-        }}>
-          <span style={{ fontSize: 20 }}>{recommendation.includes("🟢") ? "🟢" : recommendation.includes("🔴") ? "🔴" : "🟡"}</span>
-          <span>{recommendation.replace(/🟢|🟡|🔴/g, "").trim()}</span>
-        </div>
-      )}
-
-      {/* ===== SCORE BREAKDOWN — from Pro scoring model ===== */}
-      {scoreCategories.length > 0 && (
-        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: 24, marginBottom: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0, color: "#0F172A", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              <span style={{ width: 3, height: 20, background: "#84CC16", borderRadius: 2 }} />
-              Deal Signals Score Breakdown
-            </h2>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.5 }}>{detectedType} model</span>
-              <span style={{
-                fontSize: 11, fontWeight: 800, padding: "3px 10px", borderRadius: 4, letterSpacing: 0.5,
-                background: scoreBand === "strong_buy" || scoreBand === "buy" ? "rgba(5,150,105,0.08)" : scoreBand === "hold" ? "rgba(196,154,60,0.08)" : "rgba(132,204,22,0.08)",
-                color: scoreBand === "strong_buy" || scoreBand === "buy" ? "#059669" : scoreBand === "hold" ? "#C49A3C" : "#84CC16",
-                textTransform: "uppercase",
-              }}>{scoreBand === "hold" ? "neutral" : scoreBand.replace("_", " ")}</span>
-            </div>
-          </div>
-          {scoreRecommendation && (
-            <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.6, margin: "0 0 16px", padding: "12px 16px", background: "#F9FAFB", borderRadius: 8 }}>
-              {scoreRecommendation}
-            </p>
-          )}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            {scoreCategories.map((cat: any) => {
-              const barColor = cat.score >= 70 ? "#059669" : cat.score >= 50 ? "#C49A3C" : "#84CC16";
-              return (
-                <div key={cat.name} style={{ padding: "10px 14px", background: "#F9FAFB", borderRadius: 8 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#374151", textTransform: "capitalize" }}>{cat.name}</span>
-                    <span style={{ fontSize: 12, fontWeight: 800, color: barColor }}>{cat.score}</span>
-                  </div>
-                  <div style={{ height: 4, background: "rgba(0,0,0,0.05)", borderRadius: 2, overflow: "hidden" }}>
-                    <div style={{ width: `${cat.score}%`, height: "100%", background: barColor, borderRadius: 2, animation: "barGrow 0.8s ease-out" }} />
-                  </div>
-                  {cat.explanation && (
-                    <div style={{ fontSize: 10, color: "#6B7280", marginTop: 3 }}>{cat.explanation}</div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* ===== BRIEF / INITIAL ASSESSMENT ===== */}
-      {brief && (
-        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: 24, marginBottom: 16 }}>
-          <h2 style={{ fontSize: 17, fontWeight: 700, margin: "0 0 4px", color: "#0F172A", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            <span style={{ width: 3, height: 20, background: "#84CC16", borderRadius: 2 }} />
-            Initial Assessment
-          </h2>
-          <p style={{ fontSize: 11, color: "#6B7280", margin: "0 0 14px" }}>AI-generated first-pass analysis based on uploaded documents</p>
-          <div style={{ fontSize: 14, color: "#374151", lineHeight: 1.8 }}>
-            {brief.split("\n").filter((p: string) => p.trim()).map((p: string, i: number) => (
-              <p key={i} style={{ margin: "0 0 14px" }}>{p}</p>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* ===== KEY METRICS + SIGNALS ===== */}
       {hasData && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
           {metrics.length > 0 && (
-            <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+            <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", overflow: "hidden" }}>
               <div style={{ padding: "12px 18px", background: "#F9FAFB", display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
                 <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Key Metrics</h3>
@@ -2770,7 +2759,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
             </div>
           )}
           {signals.length > 0 && (
-            <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+            <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", overflow: "hidden" }}>
               <div style={{ padding: "12px 18px", background: "#F9FAFB", display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
                 <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Signal Assessment</h3>
@@ -2802,7 +2791,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== TENANT SUMMARY ===== */}
       {tenants.length > 0 && (
-        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden", marginBottom: 16 }}>
+        <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", overflow: "hidden", marginBottom: 16 }}>
           <div style={{ padding: "12px 18px", background: "#F9FAFB" }}>
             <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Tenant Summary</h3>
           </div>
@@ -2841,7 +2830,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== DOWNLOAD ASSETS ===== */}
       {hasData && (
-        <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", padding: 20, marginBottom: 16 }}>
+        <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", padding: 20, marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
             <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
             <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Download Assets</h3>
@@ -2878,6 +2867,92 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
           </div>
         </div>
       )}
+
+      {/* ===== EMAIL CAPTURE — Get report emailed ===== */}
+      <div style={{
+        background: "#ffffff", borderRadius: 14, border: "1px solid rgba(132,204,22,0.15)",
+        boxShadow: "0 4px 24px rgba(0,0,0,0.06)", padding: "28px 28px", marginBottom: 20,
+        marginTop: 8,
+      }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 20 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(132,204,22,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", margin: "0 0 4px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Email this analysis to yourself
+            </h3>
+            <p style={{ fontSize: 13, color: "#6B7280", margin: "0 0 14px", lineHeight: 1.5 }}>
+              Get a copy of this deal breakdown in your inbox. No account required.
+            </p>
+            {captureStatus === "sent" ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", background: "rgba(5,150,105,0.06)", borderRadius: 8, border: "1px solid rgba(5,150,105,0.15)" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "#065f46" }}>{captureMsg || "Check your inbox!"}</span>
+              </div>
+            ) : (
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                if (!captureEmail || captureStatus === "sending") return;
+                setCaptureStatus("sending");
+                try {
+                  const res = await fetch("/api/subscribe", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      email: captureEmail,
+                      source: "lite_report_email_capture",
+                      frequency: "weekly",
+                    }),
+                  });
+                  const json = await res.json();
+                  if (res.ok) {
+                    setCaptureStatus("sent");
+                    setCaptureMsg(json.message || "Check your inbox!");
+                  } else {
+                    setCaptureStatus("error");
+                    setCaptureMsg(json.error || "Something went wrong");
+                  }
+                } catch {
+                  setCaptureStatus("error");
+                  setCaptureMsg("Network error. Please try again.");
+                }
+              }} style={{ display: "flex", gap: 8 }}>
+                <input
+                  type="email"
+                  required
+                  placeholder="you@company.com"
+                  value={captureEmail}
+                  onChange={(e) => { setCaptureEmail(e.target.value); if (captureStatus === "error") setCaptureStatus("idle"); }}
+                  style={{
+                    flex: 1, padding: "10px 14px", borderRadius: 8,
+                    border: captureStatus === "error" ? "1px solid #DC2626" : "1px solid #E5E7EB",
+                    fontSize: 14, fontFamily: "'Inter', sans-serif", outline: "none",
+                    background: "#F9FAFB", color: "#0F172A",
+                  }}
+                />
+                <button type="submit" disabled={captureStatus === "sending"} style={{
+                  padding: "10px 20px", borderRadius: 8, border: "none",
+                  background: "#84CC16", color: "#0d0d14", fontSize: 13,
+                  fontWeight: 700, cursor: captureStatus === "sending" ? "wait" : "pointer",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif", whiteSpace: "nowrap",
+                  opacity: captureStatus === "sending" ? 0.7 : 1,
+                }}>
+                  {captureStatus === "sending" ? "Sending..." : "Send Report"}
+                </button>
+              </form>
+            )}
+            {captureStatus === "error" && captureMsg && (
+              <p style={{ fontSize: 11, color: "#DC2626", margin: "6px 0 0", fontWeight: 500 }}>{captureMsg}</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ===== DISCLAIMER ===== */}
+      <p style={{ fontSize: 10, color: "#9CA3AF", margin: "0 0 8px", fontStyle: "italic", textAlign: "center" }}>
+        First-pass underwriting screen &middot; Directional only &middot; Verify all data independently
+      </p>
 
       {/* ===== BOLD PRO CTA ===== */}
       <div style={{
