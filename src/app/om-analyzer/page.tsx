@@ -2896,13 +2896,14 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
                 if (!captureEmail || captureStatus === "sending") return;
                 setCaptureStatus("sending");
                 try {
-                  const res = await fetch("/api/subscribe", {
+                  const res = await fetch("/api/capture-lead", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                       email: captureEmail,
-                      source: "lite_report_email_capture",
-                      frequency: "weekly",
+                      source: "lite_report",
+                      propertyName: d.propertyName || "",
+                      dealScore: dealScore,
                     }),
                   });
                   const json = await res.json();
