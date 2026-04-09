@@ -240,7 +240,7 @@ export default function TryProPage() {
             fontSize: 17, color: "#64748b", lineHeight: 1.6,
             maxWidth: 560, margin: "0 auto 32px",
           }}>
-            PropScore AI turns complex Offering Memorandums into actionable investment intelligence. Scoring, pro formas, and insights&mdash;delivered in seconds.
+            PropScore AI turns complex Offering Memorandums into actionable investment intelligence. Scoring, pro formas, and insights&mdash;delivered in about a minute.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <Link href="/workspace/login" style={{

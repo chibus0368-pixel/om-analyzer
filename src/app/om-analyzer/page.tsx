@@ -993,7 +993,7 @@ export default function OmAnalyzerPage() {
               {[
                 "Built for real-world acquisition workflows",
                 "90%+ extraction accuracy on standard CRE metrics",
-                "Pre-diligence in seconds, not hours",
+                "Pre-diligence in 1 minute, not hours",
               ].map(t => (
                 <div key={t} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
@@ -1034,10 +1034,10 @@ export default function OmAnalyzerPage() {
                 {[
                   {
                     icon: "M13 10V3L4 14h7v7l9-11h-7z",
-                    headline: "Pre-diligence in seconds",
+                    headline: "Pre-diligence in 1 minute",
                     subline: "Not hours. Not days.",
-                    body: "Every deal you touch gets scored, extracted, and summarized before you finish reading the first page of the OM. Know if it's worth pursuing in under 60 seconds.",
-                    stat: "< 60s",
+                    body: "Every deal you touch gets scored, extracted, and summarized before you finish reading the first page of the OM. Know if it's worth pursuing in about a minute.",
+                    stat: "~1 min",
                     statLabel: "avg. time to signal",
                   },
                   {
@@ -1120,14 +1120,14 @@ export default function OmAnalyzerPage() {
                   How a Deal Becomes a <span className="ds-callout">Decision</span>.
                 </h2>
                 <p style={{ fontSize: 17, color: "#9ca3af", lineHeight: 1.7, maxWidth: 580, margin: "0 auto" }}>
-                  Upload a deal. Get scored, organized, shareable pre-diligence back in seconds.
+                  Upload a deal. Get scored, organized, shareable pre-diligence back in 1 minute.
                 </p>
               </div>
 
               {/* ── Feature blocks: alternating left/right ── */}
               {[
                 {
-                  num: "01", title: "Extract 40+ Fields", desc: "Drop any OM, flyer, rent roll, or broker package. Price, cap rate, NOI, tenants, and lease terms populate in seconds.",
+                  num: "01", title: "Extract 40+ Fields", desc: "Drop any OM, flyer, rent roll, or broker package. Price, cap rate, NOI, tenants, and lease terms populate in about a minute.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
                       {/* Scan line animation overlay */}
@@ -2045,10 +2045,35 @@ export default function OmAnalyzerPage() {
 
           {/* Content container */}
           <div style={{ position: "relative", zIndex: 2, textAlign: "center", maxWidth: "600px", padding: "0 24px" }}>
-            {/* DealSignals Logo */}
-            <div style={{ marginBottom: 40 }}>
-              <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 32 }} />
-            </div>
+            {/* File name pill — shown above the progress ring */}
+            {selectedFile && (
+              <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 16px",
+                background: "rgba(132,204,22,0.1)",
+                border: "1px solid rgba(132,204,22,0.2)",
+                borderRadius: 20,
+                fontSize: 13,
+                marginBottom: 32,
+              }}>
+                <span style={{
+                  padding: "2px 8px",
+                  background: "rgba(132,204,22,0.2)",
+                  borderRadius: 4,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  color: "#84CC16",
+                  textTransform: "uppercase",
+                }}>
+                  {selectedFile.name.split(".").pop()}
+                </span>
+                <span style={{ flex: 1, maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#9CA3AF" }}>
+                  {selectedFile.name}
+                </span>
+              </div>
+            )}
 
             {/* Animated percentage counter with circular progress ring */}
             <div style={{ marginBottom: 40, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -2083,7 +2108,7 @@ export default function OmAnalyzerPage() {
               </svg>
               <div style={{ position: "relative", zIndex: 1 }}>
                 <div style={{
-                  fontSize: 72,
+                  fontSize: 48,
                   fontWeight: 700,
                   color: "#84CC16",
                   fontFamily: "'Inter', sans-serif",
@@ -2167,34 +2192,6 @@ export default function OmAnalyzerPage() {
               </p>
             </div>
 
-            {/* File name pill */}
-            {selectedFile && (
-              <div style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "8px 16px",
-                background: "rgba(132,204,22,0.1)",
-                border: "1px solid rgba(132,204,22,0.2)",
-                borderRadius: 20,
-                fontSize: 13,
-              }}>
-                <span style={{
-                  padding: "2px 8px",
-                  background: "rgba(132,204,22,0.2)",
-                  borderRadius: 4,
-                  fontSize: 9,
-                  fontWeight: 700,
-                  color: "#84CC16",
-                  textTransform: "uppercase",
-                }}>
-                  {selectedFile.name.split(".").pop()}
-                </span>
-                <span style={{ flex: 1, maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#9CA3AF" }}>
-                  {selectedFile.name}
-                </span>
-              </div>
-            )}
           </div>
 
           {/* CSS animations */}
