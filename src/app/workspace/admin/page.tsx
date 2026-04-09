@@ -65,7 +65,9 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState<"users" | "billing">("users");
+  const [activeTab, setActiveTab] = useState<"users" | "billing" | "leads">("users");
+  const [leads, setLeads] = useState<any[]>([]);
+  const [leadsLoading, setLeadsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<{ uid: string; action: string; email: string } | null>(null);
 
@@ -91,9 +93,31 @@ export default function AdminPage() {
     }
   }, [user]);
 
+  const fetchLeads = useCallback(async () => {
+    if (!user) return;
+    setLeadsLoading(true);
+    try {
+      const token = await getAuthInstance().currentUser?.getIdToken();
+      const res = await fetch("/api/admin/leads", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch leads");
+      const data = await res.json();
+      setLeads(data.leads || []);
+    } catch (err: any) {
+      console.error("Leads fetch error:", err?.message);
+    } finally {
+      setLeadsLoading(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (user && isAdmin) fetchUsers();
   }, [user, isAdmin, fetchUsers]);
+
+  useEffect(() => {
+    if (user && isAdmin && activeTab === "leads") fetchLeads();
+  }, [user, isAdmin, activeTab, fetchLeads]);
 
   const handleAction = async (uid: string, action: string) => {
     setActionLoading(uid);
@@ -227,7 +251,7 @@ export default function AdminPage() {
       {/* Tabs + Search */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <div style={{ display: "inline-flex", background: "#F3F4F6", borderRadius: 8, padding: 2 }}>
-          {(["users", "billing"] as const).map(tab => (
+          {(["users", "billing", "leads"] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -241,7 +265,7 @@ export default function AdminPage() {
                 transition: "all 0.15s",
               }}
             >
-              {tab === "billing" ? "Billing & Plans" : "Users & Deals"}
+              {tab === "billing" ? "Billing & Plans" : tab === "leads" ? "Leads" : "Users & Deals"}
             </button>
           ))}
         </div>
@@ -438,6 +462,91 @@ export default function AdminPage() {
                   })}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {/* LEADS TAB */}
+          {activeTab === "leads" && (
+            <div style={{
+              background: "#fff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.04)", overflow: "hidden",
+            }}>
+              {leadsLoading ? (
+                <div style={{ padding: 48, textAlign: "center", color: "#9CA3AF" }}>Loading leads...</div>
+              ) : leads.length === 0 ? (
+                <div style={{ padding: 48, textAlign: "center", color: "#9CA3AF", fontSize: 14 }}>
+                  No leads captured yet. Leads appear here when visitors enter their email on the lite analyzer.
+                </div>
+              ) : (
+                <>
+                  <div style={{ padding: "12px 16px", background: "#FAFAFA", borderBottom: "1px solid #F0F2F5", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#6B7280" }}>{leads.length} leads captured</span>
+                    <button onClick={fetchLeads} style={{
+                      padding: "5px 12px", borderRadius: 4, border: "1px solid #E5E7EB",
+                      background: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer",
+                      color: "#6B7280", fontFamily: "inherit",
+                    }}>
+                      Refresh
+                    </button>
+                  </div>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ background: "#FAFAFA", borderBottom: "1px solid #F0F2F5" }}>
+                        {["Email", "Source", "Properties Analyzed", "Touches", "Last Score", "First Seen", "Last Active", "Converted"].map(h => (
+                          <th key={h} style={{
+                            padding: "10px 14px", textAlign: "left",
+                            fontSize: 10, fontWeight: 700, color: "#9CA3AF",
+                            textTransform: "uppercase", letterSpacing: 1,
+                          }}>
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {leads.map((lead: any) => (
+                        <tr key={lead.id} style={{ borderBottom: "1px solid #F0F2F5" }}>
+                          <td style={{ padding: "10px 14px", fontSize: 13, fontWeight: 600, color: "#111827" }}>
+                            {lead.email}
+                          </td>
+                          <td style={{ padding: "10px 14px" }}>
+                            <span style={{
+                              fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4,
+                              background: "#F3F4F6", color: "#6B7280", textTransform: "uppercase",
+                            }}>
+                              {lead.source || lead.lastSource || "—"}
+                            </span>
+                          </td>
+                          <td style={{ padding: "10px 14px", fontSize: 12, color: "#374151" }}>
+                            {(lead.propertiesAnalyzed || []).join(", ") || "—"}
+                          </td>
+                          <td style={{ padding: "10px 14px", fontSize: 13, fontWeight: 700, color: "#111827", textAlign: "center" }}>
+                            {lead.touches || 1}
+                          </td>
+                          <td style={{ padding: "10px 14px", fontSize: 13, fontWeight: 600, color: lead.lastDealScore >= 70 ? "#059669" : lead.lastDealScore >= 50 ? "#D97706" : "#6B7280" }}>
+                            {lead.lastDealScore ?? "—"}
+                          </td>
+                          <td style={{ padding: "10px 14px", fontSize: 12, color: "#6B7280" }}>
+                            {lead.createdAt ? formatDate(lead.createdAt) : "—"}
+                          </td>
+                          <td style={{ padding: "10px 14px", fontSize: 12, color: "#6B7280" }}>
+                            {lead.lastActiveAt ? timeAgo(lead.lastActiveAt) : "—"}
+                          </td>
+                          <td style={{ padding: "10px 14px" }}>
+                            <span style={{
+                              fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4,
+                              background: lead.convertedToUser ? "rgba(5,150,105,0.1)" : "rgba(217,119,6,0.1)",
+                              color: lead.convertedToUser ? "#059669" : "#D97706",
+                            }}>
+                              {lead.convertedToUser ? "Yes" : "No"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </>
+              )}
             </div>
           )}
 
