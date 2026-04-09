@@ -2654,41 +2654,77 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
         </div>
       )}
 
-      {/* ===== STRENGTHS & RISKS — matching pro layout ===== */}
+      {/* ===== STRENGTHS & RISKS — pro-style separate cards with tinted headers ===== */}
       {(strengths.length > 0 || risks.length > 0) && (
-        <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", overflow: "hidden", marginBottom: 20 }}>
-          <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0,0,0,0.05)", background: "#F9FAFB" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Inter', sans-serif" }}>Strengths &amp; Risks</h3>
+        <div style={{ display: "flex", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
+          {/* Strengths Card */}
+          <div style={{ flex: 1, minWidth: 280, background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.06)", overflow: "hidden" }}>
+            <div style={{ padding: "12px 18px", borderBottom: "1px solid rgba(0,0,0,0.04)", background: "#F0FDF4", display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 14 }}>✅</span>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#059669", fontFamily: "'Inter', sans-serif" }}>Strengths</h3>
+              <span style={{ marginLeft: "auto", fontSize: 11, color: "#059669", opacity: 0.7, fontWeight: 600 }}>{strengths.length}</span>
             </div>
+            {strengths.length === 0 ? (
+              <div style={{ padding: "16px 18px", fontSize: 12, color: "#6B7280" }}>No strong signals detected</div>
+            ) : strengths.map((s, i) => (
+              <div key={i} style={{ padding: "12px 18px", borderBottom: i < strengths.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none", display: "flex", alignItems: "flex-start", gap: 8 }}>
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#059669", flexShrink: 0, marginTop: 5 }} />
+                <span style={{ fontSize: 12, color: "#4B5563", lineHeight: 1.6, wordBreak: "break-word" }}>{s}</span>
+              </div>
+            ))}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 100 }}>
-            {/* Strengths */}
-            <div style={{ padding: "16px 20px", borderRight: "1px solid rgba(0,0,0,0.05)" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#059669", marginBottom: 12 }}>Strengths</div>
-              {strengths.map((s, i) => (
-                <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 10 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" style={{ flexShrink: 0, marginTop: 2 }}><polyline points="20 6 9 17 4 12" /></svg>
-                  <span style={{ fontSize: 13, color: "#374151", lineHeight: 1.5 }}>{s}</span>
-                </div>
-              ))}
-              {strengths.length === 0 && <span style={{ fontSize: 12, color: "#6B7280" }}>No strong signals detected</span>}
+          {/* Risks Card */}
+          <div style={{ flex: 1, minWidth: 280, background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.06)", overflow: "hidden" }}>
+            <div style={{ padding: "12px 18px", borderBottom: "1px solid rgba(0,0,0,0.04)", background: "#FEF2F2", display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 14 }}>⚠️</span>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#DC2626", fontFamily: "'Inter', sans-serif" }}>Risks</h3>
+              <span style={{ marginLeft: "auto", fontSize: 11, color: "#DC2626", opacity: 0.7, fontWeight: 600 }}>{risks.length}</span>
             </div>
-            {/* Risks */}
-            <div style={{ padding: "16px 20px" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#DC2626", marginBottom: 12 }}>Risks</div>
-              {risks.map((r, i) => (
-                <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 10 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" style={{ flexShrink: 0, marginTop: 2 }}><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                  <span style={{ fontSize: 13, color: "#374151", lineHeight: 1.5 }}>{r}</span>
-                </div>
-              ))}
-              {risks.length === 0 && <span style={{ fontSize: 12, color: "#6B7280" }}>No risk signals detected</span>}
-            </div>
+            {risks.length === 0 ? (
+              <div style={{ padding: "16px 18px", fontSize: 12, color: "#6B7280" }}>No risk signals detected</div>
+            ) : risks.map((r, i) => (
+              <div key={i} style={{ padding: "12px 18px", borderBottom: i < risks.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none", display: "flex", alignItems: "flex-start", gap: 8 }}>
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#DC2626", flexShrink: 0, marginTop: 5 }} />
+                <span style={{ fontSize: 12, color: "#4B5563", lineHeight: 1.6, wordBreak: "break-word" }}>{r}</span>
+              </div>
+            ))}
           </div>
         </div>
       )}
+
+      {/* ===== WHAT TO DOUBLE CHECK — pro-style review panel ===== */}
+      {(() => {
+        const checks: string[] = [];
+        if (!d.askingPrice) checks.push("Asking price was not found in the document — verify with broker or listing.");
+        if (!d.noiOm) checks.push("NOI could not be extracted — confirm net operating income from the OM or financials.");
+        if (!d.buildingSf) checks.push("Building square footage was not detected — verify GLA from the property listing.");
+        if (!d.occupancyPct) checks.push("Occupancy percentage was not found — check current occupancy with the seller.");
+        if (d.noiOm && d.noiAdjusted && Math.abs(Number(d.noiAdjusted) - Number(d.noiOm)) > Number(d.noiOm) * 0.1) checks.push("Adjusted NOI differs significantly from OM NOI — review expense assumptions.");
+        if (!d.wale) checks.push("WALE (weighted average lease expiration) could not be calculated — verify lease terms.");
+        if (d.tenants && d.tenants.length === 0) checks.push("No tenant data was extracted — confirm tenant roster from the rent roll.");
+        if (d.capRateOm && Number(d.capRateOm) > 9) checks.push("Cap rate appears unusually high — verify NOI and asking price are correct.");
+        if (d.capRateOm && Number(d.capRateOm) < 3) checks.push("Cap rate appears unusually low — verify this is not a development or value-add play.");
+        if (checks.length === 0) return null;
+        return (
+          <div style={{ background: "#FFFBF0", borderRadius: 12, border: "1px solid #F3E8C8", overflow: "hidden", marginBottom: 20 }}>
+            <div style={{ padding: "14px 18px", borderBottom: "1px solid #F3E8C8", display: "flex", alignItems: "center", gap: 8 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2" strokeLinecap="round"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#92400E", fontFamily: "'Inter', sans-serif" }}>What to Double Check</h3>
+            </div>
+            <div style={{ padding: "10px 18px" }}>
+              <p style={{ fontSize: 11, color: "#78350F", margin: "0 0 8px", opacity: 0.7 }}>
+                AI extraction flagged these items for manual verification
+              </p>
+              {checks.map((item, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "5px 0", fontSize: 12, color: "#78350F", lineHeight: 1.5 }}>
+                  <span style={{ color: "#D97706", fontWeight: 700, flexShrink: 0 }}>•</span>
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ===== VALUE-ADD OPPORTUNITIES ===== */}
       {(() => {
@@ -2707,8 +2743,8 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
           moderate: { color: "#D97706", bg: "rgba(217,119,6,0.08)" },
         };
         return (
-          <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(5,150,105,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", overflow: "hidden", marginBottom: 20 }}>
-            <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(5,150,105,0.1)", background: "#F9FAFB" }}>
+          <div style={{ background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.06)", overflow: "hidden", marginBottom: 20 }}>
+            <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0,0,0,0.04)", background: "#F9FAFB" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ width: 3, height: 14, background: "#059669", borderRadius: 2 }} />
                 <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Inter', sans-serif" }}>Value-Add Opportunities</h3>

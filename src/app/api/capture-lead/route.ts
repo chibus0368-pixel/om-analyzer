@@ -81,30 +81,40 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ success: false, error: 'Service temporarily unavailable.' }, { status: 503 });
     }
 
-    // Check if lead already exists
-    const existing = await db.collection('leads').where('email', '==', normalizedEmail).limit(1).get();
+    // Check if lead already exists — simple equality query (no composite index needed)
+    let existing;
+    try {
+      existing = await db.collection('leads').where('email', '==', normalizedEmail).limit(1).get();
+    } catch (queryErr) {
+      console.error('Leads query failed, creating new:', (queryErr as Error).message);
+      existing = { empty: true } as any;
+    }
 
-    if (!existing.empty) {
+    if (existing && !existing.empty) {
       // Update existing lead with new activity
-      const doc = existing.docs[0];
-      const prevData = doc.data();
-      const touches = (prevData.touches || 0) + 1;
-      const properties = prevData.propertiesAnalyzed || [];
-      if (propertyName && !properties.includes(propertyName)) {
-        properties.push(propertyName);
-      }
+      try {
+        const doc = existing.docs[0];
+        const prevData = doc.data();
+        const touches = (prevData.touches || 0) + 1;
+        const properties = prevData.propertiesAnalyzed || [];
+        if (propertyName && !properties.includes(propertyName)) {
+          properties.push(propertyName);
+        }
 
-      await db.collection('leads').doc(doc.id).update({
-        touches,
-        propertiesAnalyzed: properties,
-        lastActiveAt: new Date().toISOString(),
-        lastSource: source,
-        ...(dealScore !== undefined ? { lastDealScore: dealScore } : {}),
-      });
+        await db.collection('leads').doc(doc.id).update({
+          touches,
+          propertiesAnalyzed: properties,
+          lastActiveAt: new Date().toISOString(),
+          lastSource: source,
+          ...(dealScore !== undefined ? { lastDealScore: dealScore } : {}),
+        });
+      } catch (updateErr) {
+        console.error('Lead update failed:', (updateErr as Error).message);
+      }
 
       return NextResponse.json({
         success: true,
-        message: "We'll send your analysis shortly!",
+        message: "Saved! We'll follow up with your analysis.",
         returning: true,
       });
     }
@@ -125,7 +135,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({
       success: true,
-      message: "We'll send your analysis shortly!",
+      message: "Saved! We'll follow up with your analysis.",
     }, { status: 201 });
 
   } catch (error) {
