@@ -119,3 +119,81 @@ export function trackShareClick(platform: string, articleSlug: string): void {
     share_platform: platform,
   });
 }
+
+// ─── DEALSIGNALS CONVERSION FUNNEL EVENTS ────────────────────────────
+
+/** Lite analyzer: user uploads a file */
+export function trackLiteUpload(fileName: string, fileType: string): void {
+  if (typeof window === 'undefined' || !window.gtag) return;
+  window.gtag('event', 'lite_upload', {
+    event_category: 'analyzer',
+    event_label: fileName,
+    file_type: fileType,
+  });
+}
+
+/** Lite analyzer: analysis result shown */
+export function trackLiteResult(propertyName: string, dealScore: number): void {
+  if (typeof window === 'undefined' || !window.gtag) return;
+  window.gtag('event', 'lite_result_view', {
+    event_category: 'analyzer',
+    event_label: propertyName,
+    deal_score: dealScore,
+  });
+  // GA4 built-in: view_item
+  window.gtag('event', 'view_item', {
+    items: [{ item_name: propertyName, item_category: 'deal_analysis', price: 0 }],
+  });
+}
+
+/** Lead capture: user submits email on lite report */
+export function trackLeadCapture(source: string): void {
+  if (typeof window === 'undefined' || !window.gtag) return;
+  window.gtag('event', 'generate_lead', {
+    event_category: 'conversion',
+    event_label: source,
+    currency: 'USD',
+    value: 5,
+  });
+}
+
+/** User clicks Upgrade to Pro CTA */
+export function trackProCTAClick(location: string): void {
+  if (typeof window === 'undefined' || !window.gtag) return;
+  window.gtag('event', 'pro_cta_click', {
+    event_category: 'conversion',
+    event_label: location,
+  });
+}
+
+/** User starts signup / login flow */
+export function trackSignupStart(source: string): void {
+  if (typeof window === 'undefined' || !window.gtag) return;
+  window.gtag('event', 'sign_up', {
+    event_category: 'conversion',
+    event_label: source,
+    method: 'google',
+  });
+}
+
+/** User completes paid subscription */
+export function trackPurchase(tier: string, value: number): void {
+  if (typeof window === 'undefined' || !window.gtag) return;
+  window.gtag('event', 'purchase', {
+    event_category: 'conversion',
+    event_label: tier,
+    currency: 'USD',
+    value,
+    items: [{ item_name: `DealSignals ${tier}`, item_category: 'subscription', price: value }],
+  });
+}
+
+/** User downloads a file from lite report */
+export function trackDownload(fileType: string, propertyName: string): void {
+  if (typeof window === 'undefined' || !window.gtag) return;
+  window.gtag('event', 'file_download', {
+    event_category: 'engagement',
+    event_label: `${fileType}_${propertyName}`,
+    file_type: fileType,
+  });
+}

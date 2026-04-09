@@ -7,6 +7,7 @@ import Link from "next/link";
 import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
 
 import DealSignalNav from "@/components/DealSignalNav";
+import { trackLiteUpload, trackLiteResult, trackLeadCapture, trackProCTAClick, trackDownload } from "@/lib/analytics";
 
 /* ===========================================================================
    INTERSECTION OBSERVER HOOK — SCROLL TRIGGER
@@ -321,6 +322,7 @@ export default function OmAnalyzerPage() {
 
     setView("processing");
     setStatusMsg("Uploading files...");
+    trackLiteUpload(selectedFile.name, selectedFile.name.split(".").pop()?.toLowerCase() || "unknown");
 
     try {
       let documentText = "";
@@ -445,6 +447,7 @@ export default function OmAnalyzerPage() {
 
       setData(result);
       setView("result");
+      trackLiteResult(result?.propertyName || selectedFile.name, result?.proScore?.totalScore || computeDealScore(result));
 
       // Increment usage counter after successful analysis
       incrementUsage();
@@ -663,7 +666,7 @@ export default function OmAnalyzerPage() {
             <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.6, margin: "0 0 24px" }}>
               Upgrade to Pro and keep the speed advantage. Unlimited saves, full Excel workbooks, deal comparison, and your own DealBoard.
             </p>
-            <Link href="/workspace/login?upgrade=pro" style={{
+            <Link href="/workspace/login?upgrade=pro" onClick={() => trackProCTAClick("lite_result_upgrade_prompt")} style={{
               display: "inline-block", padding: "14px 36px",
               background: "linear-gradient(135deg, #84CC16, #a8d600)", color: "#0d0d14",
               borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: "none",
@@ -2836,7 +2839,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
             <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Download Assets</h3>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            <button className="dl-btn" onClick={() => downloadLiteXLSX(d)} style={{
+            <button className="dl-btn" onClick={() => { trackDownload("xlsx", d.propertyName || ""); downloadLiteXLSX(d); }} style={{
               display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 18px",
               background: "rgba(5,150,105,0.05)", border: "1px solid rgba(5,150,105,0.15)", borderRadius: 6,
               color: "#374151", textAlign: "left", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -2850,7 +2853,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
                 <div style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.4 }}>6-sheet Excel: Inputs, Rent Roll, Operating Statement, Debt &amp; Returns, Breakeven, Cap Scenarios</div>
               </div>
             </button>
-            <button className="dl-btn" onClick={() => downloadLiteBrief(d)} style={{
+            <button className="dl-btn" onClick={() => { trackDownload("docx", d.propertyName || ""); downloadLiteBrief(d); }} style={{
               display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 18px",
               background: "rgba(37,99,235,0.05)", border: "1px solid rgba(37,99,235,0.15)", borderRadius: 6,
               color: "#374151", textAlign: "left", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -2910,6 +2913,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
                   if (res.ok) {
                     setCaptureStatus("sent");
                     setCaptureMsg(json.message || "Check your inbox!");
+                    trackLeadCapture("lite_report");
                   } else {
                     setCaptureStatus("error");
                     setCaptureMsg(json.error || "Something went wrong");
@@ -2977,7 +2981,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
             Decide before others even open Excel. 100 deals/month for less than $0.50 per deal.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <a href="/workspace/login?upgrade=pro" style={{
+            <a href="/workspace/login?upgrade=pro" onClick={() => trackProCTAClick("lite_result_bottom")} style={{
               display: "inline-flex", alignItems: "center", gap: 8,
               padding: "14px 36px", borderRadius: 10,
               background: "#84CC16", color: "#0d0d14",

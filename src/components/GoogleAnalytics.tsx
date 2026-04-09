@@ -1,6 +1,6 @@
 import Script from "next/script";
 
-const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-6SBT12W584";
+const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-VG0F27LPR0";
 
 export default function GoogleAnalytics() {
   return (
@@ -14,7 +14,7 @@ export default function GoogleAnalytics() {
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', '${GA_ID}', { 'stream_id': '8126870983' });
+          gtag('config', '${GA_ID}', { 'stream_id': '14336734063' });
         `}
       </Script>
     </>
