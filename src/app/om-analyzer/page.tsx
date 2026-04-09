@@ -2018,105 +2018,69 @@ export default function OmAnalyzerPage() {
           position: "relative",
           overflow: "hidden",
         }}>
-          {/* Subtle green radial glow background */}
+          {/* Subtle green radial glow */}
           <div style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "600px",
-            height: "600px",
-            background: "radial-gradient(circle, rgba(132,204,22,0.15) 0%, rgba(132,204,22,0) 70%)",
-            borderRadius: "50%",
-            pointerEvents: "none",
-            zIndex: 0,
+            position: "absolute", top: "40%", left: "50%", transform: "translate(-50%, -50%)",
+            width: 500, height: 500,
+            background: "radial-gradient(circle, rgba(132,204,22,0.12) 0%, rgba(132,204,22,0) 70%)",
+            borderRadius: "50%", pointerEvents: "none", zIndex: 0,
           }} />
 
-          {/* City skyline background (very low opacity) */}
-          <div style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: "300px",
-            opacity: 0.03,
-            zIndex: 1,
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 400'%3E%3Cpath d='M0,300 L50,200 L100,250 L150,150 L200,200 L250,100 L300,180 L350,120 L400,170 L450,100 L500,160 L550,80 L600,150 L650,90 L700,140 L750,110 L800,160 L850,100 L900,150 L950,120 L1000,180 L1050,140 L1100,190 L1150,160 L1200,200 L1200,400 L0,400 Z' fill='%2384CC16'/%3E%3C/svg%3E")`,
-            backgroundSize: "cover",
-            backgroundPosition: "bottom center",
-            backgroundRepeat: "no-repeat",
-          }} />
+          {/* Animated cityscape silhouette */}
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 220, zIndex: 1, overflow: "hidden" }}>
+            {/* Layer 1 — far buildings, slow pan */}
+            <svg style={{ position: "absolute", bottom: 0, left: 0, width: "200%", height: 180, opacity: 0.04, animation: "panCity1 60s linear infinite" }} viewBox="0 0 2400 180" preserveAspectRatio="none">
+              <path d="M0,140 h30 v-60 h20 v60 h40 v-90 h15 v-20 h15 v110 h50 v-70 h20 v70 h30 v-50 h25 v50 h35 v-100 h10 v-30 h10 v130 h45 v-80 h20 v80 h30 v-45 h20 v45 h50 v-110 h15 v-15 h15 v125 h40 v-60 h25 v60 h30 v-85 h20 v85 h45 v-70 h15 v70 h35 v-95 h10 v-25 h15 v120 h40 v-55 h20 v55 h50 v-75 h20 v75 h30 v-40 h25 v40 h35 v-100 h15 v100 h40 v-65 h20 v65 h45 v-110 h10 v-20 h10 v130 h30 v-50 h20 v50 h40 v-80 h15 v80 h50 v-70 h25 v70 h30 v-90 h20 v90 h0 V180 H0 Z" fill="#84CC16"/>
+            </svg>
+            {/* Layer 2 — mid buildings, medium pan */}
+            <svg style={{ position: "absolute", bottom: 0, left: 0, width: "200%", height: 160, opacity: 0.06, animation: "panCity2 45s linear infinite" }} viewBox="0 0 2400 160" preserveAspectRatio="none">
+              <path d="M0,120 h25 v-80 h18 v80 h35 v-50 h22 v50 h28 v-100 h12 v-25 h12 v125 h45 v-65 h18 v65 h38 v-90 h15 v90 h30 v-40 h25 v40 h42 v-110 h10 v-15 h14 v125 h35 v-55 h20 v55 h50 v-75 h18 v75 h28 v-95 h15 v95 h40 v-60 h22 v60 h32 v-85 h12 v85 h48 v-70 h15 v70 h30 v-105 h10 v-20 h12 v125 h42 v-50 h20 v50 h35 v-80 h18 v80 h28 v-45 h22 v45 h45 v-90 h15 v90 h38 v-65 h20 v65 h30 v-100 h12 v100 V160 H0 Z" fill="#84CC16"/>
+            </svg>
+            {/* Layer 3 — near buildings, faster pan */}
+            <svg style={{ position: "absolute", bottom: 0, left: 0, width: "200%", height: 120, opacity: 0.08, animation: "panCity3 30s linear infinite" }} viewBox="0 0 2400 120" preserveAspectRatio="none">
+              <path d="M0,80 h40 v-40 h30 v40 h20 v-60 h25 v60 h35 v-30 h30 v30 h25 v-50 h20 v50 h40 v-70 h15 v70 h30 v-35 h25 v35 h45 v-55 h20 v55 h30 v-45 h30 v45 h20 v-65 h25 v65 h35 v-40 h20 v40 h40 v-50 h30 v50 h25 v-70 h20 v70 h45 v-35 h25 v35 h30 v-55 h20 v55 h35 v-45 h25 v45 h40 v-60 h30 v60 h20 v-30 h25 v30 h45 v-50 h20 v50 h30 v-40 h30 v40 V120 H0 Z" fill="#84CC16"/>
+            </svg>
+            {/* Gradient fade at top of cityscape */}
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 60, background: "linear-gradient(to bottom, #0d0d14, transparent)", zIndex: 2 }} />
+          </div>
 
           {/* Content container */}
-          <div style={{ position: "relative", zIndex: 2, textAlign: "center", maxWidth: "600px", padding: "0 24px" }}>
-            {/* File name pill — shown above the progress ring */}
+          <div style={{ position: "relative", zIndex: 3, textAlign: "center", maxWidth: 600, padding: "0 24px" }}>
+            {/* File name pill */}
             {selectedFile && (
               <div style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "8px 16px",
-                background: "rgba(132,204,22,0.1)",
-                border: "1px solid rgba(132,204,22,0.2)",
-                borderRadius: 20,
-                fontSize: 13,
-                marginBottom: 32,
+                display: "inline-flex", alignItems: "center", gap: 8,
+                padding: "6px 14px", background: "rgba(132,204,22,0.08)",
+                border: "1px solid rgba(132,204,22,0.15)", borderRadius: 20,
+                fontSize: 12, marginBottom: 24,
               }}>
                 <span style={{
-                  padding: "2px 8px",
-                  background: "rgba(132,204,22,0.2)",
-                  borderRadius: 4,
-                  fontSize: 9,
-                  fontWeight: 700,
-                  color: "#84CC16",
-                  textTransform: "uppercase",
+                  padding: "2px 6px", background: "rgba(132,204,22,0.2)", borderRadius: 4,
+                  fontSize: 9, fontWeight: 700, color: "#84CC16", textTransform: "uppercase",
                 }}>
                   {selectedFile.name.split(".").pop()}
                 </span>
-                <span style={{ flex: 1, maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#9CA3AF" }}>
+                <span style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#9CA3AF" }}>
                   {selectedFile.name}
                 </span>
               </div>
             )}
 
-            {/* Animated percentage counter with circular progress ring */}
-            <div style={{ marginBottom: 40, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg
-                width="200"
-                height="200"
-                viewBox="0 0 200 200"
-                style={{ position: "absolute" }}
-              >
-                {/* Background circle */}
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="90"
-                  fill="none"
-                  stroke="rgba(132,204,22,0.1)"
-                  strokeWidth="3"
-                />
-                {/* Progress circle */}
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="90"
-                  fill="none"
-                  stroke="#84CC16"
-                  strokeWidth="3"
-                  strokeDasharray={`${2 * Math.PI * 90}`}
-                  strokeDashoffset={`${2 * Math.PI * 90 * (1 - processingPct / 100)}`}
+            {/* Compact progress ring + percentage */}
+            <div style={{ marginBottom: 28, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="120" height="120" viewBox="0 0 120 120" style={{ position: "absolute" }}>
+                <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(132,204,22,0.08)" strokeWidth="2.5" />
+                <circle cx="60" cy="60" r="52" fill="none" stroke="#84CC16" strokeWidth="2.5"
+                  strokeDasharray={`${2 * Math.PI * 52}`}
+                  strokeDashoffset={`${2 * Math.PI * 52 * (1 - processingPct / 100)}`}
                   strokeLinecap="round"
-                  style={{ transition: "stroke-dashoffset 0.1s linear", transformOrigin: "100px 100px", transform: "rotate(-90deg)" }}
+                  style={{ transition: "stroke-dashoffset 0.1s linear", transformOrigin: "60px 60px", transform: "rotate(-90deg)" }}
                 />
               </svg>
               <div style={{ position: "relative", zIndex: 1 }}>
                 <div style={{
-                  fontSize: 48,
-                  fontWeight: 700,
-                  color: "#84CC16",
-                  fontFamily: "'Inter', sans-serif",
-                  fontVariantNumeric: "tabular-nums",
+                  fontSize: 28, fontWeight: 700, color: "#84CC16",
+                  fontFamily: "'Inter', sans-serif", fontVariantNumeric: "tabular-nums",
                 }}>
                   {processingPct}%
                 </div>
@@ -2124,7 +2088,7 @@ export default function OmAnalyzerPage() {
             </div>
 
             {/* Stage labels: UPLOAD → EXTRACT → READ → ANALYZE → GENERATE */}
-            <div style={{ display: "flex", gap: 12, marginBottom: 32, justifyContent: "center", alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 10, marginBottom: 24, justifyContent: "center", alignItems: "center", flexWrap: "wrap" }}>
               {[
                 { label: "UPLOAD", done: statusMsg !== "Uploading files..." },
                 { label: "EXTRACT", done: !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
@@ -2134,64 +2098,72 @@ export default function OmAnalyzerPage() {
               ].map((stage, i, arr) => {
                 const isCurrent = !stage.done && (i === 0 || arr[i - 1].done);
                 return (
-                  <div key={stage.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div key={stage.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <div style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      background: stage.done ? "rgba(132,204,22,0.2)" : isCurrent ? "rgba(132,204,22,0.15)" : "rgba(255,255,255,0.05)",
-                      border: `2px solid ${stage.done ? "#84CC16" : isCurrent ? "#84CC16" : "rgba(132,204,22,0.3)"}`,
+                      width: 22, height: 22, borderRadius: "50%",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      background: stage.done ? "rgba(132,204,22,0.2)" : isCurrent ? "rgba(132,204,22,0.12)" : "rgba(255,255,255,0.04)",
+                      border: `1.5px solid ${stage.done ? "#84CC16" : isCurrent ? "#84CC16" : "rgba(132,204,22,0.2)"}`,
                       animation: isCurrent ? "pulse 1.5s ease-in-out infinite" : "none",
                     }}>
                       {stage.done ? (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>
                       ) : (
-                        <div style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: "50%",
-                          background: isCurrent ? "#84CC16" : "rgba(132,204,22,0.4)",
-                        }} />
+                        <div style={{ width: 6, height: 6, borderRadius: "50%", background: isCurrent ? "#84CC16" : "rgba(132,204,22,0.3)" }} />
                       )}
                     </div>
                     <span style={{
-                      fontSize: 12,
-                      fontWeight: 600,
+                      fontSize: 10, fontWeight: 600,
                       color: stage.done ? "#84CC16" : isCurrent ? "#84CC16" : "#6B7280",
-                      textTransform: "uppercase",
-                      letterSpacing: 0.5,
+                      textTransform: "uppercase", letterSpacing: 0.5,
                     }}>
                       {stage.label}
                     </span>
                     {i < arr.length - 1 && (
-                      <div style={{ width: 16, height: 1, background: "rgba(132,204,22,0.2)" }} />
+                      <div style={{ width: 12, height: 1, background: "rgba(132,204,22,0.15)" }} />
                     )}
                   </div>
                 );
               })}
             </div>
 
-            {/* Rotating status messages */}
-            <div style={{ marginBottom: 28, minHeight: 30 }}>
+            {/* Rotating status message */}
+            <p style={{
+              fontSize: 14, fontWeight: 500, color: "#84CC16", margin: "0 0 32px",
+              fontFamily: "'Inter', sans-serif", animation: "fadeInOut 3s ease-in-out infinite",
+            }}>
+              {[
+                "Scanning document structure...",
+                "Extracting financial data points...",
+                "Calculating cap rate and NOI...",
+                "Running price sensitivity models...",
+                "Scoring tenant credit quality...",
+                "Mapping location intelligence...",
+                "Building your deal analysis...",
+              ][processingMsgIdx]}
+            </p>
+
+            {/* Did you know? — rotating facts */}
+            <div style={{
+              background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
+              borderRadius: 12, padding: "16px 24px", maxWidth: 440, margin: "0 auto",
+            }}>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.2, color: "#64748b", marginBottom: 6 }}>
+                Did you know?
+              </div>
               <p style={{
-                fontSize: 16,
-                fontWeight: 500,
-                color: "#84CC16",
-                margin: 0,
+                fontSize: 13, color: "#94a3b8", margin: 0, lineHeight: 1.6,
                 fontFamily: "'Inter', sans-serif",
-                animation: "fadeInOut 3s ease-in-out infinite",
+                animation: "factFade 5s ease-in-out infinite",
               }}>
                 {[
-                  "Scanning document structure...",
-                  "Extracting financial data points...",
-                  "Calculating cap rate and NOI...",
-                  "Running price sensitivity models...",
-                  "Scoring tenant credit quality...",
-                  "Mapping location intelligence...",
-                  "Building your deal analysis...",
+                  "DealSignals scores 7 risk dimensions: cap rate, DSCR, occupancy, basis, tenant quality, rollover risk, and location.",
+                  "Our AI reads OMs the way an analyst would — extracting rent rolls, lease terms, and NOI in seconds.",
+                  "The 6-sheet Excel workbook includes inputs, rent roll, operating statement, debt & returns, breakeven, and cap scenarios.",
+                  "Pro users save an average of 4 hours per deal on pre-diligence analysis.",
+                  "Every deal gets a Deal Signals score from 0–100, benchmarked against thousands of NNN transactions.",
+                  "Price sensitivity analysis shows how your returns change across cap rate and purchase price scenarios.",
+                  "White-label shareable links let you send branded deal briefs to clients and partners.",
                 ][processingMsgIdx]}
               </p>
             </div>
@@ -2208,6 +2180,23 @@ export default function OmAnalyzerPage() {
               0%, 10% { opacity: 0; }
               20%, 80% { opacity: 1; }
               90%, 100% { opacity: 0; }
+            }
+            @keyframes factFade {
+              0%, 5% { opacity: 0; transform: translateY(4px); }
+              12%, 88% { opacity: 1; transform: translateY(0); }
+              95%, 100% { opacity: 0; transform: translateY(-4px); }
+            }
+            @keyframes panCity1 {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            @keyframes panCity2 {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            @keyframes panCity3 {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
             }
           `}</style>
         </section>

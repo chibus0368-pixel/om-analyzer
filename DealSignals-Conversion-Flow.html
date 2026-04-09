@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DealSignals — Conversion & Payment Flow</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0f; color: #e2e8f0; min-height: 100vh; }
+
+  .header { padding: 32px 48px; border-bottom: 1px solid rgba(132,204,22,0.15); display: flex; align-items: center; gap: 16px; }
+  .header h1 { font-size: 22px; font-weight: 700; }
+  .header h1 span { color: #84CC16; }
+  .header .sub { color: #64748b; font-size: 13px; margin-left: auto; }
+
+  .legend { display: flex; gap: 24px; padding: 16px 48px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #94a3b8; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+  .canvas { padding: 40px 48px 80px; overflow-x: auto; }
+
+  /* Flow containers */
+  .flow { display: flex; flex-direction: column; align-items: center; gap: 0; max-width: 1200px; margin: 0 auto; }
+
+  /* Nodes */
+  .node { position: relative; border-radius: 12px; padding: 20px 28px; width: 560px; text-align: left; }
+  .node-title { font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 8px; }
+  .node-heading { font-size: 17px; font-weight: 700; color: #f1f5f9; margin-bottom: 6px; }
+  .node-desc { font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 10px; }
+  .node-details { list-style: none; }
+  .node-details li { font-size: 12px; color: #cbd5e1; padding: 3px 0; padding-left: 18px; position: relative; line-height: 1.5; }
+  .node-details li::before { content: ''; position: absolute; left: 0; top: 10px; width: 6px; height: 6px; border-radius: 50%; }
+
+  .node-step { background: rgba(132,204,22,0.06); border: 1px solid rgba(132,204,22,0.2); }
+  .node-step .node-title { color: #84CC16; }
+  .node-step .node-details li::before { background: #84CC16; }
+
+  .node-decision { background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.25); }
+  .node-decision .node-title { color: #60a5fa; }
+  .node-decision .node-details li::before { background: #60a5fa; }
+
+  .node-gate { background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.25); }
+  .node-gate .node-title { color: #f59e0b; }
+  .node-gate .node-details li::before { background: #f59e0b; }
+
+  .node-payment { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); }
+  .node-payment .node-title { color: #ef4444; }
+  .node-payment .node-details li::before { background: #ef4444; }
+
+  .node-success { background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.25); }
+  .node-success .node-title { color: #10b981; }
+  .node-success .node-details li::before { background: #10b981; }
+
+  .node-friction { background: rgba(168,85,247,0.06); border: 1px solid rgba(168,85,247,0.2); }
+  .node-friction .node-title { color: #a855f7; }
+  .node-friction .node-details li::before { background: #a855f7; }
+
+  /* Connectors */
+  .connector { display: flex; flex-direction: column; align-items: center; padding: 6px 0; }
+  .connector .line { width: 2px; height: 28px; background: rgba(148,163,184,0.2); }
+  .connector .label { font-size: 11px; color: #64748b; background: #0a0a0f; padding: 2px 12px; border-radius: 10px; border: 1px solid rgba(148,163,184,0.15); margin: 4px 0; white-space: nowrap; }
+  .connector .line-short { height: 14px; }
+
+  /* Branch */
+  .branch { display: flex; gap: 24px; align-items: flex-start; width: 100%; max-width: 1160px; }
+  .branch-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .branch-col .node { width: 100%; }
+
+  .branch-header { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 1160px; margin-bottom: 4px; }
+  .branch-header .branch-line { flex: 1; height: 1px; background: rgba(148,163,184,0.15); }
+  .branch-header .branch-label { font-size: 11px; color: #64748b; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; }
+
+  /* Split connector */
+  .split { position: relative; width: 100%; max-width: 1160px; height: 40px; }
+  .split::before { content: ''; position: absolute; top: 0; left: 50%; width: 2px; height: 20px; background: rgba(148,163,184,0.2); transform: translateX(-50%); }
+  .split::after { content: ''; position: absolute; top: 20px; left: calc(25% + 6px); right: calc(25% + 6px); height: 2px; background: rgba(148,163,184,0.2); }
+  .split .dot-l, .split .dot-r { position: absolute; top: 18px; width: 6px; height: 6px; border-radius: 50%; background: rgba(148,163,184,0.3); }
+  .split .dot-l { left: calc(25% + 3px); }
+  .split .dot-r { right: calc(25% + 3px); }
+  .split .drop-l, .split .drop-r { position: absolute; bottom: 0; width: 2px; height: 18px; background: rgba(148,163,184,0.2); }
+  .split .drop-l { left: calc(25% + 6px); }
+  .split .drop-r { right: calc(25% + 6px); }
+
+  /* Merge */
+  .merge { position: relative; width: 100%; max-width: 1160px; height: 40px; }
+  .merge::before { content: ''; position: absolute; bottom: 0; left: 50%; width: 2px; height: 20px; background: rgba(148,163,184,0.2); transform: translateX(-50%); }
+  .merge::after { content: ''; position: absolute; top: 0; left: calc(25% + 6px); right: calc(25% + 6px); height: 2px; background: rgba(148,163,184,0.2); }
+  .merge .dot-l, .merge .dot-r { position: absolute; top: -2px; width: 6px; height: 6px; border-radius: 50%; background: rgba(148,163,184,0.3); }
+  .merge .dot-l { left: calc(25% + 3px); }
+  .merge .dot-r { right: calc(25% + 3px); }
+  .merge .rise-l, .merge .rise-r { position: absolute; top: 2px; width: 2px; height: 18px; background: rgba(148,163,184,0.2); }
+  .merge .rise-l { left: calc(25% + 6px); }
+  .merge .rise-r { right: calc(25% + 6px); }
+
+  /* UX callouts */
+  .callout { background: rgba(251,191,36,0.08); border: 1px dashed rgba(251,191,36,0.3); border-radius: 8px; padding: 12px 16px; margin-top: 8px; }
+  .callout-title { font-size: 11px; font-weight: 700; color: #fbbf24; margin-bottom: 4px; }
+  .callout-text { font-size: 12px; color: #fbbf24; opacity: 0.8; line-height: 1.5; }
+
+  /* Tier comparison strip */
+  .tier-strip { display: flex; gap: 16px; width: 100%; max-width: 1160px; margin: 8px 0; }
+  .tier-card { flex: 1; border-radius: 10px; padding: 18px 20px; text-align: center; }
+  .tier-card.free { background: rgba(148,163,184,0.06); border: 1px solid rgba(148,163,184,0.15); }
+  .tier-card.pro { background: rgba(132,204,22,0.06); border: 1px solid rgba(132,204,22,0.25); }
+  .tier-card.proplus { background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.25); }
+  .tier-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .tier-card.free .tier-name { color: #94a3b8; }
+  .tier-card.pro .tier-name { color: #84CC16; }
+  .tier-card.proplus .tier-name { color: #60a5fa; }
+  .tier-price { font-size: 22px; font-weight: 800; color: #f1f5f9; margin-bottom: 8px; }
+  .tier-features { list-style: none; text-align: left; }
+  .tier-features li { font-size: 11px; color: #94a3b8; padding: 2px 0; }
+  .tier-features li span { margin-right: 6px; }
+  .tier-features li .yes { color: #84CC16; }
+  .tier-features li .no { color: #475569; }
+
+  /* Section divider */
+  .section-divider { width: 100%; max-width: 1160px; display: flex; align-items: center; gap: 16px; margin: 32px 0 16px; }
+  .section-divider .sdline { flex: 1; height: 1px; background: rgba(132,204,22,0.12); }
+  .section-divider .sdlabel { font-size: 12px; font-weight: 700; color: #84CC16; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
+
+  /* File ref */
+  .file-ref { font-size: 10px; color: #475569; font-family: 'SF Mono', Monaco, monospace; margin-top: 6px; }
+
+  /* Responsive */
+  @media (max-width: 800px) {
+    .branch { flex-direction: column; }
+    .node { width: 100% !important; }
+    .tier-strip { flex-direction: column; }
+    .canvas { padding: 24px 16px 60px; }
+    .header, .legend { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span>DealSignals</span> Conversion & Payment Flow</h1>
+  <div class="sub">Updated April 2026 · Interactive UX Flowchart</div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#84CC16"></div> User Step</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div> Decision Point</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> Gate / Friction</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div> Payment</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div> Success / Unlock</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div> UX Friction Point</div>
+</div>
+
+<div class="canvas">
+<div class="flow">
+
+  <!-- ═══════════ PHASE 1: ANONYMOUS ═══════════ -->
+  <div class="section-divider"><div class="sdline"></div><div class="sdlabel">Phase 1 — Anonymous Trial</div><div class="sdline"></div></div>
+
+  <div class="node node-step">
+    <div class="node-title">Step 1 · Landing Page</div>
+    <div class="node-heading">User arrives at dealsignals.com</div>
+    <div class="node-desc">No login required. Zero friction entry point.</div>
+    <ul class="node-details">
+      <li>Sees upload drop zone: "Upload OM, flyer, deal summary or broker package"</li>
+      <li>Accepts PDF, Word, Excel, CSV — max 50MB</li>
+      <li>Anonymous ID (nnn_anon_id) created in localStorage on first visit</li>
+    </ul>
+    <div class="file-ref">src/app/om-analyzer/page.tsx</div>
+  </div>
+
+  <div class="connector"><div class="line"></div><div class="label">Uploads a file</div><div class="line-short"></div></div>
+
+  <div class="node node-decision">
+    <div class="node-title">Decision · Usage Check</div>
+    <div class="node-heading">Has user hit 2-analysis limit?</div>
+    <div class="node-desc">Backend checks anonymous_trials collection in Firestore before processing.</div>
+    <ul class="node-details">
+      <li>GET /api/workspace/usage checks uploadsUsed against limit (2)</li>
+      <li>If under limit → process the file</li>
+      <li>If at limit → block with upgrade modal</li>
+    </ul>
+    <div class="file-ref">src/app/api/workspace/usage/route.ts</div>
+  </div>
+
+  <!-- SPLIT: under limit vs at limit -->
+  <div class="split">
+    <div class="dot-l"></div><div class="dot-r"></div>
+    <div class="drop-l"></div><div class="drop-r"></div>
+  </div>
+
+  <div class="branch">
+    <!-- LEFT: Under limit -->
+    <div class="branch-col">
+      <div style="font-size:11px;color:#10b981;text-align:center;margin-bottom:8px;font-weight:600;">✓ UNDER LIMIT</div>
+      <div class="node node-step">
+        <div class="node-title">Step 2 · Processing</div>
+        <div class="node-heading">AI analyzes the document</div>
+        <div class="node-desc">~60 seconds. Progress ring with rotating status messages.</div>
+        <ul class="node-details">
+          <li>Stages: UPLOAD → EXTRACT → READ → ANALYZE → GENERATE</li>
+          <li>POST /api/om-analyzer/score-lite (no auth required)</li>
+          <li>GA4: trackLiteUpload fires on upload</li>
+        </ul>
+        <div class="file-ref">src/app/api/om-analyzer/score-lite/route.ts</div>
+      </div>
+
+      <div class="connector"><div class="line"></div></div>
+
+      <div class="node node-success">
+        <div class="node-title">Step 3 · Results</div>
+        <div class="node-heading">Full lite analysis displayed</div>
+        <div class="node-desc">User sees everything — score, metrics, strengths, risks, tenants. Downloads work without login.</div>
+        <ul class="node-details">
+          <li>Deal Score Ring (0–100): Bullish / Neutral / Bearish</li>
+          <li>Metrics strip: Price, Cap Rate, NOI, DSCR, Price/SF, Cash-on-Cash</li>
+          <li>Strengths & Risks cards, "What to Double Check" panel</li>
+          <li>Download: 6-sheet Excel + First-Pass Brief (no login needed)</li>
+          <li>GA4: trackLiteResult fires</li>
+        </ul>
+        <div class="file-ref">src/app/om-analyzer/page.tsx → PropertyOutput()</div>
+      </div>
+
+      <div class="connector"><div class="line"></div><div class="label">Scrolls down</div><div class="line-short"></div></div>
+
+      <div class="node node-decision">
+        <div class="node-title">Decision · 3 Conversion Hooks</div>
+        <div class="node-heading">What does the user do next?</div>
+        <div class="node-desc">Three parallel conversion paths appear below results.</div>
+        <ul class="node-details">
+          <li><strong style="color:#60a5fa">A.</strong> Email capture — "Email this analysis to yourself" (no login)</li>
+          <li><strong style="color:#60a5fa">B.</strong> Download files — Excel workbook + brief (no login)</li>
+          <li><strong style="color:#60a5fa">C.</strong> Pro CTA banner — "Save this. Compare it. Share it." → upgrade</li>
+        </ul>
+      </div>
+
+      <div class="connector"><div class="line"></div></div>
+
+      <!-- Sub-paths for conversion hooks -->
+      <div class="node node-step" style="border-color:rgba(59,130,246,0.25);background:rgba(59,130,246,0.04);">
+        <div class="node-title" style="color:#60a5fa;">Hook A · Email Capture</div>
+        <div class="node-heading">Lead magnet — save your analysis</div>
+        <div class="node-desc">Green-bordered card with email input + "Send Report" button. No account needed.</div>
+        <ul class="node-details">
+          <li>POST /api/capture-lead → Firestore leads collection</li>
+          <li>Tracks: email, propertyName, dealScore, source, touch count</li>
+          <li>Bot protection: honeypot + timing + disposable email block</li>
+          <li>Rate limit: 10 requests / 15 min per IP</li>
+          <li>GA4: trackLeadCapture → generate_lead event ($5 value)</li>
+        </ul>
+        <div class="callout">
+          <div class="callout-title">⚡ UX Note</div>
+          <div class="callout-text">This is a low-friction lead capture. User gets value (email with analysis) in exchange for email. Returning leads increment touch count.</div>
+        </div>
+        <div class="file-ref">src/app/api/capture-lead/route.ts</div>
+      </div>
+
+      <div class="connector"><div class="line"></div></div>
+
+      <div class="node node-step" style="border-color:rgba(59,130,246,0.25);background:rgba(59,130,246,0.04);">
+        <div class="node-title" style="color:#60a5fa;">Hook C · Pro CTA</div>
+        <div class="node-heading">"Save this breakdown. Compare it. Share it."</div>
+        <div class="node-desc">Dark gradient card at bottom of results. Two buttons:</div>
+        <ul class="node-details">
+          <li><strong style="color:#84CC16">Primary:</strong> "Upgrade to Pro →" links to /workspace/login?upgrade=pro</li>
+          <li><strong style="color:#94a3b8">Secondary:</strong> "View Plans" scrolls to pricing section on same page</li>
+          <li>GA4: trackProCTAClick("lite_result_bottom")</li>
+        </ul>
+        <div class="file-ref">src/app/om-analyzer/page.tsx</div>
+      </div>
+    </div>
+
+    <!-- RIGHT: At limit -->
+    <div class="branch-col">
+      <div style="font-size:11px;color:#f59e0b;text-align:center;margin-bottom:8px;font-weight:600;">✕ AT LIMIT (2 used)</div>
+      <div class="node node-gate">
+        <div class="node-title">Gate · Upload Blocked</div>
+        <div class="node-heading">Upgrade modal appears immediately</div>
+        <div class="node-desc">User cannot process another file. Modal forces a decision.</div>
+        <ul class="node-details">
+          <li>Heading: "Upgrade to Pro"</li>
+          <li>Subheading: "Upgrade to continue analyzing deals and unlock your DealBoard."</li>
+          <li>Shows two plan cards side-by-side (Pro $40 vs Pro+ $100)</li>
+          <li>"Start Pro" → /workspace/login?upgrade=pro</li>
+          <li>"Start Pro+" → /workspace/login?upgrade=pro_plus</li>
+        </ul>
+        <div class="callout">
+          <div class="callout-title">⚠️ Friction Point</div>
+          <div class="callout-text">This is the hard gate. Anonymous trial is permanently spent — no monthly reset. User must create account + pay to continue. There's no "Maybe Later" here — only upgrade options.</div>
+        </div>
+        <div class="file-ref">src/components/billing/UpgradeModal.tsx</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MERGE back together -->
+  <div class="merge">
+    <div class="dot-l"></div><div class="dot-r"></div>
+    <div class="rise-l"></div><div class="rise-r"></div>
+  </div>
+
+  <!-- ═══════════ PHASE 2: SIGNUP ═══════════ -->
+  <div class="section-divider"><div class="sdline"></div><div class="sdlabel">Phase 2 — Signup & Authentication</div><div class="sdline"></div></div>
+
+  <div class="connector"><div class="line"></div><div class="label">Clicks "Upgrade to Pro" or "Start Pro"</div><div class="line-short"></div></div>
+
+  <div class="node node-step">
+    <div class="node-title">Step 4 · Login / Register</div>
+    <div class="node-heading">/workspace/login?upgrade=pro</div>
+    <div class="node-desc">URL param preserves upgrade intent through the entire auth flow.</div>
+    <ul class="node-details">
+      <li>Header changes: "Sign in to complete your upgrade to Pro"</li>
+      <li>Option 1: "Continue with Google" (OAuth, one click)</li>
+      <li>Option 2: Email/password form (register toggle for new users)</li>
+      <li>Register fields: First Name, Last Name, Email, Password, Company, Role</li>
+      <li>POST /api/auth/bootstrap creates user doc (tier=free), workspace, preferences</li>
+      <li>Anonymous trial usage merged via anonId → existing analyses preserved</li>
+    </ul>
+    <div class="callout">
+      <div class="callout-title">⚡ UX Note</div>
+      <div class="callout-text">The ?upgrade=pro param survives through login/register and carries to workspace redirect. User lands at /workspace?upgrade=pro after auth.</div>
+    </div>
+    <div class="file-ref">src/app/workspace/login/page.tsx</div>
+  </div>
+
+  <div class="connector"><div class="line"></div><div class="label">Auth completes → redirect to /workspace?upgrade=pro</div><div class="line-short"></div></div>
+
+  <!-- ═══════════ PHASE 3: UPGRADE ═══════════ -->
+  <div class="section-divider"><div class="sdline"></div><div class="sdlabel">Phase 3 — Payment & Activation</div><div class="sdline"></div></div>
+
+  <div class="node node-gate">
+    <div class="node-title">Gate · Upgrade Modal (Workspace)</div>
+    <div class="node-heading">UpgradeModal auto-opens on workspace landing</div>
+    <div class="node-desc">When ?upgrade param detected, modal fires immediately. Two paths based on current tier.</div>
+    <ul class="node-details">
+      <li><strong style="color:#f59e0b">If Free tier:</strong> Shows Pro ($40) + Pro+ ($100) cards with "Start Pro" / "Start Pro+" buttons + "Maybe Later"</li>
+      <li><strong style="color:#10b981">If already Pro:</strong> Shows "You're on Pro Plan" + "Upgrade to Pro+" link to profile settings</li>
+      <li>Clicking a plan button → POST /api/stripe/checkout → Stripe session URL</li>
+    </ul>
+    <div class="file-ref">src/app/workspace/layout.tsx + src/components/billing/UpgradeModal.tsx</div>
+  </div>
+
+  <div class="connector"><div class="line"></div><div class="label">Clicks "Start Pro" ($40/mo)</div><div class="line-short"></div></div>
+
+  <div class="node node-payment">
+    <div class="node-title">Payment · Stripe Checkout</div>
+    <div class="node-heading">Stripe-hosted payment page</div>
+    <div class="node-desc">We never touch card data. Stripe handles everything.</div>
+    <ul class="node-details">
+      <li>Creates/retrieves Stripe Customer (stored as stripeCustomerId)</li>
+      <li>If existing subscription: redirects to Stripe Portal for upgrade instead</li>
+      <li>mode: subscription, allow_promotion_codes: true</li>
+      <li>Success URL: /workspace?upgraded=true</li>
+      <li>Cancel URL: /pricing (user can try again)</li>
+    </ul>
+    <div class="file-ref">src/app/api/stripe/checkout/route.ts</div>
+  </div>
+
+  <div class="connector"><div class="line"></div><div class="label">Payment succeeds → Stripe webhook fires</div><div class="line-short"></div></div>
+
+  <div class="node node-success">
+    <div class="node-title">Activation · Webhook Processing</div>
+    <div class="node-heading">checkout.session.completed</div>
+    <div class="node-desc">Backend instantly upgrades the user's account.</div>
+    <ul class="node-details">
+      <li>User doc: tier → "pro", tierStatus → "active", uploadLimit → 40, uploadsUsed → 0 (reset)</li>
+      <li>Workspace doc: planTier → "pro", planStatus → "active"</li>
+      <li>Billing event logged in billing_events collection</li>
+      <li>Purchase confirmation email sent with plan features</li>
+      <li>GA4: trackPurchase("pro", 40)</li>
+    </ul>
+    <div class="file-ref">src/app/api/stripe/webhook/route.ts</div>
+  </div>
+
+  <div class="connector"><div class="line"></div><div class="label">Redirects to /workspace?upgraded=true</div><div class="line-short"></div></div>
+
+  <div class="node node-success">
+    <div class="node-title">Success · Pro Workspace</div>
+    <div class="node-heading">User is now a paying Pro subscriber</div>
+    <div class="node-desc">Success toast appears for 6 seconds. All Pro features unlocked.</div>
+    <ul class="node-details">
+      <li>40 analyses/month (resets monthly)</li>
+      <li>Save deals to DealBoard, property map, scoreboard</li>
+      <li>6-sheet Excel workbooks, Location Intelligence, white-label shareable links</li>
+      <li>TrialStatusBar hidden unless usage > 80%</li>
+    </ul>
+    <div class="file-ref">src/app/workspace/layout.tsx</div>
+  </div>
+
+  <!-- ═══════════ PHASE 4: LIFECYCLE ═══════════ -->
+  <div class="section-divider"><div class="sdline"></div><div class="sdlabel">Phase 4 — Subscription Lifecycle</div><div class="sdline"></div></div>
+
+  <div class="tier-strip">
+    <div class="tier-card free">
+      <div class="tier-name">Free</div>
+      <div class="tier-price">$0</div>
+      <ul class="tier-features">
+        <li><span class="yes">✓</span> 2 analyses (lifetime, no reset)</li>
+        <li><span class="yes">✓</span> Basic Deal Signals score</li>
+        <li><span class="yes">✓</span> First-pass brief download</li>
+        <li><span class="no">✕</span> Save to DealBoard</li>
+        <li><span class="no">✕</span> Map, Scoreboard, Excel</li>
+        <li><span class="no">✕</span> Location Intelligence</li>
+        <li><span class="no">✕</span> White-label links</li>
+      </ul>
+    </div>
+    <div class="tier-card pro">
+      <div class="tier-name">Pro · Most Popular</div>
+      <div class="tier-price">$40<span style="font-size:13px;font-weight:400;color:#94a3b8">/mo</span></div>
+      <ul class="tier-features">
+        <li><span class="yes">✓</span> 40 analyses/month</li>
+        <li><span class="yes">✓</span> Full Deal Signals scoring</li>
+        <li><span class="yes">✓</span> Save & organize deals</li>
+        <li><span class="yes">✓</span> 6-sheet Excel workbook</li>
+        <li><span class="yes">✓</span> Property map + Scoreboard</li>
+        <li><span class="yes">✓</span> Location Intelligence</li>
+        <li><span class="yes">✓</span> White-label shareable links</li>
+      </ul>
+    </div>
+    <div class="tier-card proplus">
+      <div class="tier-name">Pro+ · Best Value</div>
+      <div class="tier-price">$100<span style="font-size:13px;font-weight:400;color:#94a3b8">/mo</span></div>
+      <ul class="tier-features">
+        <li><span class="yes">✓</span> 200 analyses/month</li>
+        <li><span class="yes">✓</span> Everything in Pro</li>
+        <li><span class="yes">✓</span> Advanced Location Intelligence</li>
+        <li><span class="yes">✓</span> Bulk portfolio uploads</li>
+        <li><span class="yes">✓</span> Priority processing</li>
+        <li><span class="yes">✓</span> Custom branding</li>
+        <li><span class="yes">✓</span> Advanced exports</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="connector"><div class="line"></div></div>
+
+  <!-- Lifecycle events -->
+  <div class="branch" style="gap:16px;">
+    <div class="branch-col">
+      <div class="node node-step" style="width:100%;">
+        <div class="node-title">Monthly Renewal</div>
+        <div class="node-heading">Auto-renews via Stripe</div>
+        <ul class="node-details">
+          <li>Webhook: customer.subscription.updated</li>
+          <li>uploadsUsed auto-resets to 0 on new month</li>
+          <li>GET /api/workspace/usage detects periodStart change</li>
+        </ul>
+      </div>
+    </div>
+    <div class="branch-col">
+      <div class="node node-decision" style="width:100%;">
+        <div class="node-title">Upgrade Pro → Pro+</div>
+        <div class="node-heading">Via Stripe Portal</div>
+        <ul class="node-details">
+          <li>POST /api/stripe/checkout detects existing sub</li>
+          <li>Redirects to Stripe Portal (not new checkout)</li>
+          <li>Prorated charge applied automatically</li>
+          <li>uploadLimit: 40 → 200</li>
+        </ul>
+      </div>
+    </div>
+    <div class="branch-col">
+      <div class="node node-payment" style="width:100%;">
+        <div class="node-title">Cancellation</div>
+        <div class="node-heading">User cancels in Portal</div>
+        <ul class="node-details">
+          <li>Webhook: customer.subscription.deleted</li>
+          <li>tier → "free", uploadLimit → 2</li>
+          <li>tierStatus → "canceled"</li>
+          <li>Features reverted at period end</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"><div class="line"></div></div>
+
+  <!-- ═══════════ UX FRICTION ANALYSIS ═══════════ -->
+  <div class="section-divider"><div class="sdline"></div><div class="sdlabel">UX Friction Analysis</div><div class="sdline"></div></div>
+
+  <div class="node node-friction" style="width:100%;max-width:1160px;">
+    <div class="node-title">🔍 Current Friction Points to Discuss</div>
+    <div class="node-heading">Where users might drop off</div>
+    <div class="node-desc" style="margin-bottom:16px;">These are the moments in the funnel where UX improvements could increase conversion:</div>
+    <ul class="node-details">
+      <li><strong style="color:#a855f7">1. Hard gate at 2 analyses:</strong> Anonymous trial never resets. Once spent, user is permanently blocked. No "come back next month" path — it's upgrade or leave.</li>
+      <li><strong style="color:#a855f7">2. Upgrade modal has no "just sign up free" option:</strong> When limit hit, modal only shows Pro ($40) and Pro+ ($100). No path to create a free account and get 2/month as authenticated user.</li>
+      <li><strong style="color:#a855f7">3. Login → Workspace → Modal → Stripe = 3 redirects:</strong> User clicks "Start Pro" on results page → login page → workspace (modal auto-opens) → Stripe checkout. That's 3 page transitions before payment.</li>
+      <li><strong style="color:#a855f7">4. Email capture is passive:</strong> The email form sits below results. User may never scroll to it. No modal, no timed trigger, no exit-intent.</li>
+      <li><strong style="color:#a855f7">5. Free tier vs anonymous trial confusion:</strong> Anonymous gets 2 lifetime. Free authenticated gets 2/month. But there's no messaging explaining that signing up (free) gets you monthly resets.</li>
+      <li><strong style="color:#a855f7">6. No trial period for Pro:</strong> No 7-day free trial or "first analysis free on Pro." User goes from $0 to $40/month with no middle step.</li>
+      <li><strong style="color:#a855f7">7. Downloads work without login:</strong> Users can get the Excel + brief without ever creating an account. Reduces motivation to sign up.</li>
+    </ul>
+  </div>
+
+</div>
+</div>
+
+</body>
+</html>
