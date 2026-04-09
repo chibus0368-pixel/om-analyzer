@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
   { href: "/#how-it-works", label: "How it works", sectionId: "how-it-works" },
-  { href: "/#features", label: "Features", sectionId: "features" },
   { href: "/#pricing", label: "Pricing", sectionId: "pricing" },
   { href: "/#faq", label: "FAQ", sectionId: "faq" },
 ];
@@ -16,7 +15,6 @@ export default function DealSignalNav() {
   const pathname = usePathname();
   const [authedUser, setAuthedUser] = useState<{ displayName: string | null; email: string | null } | null>(null);
   const [activeSection, setActiveSection] = useState<string>("");
-  const [scrolledPastHero, setScrolledPastHero] = useState(false);
   const [resultShowing, setResultShowing] = useState(false);
 
   useEffect(() => {
@@ -37,16 +35,12 @@ export default function DealSignalNav() {
     return () => { if (unsubscribe) unsubscribe(); };
   }, []);
 
-  // Show "Try It" once user scrolls past the hero; detect result view
+  // Detect when lite result is showing (to hide "Get Started Free")
   useEffect(() => {
-    const onScroll = () => {
-      setScrolledPastHero(window.scrollY > 500);
-      setResultShowing(!!document.querySelector("[data-ds-result]"));
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    // Also check on mount and periodically for view changes
-    const interval = setInterval(() => setResultShowing(!!document.querySelector("[data-ds-result]")), 1000);
-    return () => { window.removeEventListener("scroll", onScroll); clearInterval(interval); };
+    const check = () => setResultShowing(!!document.querySelector("[data-ds-result]"));
+    window.addEventListener("scroll", check, { passive: true });
+    const interval = setInterval(check, 1000);
+    return () => { window.removeEventListener("scroll", check); clearInterval(interval); };
   }, []);
 
   // Track which section is in view via IntersectionObserver
@@ -113,8 +107,8 @@ export default function DealSignalNav() {
 
         {/* Center nav links */}
         <div className="ds-nav-links" style={{ display: "flex", alignItems: "center", gap: 32, height: 64 }}>
-          {/* "Try It" link — appears after scrolling past hero */}
-          {isOnLanding && scrolledPastHero && (
+          {/* "Try It" link — always visible on landing page */}
+          {isOnLanding && (
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
               style={{
@@ -123,7 +117,6 @@ export default function DealSignalNav() {
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
                 height: 28, display: "inline-flex", alignItems: "center",
                 padding: "0 14px", borderRadius: 6,
-                animation: "fadeInUp 0.3s ease-out",
                 letterSpacing: 0.3,
               }}
             >
