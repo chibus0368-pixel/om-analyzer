@@ -937,7 +937,7 @@ export default function OmAnalyzerPage() {
                         </svg>
                       </div>
                       <p style={{ fontSize: 15, fontWeight: 600, color: "#ffffff", margin: "0 0 6px" }}>
-                        {dragging ? "Drop your file here" : "Upload a deal"}
+                        {dragging ? "Drop your file here" : "Upload OM, flyer, deal summary or broker package"}
                       </p>
                       <p style={{ fontSize: 13, color: "#9ca3af", margin: "0 0 20px" }}>
                         PDF, Word, Excel, or CSV &middot; Max 50MB
@@ -1706,7 +1706,8 @@ export default function OmAnalyzerPage() {
                     { text: "DealBoard with history", included: true },
                     { text: "Deal comparison scoreboard", included: true },
                     { text: "Interactive property map", included: true },
-                    { text: "Shareable client links", included: true },
+                    { text: "Location Intelligence", included: true },
+                    { text: "White-label shareable links", included: true },
                   ],
                   cta: "Start Pro",
                   ctaLink: "/workspace/login?upgrade=pro",
@@ -1722,10 +1723,10 @@ export default function OmAnalyzerPage() {
                     { text: "Up to 500 deals/month", included: true },
                     { text: "Everything in Pro", included: true },
                     { text: "Bulk portfolio uploads", included: true },
-                    { text: "Location Intelligence", included: true },
-                    { text: "White-label shareable links", included: true },
+                    { text: "Advanced Location Intelligence", included: true },
                     { text: "Priority processing", included: true },
                     { text: "Priority support", included: true },
+                    { text: "Custom branding", included: true },
                   ],
                   cta: "Go Pro+",
                   ctaLink: "/workspace/login?upgrade=pro_plus",
@@ -1870,7 +1871,7 @@ export default function OmAnalyzerPage() {
                 {[
                   { q: "Is it really free?", a: "Yes. 2 full deal analyses with scoring, risk signals, and Excel export. No credit card, no signup. You see the exact same output that Pro users get." },
                   { q: "What does Pro include?", a: "Pro ($40/month) gives you up to 100 deal analyses per month, unlimited saved deals, full 6-sheet Excel workbooks, DealBoard with deal history, comparison scoreboard, interactive property map, and shareable client links. Less than $0.50 per deal." },
-                  { q: "What about Pro+?", a: "Pro+ ($100/month) is for high-volume operators. Up to 500 deals/month plus bulk portfolio uploads, location intelligence, white-label sharing, and priority processing and support. Less than $0.20 per deal." },
+                  { q: "What about Pro+?", a: "Pro+ ($100/month) is for high-volume operators. Up to 500 deals/month plus bulk portfolio uploads, advanced Location Intelligence, custom branding, and priority processing and support. Less than $0.20 per deal." },
                 ].map((item, i) => {
                   const faqIdx = 5 + i;
                   return (

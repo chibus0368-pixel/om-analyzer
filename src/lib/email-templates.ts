@@ -673,11 +673,12 @@ export function purchaseConfirmationTemplate(data: { name: string; email: string
             <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> 6-sheet Excel workbook</td></tr>
             <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Workspace with saved deals and history</td></tr>
             <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Property map and scoreboard views</td></tr>
-            <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Shareable analysis links</td></tr>
+            <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> White-label shareable links</td></tr>
+            <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Location Intelligence</td></tr>
             ${plan === 'pro_plus' ? `
-            <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Deep research (tenant credit, market comps)</td></tr>
-            <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Location intelligence and advanced exports</td></tr>
-            <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Priority processing</td></tr>
+            <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Advanced Location Intelligence</td></tr>
+            <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Bulk portfolio uploads &amp; advanced exports</td></tr>
+            <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Priority processing &amp; custom branding</td></tr>
             ` : ''}
           </table>
         </td>

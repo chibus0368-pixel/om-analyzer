@@ -1739,7 +1739,7 @@ function PropertyDetailInner({
                 <p style={{ fontSize: 13, color: C.secondary, margin: "0 0 16px", lineHeight: 1.5 }}>
                   Live research on what{"'"}s happening around this property — nearby developments, civic activity, area demographics, and recent news.
                 </p>
-                {userTier === "pro_plus" ? (
+                {userTier === "pro_plus" || userTier === "pro" ? (
                   <button
                     onClick={async () => {
                       setDeepResearchLoading(true);
@@ -1783,8 +1783,8 @@ function PropertyDetailInner({
                       <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0110 0v4" />
                     </svg>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#312E81" }}>Pro+ Feature</div>
-                      <div style={{ fontSize: 11, color: "#585e70", marginTop: 2 }}>Location Intelligence is available on the Pro+ plan ($100/mo).</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#312E81" }}>Pro Feature</div>
+                      <div style={{ fontSize: 11, color: "#585e70", marginTop: 2 }}>Location Intelligence is available on the Pro plan ($40/mo).</div>
                     </div>
                     <a href="/workspace/profile" style={{
                       padding: "6px 14px", background: "linear-gradient(135deg, #6366F1, #4F46E5)", color: "#fff",

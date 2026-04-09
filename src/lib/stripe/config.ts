@@ -48,6 +48,8 @@ export const PLANS: Record<string, PlanConfig> = {
       "Workspace + history",
       "Property map",
       "Scoreboard",
+      "Location Intelligence",
+      "White-label shareable links",
     ],
   },
   pro_plus: {
@@ -60,9 +62,11 @@ export const PLANS: Record<string, PlanConfig> = {
     features: [
       "Up to 200 deals/month",
       "Everything in Pro",
-      "Location Intelligence",
+      "Advanced Location Intelligence",
+      "Bulk portfolio uploads",
       "Advanced exports",
       "Priority processing",
+      "Custom branding",
     ],
   },
 };
