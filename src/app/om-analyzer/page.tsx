@@ -2602,50 +2602,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
         </div>
       )}
 
-      {/* ===== SCORE BREAKDOWN — from Pro scoring model ===== */}
-      {scoreCategories.length > 0 && (
-        <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", padding: 24, marginBottom: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: "#0F172A", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              <span style={{ width: 3, height: 18, background: "#84CC16", borderRadius: 2 }} />
-              Score Breakdown
-            </h2>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.5 }}>{detectedType} model</span>
-              <span style={{
-                fontSize: 11, fontWeight: 800, padding: "3px 10px", borderRadius: 4, letterSpacing: 0.5,
-                background: scoreBand === "strong_buy" || scoreBand === "buy" ? "rgba(5,150,105,0.08)" : scoreBand === "hold" ? "rgba(196,154,60,0.08)" : "rgba(132,204,22,0.08)",
-                color: scoreBand === "strong_buy" || scoreBand === "buy" ? "#059669" : scoreBand === "hold" ? "#C49A3C" : "#84CC16",
-                textTransform: "uppercase",
-              }}>{scoreBand === "hold" ? "neutral" : scoreBand.replace("_", " ")}</span>
-            </div>
-          </div>
-          {scoreRecommendation && (
-            <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.6, margin: "0 0 16px", padding: "12px 16px", background: "#F9FAFB", borderRadius: 8 }}>
-              {scoreRecommendation}
-            </p>
-          )}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            {scoreCategories.map((cat: any) => {
-              const barColor = cat.score >= 70 ? "#059669" : cat.score >= 50 ? "#C49A3C" : "#84CC16";
-              return (
-                <div key={cat.name} style={{ padding: "10px 14px", background: "#F9FAFB", borderRadius: 8 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#374151", textTransform: "capitalize" }}>{cat.name}</span>
-                    <span style={{ fontSize: 12, fontWeight: 800, color: barColor }}>{cat.score}</span>
-                  </div>
-                  <div style={{ height: 4, background: "rgba(0,0,0,0.05)", borderRadius: 2, overflow: "hidden" }}>
-                    <div style={{ width: `${cat.score}%`, height: "100%", background: barColor, borderRadius: 2, animation: "barGrow 0.8s ease-out" }} />
-                  </div>
-                  {cat.explanation && (
-                    <div style={{ fontSize: 10, color: "#6B7280", marginTop: 3 }}>{cat.explanation}</div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* Score Breakdown removed from Try Me — Pro-only feature */}
 
       {/* ===== PRICE SENSITIVITY TABLE ===== */}
       {(d.askingPrice && d.noiOm) && (
