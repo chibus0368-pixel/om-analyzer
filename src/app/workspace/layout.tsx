@@ -207,7 +207,17 @@ function SidebarUserCard({ user, collapsed, userTier, onUpgradeClick }: {
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   const { user, loading: authLoading } = useWorkspaceAuth();
+  const pathname = usePathname();
   useEffect(() => setMounted(true), []);
+
+  // The login page is the auth entry point — it should NEVER wait for
+  // Firebase auth to initialize before rendering. Blocking here was adding
+  // 1-3s to every cold load of /workspace/login. Render immediately and
+  // bypass the workspace chrome entirely.
+  const isLoginPage = pathname === "/workspace/login";
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
 
   if (!mounted || authLoading) {
     return (

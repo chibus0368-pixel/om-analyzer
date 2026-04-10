@@ -55,7 +55,6 @@ const TIERS = [
     features: [
       { text: "Up to 200 deals/month", included: true },
       { text: "Everything in Pro", included: true },
-      { text: "Advanced Location Intelligence", included: true },
       { text: "Bulk portfolio uploads", included: true },
       { text: "Priority processing", included: true },
       { text: "Priority support", included: true },

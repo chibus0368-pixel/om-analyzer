@@ -649,8 +649,8 @@ export default function OmAnalyzerPage() {
                 ? `You've used your ${used} free ${used === 1 ? "deal" : "deals"}. Keep going?`
                 : `You've used all ${limit} free deals. Ready to move faster?`;
               const sub = isAnonGate
-                ? "Sign up free for 5 total deals + save to your workspace. Or start a 7-day Pro trial for 40 deals/mo."
-                : "Start a 7-day free Pro trial — 40 deals/month for $40. Card required, cancel anytime.";
+                ? "Sign up free for 5 total deals + save to your workspace. Or start a 7-day Pro trial for 100 deals/mo."
+                : "Start a 7-day free Pro trial — 100 deals/month for $40. Card required, cancel anytime.";
               return (
                 <>
                   <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#ffffff", margin: "0 0 8px", letterSpacing: -0.3 }}>
@@ -1700,9 +1700,9 @@ export default function OmAnalyzerPage() {
                   price: "40",
                   period: "/mo",
                   desc: "For active investors moving fast on deals.",
-                  valueCallout: "7-day free trial · Less than $1 per deal",
+                  valueCallout: "7-day free trial · Less than 50¢ per deal",
                   features: [
-                    { text: "Up to 40 deals/month", included: true },
+                    { text: "Up to 100 deals/month", included: true },
                     { text: "Save & organize deals", included: true },
                     { text: "Deal Signals scoring", included: true },
                     { text: "Full Excel workbooks (6 sheets)", included: true },
@@ -1726,7 +1726,6 @@ export default function OmAnalyzerPage() {
                     { text: "Up to 200 deals/month", included: true },
                     { text: "Everything in Pro", included: true },
                     { text: "Bulk portfolio uploads", included: true },
-                    { text: "Advanced Location Intelligence", included: true },
                     { text: "Priority processing", included: true },
                     { text: "Priority support", included: true },
                     { text: "Custom branding", included: true },
@@ -1873,7 +1872,7 @@ export default function OmAnalyzerPage() {
 
                 {[
                   { q: "Is it really free?", a: "Yes. Try 2 deals without signing up. Create a free account for 5 total analyses with scoring, risk signals, and Excel export. Same output Pro users get." },
-                  { q: "What does Pro include?", a: "Pro ($40/month) starts with a 7-day free trial. 40 deals/month, saved deals, full 6-sheet Excel workbooks, DealBoard with history, comparison scoreboard, interactive property map, Location Intelligence, and white-label shareable links." },
+                  { q: "What does Pro include?", a: "Pro ($40/month) starts with a 7-day free trial. 100 deals/month, saved deals, full 6-sheet Excel workbooks, DealBoard with history, comparison scoreboard, interactive property map, Location Intelligence, and white-label shareable links." },
                   { q: "What about Pro+?", a: "Pro+ ($100/month) also starts with a 7-day free trial. 200 deals/month plus bulk portfolio uploads, advanced Location Intelligence, custom branding, priority processing and support." },
                 ].map((item, i) => {
                   const faqIdx = 5 + i;
@@ -2145,31 +2144,6 @@ export default function OmAnalyzerPage() {
                 "Building your deal analysis...",
               ][processingMsgIdx]}
             </p>
-
-            {/* Did you know? — rotating facts */}
-            <div style={{
-              background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
-              borderRadius: 12, padding: "16px 24px", maxWidth: 440, margin: "0 auto",
-            }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.2, color: "#64748b", marginBottom: 6 }}>
-                Did you know?
-              </div>
-              <p key={`fact-${processingMsgIdx}`} style={{
-                fontSize: 13, color: "#94a3b8", margin: 0, lineHeight: 1.6,
-                fontFamily: "'Inter', sans-serif",
-                animation: "factSwap 0.6s ease-out",
-              }}>
-                {[
-                  "DealSignals scores 7 risk dimensions: cap rate, DSCR, occupancy, basis, tenant quality, rollover risk, and location.",
-                  "Our AI reads OMs the way an analyst would — extracting rent rolls, lease terms, and NOI in seconds.",
-                  "The 6-sheet Excel workbook includes inputs, rent roll, operating statement, debt & returns, breakeven, and cap scenarios.",
-                  "Pro users save an average of 4 hours per deal on pre-diligence analysis.",
-                  "Every deal gets a Deal Signals score from 0–100, benchmarked against thousands of NNN transactions.",
-                  "Price sensitivity analysis shows how your returns change across cap rate and purchase price scenarios.",
-                  "White-label shareable links let you send branded deal briefs to clients and partners.",
-                ][processingMsgIdx]}
-              </p>
-            </div>
 
           </div>
 
@@ -2923,30 +2897,41 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
             With DealSignals Pro, every analysis is saved to your DealBoard. Score side-by-side, export full workbooks, pin deals to a map, and send branded briefs to clients.
           </p>
           <p style={{ fontSize: 14, color: "#84CC16", fontWeight: 600, marginBottom: 28 }}>
-            Try Pro free for 7 days. 40 deals/month for $40 — less than $1 per deal.
+            Try Pro free for 7 days. 100 deals/month for $40 — less than 50¢ per deal.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <a href="/workspace/login?upgrade=pro" onClick={() => trackProCTAClick("lite_result_bottom")} style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              padding: "14px 36px", borderRadius: 10,
-              background: "#84CC16", color: "#0d0d14",
-              fontSize: 16, fontWeight: 700, textDecoration: "none",
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              boxShadow: "0 0 30px rgba(132,204,22,0.4), 0 0 60px rgba(132,204,22,0.15)",
-            }}>
+            <button
+              type="button"
+              onClick={() => {
+                try { trackProCTAClick("lite_result_bottom"); } catch {}
+                window.location.href = "/workspace/login?upgrade=pro";
+              }}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                padding: "14px 36px", borderRadius: 10,
+                background: "#84CC16", color: "#0d0d14",
+                fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                boxShadow: "0 0 30px rgba(132,204,22,0.4), 0 0 60px rgba(132,204,22,0.15)",
+              }}
+            >
               Start 7-Day Free Trial
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
-            </a>
-            <a href="/workspace/login?source=save_deal" style={{
-              display: "inline-flex", alignItems: "center",
-              padding: "14px 28px", borderRadius: 10,
-              background: "transparent", color: "#e0e0e6",
-              border: "1px solid rgba(255,255,255,0.15)",
-              fontSize: 14, fontWeight: 600, textDecoration: "none",
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-            }}>
+            </button>
+            <button
+              type="button"
+              onClick={() => { window.location.href = "/workspace/login?source=save_deal"; }}
+              style={{
+                display: "inline-flex", alignItems: "center",
+                padding: "14px 28px", borderRadius: 10,
+                background: "transparent", color: "#e0e0e6",
+                border: "1px solid rgba(255,255,255,0.15)",
+                fontSize: 14, fontWeight: 600, cursor: "pointer",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}
+            >
               Sign Up Free (5 Deals)
-            </a>
+            </button>
           </div>
           {usageData && (
             <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 16, fontFamily: "'Inter', sans-serif" }}>

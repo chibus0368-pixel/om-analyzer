@@ -76,7 +76,9 @@ export default function WorkspaceLoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [redirectChecking, setRedirectChecking] = useState(true);
+  // Render form immediately. Redirect-result check runs in the background
+  // and only flips this true if we actually detect an inbound redirect.
+  const [redirectChecking, setRedirectChecking] = useState(false);
 
   /* ── Build post-auth redirect URL (preserves upgrade param) ── */
   function getPostAuthUrl(): string {
@@ -110,9 +112,29 @@ export default function WorkspaceLoginPage() {
     router.push(redirectPath || "/workspace");
   }
 
-  /* ── handle redirect result on mount (from Google redirect flow) ── */
+  /* ── handle redirect result on mount (from Google redirect flow) ──
+     NOTE: runs in background only. We do NOT block the form render on this.
+     Firebase's getRedirectResult can take several seconds to resolve on cold
+     loads; blocking here made the whole login page feel broken. If a real
+     redirect result arrives we flip redirectChecking true just long enough
+     to show a spinner while we finish the handoff. */
   useEffect(() => {
     let cancelled = false;
+    // Only bother doing the redirect check if there's a hint a redirect
+    // actually just happened. Google sign-in via redirect sets a session
+    // storage key; the auth handler also appends #state= to the URL.
+    const looksLikeRedirect =
+      typeof window !== "undefined" &&
+      (window.location.hash.includes("state=") ||
+        window.location.hash.includes("id_token=") ||
+        (() => { try { return !!sessionStorage.getItem("firebase:pendingRedirect"); } catch { return false; } })());
+
+    if (!looksLikeRedirect) {
+      // Nothing to do — render the form immediately.
+      return;
+    }
+
+    setRedirectChecking(true);
     async function handleRedirect() {
       try {
         const result = await checkGoogleRedirect();
@@ -251,16 +273,7 @@ export default function WorkspaceLoginPage() {
         {/* ── Header ── */}
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
-            <svg width={200} height={52} viewBox="0 0 420 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="20" y="70" width="12" height="30" rx="1.5" fill="#84CC16" />
-              <rect x="38" y="55" width="12" height="45" rx="1.5" fill="#84CC16" />
-              <rect x="56" y="40" width="12" height="60" rx="1.5" fill="#84CC16" />
-              <rect x="74" y="25" width="12" height="75" rx="1.5" fill="#84CC16" />
-              <circle cx="80" cy="18" r="6" fill="#84CC16" />
-              <path d="M15 105 Q60 95 105 105" stroke="#84CC16" strokeWidth="2" fill="none" />
-              <text x="120" y="72" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#84CC16">Deal</text>
-              <text x="210" y="72" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#1E293B">Signals</text>
-            </svg>
+            <img src="/images/dealsignals-full-logo-dark.svg" alt="DealSignals" style={{ height: 48, width: "auto", display: "block" }} />
           </div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0B1120", margin: 0, fontFamily: "'Inter', sans-serif" }}>
             {upgradePlan

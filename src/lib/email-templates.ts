@@ -676,7 +676,6 @@ export function purchaseConfirmationTemplate(data: { name: string; email: string
             <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> White-label shareable links</td></tr>
             <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Location Intelligence</td></tr>
             ${plan === 'pro_plus' ? `
-            <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Advanced Location Intelligence</td></tr>
             <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Bulk portfolio uploads &amp; advanced exports</td></tr>
             <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Priority processing &amp; custom branding</td></tr>
             ` : ''}
