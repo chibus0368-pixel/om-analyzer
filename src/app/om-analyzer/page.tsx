@@ -726,7 +726,6 @@ export default function OmAnalyzerPage() {
             }}>
               &larr; Analyze Another
             </button>
-            <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 28 }} />
           </div>
         </div>
       )}
@@ -2090,19 +2089,19 @@ export default function OmAnalyzerPage() {
             )}
 
             {/* Compact progress ring + percentage */}
-            <div style={{ marginBottom: 28, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="120" height="120" viewBox="0 0 120 120" style={{ position: "absolute" }}>
-                <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(132,204,22,0.08)" strokeWidth="2.5" />
-                <circle cx="60" cy="60" r="52" fill="none" stroke="#84CC16" strokeWidth="2.5"
-                  strokeDasharray={`${2 * Math.PI * 52}`}
-                  strokeDashoffset={`${2 * Math.PI * 52 * (1 - processingPct / 100)}`}
+            <div style={{ marginBottom: 24, position: "relative", width: 80, height: 80, marginLeft: "auto", marginRight: "auto", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="80" height="80" viewBox="0 0 80 80" style={{ position: "absolute", inset: 0 }}>
+                <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(132,204,22,0.08)" strokeWidth="2" />
+                <circle cx="40" cy="40" r="34" fill="none" stroke="#84CC16" strokeWidth="2"
+                  strokeDasharray={`${2 * Math.PI * 34}`}
+                  strokeDashoffset={`${2 * Math.PI * 34 * (1 - processingPct / 100)}`}
                   strokeLinecap="round"
-                  style={{ transition: "stroke-dashoffset 0.1s linear", transformOrigin: "60px 60px", transform: "rotate(-90deg)" }}
+                  style={{ transition: "stroke-dashoffset 0.1s linear", transformOrigin: "40px 40px", transform: "rotate(-90deg)" }}
                 />
               </svg>
               <div style={{ position: "relative", zIndex: 1 }}>
                 <div style={{
-                  fontSize: 28, fontWeight: 700, color: "#84CC16",
+                  fontSize: 18, fontWeight: 700, color: "#84CC16",
                   fontFamily: "'Inter', sans-serif", fontVariantNumeric: "tabular-nums",
                 }}>
                   {processingPct}%
@@ -2151,9 +2150,9 @@ export default function OmAnalyzerPage() {
             </div>
 
             {/* Rotating status message */}
-            <p style={{
+            <p key={`status-${processingMsgIdx}`} style={{
               fontSize: 14, fontWeight: 500, color: "#84CC16", margin: "0 0 32px",
-              fontFamily: "'Inter', sans-serif", animation: "fadeInOut 3s ease-in-out infinite",
+              fontFamily: "'Inter', sans-serif", animation: "factSwap 0.6s ease-out",
             }}>
               {[
                 "Scanning document structure...",
@@ -2174,10 +2173,10 @@ export default function OmAnalyzerPage() {
               <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.2, color: "#64748b", marginBottom: 6 }}>
                 Did you know?
               </div>
-              <p style={{
+              <p key={`fact-${processingMsgIdx}`} style={{
                 fontSize: 13, color: "#94a3b8", margin: 0, lineHeight: 1.6,
                 fontFamily: "'Inter', sans-serif",
-                animation: "factFade 5s ease-in-out infinite",
+                animation: "factSwap 0.6s ease-out",
               }}>
                 {[
                   "DealSignals scores 7 risk dimensions: cap rate, DSCR, occupancy, basis, tenant quality, rollover risk, and location.",
@@ -2204,10 +2203,9 @@ export default function OmAnalyzerPage() {
               20%, 80% { opacity: 1; }
               90%, 100% { opacity: 0; }
             }
-            @keyframes factFade {
-              0%, 5% { opacity: 0; transform: translateY(4px); }
-              12%, 88% { opacity: 1; transform: translateY(0); }
-              95%, 100% { opacity: 0; transform: translateY(-4px); }
+            @keyframes factSwap {
+              0% { opacity: 0; transform: translateY(4px); }
+              100% { opacity: 1; transform: translateY(0); }
             }
             @keyframes panCity1 {
               0% { transform: translateX(0); }
