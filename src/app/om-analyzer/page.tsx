@@ -5,6 +5,7 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
+import { extractTextFromFile } from "@/lib/workspace/file-reader";
 
 import DealSignalNav from "@/components/DealSignalNav";
 import { trackLiteUpload, trackLiteResult, trackLeadCapture, trackProCTAClick, trackDownload } from "@/lib/analytics";
@@ -328,15 +329,12 @@ export default function OmAnalyzerPage() {
       let documentText = "";
       const ext = selectedFile.name.split(".").pop()?.toLowerCase() || "";
 
-      // Extract text client-side (identical to pro's extractTextFromFiles flow)
+      // Hero image extraction (PDF only) — Try-Me-specific, runs in parallel with text extraction
       if (ext === "pdf") {
         setStatusMsg("Extracting property image...");
-        // Smart hero image extraction: scans first 5 pages, picks best photo-like page
-        // Skips tables/text pages — returns null if no good property image found
         try {
           const heroBlob = await extractHeroImageFromPDF(selectedFile);
           if (heroBlob && heroBlob.size > 5000) {
-            // Set temporary blob URL immediately for fast display
             setHeroImageUrl(URL.createObjectURL(heroBlob));
             console.log("[om-analyzer] Smart hero image set (blob)");
             // Upload to Firebase Storage for persistent URL (non-blocking)
@@ -346,7 +344,7 @@ export default function OmAnalyzerPage() {
                 const base64 = await new Promise<string>((resolve, reject) => {
                   reader.onload = () => {
                     const result = reader.result as string;
-                    resolve(result.split(",")[1]);
+                    resolve((reader.result as string).split(",")[1]);
                   };
                   reader.onerror = reject;
                   reader.readAsDataURL(heroBlob);
@@ -373,39 +371,22 @@ export default function OmAnalyzerPage() {
         } catch (imgErr) {
           console.warn("[om-analyzer] Hero image extraction failed:", imgErr);
         }
+      }
 
-        // Now load pdf.js for text extraction (image extractor already loaded it)
-        setStatusMsg("Reading file contents...");
-        if (!(window as any).pdfjsLib) {
-          await new Promise<void>((resolve, reject) => {
-            const s = document.createElement("script");
-            s.src = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js";
-            s.onload = () => {
-              const lib = (window as any).pdfjsLib;
-              if (lib) {
-                lib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
-                resolve();
-              } else { reject("pdfjsLib not found after load"); }
-            };
-            s.onerror = () => reject("Failed to load pdf.js");
-            document.head.appendChild(s);
-          });
-        }
-        const arrayBuffer = await selectedFile.arrayBuffer();
-        const pdf = await (window as any).pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-
-        const maxPages = Math.min(pdf.numPages, 12);
-        for (let i = 1; i <= maxPages; i++) {
-          const page = await pdf.getPage(i);
-          const textContent = await page.getTextContent();
-          documentText += textContent.items.map((item: any) => item.str).join(" ") + "\n\n";
-        }
-      } else if (["txt", "csv"].includes(ext)) {
-        setStatusMsg("Reading file contents...");
-        documentText = await selectedFile.text();
-      } else {
-        setStatusMsg("Reading file contents...");
-        documentText = `[${ext.toUpperCase()} file: ${selectedFile.name}]\n(Binary file — upload PDF for best results)`;
+      // === Text extraction: uses the SAME helper as Pro workspace ===
+      // extractTextFromFile handles:
+      //   • PDF text extraction (first 12 pages via pdf.js)
+      //   • Vision OCR fallback for scanned / image-heavy OMs (critical for design-heavy broker flyers)
+      //   • Excel/XLSX extraction via SheetJS
+      //   • CSV/TXT/JSON/MD
+      //   • Per-page headers (--- Page N ---) for better LLM context
+      setStatusMsg("Reading file contents...");
+      try {
+        documentText = await extractTextFromFile(selectedFile);
+        console.log(`[om-analyzer] Extracted ${documentText.length} chars from ${selectedFile.name}`);
+      } catch (extractErr: any) {
+        console.error("[om-analyzer] Text extraction failed:", extractErr);
+        documentText = `[${ext.toUpperCase()} file: ${selectedFile.name}]\n(Extraction failed — property name may be in filename)`;
       }
 
       // Call parse-lite API with asset-type-specific models (same as Pro pipeline)
