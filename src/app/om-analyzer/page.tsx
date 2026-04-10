@@ -1045,7 +1045,7 @@ export default function OmAnalyzerPage() {
                   letterSpacing: 0.5, textTransform: "uppercase" as const,
                 }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                  Why DealSignals
+                  How It Works
                 </div>
                 <h2 style={{ fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15, marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                   Stop reading OMs.<br />Start <span className="ds-callout">making decisions</span>.
@@ -1140,7 +1140,7 @@ export default function OmAnalyzerPage() {
               <div style={{ textAlign: "center", marginBottom: 64 }}>
                 <div style={{ display: "inline-flex", alignItems: "center", padding: "6px 16px", borderRadius: 50, background: "rgba(132,204,22,0.06)", color: "#84CC16", fontSize: 12, fontWeight: 700, marginBottom: 16, gap: 6, letterSpacing: 0.5, textTransform: "uppercase" as const }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                  How It Works
+                  Quick Analysis
                 </div>
                 <h2 style={{ fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15, marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                   How a Deal Becomes a <span className="ds-callout">Decision</span>.
