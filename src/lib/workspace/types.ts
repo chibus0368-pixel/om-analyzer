@@ -1,4 +1,4 @@
-// ===== NNNTripleNet Deal Analyzer - Core Types =====
+// ===== DealSignals Deal Analyzer - Core Types =====
 
 // --- Enums ---
 export type AnalysisType = "retail" | "industrial" | "office" | "land";

@@ -31,8 +31,6 @@ export function middleware(request: NextRequest) {
     const allowedOrigins = [
       'https://dealsignals.app',
       'https://www.dealsignals.app',
-      'https://nnntriplenet.com',
-      'https://www.nnntriplenet.com',
       ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : []),
     ];
     const origin = request.headers.get('origin') || '';

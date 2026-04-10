@@ -629,21 +629,53 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
     }
   }, [searchParams, user]);
 
-  // ── Handle return from Stripe checkout (?upgraded=true) ──
+  // ── Handle return from Stripe checkout (?upgraded=true&session_id=...) ──
+  // Webhook may not have processed yet, so we (1) call sync-session to pull
+  // the subscription straight from Stripe and persist the new tier, then
+  // (2) retry fetchTier a few times as a safety net in case sync is slow.
   const [showUpgradeSuccess, setShowUpgradeSuccess] = useState(false);
   useEffect(() => {
     const upgraded = searchParams.get("upgraded");
-    if (upgraded === "true" && user) {
-      setShowUpgradeSuccess(true);
-      // Refresh tier immediately
-      window.dispatchEvent(new Event("usage-updated"));
-      // Clean the URL param
-      const url = new URL(window.location.href);
-      url.searchParams.delete("upgraded");
-      window.history.replaceState({}, "", url.pathname + url.search);
-      // Auto-dismiss after 6 seconds
-      setTimeout(() => setShowUpgradeSuccess(false), 6000);
-    }
+    const sessionId = searchParams.get("session_id");
+    if (upgraded !== "true" || !user) return;
+
+    setShowUpgradeSuccess(true);
+
+    (async () => {
+      // 1. Synchronously pull the subscription from Stripe and write the tier
+      if (sessionId) {
+        try {
+          const token = await user.getIdToken();
+          await fetch("/api/stripe/sync-session", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ sessionId }),
+          });
+        } catch (e) {
+          console.warn("[workspace] sync-session failed", e);
+        }
+      }
+
+      // 2. Kick the tier refresh loop a few times in case sync was slow
+      const trigger = () => window.dispatchEvent(new Event("usage-updated"));
+      trigger();
+      for (const delay of [500, 1500, 3000, 6000]) {
+        setTimeout(trigger, delay);
+      }
+    })();
+
+    // Clean the URL params
+    const url = new URL(window.location.href);
+    url.searchParams.delete("upgraded");
+    url.searchParams.delete("session_id");
+    window.history.replaceState({}, "", url.pathname + url.search);
+
+    // Auto-dismiss after 6 seconds
+    const t = setTimeout(() => setShowUpgradeSuccess(false), 6000);
+    return () => clearTimeout(t);
   }, [searchParams, user]);
 
   // Fetch user tier for header display

@@ -1,4 +1,4 @@
-# NNNTripleNet Deal Analyzer — Project Rules
+# DealSignals Deal Analyzer — Project Rules
 
 ## Project Concept
 - A project is a **group** for organizing deals — not a single property

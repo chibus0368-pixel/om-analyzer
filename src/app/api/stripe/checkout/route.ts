@@ -11,6 +11,30 @@ export const dynamic = "force-dynamic";
  * Body: { plan: "pro" | "pro_plus" }
  * Headers: Authorization: Bearer <firebase-id-token>
  */
+// Resolve the base URL to redirect users back to after Stripe checkout/portal.
+// Prefer the request's own origin so users return to whichever domain they
+// started on (dealsignals.app production, a Vercel preview, or localhost),
+// falling back to NEXT_PUBLIC_BASE_URL and finally the canonical production URL.
+function resolveBaseUrl(req: NextRequest): string {
+  try {
+    const origin = req.headers.get("origin");
+    if (origin && /^https?:\/\//.test(origin)) return origin;
+
+    const referer = req.headers.get("referer");
+    if (referer) {
+      const u = new URL(referer);
+      return `${u.protocol}//${u.host}`;
+    }
+
+    const host = req.headers.get("host");
+    if (host) {
+      const proto = req.headers.get("x-forwarded-proto") || "https";
+      return `${proto}://${host}`;
+    }
+  } catch {}
+  return process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app";
+}
+
 export async function POST(req: NextRequest) {
   try {
     // ── Authenticate ───────────────────────────────────────
@@ -71,7 +95,7 @@ export async function POST(req: NextRequest) {
       if (currentPriceId && currentPriceId === planConfig.stripePriceId) {
         const portalSession = await stripe.billingPortal.sessions.create({
           customer: customerId,
-          return_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/workspace`,
+          return_url: `${resolveBaseUrl(req)}/workspace`,
         });
         return NextResponse.json({ url: portalSession.url, type: "portal" });
       }
@@ -104,7 +128,7 @@ export async function POST(req: NextRequest) {
           console.error(`[stripe/checkout] ⚠️ Enable plan switching in Stripe Dashboard → Settings → Billing → Customer portal → Subscriptions → "Customers can switch plans", and add Pro + Pro+ prices to allowed products.`);
           const portalSession = await stripe.billingPortal.sessions.create({
             customer: customerId,
-            return_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/workspace`,
+            return_url: `${resolveBaseUrl(req)}/workspace`,
           });
           return NextResponse.json({ url: portalSession.url, type: "portal", fallbackReason: "plan_change_flow_unavailable" });
         }
@@ -113,7 +137,7 @@ export async function POST(req: NextRequest) {
       // Fallback: generic portal
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: customerId,
-        return_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/workspace`,
+        return_url: `${resolveBaseUrl(req)}/workspace`,
       });
       return NextResponse.json({ url: portalSession.url, type: "portal" });
     }
@@ -133,8 +157,8 @@ export async function POST(req: NextRequest) {
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [{ price: planConfig.stripePriceId, quantity: 1 }],
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/workspace?upgraded=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/pricing`,
+      success_url: `${resolveBaseUrl(req)}/workspace?upgraded=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${resolveBaseUrl(req)}/pricing`,
       subscription_data: subscriptionData,
       metadata: { firebaseUid: uid, plan: planConfig.id },
       allow_promotion_codes: true,

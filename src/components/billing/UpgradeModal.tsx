@@ -199,7 +199,7 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
             </div>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
-            {["100 deals/month", "Save & organize", "Excel workbooks", "Property map", "Scoreboard", "Location Intel"].map(f => (
+            {["100 deal analyses/month", "Save deals to workspace", "XLS worksheets", "Interactive property map", "Deal comparison scoreboard", "Location Intelligence"].map(f => (
               <span key={f} style={{
                 fontSize: 11, color: "#475569", background: "#f1f5f9", padding: "3px 10px",
                 borderRadius: 20, display: "inline-flex", alignItems: "center", gap: 4,

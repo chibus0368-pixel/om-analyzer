@@ -440,7 +440,18 @@ export default function OmAnalyzerPage() {
       }
     } catch {}
     if (typeof window !== "undefined") {
-      window.location.href = "/om-analyzer";
+      // Use replace() + reload() to force a hard reset even when the current
+      // URL is already /om-analyzer (setting href to the same path is a no-op
+      // in most browsers, which was causing the button to appear dead).
+      try {
+        if (window.location.pathname === "/om-analyzer") {
+          window.location.reload();
+        } else {
+          window.location.replace("/om-analyzer");
+        }
+      } catch {
+        window.location.href = "/om-analyzer?reset=" + Date.now();
+      }
       return;
     }
     setSelectedFile(null);
@@ -649,7 +660,7 @@ export default function OmAnalyzerPage() {
                 : `You've used all ${limit} free deals. Ready to move faster?`;
               const sub = isAnonGate
                 ? "Sign up free for 5 total deals + save to your workspace. Or start a 7-day Pro trial for 100 deals/mo."
-                : "Start a 7-day free Pro trial — 100 deals/month for $40. Card required, cancel anytime.";
+                : "Start a 7-day free Pro trial. 100 deals/month for $40. Card required, cancel anytime.";
               return (
                 <>
                   <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#ffffff", margin: "0 0 8px", letterSpacing: -0.3 }}>
@@ -1175,7 +1186,7 @@ export default function OmAnalyzerPage() {
               {/* ── Feature blocks: alternating left/right ── */}
               {[
                 {
-                  num: "01", title: "Extract 40+ Fields", desc: "Drop an OM, flyer, rent roll, or broker package — 40+ structured fields come back: price, NOI, cap rate, tenants, lease terms, and more.",
+                  num: "01", title: "Extract 40+ Fields", desc: "Drop an OM, flyer, rent roll, or broker package. 40+ structured fields come back: price, NOI, cap rate, tenants, lease terms, and more.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
                       {/* Scan line animation overlay */}
@@ -1729,8 +1740,8 @@ export default function OmAnalyzerPage() {
                     { text: "Deal Signals scoring", included: true },
                     { text: "Downloadable XLS worksheets of analysis", included: true },
                     { text: "First-pass brief download", included: true },
-                    { text: "Property map", included: false },
-                    { text: "Scoreboard & comparison", included: false },
+                    { text: "Interactive property map", included: false },
+                    { text: "Deal comparison scoreboard", included: false },
                     { text: "Location Intelligence", included: false },
                   ],
                   cta: "Sign Up Free",
@@ -1744,13 +1755,14 @@ export default function OmAnalyzerPage() {
                   desc: "For active investors moving fast on deals.",
                   valueCallout: "7-day free trial · Less than 50¢ per deal",
                   features: [
-                    { text: "Up to 100 deals/month", included: true },
-                    { text: "Save & organize deals", included: true },
+                    { text: "100 deal analyses/month", included: true },
+                    { text: "Save deals to workspace", included: true },
                     { text: "Deal Signals scoring", included: true },
-                    { text: "Full Excel workbooks (6 sheets)", included: true },
-                    { text: "DealBoard with history", included: true },
-                    { text: "Deal comparison scoreboard", included: true },
+                    { text: "Downloadable XLS worksheets of analysis", included: true },
+                    { text: "First-pass brief download", included: true },
+                    { text: "Pro DealBoard with history", included: true },
                     { text: "Interactive property map", included: true },
+                    { text: "Deal comparison scoreboard", included: true },
                     { text: "Location Intelligence", included: true },
                     { text: "White-label shareable links", included: true },
                   ],
@@ -1765,7 +1777,7 @@ export default function OmAnalyzerPage() {
                   desc: "For high-volume deal flow and serious operators.",
                   valueCallout: "7-day free trial · Less than $0.50 per deal",
                   features: [
-                    { text: "Up to 200 deals/month", included: true },
+                    { text: "200 deal analyses/month", included: true },
                     { text: "Everything in Pro", included: true },
                     { text: "Bulk portfolio uploads", included: true },
                     { text: "Priority processing", included: true },
@@ -1914,8 +1926,8 @@ export default function OmAnalyzerPage() {
 
                 {[
                   { q: "Is it really free?", a: "Yes. Try 2 deals without signing up. Create a free account for 5 total analyses with scoring, risk signals, and Excel export. Same output Pro users get." },
-                  { q: "What does Pro include?", a: "Pro ($40/month) starts with a 7-day free trial. 100 deals/month, saved deals, downloadable XLS worksheets of analysis, DealBoard with history, comparison scoreboard, interactive property map, Location Intelligence, and white-label shareable links." },
-                  { q: "What about Pro+?", a: "Pro+ ($100/month) also starts with a 7-day free trial. 200 deals/month plus bulk portfolio uploads, advanced Location Intelligence, custom branding, priority processing and support." },
+                  { q: "What does Pro include?", a: "Pro ($40/month) starts with a 7-day free trial. Everything in Free, plus 100 deal analyses/month, Pro DealBoard with history, deal comparison scoreboard, interactive property map, Location Intelligence, and white-label shareable links." },
+                  { q: "What about Pro+?", a: "Pro+ ($100/month) also starts with a 7-day free trial. Everything in Pro, plus 200 deal analyses/month, bulk portfolio uploads, priority processing, priority support, and custom branding." },
                 ].map((item, i) => {
                   const faqIdx = 5 + i;
                   return (
@@ -2458,17 +2470,24 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
   const hasData = metrics.length > 0 || signals.length > 0;
 
-  // Extract strengths (🟢) and risks (🔴/🟡) from signals, keeping labels so
-  // the cards match Pro's "Label — description" layout
+  // Match Pro's classifier exactly (PropertyDetailClient.tsx):
+  //  - green emoji OR the word "green" → positive
+  //  - everything else (including plain text with no marker) → negative
+  // Previously Try Me dropped any signal without an emoji, which silently
+  // hid the West Bend Plaza strengths because the LLM sometimes embeds the
+  // emoji inside the text and sometimes doesn't.
   const strengths: { label: string; text: string }[] = [];
   const risks: { label: string; text: string }[] = [];
   signals.forEach(([label, val]) => {
     const raw = String(val || "");
-    const clean = raw.replace(/[🟢🟡🔴]/gu, "").trim();
-    if (raw.includes("🟢")) {
-      strengths.push({ label: String(label), text: clean });
-    } else if (raw.includes("🔴") || raw.includes("🟡")) {
-      risks.push({ label: String(label), text: clean });
+    if (!raw.trim()) return;
+    const lower = raw.toLowerCase();
+    const hasGreen = raw.includes("🟢") || lower.includes("green");
+    const text = raw.replace(/[🟢🟡🔴]/gu, "").trim();
+    if (hasGreen) {
+      strengths.push({ label: String(label), text });
+    } else {
+      risks.push({ label: String(label), text });
     }
   });
 

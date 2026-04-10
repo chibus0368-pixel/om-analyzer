@@ -42,10 +42,20 @@ function getResend(): any {
 
 /**
  * Default email configuration
+ *
+ * The `from` address is resolved defensively: if any env var still carries a
+ * legacy nnntriplenet.com sender (from the old newsletter project that used
+ * to share this repo), we ignore it and fall back to the canonical
+ * DealSignals sender. This prevents stale Vercel env vars from leaking a
+ * wrong "From" line into production emails while the env vars get cleaned up.
  */
-const DEFAULT_FROM = process.env.EMAIL_FROM_ADDRESS || 'Deal Signals <onboarding@resend.dev>';
+function resolveDefaultFrom(): string {
+  const raw = process.env.EMAIL_FROM_ADDRESS;
+  if (raw && !/nnntriplenet/i.test(raw)) return raw;
+  return 'Deal Signals <no-reply@dealsignals.app>';
+}
+const DEFAULT_FROM = resolveDefaultFrom();
 const COMPANY_NAME = 'Deal Signals';
-const UNSUBSCRIBE_DOMAIN = process.env.UNSUBSCRIBE_DOMAIN || 'https://dealsignals.app';
 const PHYSICAL_ADDRESS = 'Mequon, Wisconsin';
 
 /**
@@ -127,18 +137,10 @@ export async function renderTemplate(templateName: string, data: TemplateData): 
   const templates = await import('./email-templates');
 
   switch (templateName) {
-    case 'confirmation':
-      return templates.confirmationTemplate(data as Parameters<typeof templates.confirmationTemplate>[0]);
-    case 'welcome':
-      return templates.welcomeTemplate(data as Parameters<typeof templates.welcomeTemplate>[0]);
     case 'registration_welcome':
       return templates.registrationWelcomeTemplate(data as Parameters<typeof templates.registrationWelcomeTemplate>[0]);
     case 'purchase_confirmation':
       return templates.purchaseConfirmationTemplate(data as Parameters<typeof templates.purchaseConfirmationTemplate>[0]);
-    case 'daily_brief':
-      return templates.dailyBriefTemplate(data as Parameters<typeof templates.dailyBriefTemplate>[0]);
-    case 'weekly_digest':
-      return templates.weeklyDigestTemplate(data as Parameters<typeof templates.weeklyDigestTemplate>[0]);
     default:
       console.warn(`Unknown email template: ${templateName}`);
       return '';
@@ -154,33 +156,18 @@ function isValidEmail(email: string): boolean {
 }
 
 /**
- * Add CAN-SPAM compliant footer to email HTML
+ * Add transactional email footer (company name + physical address).
+ * DealSignals only sends transactional emails (account, billing, password)
+ * — no marketing lists, so no unsubscribe link is required.
  */
-function addCamCanSpamFooter(html: string, email: string, manageToken?: string): string {
-  let unsubscribeUrl: string;
-  let preferencesUrl: string;
-
-  if (manageToken) {
-    // Use secure token-based URLs
-    unsubscribeUrl = `${UNSUBSCRIBE_DOMAIN}/api/subscribe/unsubscribe?token=${encodeURIComponent(manageToken)}`;
-    preferencesUrl = `${UNSUBSCRIBE_DOMAIN}/subscribe/preferences?token=${encodeURIComponent(manageToken)}`;
-  } else {
-    // Fall back to email-based URLs (backward compatibility)
-    const unsubscribeToken = Buffer.from(`${email}:${Date.now()}`).toString('base64');
-    unsubscribeUrl = `${UNSUBSCRIBE_DOMAIN}/api/unsubscribe?email=${encodeURIComponent(email)}&token=${unsubscribeToken}`;
-    preferencesUrl = `${UNSUBSCRIBE_DOMAIN}/preferences?email=${encodeURIComponent(email)}`;
-  }
-
+function addCamCanSpamFooter(html: string, _email: string, _manageToken?: string): string {
   const footer = `
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e5e5;">
       <tr>
         <td style="font-size: 12px; color: #666666; text-align: center; padding: 20px 0;">
           <p style="margin: 5px 0;">© ${new Date().getFullYear()} ${COMPANY_NAME}. All rights reserved.</p>
           <p style="margin: 5px 0;">${PHYSICAL_ADDRESS}</p>
-          <p style="margin: 5px 0;">
-            <a href="${unsubscribeUrl}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> |
-            <a href="${preferencesUrl}" style="color: #0066cc; text-decoration: none;">Preferences</a>
-          </p>
+          <p style="margin: 5px 0;">This is a transactional email related to your Deal Signals account.</p>
         </td>
       </tr>
     </table>
@@ -204,26 +191,6 @@ function stripHtmlTags(html: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&amp;/g, '&');
-}
-
-/**
- * Generate confirmation token for double opt-in
- */
-export function generateConfirmationToken(email: string): string {
-  return Buffer.from(`${email}:${Date.now()}`).toString('base64');
-}
-
-/**
- * Decode and validate confirmation token
- */
-export function decodeConfirmationToken(token: string): { email: string; timestamp: number } | null {
-  try {
-    const decoded = Buffer.from(token, 'base64').toString('utf-8');
-    const [email, timestamp] = decoded.split(':');
-    return { email, timestamp: parseInt(timestamp, 10) };
-  } catch {
-    return null;
-  }
 }
 
 // Re-export token utilities for convenience

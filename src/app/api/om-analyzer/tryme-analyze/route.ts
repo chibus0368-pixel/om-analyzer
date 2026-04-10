@@ -126,10 +126,17 @@ export async function POST(request: NextRequest) {
       .where("propertyId", "==", propertyId)
       .get();
 
+    // Match Pro's PropertyDetailClient reader semantics: prefer user override,
+    // then normalizedValue, then rawValue. Try Me previously only read
+    // normalizedValue which could be null/empty for some signal writes and
+    // caused strength/risk text to disappear even though Pro rendered it.
     const fields: Record<string, any> = {};
     fieldsSnap.docs.forEach((d: any) => {
       const data = d.data();
-      fields[`${data.fieldGroup}.${data.fieldName}`] = data.normalizedValue;
+      const value = data.isUserOverridden
+        ? data.userOverrideValue
+        : (data.normalizedValue ?? data.rawValue ?? "");
+      fields[`${data.fieldGroup}.${data.fieldName}`] = value;
     });
 
     const propDoc = await db.collection("workspace_properties").doc(propertyId).get();
