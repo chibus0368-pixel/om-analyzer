@@ -1153,7 +1153,7 @@ export default function OmAnalyzerPage() {
               {/* ── Feature blocks: alternating left/right ── */}
               {[
                 {
-                  num: "01", title: "Extract 40+ Fields", desc: "Every number and clause you'd normally hunt for — parsed out of the PDF into a clean, structured record you can actually work with.",
+                  num: "01", title: "Extract 40+ Fields", desc: "Drop an OM, flyer, rent roll, or broker package — 40+ structured fields come back: price, NOI, cap rate, tenants, lease terms, and more.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
                       {/* Scan line animation overlay */}
@@ -1209,7 +1209,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "02", title: "Get a Buy/Pass Signal", desc: "A verdict and the reasoning behind it — green flags, yellow flags, and red flags laid out before you open a model.",
+                  num: "02", title: "Get a Buy/Pass Signal", desc: "An instant verdict, not just a score — green flags, yellow flags, and red flags called out so you know exactly what's driving the call.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
                       {/* Subtle glow behind score */}
@@ -1258,7 +1258,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "03", title: "Rank and Decide", desc: "Every deal you've uploaded, ranked 0–100 in one leaderboard. Sort, filter, and cut the bottom tier before you underwrite a single one.",
+                  num: "03", title: "Rank and Decide", desc: "One leaderboard for your whole pipeline — deals ranked 0–100 so you always know which ones deserve your next hour.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Scoreboard header */}
@@ -1306,7 +1306,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "04", title: "Export to Excel", desc: "Download a 6-sheet workbook: inputs, rent roll, operating statement, debt, breakeven, and cap scenarios.",
+                  num: "04", title: "Export to Excel", desc: "A ready-to-edit underwriting model, not a static PDF — six sheets covering inputs, rent roll, operating statement, debt, breakeven, and cap scenarios.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Excel tab bar */}
@@ -1363,7 +1363,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "05", title: "Organize Your Pipeline", desc: "Group by asset class, client, or strategy. Your whole book lives in one place instead of scattered across email threads and Downloads folders.",
+                  num: "05", title: "Organize Your Pipeline", desc: "One home for your entire book — group by asset class, client, or strategy instead of digging through email threads and Downloads folders.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Asset type tabs */}
@@ -1423,7 +1423,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "06", title: "Compare Side-by-Side", desc: "Pull two or three contenders into a head-to-head table. The gaps on DSCR, NOI, and downside risk jump out instantly.",
+                  num: "06", title: "Compare Side-by-Side", desc: "Two or three deals, one head-to-head table — the gaps on DSCR, NOI, and downside risk jump out in seconds.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Header with asset type */}
@@ -1463,7 +1463,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "07", title: "Map Your Deals", desc: "Your pipeline plotted geographically. Click a pin for the full scorecard, and spot submarket concentration or geographic gaps at a glance.",
+                  num: "07", title: "Map Your Deals", desc: "See your pipeline on a map — click any pin for the full scorecard and spot submarket concentration or geographic gaps at a glance.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Map area - dark themed street map */}
@@ -1541,7 +1541,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "08", title: "Share with Clients", desc: "Generate a password-protected, branded link for investors and partners. Read-only, with optional expiration — no account needed on their end.",
+                  num: "08", title: "Share with Clients", desc: "A branded, password-protected link you can send to anyone — read-only, with optional expiration and no account required on their end.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Share link generation */}
