@@ -569,10 +569,10 @@ export default function OmAnalyzerPage() {
           content: '';
           position: fixed;
           inset: 0;
-          backgroundImage: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-          backgroundSize: 60px 60px;
-          pointerEvents: none;
-          zIndex: 1;
+          background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+          background-size: 60px 60px;
+          pointer-events: none;
+          z-index: 1;
         }
         @media (max-width: 900px) {
           .om-insight-grid { grid-template-columns: 1fr !important; }
@@ -2252,72 +2252,11 @@ export default function OmAnalyzerPage() {
 
       {/* ===== FOOTER ===== */}
       <footer style={{
-        background: "linear-gradient(180deg, rgba(22,22,31,0.4) 0%, rgba(13,13,20,0.95) 100%)",
-        padding: "0 32px 32px",
-        borderTop: "1px solid rgba(255,255,255,0.06)",
+        background: "#0d0d14",
+        padding: "64px 32px 32px",
+        borderTop: "1px solid rgba(255,255,255,0.08)",
       }}>
-        {/* ── CTA band ── */}
-        <div style={{
-          maxWidth: 1100, margin: "0 auto", padding: "56px 0 48px",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
-          display: "flex", flexWrap: "wrap", alignItems: "center",
-          justifyContent: "space-between", gap: 24,
-        }}>
-          <div>
-            <div style={{
-              fontSize: 24, fontWeight: 800, color: "#ffffff",
-              fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: -0.5,
-              lineHeight: 1.2,
-            }}>
-              Ready to analyze your first deal?
-            </div>
-            <div style={{
-              fontSize: 14, color: "#8b93a8", marginTop: 8,
-              fontFamily: "'Inter', sans-serif",
-            }}>
-              No credit card. 5 free analyses. Pro-grade scoring on every upload.
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <button
-              onClick={() => {
-                const el = typeof document !== "undefined" ? document.getElementById("hero-upload") : null;
-                if (view !== "upload") {
-                  setView("upload");
-                  requestAnimationFrame(() => requestAnimationFrame(() => {
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }));
-                } else if (el) {
-                  el.scrollIntoView({ behavior: "smooth", block: "start" });
-                } else {
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }
-              }}
-              style={{
-                padding: "14px 28px", borderRadius: 10,
-                background: "linear-gradient(135deg, #84CC16 0%, #65A30D 100%)",
-                color: "#0d0d14", fontSize: 14, fontWeight: 700,
-                border: "none", cursor: "pointer",
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                boxShadow: "0 4px 16px rgba(132,204,22,0.3)",
-              }}
-            >
-              Upload an OM
-            </button>
-            <Link href="/pricing" style={{
-              padding: "14px 28px", borderRadius: 10,
-              background: "rgba(255,255,255,0.04)",
-              color: "#ffffff", fontSize: 14, fontWeight: 600,
-              border: "1px solid rgba(255,255,255,0.12)",
-              textDecoration: "none",
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-            }}>
-              See pricing
-            </Link>
-          </div>
-        </div>
-
-        <div className="ds-footer-grid" style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1.8fr 1fr 1fr 1fr 1fr", gap: 40, marginTop: 56, marginBottom: 40 }}>
+        <div className="ds-footer-grid" style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1.8fr 1fr 1fr 1fr", gap: 48, marginBottom: 40 }}>
           <div>
             <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 40 }} />
             <p style={{ fontSize: 13, color: "#8b93a8", lineHeight: 1.7, marginTop: 16, maxWidth: 300, fontFamily: "'Inter', sans-serif" }}>
@@ -2379,60 +2318,44 @@ export default function OmAnalyzerPage() {
                   }
                 }}
                 style={{
-                  display: "block", fontSize: 13, color: "#8b93a8", textDecoration: "none", marginBottom: 12,
+                  display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12,
                   fontFamily: "'Inter', sans-serif", transition: "color 0.15s ease", cursor: "pointer",
                 }}
               >{link.label}</a>
             ))}
             <Link href="/pricing" style={{
-              display: "block", fontSize: 13, color: "#8b93a8", textDecoration: "none", marginBottom: 12,
+              display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12,
               fontFamily: "'Inter', sans-serif",
             }}>Pricing</Link>
             <Link href="/try-pro" style={{
-              display: "block", fontSize: 13, color: "#8b93a8", textDecoration: "none", marginBottom: 12,
+              display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12,
               fontFamily: "'Inter', sans-serif",
             }}>Try Pro</Link>
           </div>
 
           <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#ffffff", marginBottom: 18, textTransform: "uppercase", letterSpacing: 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Workspace</div>
-            <Link href="/workspace" style={{
-              display: "block", fontSize: 13, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
-            }}>DealBoard</Link>
-            <Link href="/workspace/scoreboard" style={{
-              display: "block", fontSize: 13, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
-            }}>Scoreboard</Link>
-            <Link href="/workspace/map" style={{
-              display: "block", fontSize: 13, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
-            }}>Property Map</Link>
-            <Link href="/workspace/upload" style={{
-              display: "block", fontSize: 13, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
-            }}>Upload OM</Link>
-          </div>
-
-          <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#ffffff", marginBottom: 18, textTransform: "uppercase", letterSpacing: 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Company</div>
             <a href="mailto:support@dealsignals.app" style={{
-              display: "block", fontSize: 13, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
+              display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
             }}>Contact</a>
             <Link href="/workspace/login" style={{
-              display: "block", fontSize: 13, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
+              display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
             }}>Log In</Link>
             <Link href="/workspace/login?mode=register" style={{
-              display: "block", fontSize: 13, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
+              display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
             }}>Sign Up</Link>
           </div>
 
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#ffffff", marginBottom: 18, textTransform: "uppercase", letterSpacing: 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Legal</div>
             <Link href="/terms" style={{
-              display: "block", fontSize: 13, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
+              display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
             }}>Terms of Use</Link>
             <Link href="/privacy" style={{
-              display: "block", fontSize: 13, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
+              display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
             }}>Privacy Policy</Link>
             <a href="mailto:support@dealsignals.app?subject=Security%20Report" style={{
-              display: "block", fontSize: 13, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
+              display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
             }}>Security</a>
           </div>
         </div>
