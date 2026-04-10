@@ -6,7 +6,7 @@
 // should be wrapped in a suspense boundary".
 export const dynamic = "force-dynamic";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
@@ -96,6 +96,11 @@ function WorkspaceLoginPageInner() {
   // Render form immediately. Redirect-result check runs in the background
   // and only flips this true if we actually detect an inbound redirect.
   const [redirectChecking, setRedirectChecking] = useState(false);
+  // When true, handleSubmit owns the post-auth flow and the "user changed"
+  // useEffect below must NOT fire its own handlePostAuth. Without this, a
+  // signup race sends the user to /workspace before the bootstrap call (and
+  // its Try Me claim step) has finished, and the new DealBoard shows empty.
+  const handlingSubmitRef = useRef(false);
 
   /* ── Build post-auth redirect URL (preserves upgrade param) ── */
   function getPostAuthUrl(): string {
@@ -175,7 +180,7 @@ function WorkspaceLoginPageInner() {
 
   /* ── if already logged in: route to checkout if upgrade param set, else workspace ── */
   useEffect(() => {
-    if (user && !redirectChecking) {
+    if (user && !redirectChecking && !handlingSubmitRef.current) {
       handlePostAuth(user);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -186,10 +191,13 @@ function WorkspaceLoginPageInner() {
     e.preventDefault();
     setError("");
     setLoading(true);
+    // Block the "user changed" useEffect from stealing the post-auth flow
+    // before bootstrap (and its Try Me claim step) finishes.
+    handlingSubmitRef.current = true;
     try {
       if (mode === "register") {
-        if (password.length < 8) { setError("Password must be at least 8 characters"); setLoading(false); return; }
-        if (password !== confirmPassword) { setError("Passwords do not match"); setLoading(false); return; }
+        if (password.length < 8) { setError("Password must be at least 8 characters"); setLoading(false); handlingSubmitRef.current = false; return; }
+        if (password !== confirmPassword) { setError("Passwords do not match"); setLoading(false); handlingSubmitRef.current = false; return; }
         const credential = await createUserWithEmailAndPassword(auth, email, password);
         const fullName = `${firstName} ${lastName}`.trim();
         if (fullName) await updateProfile(credential.user, { displayName: fullName });
@@ -202,6 +210,7 @@ function WorkspaceLoginPageInner() {
         else router.push(getPostAuthUrl());
       }
     } catch (err: any) {
+      handlingSubmitRef.current = false;
       setError(friendlyError(err?.code, err?.message || "Authentication failed"));
     } finally {
       setLoading(false);
