@@ -1045,7 +1045,7 @@ export default function OmAnalyzerPage() {
                   letterSpacing: 0.5, textTransform: "uppercase" as const,
                 }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                  How It Works
+                  Quick CRE Analysis
                 </div>
                 <h2 style={{ fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15, marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                   Stop reading OMs.<br />Start <span className="ds-callout">making decisions</span>.

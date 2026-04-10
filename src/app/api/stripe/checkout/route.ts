@@ -79,6 +79,7 @@ export async function POST(req: NextRequest) {
       // Different plan → deep-link into portal plan update/confirm flow
       if (currentItemId) {
         try {
+          console.log(`[stripe/checkout] attempting plan_change flow_data: uid=${uid} from=${currentPriceId} to=${planConfig.stripePriceId}`);
           const flowSession = await stripe.billingPortal.sessions.create({
             customer: customerId,
             return_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/workspace?upgraded=true`,
@@ -96,14 +97,16 @@ export async function POST(req: NextRequest) {
               },
             },
           });
+          console.log(`[stripe/checkout] plan_change flow_data OK: uid=${uid}`);
           return NextResponse.json({ url: flowSession.url, type: "plan_change" });
-        } catch (err) {
-          console.error("[stripe/checkout] flow_data plan change failed, falling back to generic portal", err);
+        } catch (err: any) {
+          console.error(`[stripe/checkout] flow_data plan change FAILED uid=${uid} code=${err?.code} type=${err?.type} message=${err?.message}`);
+          console.error(`[stripe/checkout] ⚠️ Enable plan switching in Stripe Dashboard → Settings → Billing → Customer portal → Subscriptions → "Customers can switch plans", and add Pro + Pro+ prices to allowed products.`);
           const portalSession = await stripe.billingPortal.sessions.create({
             customer: customerId,
             return_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/workspace`,
           });
-          return NextResponse.json({ url: portalSession.url, type: "portal" });
+          return NextResponse.json({ url: portalSession.url, type: "portal", fallbackReason: "plan_change_flow_unavailable" });
         }
       }
 
