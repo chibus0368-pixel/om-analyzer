@@ -403,6 +403,7 @@ export default function OmAnalyzerPage() {
           fileName: selectedFile.name,
           source: "om-analyzer-page",
           analysisType,
+          anonId: getAnonId(),
         }),
       });
 

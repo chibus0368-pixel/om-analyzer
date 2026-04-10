@@ -62,11 +62,17 @@ export async function POST(request: NextRequest) {
   const db = getAdminDb();
   const propertyId = `tryme-${randomUUID()}`;
   const projectId = `tryme-${randomUUID()}`;
-  const userId = "tryme-anon";
 
   try {
     const body = await request.json();
-    const { documentText, fileName, analysisType: requestedType } = body;
+    const { documentText, fileName, analysisType: requestedType, anonId } = body;
+
+    // Key records to this browser's anon session so we can migrate them on
+    // signup. Falls back to a shared bucket only if the client failed to
+    // provide one (shouldn't happen in normal flow).
+    const userId = anonId && typeof anonId === "string"
+      ? `tryme-${anonId}`
+      : "tryme-anon";
 
     if (!documentText || documentText.trim().length < 50) {
       return NextResponse.json(
@@ -82,8 +88,11 @@ export async function POST(request: NextRequest) {
       analysisType = await classifyAssetType(documentText);
     }
 
-    // 1. Seed ephemeral property doc
+    // 1. Seed ephemeral property doc. We no longer delete this immediately —
+    // records stick around so they can be claimed on signup. A TTL field
+    // (expiresAt) lets a scheduled cleanup sweep unclaimed records after 7 days.
     const now = new Date().toISOString();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
     await db.collection("workspace_properties").doc(propertyId).set({
       projectId,
       userId,
@@ -91,6 +100,8 @@ export async function POST(request: NextRequest) {
       analysisType,
       parseStatus: "pending",
       isTryMe: true,
+      anonId: anonId || null,
+      expiresAt,
       createdAt: now,
       updatedAt: now,
     });
@@ -323,10 +334,10 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    // 6. Fire-and-forget cleanup (don't block response)
-    void cleanup(db, propertyId, projectId);
-
-    return NextResponse.json(result);
+    // 6. Persist the record (no cleanup). Records are keyed by anonId and
+    // will be claimed on signup via /api/auth/bootstrap. Unclaimed records
+    // are pruned by a TTL sweep after 7 days.
+    return NextResponse.json({ ...result, propertyId, projectId });
   } catch (error: any) {
     console.error("[tryme-analyze] Error:", error);
     void cleanup(db, propertyId, projectId);

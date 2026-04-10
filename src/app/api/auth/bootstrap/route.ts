@@ -234,6 +234,116 @@ export async function POST(request: NextRequest) {
       userDoc.defaultWorkspaceId = wsId;
     }
 
+    // ===== 3b. Claim Try Me deals =====
+    // Any workspace_properties records this browser created anonymously
+    // (keyed by userId = "tryme-${anonId}") are reassigned to this user and
+    // dropped into their default workspace. All related sub-collections are
+    // rewritten in parallel so the deals show up exactly like a native upload.
+    if (anonId && userDoc.defaultWorkspaceId) {
+      try {
+        const tryUid = `tryme-${anonId}`;
+        const newProjectId = userDoc.defaultWorkspaceId;
+
+        const propsSnap = await db
+          .collection("workspace_properties")
+          .where("userId", "==", tryUid)
+          .get();
+
+        if (!propsSnap.empty) {
+          // Chunked batch writer — Firestore caps each batch at 500 ops
+          // and a single Try Me property can generate 200+ extracted fields.
+          const BATCH_LIMIT = 400;
+          let batch = db.batch();
+          let ops = 0;
+          const flush = async () => {
+            if (ops > 0) {
+              await batch.commit();
+              batch = db.batch();
+              ops = 0;
+            }
+          };
+          const queue = (ref: any, update: Record<string, any>) => {
+            batch.update(ref, update);
+            ops++;
+            if (ops >= BATCH_LIMIT) return flush();
+            return Promise.resolve();
+          };
+
+          const propertyIds: string[] = [];
+          const oldProjectIds = new Set<string>();
+
+          for (const d of propsSnap.docs) {
+            const data = d.data() || {};
+            propertyIds.push(d.id);
+            if (data.projectId) oldProjectIds.add(data.projectId);
+            await queue(d.ref, {
+              userId: uid,
+              projectId: newProjectId,
+              isTryMe: false,
+              anonId: null,
+              expiresAt: null,
+              claimedAt: now,
+              updatedAt: now,
+            });
+          }
+
+          // Rewrite extracted_fields / notes (keyed by propertyId)
+          for (const pid of propertyIds) {
+            const fieldsSnap = await db
+              .collection("workspace_extracted_fields")
+              .where("propertyId", "==", pid)
+              .get();
+            for (const d of fieldsSnap.docs) {
+              await queue(d.ref, { userId: uid, projectId: newProjectId });
+            }
+
+            const notesSnap = await db
+              .collection("workspace_notes")
+              .where("propertyId", "==", pid)
+              .get();
+            for (const d of notesSnap.docs) {
+              await queue(d.ref, { userId: uid, projectId: newProjectId });
+            }
+          }
+
+          // Rewrite scores / parser_runs / activity_logs (keyed by old projectId)
+          for (const oldPid of oldProjectIds) {
+            const scoresSnap = await db
+              .collection("workspace_scores")
+              .where("projectId", "==", oldPid)
+              .get();
+            for (const d of scoresSnap.docs) {
+              await queue(d.ref, { projectId: newProjectId, userId: uid });
+            }
+
+            const runsSnap = await db
+              .collection("workspace_parser_runs")
+              .where("projectId", "==", oldPid)
+              .get();
+            for (const d of runsSnap.docs) {
+              await queue(d.ref, { projectId: newProjectId, userId: uid });
+            }
+
+            const logsSnap = await db
+              .collection("workspace_activity_logs")
+              .where("projectId", "==", oldPid)
+              .get();
+            for (const d of logsSnap.docs) {
+              await queue(d.ref, { projectId: newProjectId, userId: uid });
+            }
+          }
+
+          await flush();
+          console.log(
+            `[bootstrap] Claimed ${propertyIds.length} Try Me deal(s) for uid=${uid} from anonId=${anonId}`
+          );
+        }
+      } catch (claimErr) {
+        // Don't fail signup if claim fails — user still gets their account.
+        console.warn("[bootstrap] Try Me claim failed:", claimErr);
+      }
+    }
+
     // ===== 4. Log auth event =====
     await db.collection("auth_events").add({
       uid,
