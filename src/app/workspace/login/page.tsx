@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+// Force dynamic rendering — this page uses useSearchParams() and Firebase
+// auth state, neither of which work with static prerender. Without this,
+// Next.js tries to prerender at build time and fails with "useSearchParams
+// should be wrapped in a suspense boundary".
+export const dynamic = "force-dynamic";
+
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
@@ -61,6 +67,17 @@ async function bootstrapUser(user: any, extra?: { firstName?: string; lastName?:
    LOGIN PAGE
    ═══════════════════════════════════════════════════════════ */
 export default function WorkspaceLoginPage() {
+  // Suspense is required because WorkspaceLoginPageInner uses
+  // useSearchParams() which triggers a CSR bailout at build time
+  // if not wrapped in a boundary.
+  return (
+    <Suspense fallback={null}>
+      <WorkspaceLoginPageInner />
+    </Suspense>
+  );
+}
+
+function WorkspaceLoginPageInner() {
   const { signIn, user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
