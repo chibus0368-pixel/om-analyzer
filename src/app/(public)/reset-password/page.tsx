@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { resetPassword } from "@/lib/auth/providers";
 import { mapAuthError } from "@/lib/auth/errors";
+import { AuthBrand } from "@/components/auth/AuthBrand";
 
 const C = {
   primary: "#65A30D",
@@ -77,35 +78,7 @@ function ResetPasswordContent() {
   if (invalidCode) {
     return (
       <div>
-        {/* Logo / Branding */}
-        <div
-          style={{
-            textAlign: "center",
-            marginBottom: "32px",
-          }}
-        >
-          <h1
-            style={{
-              fontSize: "28px",
-              fontWeight: "700",
-              color: C.onSurface,
-              margin: "0 0 8px 0",
-              fontFamily: "Playfair Display, serif",
-            }}
-          >
-            Deal Signals
-          </h1>
-          <p
-            style={{
-              fontSize: "14px",
-              color: C.secondary,
-              margin: "0",
-              fontFamily: "Inter, sans-serif",
-            }}
-          >
-            Commercial Real Estate Intelligence
-          </p>
-        </div>
+        <AuthBrand />
 
         {/* Error */}
         <div
@@ -123,7 +96,7 @@ function ResetPasswordContent() {
               fontWeight: "600",
               color: C.primary,
               margin: "0 0 8px 0",
-              fontFamily: "Playfair Display, serif",
+              fontFamily: "'Inter', sans-serif",
             }}
           >
             Invalid Reset Link
@@ -180,35 +153,7 @@ function ResetPasswordContent() {
   if (success) {
     return (
       <div>
-        {/* Logo / Branding */}
-        <div
-          style={{
-            textAlign: "center",
-            marginBottom: "32px",
-          }}
-        >
-          <h1
-            style={{
-              fontSize: "28px",
-              fontWeight: "700",
-              color: C.onSurface,
-              margin: "0 0 8px 0",
-              fontFamily: "Playfair Display, serif",
-            }}
-          >
-            Deal Signals
-          </h1>
-          <p
-            style={{
-              fontSize: "14px",
-              color: C.secondary,
-              margin: "0",
-              fontFamily: "Inter, sans-serif",
-            }}
-          >
-            Commercial Real Estate Intelligence
-          </p>
-        </div>
+        <AuthBrand />
 
         {/* Success Message */}
         <div
@@ -226,7 +171,7 @@ function ResetPasswordContent() {
               fontWeight: "600",
               color: "#1a5d2e",
               margin: "0 0 8px 0",
-              fontFamily: "Playfair Display, serif",
+              fontFamily: "'Inter', sans-serif",
             }}
           >
             Password Reset Successful
@@ -282,45 +227,18 @@ function ResetPasswordContent() {
 
   return (
     <div>
-      {/* Logo / Branding */}
-      <div
-        style={{
-          textAlign: "center",
-          marginBottom: "32px",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "28px",
-            fontWeight: "700",
-            color: C.onSurface,
-            margin: "0 0 8px 0",
-            fontFamily: "Playfair Display, serif",
-          }}
-        >
-          Deal Signal
-        </h1>
-        <p
-          style={{
-            fontSize: "14px",
-            color: C.secondary,
-            margin: "0",
-            fontFamily: "Inter, sans-serif",
-          }}
-        >
-          Commercial Real Estate Intelligence
-        </p>
-      </div>
+      <AuthBrand />
 
       {/* Form Title */}
       <h2
         style={{
           fontSize: "20px",
-          fontWeight: "600",
+          fontWeight: "700",
           color: C.onSurface,
           margin: "0 0 12px 0",
           textAlign: "center",
-          fontFamily: "Playfair Display, serif",
+          fontFamily: "'Inter', sans-serif",
+          letterSpacing: -0.2,
         }}
       >
         Set New Password

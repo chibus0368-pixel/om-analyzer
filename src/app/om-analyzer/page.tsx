@@ -661,28 +661,55 @@ export default function OmAnalyzerPage() {
                 </>
               );
             })()}
-            <Link href="/workspace/login?upgrade=pro" onClick={() => trackProCTAClick("lite_result_upgrade_prompt")} style={{
-              display: "inline-block", padding: "14px 36px",
-              background: "linear-gradient(135deg, #84CC16, #a8d600)", color: "#0d0d14",
-              borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: "none",
-              marginBottom: 8,
-            }}>
+            <a
+              href="/workspace/login?upgrade=pro"
+              onClick={(e) => {
+                e.preventDefault();
+                try { trackProCTAClick("lite_result_upgrade_prompt"); } catch {}
+                setShowUpgradePrompt(false);
+                window.location.href = "/workspace/login?upgrade=pro";
+              }}
+              style={{
+                display: "inline-block", padding: "14px 36px",
+                background: "linear-gradient(135deg, #84CC16, #a8d600)", color: "#0d0d14",
+                borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: "none",
+                marginBottom: 8, cursor: "pointer",
+              }}
+            >
               Start 7-Day Free Trial
-            </Link>
+            </a>
             {(!usageData?.tier || usageData.tier === "anonymous") && (
-              <Link href="/register" style={{
-                display: "block", padding: "10px 20px",
-                color: "#84CC16", fontSize: 13, fontWeight: 600, textDecoration: "none",
-              }}>
+              <a
+                href="/register"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowUpgradePrompt(false);
+                  window.location.href = "/register";
+                }}
+                style={{
+                  display: "block", padding: "10px 20px",
+                  color: "#84CC16", fontSize: 13, fontWeight: 600, textDecoration: "none",
+                  cursor: "pointer",
+                }}
+              >
                 Or sign up free (5 deals total)
-              </Link>
+              </a>
             )}
-            <Link href="/om-analyzer#pricing" style={{
-              display: "block", padding: "10px 20px",
-              color: "#9ca3af", fontSize: 13, fontWeight: 500, textDecoration: "none",
-            }}>
+            <a
+              href="/om-analyzer#pricing"
+              onClick={(e) => {
+                e.preventDefault();
+                setShowUpgradePrompt(false);
+                window.location.href = "/om-analyzer#pricing";
+              }}
+              style={{
+                display: "block", padding: "10px 20px",
+                color: "#9ca3af", fontSize: 13, fontWeight: 500, textDecoration: "none",
+                cursor: "pointer",
+              }}
+            >
               Compare all plans
-            </Link>
+            </a>
             <button onClick={() => setShowUpgradePrompt(false)} style={{
               display: "block", width: "100%", marginTop: 12, padding: "10px",
               background: "none", border: "none", color: "#6b7280", cursor: "pointer",
@@ -1700,7 +1727,7 @@ export default function OmAnalyzerPage() {
                     { text: "5 deal analyses (total)", included: true },
                     { text: "Save deals to workspace", included: true },
                     { text: "Deal Signals scoring", included: true },
-                    { text: "6-sheet Excel workbook", included: true },
+                    { text: "Downloadable XLS worksheets of analysis", included: true },
                     { text: "First-pass brief download", included: true },
                     { text: "Property map", included: false },
                     { text: "Scoreboard & comparison", included: false },
@@ -1887,7 +1914,7 @@ export default function OmAnalyzerPage() {
 
                 {[
                   { q: "Is it really free?", a: "Yes. Try 2 deals without signing up. Create a free account for 5 total analyses with scoring, risk signals, and Excel export. Same output Pro users get." },
-                  { q: "What does Pro include?", a: "Pro ($40/month) starts with a 7-day free trial. 100 deals/month, saved deals, full 6-sheet Excel workbooks, DealBoard with history, comparison scoreboard, interactive property map, Location Intelligence, and white-label shareable links." },
+                  { q: "What does Pro include?", a: "Pro ($40/month) starts with a 7-day free trial. 100 deals/month, saved deals, downloadable XLS worksheets of analysis, DealBoard with history, comparison scoreboard, interactive property map, Location Intelligence, and white-label shareable links." },
                   { q: "What about Pro+?", a: "Pro+ ($100/month) also starts with a 7-day free trial. 200 deals/month plus bulk portfolio uploads, advanced Location Intelligence, custom branding, priority processing and support." },
                 ].map((item, i) => {
                   const faqIdx = 5 + i;
@@ -1931,7 +1958,7 @@ export default function OmAnalyzerPage() {
                 {[
                   { q: "How is this different from just reading the OM?", a: "Reading an OM takes 20–45 minutes and you still have to build a spreadsheet. DealSignals gives you the same data extraction, a structured financial summary, and a scored recommendation in under 60 seconds. It's the difference between reading every deal and filtering to the ones worth your time." },
                   { q: "What does the Deal Score actually measure?", a: "The Deal Score (0–100) evaluates six investment dimensions: pricing relative to market, cashflow strength, tenant credit quality, rollover and lease risk, location fundamentals, and upside potential. Each dimension is scored independently so you can see exactly where a deal is strong or weak." },
-                  { q: "What's in the Excel export?", a: "A 6-sheet Excel workbook: deal summary inputs, rent roll, operating statement, debt and returns analysis, breakeven scenarios, and cap rate sensitivity tables. Every sheet is formatted and ready for your own underwriting adjustments." },
+                  { q: "What's in the Excel export?", a: "Downloadable XLS worksheets of analysis covering deal summary inputs, rent roll, operating statement, debt and returns analysis, breakeven scenarios, and cap rate sensitivity tables. Every sheet is formatted and ready for your own underwriting adjustments." },
                   { q: "Can I share analysis with clients?", a: "Yes. Pro users can generate a unique shareable link for any deal. Your client sees the full analysis (score, metrics, financial summary) without needing a DealSignals account. Pro+ users get white-label branded links." },
                   { q: "What property types does it support?", a: "DealSignals works across all major CRE asset classes: retail NNN, multifamily, industrial, office, medical, self-storage, and mixed-use. The scoring models adapt to the specific asset type and deal structure." },
                 ].map((item, i) => {
@@ -2873,7 +2900,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
               </div>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2, color: "#0F172A" }}>Underwriting Workbook <span style={{ marginLeft: 6, padding: "1px 5px", background: "rgba(5,150,105,0.1)", borderRadius: 4, fontSize: 9, fontWeight: 700, color: "#059669" }}>XLSX</span></div>
-                <div style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.4 }}>6-sheet Excel: Inputs, Rent Roll, Operating Statement, Debt &amp; Returns, Breakeven, Cap Scenarios</div>
+                <div style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.4 }}>Downloadable XLS worksheets: Inputs, Rent Roll, Operating Statement, Debt &amp; Returns, Breakeven, Cap Scenarios</div>
               </div>
             </button>
             <button className="dl-btn" onClick={() => { trackDownload("docx", d.propertyName || ""); downloadLiteBrief(d); }} style={{

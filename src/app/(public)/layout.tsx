@@ -5,10 +5,6 @@ export const metadata: Metadata = {
   description: "Authentication",
 };
 
-const C = {
-  bg: "#faf8ff",
-};
-
 export default function PublicLayout({
   children,
 }: {
@@ -21,18 +17,25 @@ export default function PublicLayout({
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
-        backgroundColor: C.bg,
         padding: "24px",
+        // Standardized auth background — same treatment across login,
+        // register, forgot-password, verify-email, etc.
+        background:
+          "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(132, 204, 22, 0.08), transparent 70%), " +
+          "radial-gradient(ellipse 60% 50% at 50% 100%, rgba(11, 17, 32, 0.04), transparent 70%), " +
+          "#FAFBFC",
       }}
     >
       <div
         style={{
           width: "100%",
-          maxWidth: "560px",
+          maxWidth: "520px",
           backgroundColor: "#ffffff",
-          borderRadius: "6px",
-          boxShadow: "0 20px 40px rgba(21, 27, 43, 0.06)",
-          padding: "48px 32px",
+          borderRadius: "12px",
+          boxShadow:
+            "0 1px 3px rgba(11, 17, 32, 0.04), 0 24px 48px rgba(11, 17, 32, 0.08)",
+          border: "1px solid rgba(11, 17, 32, 0.06)",
+          padding: "44px 40px",
         }}
       >
         {children}

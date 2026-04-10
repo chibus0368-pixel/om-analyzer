@@ -4,6 +4,7 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { loginWithEmail, loginWithGoogle } from "@/lib/auth/providers";
 import { mapAuthError } from "@/lib/auth/errors";
+import { AuthBrand } from "@/components/auth/AuthBrand";
 
 const C = {
   primary: "#65A30D",
@@ -94,48 +95,18 @@ function LoginContent() {
 
   return (
     <div>
-      {/* Logo / Branding */}
-      <div
-        style={{
-          textAlign: "center",
-          marginBottom: "32px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 8,
-        }}
-      >
-        <svg width={160} height={42} viewBox="0 0 420 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="20" y="70" width="12" height="30" rx="1.5" fill="#84CC16" />
-          <rect x="38" y="55" width="12" height="45" rx="1.5" fill="#84CC16" />
-          <rect x="56" y="40" width="12" height="60" rx="1.5" fill="#84CC16" />
-          <rect x="74" y="25" width="12" height="75" rx="1.5" fill="#84CC16" />
-          <circle cx="80" cy="18" r="6" fill="#84CC16" />
-          <path d="M15 105 Q60 95 105 105" stroke="#84CC16" strokeWidth="2" fill="none" />
-          <text x="120" y="72" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#84CC16">Deal</text>
-          <text x="210" y="72" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#1E293B">Signals</text>
-        </svg>
-        <p
-          style={{
-            fontSize: "14px",
-            color: C.secondary,
-            margin: "0",
-            fontFamily: "Inter, sans-serif",
-          }}
-        >
-          CRE Intelligence &amp; Analytics
-        </p>
-      </div>
+      <AuthBrand />
 
       {/* Form Title */}
       <h2
         style={{
           fontSize: "20px",
-          fontWeight: "600",
+          fontWeight: "700",
           color: C.onSurface,
           margin: "0 0 24px 0",
           textAlign: "center",
-          fontFamily: "Playfair Display, serif",
+          fontFamily: "'Inter', sans-serif",
+          letterSpacing: -0.2,
         }}
       >
         Sign In

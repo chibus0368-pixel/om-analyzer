@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { sendVerificationEmail } from "@/lib/auth/providers";
 import { getAuth } from "firebase/auth";
+import { AuthBrand } from "@/components/auth/AuthBrand";
 
 const C = {
   primary: "#65A30D",
@@ -125,35 +126,7 @@ export default function VerifyEmailPage() {
   if (verified) {
     return (
       <div>
-        {/* Logo / Branding */}
-        <div
-          style={{
-            textAlign: "center",
-            marginBottom: "32px",
-          }}
-        >
-          <h1
-            style={{
-              fontSize: "28px",
-              fontWeight: "700",
-              color: C.onSurface,
-              margin: "0 0 8px 0",
-              fontFamily: "Playfair Display, serif",
-            }}
-          >
-            Deal Signals
-          </h1>
-          <p
-            style={{
-              fontSize: "14px",
-              color: C.secondary,
-              margin: "0",
-              fontFamily: "Inter, sans-serif",
-            }}
-          >
-            Commercial Real Estate Intelligence
-          </p>
-        </div>
+        <AuthBrand />
 
         {/* Success Message */}
         <div
@@ -171,7 +144,7 @@ export default function VerifyEmailPage() {
               fontWeight: "600",
               color: "#1a5d2e",
               margin: "0 0 8px 0",
-              fontFamily: "Playfair Display, serif",
+              fontFamily: "'Inter', sans-serif",
             }}
           >
             Email Verified
@@ -193,45 +166,18 @@ export default function VerifyEmailPage() {
 
   return (
     <div>
-      {/* Logo / Branding */}
-      <div
-        style={{
-          textAlign: "center",
-          marginBottom: "32px",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "28px",
-            fontWeight: "700",
-            color: C.onSurface,
-            margin: "0 0 8px 0",
-            fontFamily: "Playfair Display, serif",
-          }}
-        >
-          Deal Signals
-        </h1>
-        <p
-          style={{
-            fontSize: "14px",
-            color: C.secondary,
-            margin: "0",
-            fontFamily: "Inter, sans-serif",
-          }}
-        >
-          Commercial Real Estate Intelligence
-        </p>
-      </div>
+      <AuthBrand />
 
       {/* Form Title */}
       <h2
         style={{
           fontSize: "20px",
-          fontWeight: "600",
+          fontWeight: "700",
           color: C.onSurface,
           margin: "0 0 12px 0",
           textAlign: "center",
-          fontFamily: "Playfair Display, serif",
+          fontFamily: "'Inter', sans-serif",
+          letterSpacing: -0.2,
         }}
       >
         Verify Your Email

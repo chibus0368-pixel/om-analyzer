@@ -36,7 +36,7 @@ export const PLANS: Record<string, PlanConfig> = {
       "Save deals to workspace",
       "Deal Signals scoring",
       "First-pass brief download",
-      "6-sheet Excel workbook",
+      "Downloadable XLS worksheets of analysis",
     ],
   },
   pro: {
@@ -51,7 +51,7 @@ export const PLANS: Record<string, PlanConfig> = {
       "Up to 100 deals/month",
       "Save & organize deals",
       "Deal Signals scoring",
-      "6-sheet Excel workbook",
+      "Downloadable XLS worksheets of analysis",
       "Workspace + history",
       "Property map",
       "Scoreboard",
