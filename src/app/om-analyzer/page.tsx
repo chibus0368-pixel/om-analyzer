@@ -2287,12 +2287,24 @@ export default function OmAnalyzerPage() {
                 key={link.label}
                 href={`#${link.hash}`}
                 onClick={(e) => {
-                  const el = typeof document !== "undefined" ? document.getElementById(link.hash) : null;
-                  if (el) {
-                    e.preventDefault();
-                    el.scrollIntoView({ behavior: "smooth", block: "start" });
+                  e.preventDefault();
+                  // Landing-only sections: if we're on the processing/result
+                  // view, flip back to the landing view first, then scroll
+                  // once the section has mounted. Without this reset, the
+                  // footer links silently did nothing whenever the user had
+                  // just analyzed a deal.
+                  const scroll = () => {
+                    const el = typeof document !== "undefined" ? document.getElementById(link.hash) : null;
+                    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                  };
+                  if (view !== "upload") {
+                    setView("upload");
+                    // Two RAFs ensures the new view is committed to the DOM
+                    // before we try to scroll to the anchor.
+                    requestAnimationFrame(() => requestAnimationFrame(scroll));
+                  } else {
+                    scroll();
                   }
-                  // else fall through to default nav to /om-analyzer#hash
                 }}
                 style={{
                   display: "block", fontSize: 14, color: "#8b93a8", textDecoration: "none", marginBottom: 12,
@@ -2314,7 +2326,7 @@ export default function OmAnalyzerPage() {
             <Link href="/workspace/login" style={{
               display: "block", fontSize: 14, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
             }}>Log In</Link>
-            <Link href="/workspace/login?mode=signup" style={{
+            <Link href="/workspace/login?mode=register" style={{
               display: "block", fontSize: 14, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
             }}>Sign Up</Link>
           </div>

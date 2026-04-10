@@ -1,42 +1,213 @@
 import Link from "next/link";
 
-
 /**
- * Deal Signals branded footer — used on om-analyzer and related pages
- * (terms, privacy, contact/support)
+ * Deal Signals shared site footer — used on /pricing, /terms, /privacy,
+ * /try-pro, /not-found, and any other marketing-style page.
+ *
+ * Mirrors the main footer used inline on /om-analyzer so every public
+ * page shows the same dark, 4-column layout with product + company +
+ * legal columns. Product links jump to the homepage sections via
+ * absolute paths so clicking "How it works" from /pricing still lands
+ * on /om-analyzer#how-it-works.
  */
 export default function DealSignalFooter() {
+  const colHeader: React.CSSProperties = {
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#ffffff",
+    marginBottom: 18,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+  };
+  const linkStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: 14,
+    color: "#8b93a8",
+    textDecoration: "none",
+    marginBottom: 12,
+    fontFamily: "'Inter', sans-serif",
+    transition: "color 0.15s ease",
+  };
+
   return (
-    <footer style={{
-      padding: "28px 40px", borderTop: "1px solid #EDF0F5",
-      maxWidth: 1280, margin: "0 auto",
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-    }}>
-      <svg width={110} height={28} viewBox="0 0 420 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="20" y="70" width="12" height="30" rx="1.5" fill="#84CC16" />
-        <rect x="38" y="55" width="12" height="45" rx="1.5" fill="#84CC16" />
-        <rect x="56" y="40" width="12" height="60" rx="1.5" fill="#84CC16" />
-        <rect x="74" y="25" width="12" height="75" rx="1.5" fill="#84CC16" />
-        <circle cx="80" cy="18" r="6" fill="#84CC16" />
-        <path d="M15 105 Q60 95 105 105" stroke="#84CC16" strokeWidth="2" fill="none" />
-        <text x="120" y="72" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#84CC16">Deal</text>
-        <text x="210" y="72" fontFamily="Plus Jakarta Sans, Inter, sans-serif" fontSize="38" fontWeight="700" fill="#1E293B">Signals</text>
-      </svg>
-      <div style={{ display: "flex", gap: 24 }}>
-        {[
-          { label: "Privacy", href: "/privacy" },
-          { label: "Terms", href: "/terms" },
-          { label: "Support", href: "mailto:support@dealsignals.app" },
-        ].map(link => (
-          <Link key={link.label} href={link.href} style={{
-            fontSize: 11, fontWeight: 500, color: "#585e70", textDecoration: "none",
-            textTransform: "uppercase", letterSpacing: 0.5,
-          }}>{link.label}</Link>
-        ))}
+    <footer
+      style={{
+        background: "rgba(22,22,31,0.95)",
+        padding: "56px 32px 32px",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
+        color: "#8b93a8",
+      }}
+    >
+      <div
+        className="ds-footer-grid"
+        style={{
+          maxWidth: 1100,
+          margin: "0 auto",
+          display: "grid",
+          gridTemplateColumns: "1.6fr 1fr 1fr 1fr",
+          gap: 48,
+          marginBottom: 40,
+        }}
+      >
+        {/* ── Brand column ── */}
+        <div>
+          <img
+            src="/images/dealsignals-full-logo4.png"
+            alt="DealSignals"
+            style={{ height: 36 }}
+          />
+          <p
+            style={{
+              fontSize: 13,
+              color: "#8b93a8",
+              lineHeight: 1.7,
+              marginTop: 14,
+              maxWidth: 280,
+              fontFamily: "'Inter', sans-serif",
+            }}
+          >
+            Analyze CRE deals with AI-powered intelligence. Get real signals,
+            not guesses.
+          </p>
+          <div
+            style={{
+              marginTop: 18,
+              display: "flex",
+              gap: 10,
+              alignItems: "center",
+            }}
+          >
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: 11,
+                fontWeight: 600,
+                color: "#84CC16",
+                padding: "4px 10px",
+                borderRadius: 999,
+                background: "rgba(132,204,22,0.08)",
+                border: "1px solid rgba(132,204,22,0.25)",
+                fontFamily: "'Inter', sans-serif",
+                letterSpacing: 0.3,
+              }}
+            >
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: "#84CC16",
+                  boxShadow: "0 0 6px #84CC16",
+                }}
+              />
+              All systems operational
+            </span>
+          </div>
+        </div>
+
+        {/* ── Product column ── */}
+        <div>
+          <div style={colHeader}>Product</div>
+          <Link href="/om-analyzer#how-it-works" style={linkStyle}>
+            How it works
+          </Link>
+          <Link href="/om-analyzer#features" style={linkStyle}>
+            Features
+          </Link>
+          <Link href="/om-analyzer#faq" style={linkStyle}>
+            FAQ
+          </Link>
+          <Link href="/pricing" style={linkStyle}>
+            Pricing
+          </Link>
+          <Link href="/om-analyzer" style={linkStyle}>
+            Try it free
+          </Link>
+        </div>
+
+        {/* ── Company column ── */}
+        <div>
+          <div style={colHeader}>Company</div>
+          <a href="mailto:support@dealsignals.app" style={linkStyle}>
+            Contact
+          </a>
+          <Link href="/workspace/login" style={linkStyle}>
+            Log In
+          </Link>
+          <Link href="/workspace/login?mode=register" style={linkStyle}>
+            Sign Up
+          </Link>
+        </div>
+
+        {/* ── Legal column ── */}
+        <div>
+          <div style={colHeader}>Legal</div>
+          <Link href="/terms" style={linkStyle}>
+            Terms of Use
+          </Link>
+          <Link href="/privacy" style={linkStyle}>
+            Privacy Policy
+          </Link>
+          <a
+            href="mailto:support@dealsignals.app?subject=Security%20Report"
+            style={linkStyle}
+          >
+            Security
+          </a>
+        </div>
       </div>
-      <span style={{ fontSize: 10, color: "#B4C1D1" }}>
-        &copy; 2026 DealSignals
-      </span>
+
+      {/* ── Bottom bar ── */}
+      <div
+        style={{
+          maxWidth: 1100,
+          margin: "0 auto",
+          paddingTop: 24,
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 12,
+        }}
+      >
+        <span
+          style={{
+            fontSize: 12,
+            color: "#5b6170",
+            fontFamily: "'Inter', sans-serif",
+          }}
+        >
+          &copy; {new Date().getFullYear()} DealSignals, Inc. All rights reserved.
+        </span>
+        <span
+          style={{
+            fontSize: 12,
+            color: "#5b6170",
+            fontFamily: "'Inter', sans-serif",
+          }}
+        >
+          Made for CRE investors and brokers.
+        </span>
+      </div>
+
+      {/* Responsive stack on narrow screens */}
+      <style>{`
+        @media (max-width: 820px) {
+          .ds-footer-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 32px !important;
+          }
+        }
+        @media (max-width: 520px) {
+          .ds-footer-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </footer>
   );
 }

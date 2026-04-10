@@ -1139,15 +1139,18 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             padding: "32px 0 24px", marginTop: 40,
             display: "flex", justifyContent: "space-between", alignItems: "flex-start",
             fontSize: 11, color: "#585e70",
+            flexWrap: "wrap", gap: 16,
           }}>
             <div>
-              <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 14, color: "#151b2b", display: "block", marginBottom: 6 }}>Deal Signals</span>
-              <span style={{ color: "#585e70", fontSize: 10 }}>&copy; 2026 Deal Signals. All rights reserved.</span>
+              <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 14, color: "#151b2b", display: "block", marginBottom: 6 }}>DealSignals</span>
+              <span style={{ color: "#585e70", fontSize: 10 }}>&copy; {new Date().getFullYear()} DealSignals, Inc. All rights reserved.</span>
             </div>
             <div style={{ display: "flex", gap: 24 }}>
+              <a href="/om-analyzer" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Home</a>
+              <a href="/pricing" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Pricing</a>
               <a href="/terms" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Terms</a>
               <a href="/privacy" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Privacy</a>
-              <a href="/contact" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Support</a>
+              <a href="mailto:support@dealsignals.app" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Support</a>
             </div>
           </footer>
         </div>

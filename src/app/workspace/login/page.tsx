@@ -83,7 +83,14 @@ function WorkspaceLoginPageInner() {
   const searchParams = useSearchParams();
   const upgradePlan = searchParams.get("upgrade") || "";
   const redirectPath = searchParams.get("redirect") || "";
-  const [mode, setMode] = useState<"login" | "register">("login");
+  // Honor ?mode=register (or ?mode=signup for back-compat) so footer/nav
+  // "Sign Up" links land directly on the registration form instead of login.
+  const initialModeParam = (searchParams.get("mode") || "").toLowerCase();
+  const initialMode: "login" | "register" =
+    initialModeParam === "register" || initialModeParam === "signup"
+      ? "register"
+      : "login";
+  const [mode, setMode] = useState<"login" | "register">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
