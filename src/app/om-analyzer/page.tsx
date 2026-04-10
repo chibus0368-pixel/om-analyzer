@@ -2166,7 +2166,7 @@ export default function OmAnalyzerPage() {
                 "Scanning document structure...",
                 "Extracting financial data points...",
                 "Calculating cap rate and NOI...",
-                "Running price sensitivity models...",
+                "Running sale price scenarios...",
                 "Scoring tenant credit quality...",
                 "Mapping location intelligence...",
                 "Building your deal analysis...",
@@ -2225,49 +2225,98 @@ export default function OmAnalyzerPage() {
 
       {/* ===== FOOTER ===== */}
       <footer style={{
-        background: "rgba(22,22,31,0.2)", padding: "48px 32px 32px",
-        borderTop: "1px solid rgba(255,255,255,0.05)",
+        background: "rgba(22,22,31,0.4)", padding: "56px 32px 32px",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
       }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", gap: 48, marginBottom: 48 }}>
+        <div className="ds-footer-grid" style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1.6fr 1fr 1fr 1fr", gap: 48, marginBottom: 40 }}>
           <div>
             <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 36 }} />
-            <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.7, marginTop: 14, maxWidth: 260 }}>
+            <p style={{ fontSize: 13, color: "#8b93a8", lineHeight: 1.7, marginTop: 14, maxWidth: 280, fontFamily: "'Inter', sans-serif" }}>
               Analyze CRE deals with AI-powered intelligence. Get real signals, not guesses.
             </p>
+            <div style={{ marginTop: 18, display: "flex", gap: 10, alignItems: "center" }}>
+              <span style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                fontSize: 11, fontWeight: 600, color: "#84CC16",
+                padding: "4px 10px", borderRadius: 999,
+                background: "rgba(132,204,22,0.08)",
+                border: "1px solid rgba(132,204,22,0.25)",
+                fontFamily: "'Inter', sans-serif", letterSpacing: 0.3,
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#84CC16", boxShadow: "0 0 6px #84CC16" }} />
+                All systems operational
+              </span>
+            </div>
           </div>
+
           <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "#ffffff", marginBottom: 16 }}>Product</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#ffffff", marginBottom: 18, textTransform: "uppercase", letterSpacing: 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Product</div>
             {[
-              { label: "How it works", href: "/#how-it-works" },
-              { label: "Features", href: "/#features" },
-              { label: "Pricing", href: "/#pricing" },
-              { label: "FAQ", href: "/#faq" },
+              { label: "How it works", hash: "how-it-works" },
+              { label: "Features", hash: "features" },
+              { label: "FAQ", hash: "faq" },
             ].map(link => (
-              <Link key={link.label} href={link.href} style={{
-                display: "block", fontSize: 14, color: "#6b7280", textDecoration: "none", marginBottom: 10,
-              }}>{link.label}</Link>
+              <a
+                key={link.label}
+                href={`#${link.hash}`}
+                onClick={(e) => {
+                  const el = typeof document !== "undefined" ? document.getElementById(link.hash) : null;
+                  if (el) {
+                    e.preventDefault();
+                    el.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }
+                  // else fall through to default nav to /om-analyzer#hash
+                }}
+                style={{
+                  display: "block", fontSize: 14, color: "#8b93a8", textDecoration: "none", marginBottom: 12,
+                  fontFamily: "'Inter', sans-serif", transition: "color 0.15s ease", cursor: "pointer",
+                }}
+              >{link.label}</a>
             ))}
+            <Link href="/pricing" style={{
+              display: "block", fontSize: 14, color: "#8b93a8", textDecoration: "none", marginBottom: 12,
+              fontFamily: "'Inter', sans-serif",
+            }}>Pricing</Link>
           </div>
+
           <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "#ffffff", marginBottom: 16 }}>Legal</div>
-            {[
-              { label: "Contact", href: "mailto:support@dealsignals.app" },
-              { label: "Terms of Use", href: "/terms" },
-              { label: "Privacy Policy", href: "/privacy" },
-              { label: "Login", href: "/workspace/login" },
-            ].map(link => (
-              <Link key={link.label} href={link.href} style={{
-                display: "block", fontSize: 14, color: "#6b7280", textDecoration: "none", marginBottom: 10,
-              }}>{link.label}</Link>
-            ))}
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#ffffff", marginBottom: 18, textTransform: "uppercase", letterSpacing: 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Company</div>
+            <a href="mailto:support@dealsignals.app" style={{
+              display: "block", fontSize: 14, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
+            }}>Contact</a>
+            <Link href="/workspace/login" style={{
+              display: "block", fontSize: 14, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
+            }}>Log In</Link>
+            <Link href="/workspace/login?mode=signup" style={{
+              display: "block", fontSize: 14, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
+            }}>Sign Up</Link>
+          </div>
+
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#ffffff", marginBottom: 18, textTransform: "uppercase", letterSpacing: 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Legal</div>
+            <Link href="/terms" style={{
+              display: "block", fontSize: 14, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
+            }}>Terms of Use</Link>
+            <Link href="/privacy" style={{
+              display: "block", fontSize: 14, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
+            }}>Privacy Policy</Link>
+            <a href="mailto:support@dealsignals.app?subject=Security%20Report" style={{
+              display: "block", fontSize: 14, color: "#8b93a8", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
+            }}>Security</a>
           </div>
         </div>
+
         <div style={{
           maxWidth: 1100, margin: "0 auto", paddingTop: 24,
-          borderTop: "1px solid rgba(255,255,255,0.05)",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          flexWrap: "wrap", gap: 12,
         }}>
-          <span style={{ fontSize: 13, color: "#4b5563" }}>
-            Copyright &copy; 2026 Deal Signals - All rights reserved
+          <span style={{ fontSize: 12, color: "#5b6170", fontFamily: "'Inter', sans-serif" }}>
+            &copy; {new Date().getFullYear()} DealSignals, Inc. All rights reserved.
+          </span>
+          <span style={{ fontSize: 12, color: "#5b6170", fontFamily: "'Inter', sans-serif" }}>
+            Made for CRE investors and brokers.
           </span>
         </div>
       </footer>
@@ -2603,7 +2652,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
         <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", padding: "20px", marginBottom: 20, overflow: "auto" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
             <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Price Sensitivity Analysis</h3>
+            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Sale Price Scenarios</h3>
           </div>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: "'Inter', sans-serif" }}>
             <thead>

@@ -1227,7 +1227,7 @@ function PropertyDetailInner({
             <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0,0,0,0.04)", background: "#F9FAFB" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Price Sensitivity</h3>
+                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Sale Price Scenarios</h3>
               </div>
               <p style={{ fontSize: 12, color: C.secondary, margin: "4px 0 0 11px", lineHeight: 1.4 }}>See how purchase price impacts returns</p>
             </div>

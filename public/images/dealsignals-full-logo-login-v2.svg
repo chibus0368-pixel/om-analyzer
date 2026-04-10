@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 993 253" width="993" height="253">
+  <!-- Icon: 4 bars + dot + curve (green, from live site) -->
+  <rect x="18" y="155" width="28" height="56" rx="3" fill="#84CC16"/>
+  <rect x="56" y="120" width="28" height="91" rx="3" fill="#84CC16"/>
+  <rect x="94" y="80" width="28" height="131" rx="3" fill="#84CC16"/>
+  <rect x="132" y="40" width="28" height="171" rx="3" fill="#84CC16"/>
+  <circle cx="146" cy="22" r="9" fill="#84CC16"/>
+  <path d="M10 225 Q90 200 175 225" stroke="#84CC16" stroke-width="4.5" fill="none"/>
+  <!-- "Deal" in black -->
+  <text x="200" y="185" font-family="'Plus Jakarta Sans', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="145" font-weight="800" fill="#0B1120" letter-spacing="-3">Deal</text>
+  <!-- "Signals" in green -->
+  <text x="530" y="185" font-family="'Plus Jakarta Sans', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="145" font-weight="800" fill="#84CC16" letter-spacing="-3">Signals</text>
+</svg>

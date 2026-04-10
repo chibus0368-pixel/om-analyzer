@@ -290,7 +290,7 @@ function WorkspaceLoginPageInner() {
         {/* ── Header ── */}
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
-            <img src="/images/dealsignals-full-logo-dark.svg" alt="DealSignals" style={{ height: 48, width: "auto", display: "block" }} />
+            <img src="/images/dealsignals-full-logo-login-v2.svg" alt="DealSignals" style={{ height: 48, width: "auto", display: "block" }} />
           </div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0B1120", margin: 0, fontFamily: "'Inter', sans-serif" }}>
             {upgradePlan
