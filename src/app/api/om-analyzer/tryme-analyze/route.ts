@@ -171,7 +171,11 @@ export async function POST(request: NextRequest) {
     ];
     signalKeys.forEach((k) => {
       const v = get(`signals.${k}`);
-      if (v) signals[k.replace(/_signal$/, "")] = String(v);
+      if (!v) return;
+      // Map "rollover_signal" → "rollover_risk" to match frontend expectation
+      let key = k.replace(/_signal$/, "");
+      if (key === "rollover") key = "rollover_risk";
+      signals[key] = String(v);
     });
 
     // Validation checks

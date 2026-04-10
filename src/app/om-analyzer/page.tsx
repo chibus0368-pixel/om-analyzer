@@ -1646,7 +1646,7 @@ export default function OmAnalyzerPage() {
                           textTransform: "uppercase" as const, letterSpacing: 0.7,
                           marginBottom: 12,
                         }}>
-                          Step {parseInt(feature.num)} - {feature.title}
+                          Step {parseInt(feature.num)}
                         </div>
 
                         {/* Title */}
@@ -1655,7 +1655,7 @@ export default function OmAnalyzerPage() {
                           marginBottom: 12, lineHeight: 1.25,
                           fontFamily: "'Plus Jakarta Sans', sans-serif",
                         }}>
-                          {feature.desc.split("—")[0].split(".")[0]}.
+                          {feature.title}
                         </h3>
 
                         {/* Description */}
@@ -2458,17 +2458,17 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
   const hasData = metrics.length > 0 || signals.length > 0;
 
-  // Extract strengths (🟢) and risks (🔴/🟡) from signals
-  const strengths: string[] = [];
-  const risks: string[] = [];
-  signals.forEach(([, val]) => {
+  // Extract strengths (🟢) and risks (🔴/🟡) from signals, keeping labels so
+  // the cards match Pro's "Label — description" layout
+  const strengths: { label: string; text: string }[] = [];
+  const risks: { label: string; text: string }[] = [];
+  signals.forEach(([label, val]) => {
     const raw = String(val || "");
+    const clean = raw.replace(/[🟢🟡🔴]/gu, "").trim();
     if (raw.includes("🟢")) {
-      const text = raw.replace(/^🟢\s*/, "").trim();
-      strengths.push(text);
+      strengths.push({ label: String(label), text: clean });
     } else if (raw.includes("🔴") || raw.includes("🟡")) {
-      const text = raw.replace(/^[🔴🟡]\s*/, "").trim();
-      risks.push(text);
+      risks.push({ label: String(label), text: clean });
     }
   });
 
@@ -2681,9 +2681,12 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
             {strengths.length === 0 ? (
               <div style={{ padding: "16px 18px", fontSize: 12, color: "#6B7280" }}>No strong signals detected</div>
             ) : strengths.map((s, i) => (
-              <div key={i} style={{ padding: "12px 18px", borderBottom: i < strengths.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none", display: "flex", alignItems: "flex-start", gap: 8 }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#059669", flexShrink: 0, marginTop: 5 }} />
-                <span style={{ fontSize: 12, color: "#4B5563", lineHeight: 1.6, wordBreak: "break-word" }}>{s}</span>
+              <div key={i} style={{ padding: "12px 18px", borderBottom: i < strengths.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#059669", flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#151b2b", textTransform: "uppercase", letterSpacing: 0.3 }}>{s.label}</span>
+                </div>
+                <p style={{ fontSize: 12, color: "#4B5563", lineHeight: 1.6, margin: "0 0 0 15px", wordBreak: "break-word" }}>{s.text}</p>
               </div>
             ))}
           </div>
@@ -2697,9 +2700,12 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
             {risks.length === 0 ? (
               <div style={{ padding: "16px 18px", fontSize: 12, color: "#6B7280" }}>No risk signals detected</div>
             ) : risks.map((r, i) => (
-              <div key={i} style={{ padding: "12px 18px", borderBottom: i < risks.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none", display: "flex", alignItems: "flex-start", gap: 8 }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#DC2626", flexShrink: 0, marginTop: 5 }} />
-                <span style={{ fontSize: 12, color: "#4B5563", lineHeight: 1.6, wordBreak: "break-word" }}>{r}</span>
+              <div key={i} style={{ padding: "12px 18px", borderBottom: i < risks.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#DC2626", flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#151b2b", textTransform: "uppercase", letterSpacing: 0.3 }}>{r.label}</span>
+                </div>
+                <p style={{ fontSize: 12, color: "#4B5563", lineHeight: 1.6, margin: "0 0 0 15px", wordBreak: "break-word" }}>{r.text}</p>
               </div>
             ))}
           </div>
