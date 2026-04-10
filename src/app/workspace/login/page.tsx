@@ -290,25 +290,14 @@ function WorkspaceLoginPageInner() {
         {/* ── Header ── */}
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 10 }} aria-label="DealSignals">
-              {/* Bars + dot + curve icon */}
-              <svg width="38" height="44" viewBox="0 0 180 225" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "block" }}>
-                <rect x="18" y="155" width="28" height="56" rx="3" fill="#84CC16" />
-                <rect x="56" y="120" width="28" height="91" rx="3" fill="#84CC16" />
-                <rect x="94" y="80" width="28" height="131" rx="3" fill="#84CC16" />
-                <rect x="132" y="40" width="28" height="171" rx="3" fill="#84CC16" />
-                <circle cx="146" cy="22" r="9" fill="#84CC16" />
-                <path d="M10 225 Q90 200 175 225" stroke="#84CC16" strokeWidth="4.5" fill="none" />
-              </svg>
-              <span style={{
-                fontSize: 32, fontWeight: 800,
-                fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-                letterSpacing: -0.5, lineHeight: 1,
-              }}>
-                <span style={{ color: "#0B1120" }}>Deal</span>
-                <span style={{ color: "#84CC16" }}>Signals</span>
-              </span>
-            </div>
+            <span style={{
+              fontSize: 34, fontWeight: 800,
+              fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+              letterSpacing: -0.5, lineHeight: 1,
+            }} aria-label="DealSignals">
+              <span style={{ color: "#0B1120" }}>Deal</span>
+              <span style={{ color: "#84CC16" }}>Signals</span>
+            </span>
           </div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0B1120", margin: 0, fontFamily: "'Inter', sans-serif" }}>
             {upgradePlan
