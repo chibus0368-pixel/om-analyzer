@@ -56,7 +56,58 @@ export async function POST(req: NextRequest) {
 
     // ── Check for existing active subscription ─────────────
     if (userData.stripeSubscriptionId) {
-      // User already has a subscription — redirect to portal instead
+      // Determine current plan from the existing subscription
+      let currentPriceId: string | null = null;
+      let currentItemId: string | null = null;
+      try {
+        const sub = await stripe.subscriptions.retrieve(userData.stripeSubscriptionId);
+        currentPriceId = sub.items.data[0]?.price.id || null;
+        currentItemId = sub.items.data[0]?.id || null;
+      } catch (err) {
+        console.warn("[stripe/checkout] failed to retrieve existing sub, falling back to generic portal", err);
+      }
+
+      // Same plan → generic portal (manage sub, cancel, update card)
+      if (currentPriceId && currentPriceId === planConfig.stripePriceId) {
+        const portalSession = await stripe.billingPortal.sessions.create({
+          customer: customerId,
+          return_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/workspace`,
+        });
+        return NextResponse.json({ url: portalSession.url, type: "portal" });
+      }
+
+      // Different plan → deep-link into portal plan update/confirm flow
+      if (currentItemId) {
+        try {
+          const flowSession = await stripe.billingPortal.sessions.create({
+            customer: customerId,
+            return_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/workspace?upgraded=true`,
+            flow_data: {
+              type: "subscription_update_confirm",
+              subscription_update_confirm: {
+                subscription: userData.stripeSubscriptionId,
+                items: [{ id: currentItemId, price: planConfig.stripePriceId!, quantity: 1 }],
+              },
+              after_completion: {
+                type: "redirect",
+                redirect: {
+                  return_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/workspace?upgraded=true`,
+                },
+              },
+            },
+          });
+          return NextResponse.json({ url: flowSession.url, type: "plan_change" });
+        } catch (err) {
+          console.error("[stripe/checkout] flow_data plan change failed, falling back to generic portal", err);
+          const portalSession = await stripe.billingPortal.sessions.create({
+            customer: customerId,
+            return_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/workspace`,
+          });
+          return NextResponse.json({ url: portalSession.url, type: "portal" });
+        }
+      }
+
+      // Fallback: generic portal
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: customerId,
         return_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/workspace`,

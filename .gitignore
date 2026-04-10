@@ -42,3 +42,6 @@ functions/lib/
 # IDE
 .idea/
 .vscode/
+
+# Microsoft Office temporary lock files
+~$*

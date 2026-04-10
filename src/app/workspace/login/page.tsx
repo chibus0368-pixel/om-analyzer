@@ -87,6 +87,29 @@ export default function WorkspaceLoginPage() {
     return redirectPath || "/workspace";
   }
 
+  /* ── Post-auth handler: if upgrade param set, go straight to Stripe; else workspace ── */
+  async function handlePostAuth(firebaseUser: any) {
+    if (upgradePlan && (upgradePlan === "pro" || upgradePlan === "pro_plus")) {
+      try {
+        const token = await firebaseUser.getIdToken();
+        const res = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ plan: upgradePlan }),
+        });
+        const data = await res.json();
+        if (data?.url) {
+          window.location.href = data.url;
+          return;
+        }
+        console.error("[login] checkout returned no URL", data);
+      } catch (err) {
+        console.error("[login] checkout call failed", err);
+      }
+    }
+    router.push(redirectPath || "/workspace");
+  }
+
   /* ── handle redirect result on mount (from Google redirect flow) ── */
   useEffect(() => {
     let cancelled = false;
@@ -95,7 +118,7 @@ export default function WorkspaceLoginPage() {
         const result = await checkGoogleRedirect();
         if (result && result.user && !cancelled) {
           await bootstrapUser(result.user);
-          router.push(getPostAuthUrl());
+          await handlePostAuth(result.user);
           return;
         }
       } catch (err: any) {
@@ -108,14 +131,16 @@ export default function WorkspaceLoginPage() {
     }
     handleRedirect();
     return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
-  /* ── if already logged in, go to workspace ── */
+  /* ── if already logged in: route to checkout if upgrade param set, else workspace ── */
   useEffect(() => {
     if (user && !redirectChecking) {
-      router.push(getPostAuthUrl());
+      handlePostAuth(user);
     }
-  }, [user, redirectChecking, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, redirectChecking]);
 
   /* ── email/password submit ── */
   async function handleSubmit(e: React.FormEvent) {
@@ -130,10 +155,13 @@ export default function WorkspaceLoginPage() {
         const fullName = `${firstName} ${lastName}`.trim();
         if (fullName) await updateProfile(credential.user, { displayName: fullName });
         await bootstrapUser(credential.user, { firstName, lastName, company: company || undefined });
+        await handlePostAuth(credential.user);
       } else {
-        await signIn(email, password);
+        const signedIn = await signIn(email, password);
+        const u = (signedIn as any)?.user || auth.currentUser;
+        if (u) await handlePostAuth(u);
+        else router.push(getPostAuthUrl());
       }
-      router.push(getPostAuthUrl());
     } catch (err: any) {
       setError(friendlyError(err?.code, err?.message || "Authentication failed"));
     } finally {
@@ -151,7 +179,7 @@ export default function WorkspaceLoginPage() {
       // credential is only valid for popup flow.
       if (credential && credential.user) {
         await bootstrapUser(credential.user);
-        router.push(getPostAuthUrl());
+        await handlePostAuth(credential.user);
       }
     } catch (err: any) {
       if (err?.code !== "auth/popup-closed-by-user") {
