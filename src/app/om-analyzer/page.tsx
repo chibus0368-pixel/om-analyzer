@@ -2899,48 +2899,6 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
         </div>
       )}
 
-      {/* ===== SAVE DEAL CTA — Drive signup ===== */}
-      <div style={{
-        background: "#ffffff", borderRadius: 14, border: "1px solid rgba(132,204,22,0.2)",
-        boxShadow: "0 4px 24px rgba(0,0,0,0.06)", padding: "28px 28px", marginBottom: 20,
-        marginTop: 8,
-      }}>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 20 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(132,204,22,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", margin: "0 0 4px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              Save this deal to your workspace
-            </h3>
-            <p style={{ fontSize: 13, color: "#6B7280", margin: "0 0 14px", lineHeight: 1.5 }}>
-              Create a free account to save deals, compare scores, and build your pipeline. 5 deals free, no card required.
-            </p>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <a href="/workspace/login?source=save_deal" onClick={() => trackLeadCapture("save_deal_cta")} style={{
-                display: "inline-flex", alignItems: "center", gap: 6,
-                padding: "10px 24px", borderRadius: 8, border: "none",
-                background: "#84CC16", color: "#0d0d14", fontSize: 14,
-                fontWeight: 700, textDecoration: "none",
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-              }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /></svg>
-                Sign Up Free
-              </a>
-              <a href="/workspace/login?upgrade=pro" onClick={() => trackProCTAClick("save_deal_section")} style={{
-                display: "inline-flex", alignItems: "center",
-                padding: "10px 20px", borderRadius: 8,
-                border: "1px solid #e2e8f0", background: "#fff", color: "#0F172A",
-                fontSize: 13, fontWeight: 600, textDecoration: "none",
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-              }}>
-                Start 7-Day Pro Trial
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* ===== DISCLAIMER ===== */}
       <p style={{ fontSize: 10, color: "#9CA3AF", margin: "0 0 8px", fontStyle: "italic", textAlign: "center" }}>
         First-pass underwriting screen &middot; Directional only &middot; Verify all data independently
