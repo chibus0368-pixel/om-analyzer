@@ -1339,9 +1339,298 @@ export function scoreByType(
     case "land":
       return scoreLand(fields);
     case "retail":
-      // Retail scoring not implemented here; stays in route.ts
-      throw new Error("Retail scoring is handled in /api/workspace/score/route.ts");
+      return scoreRetailPure(fields);
     default:
       throw new Error(`Unknown analysis type: ${analysisType}`);
   }
+}
+
+// ==============================================================================
+// RETAIL SCORING — Pure function (shared by Pro score-engine and Try Me score-lite)
+// Lifted from /lib/workspace/score-engine.ts so Pro + Try Me always produce
+// identical retail scores. Operates on a { "group.name": { value, confidence } }
+// field map plus an optional field-count hint for confidence scoring.
+// ==============================================================================
+
+const RETAIL_WEIGHTS = {
+  pricing: 15,
+  cashflow: 15,
+  upside: 10,
+  tenant: 12,
+  rollover: 10,
+  vacancy: 8,
+  location: 10,
+  physical: 8,
+  redevelopment: 5,
+  confidence: 7,
+};
+
+function retailScoreBand(score: number): string {
+  if (score >= 85) return "strong_buy";
+  if (score >= 70) return "buy";
+  if (score >= 50) return "hold";
+  if (score >= 30) return "pass";
+  return "strong_reject";
+}
+
+function retailRecommendation(band: string, score: number, fields: Record<string, any>): string {
+  const first = (...keys: string[]) => {
+    for (const k of keys) {
+      const f = fields[k];
+      const v = f && typeof f === "object" && "value" in f ? f.value : f;
+      if (v !== undefined && v !== null) return Number(v);
+    }
+    return undefined;
+  };
+  const capRate = first("pricing_deal_terms.cap_rate_actual", "pricing_deal_terms.cap_rate_asking", "pricing_deal_terms.cap_rate_om", "pricing_deal_terms.entry_cap_rate");
+  const occupancy = first("property_basics.occupancy_pct", "property_basics.occupancy");
+  const dscr = first("debt_assumptions.dscr", "debt_assumptions.dscr_om", "debt_assumptions.dscr_adjusted");
+  const noi = first("expenses.noi", "expenses.noi_om", "expenses.noi_adjusted", "expenses.net_operating_income");
+  const wale = first("rent_roll.weighted_avg_lease_term", "property_basics.wale_years", "rent_roll.wale", "lease_data.wale_years");
+  const price = first("pricing_deal_terms.asking_price", "pricing_deal_terms.purchase_price", "pricing_deal_terms.list_price");
+
+  const strengths: string[] = [];
+  const concerns: string[] = [];
+  if (capRate !== undefined) {
+    if (capRate >= 8) strengths.push(`strong ${capRate.toFixed(1)}% cap rate`);
+    else if (capRate >= 7) strengths.push(`solid ${capRate.toFixed(1)}% cap rate`);
+    else if (capRate < 6) concerns.push(`thin ${capRate.toFixed(1)}% cap rate`);
+  }
+  if (occupancy !== undefined) {
+    if (occupancy >= 95) strengths.push(`${occupancy.toFixed(0)}% occupied`);
+    else if (occupancy < 80) concerns.push(`${occupancy.toFixed(0)}% occupancy`);
+  }
+  if (dscr !== undefined) {
+    if (dscr >= 1.35) strengths.push(`${dscr.toFixed(2)}x DSCR`);
+    else if (dscr < 1.2) concerns.push(`tight ${dscr.toFixed(2)}x DSCR`);
+  }
+  if (wale !== undefined) {
+    if (wale >= 7) strengths.push(`${wale.toFixed(1)}-year WALE`);
+    else if (wale < 3) concerns.push(`short ${wale.toFixed(1)}-year WALE`);
+  }
+  if (noi && price && noi > 0 && price > 0) {
+    const dy = (noi / (price * 0.65)) * 100;
+    if (dy >= 12) strengths.push(`${dy.toFixed(1)}% debt yield`);
+    else if (dy < 9) concerns.push(`${dy.toFixed(1)}% debt yield`);
+  }
+
+  const bandLabel: Record<string, string> = { strong_buy: "Strong Buy", buy: "Buy", hold: "Neutral", pass: "Pass", strong_reject: "Strong Reject" };
+  const label = bandLabel[band] || band;
+  const parts: string[] = [];
+  if (strengths.length > 0) parts.push(strengths.join(", "));
+  if (concerns.length > 0) parts.push((strengths.length > 0 ? "but " : "") + concerns.join(", "));
+
+  if (parts.length === 0) {
+    switch (band) {
+      case "strong_buy": return `${label} (${score}) — Compelling fundamentals across pricing, cash flow, and tenancy.`;
+      case "buy": return `${label} (${score}) — Sound fundamentals with manageable risk.`;
+      case "hold": return `${label} (${score}) — Mixed signals. Further diligence recommended.`;
+      case "pass": return `${label} (${score}) — Risk factors outweigh current pricing.`;
+      case "strong_reject": return `${label} (${score}) — Does not meet investment criteria.`;
+      default: return `${label} (${score})`;
+    }
+  }
+  return `${label} (${score}) — ${parts.join("; ")}.`;
+}
+
+/**
+ * Pure retail scoring — identical logic to Pro's runScoreEngine retail branch.
+ * Operates on a field map of the form { "group.name": { value, confidence, confirmed } }.
+ * This is the single source of truth for retail scores across Pro and Try Me.
+ */
+export function scoreRetailPure(fields: Record<string, any>): ScoringResult {
+  const hasField = (key: string) => fields[key]?.value !== undefined && fields[key]?.value !== null;
+  const getVal = (key: string) => fields[key]?.value;
+  const getFirst = (...keys: string[]): number | undefined => {
+    for (const k of keys) {
+      const v = getVal(k);
+      if (v !== undefined && v !== null) {
+        const n = Number(v);
+        if (!isNaN(n)) return n;
+      }
+    }
+    return undefined;
+  };
+
+  function scoreCategory(checks: { condition: boolean; points: number }[]): number {
+    const maxPoints = checks.reduce((s, c) => s + c.points, 0);
+    const earned = checks.filter(c => c.condition).reduce((s, c) => s + c.points, 0);
+    return maxPoints > 0 ? Math.round((earned / maxPoints) * 100) : 50;
+  }
+
+  const capRate = getFirst(
+    "pricing_deal_terms.cap_rate_actual",
+    "pricing_deal_terms.cap_rate_asking",
+    "pricing_deal_terms.cap_rate_om",
+    "pricing_deal_terms.entry_cap_rate",
+  );
+  const occupancy = getFirst("property_basics.occupancy_pct", "property_basics.occupancy");
+  const noi = getFirst("expenses.noi", "expenses.noi_om", "expenses.noi_adjusted", "expenses.net_operating_income");
+  const price = getFirst("pricing_deal_terms.asking_price", "pricing_deal_terms.purchase_price", "pricing_deal_terms.list_price");
+  const priceSf = getFirst("pricing_deal_terms.price_per_sf", "pricing_deal_terms.price_psf");
+  const leaseTerms = getFirst("rent_roll.weighted_avg_lease_term", "property_basics.wale_years", "rent_roll.wale", "lease_data.wale_years");
+  const dscr = getFirst("debt_assumptions.dscr", "debt_assumptions.dscr_om", "debt_assumptions.dscr_adjusted");
+  const tenantCredit = getVal("tenant_info.tenant_credit_rating");
+  const buildingSf = getFirst("property_basics.building_sf", "property_basics.gla", "property_basics.gla_sf");
+  const yearBuilt = getFirst("property_basics.year_built");
+  const baseRent = getFirst("income.base_rent", "income.total_rent", "rent_roll.total_rent");
+
+  let debtYield: number | undefined;
+  if (noi && price && noi > 0 && price > 0) {
+    debtYield = (noi / (price * 0.65)) * 100;
+  }
+
+  // 1. PRICING (15)
+  const pricingScore = scoreCategory([
+    { condition: capRate !== undefined && capRate >= 8, points: 30 },
+    { condition: capRate !== undefined && capRate >= 6.5, points: 25 },
+    { condition: capRate !== undefined && capRate >= 5, points: 10 },
+    { condition: price !== undefined && price > 0, points: 10 },
+    { condition: priceSf !== undefined && priceSf > 0, points: 10 },
+    { condition: priceSf !== undefined && priceSf < 150, points: 15 },
+  ]);
+
+  // 2. CASHFLOW (15)
+  const cashflowScore = scoreCategory([
+    { condition: noi !== undefined && noi > 0, points: 25 },
+    { condition: dscr !== undefined && dscr >= 1.50, points: 25 },
+    { condition: dscr !== undefined && dscr >= 1.25, points: 15 },
+    { condition: debtYield !== undefined && debtYield >= 10, points: 15 },
+    { condition: hasField("income.effective_gross_income") || hasField("income.total_income") || baseRent !== undefined, points: 10 },
+    { condition: hasField("expenses.total_expenses") || hasField("expenses.operating_expenses"), points: 10 },
+  ]);
+
+  // 3. VALUE-ADD (10)
+  const vaScore = getFirst("value_add.score");
+  const rentGapPct = getFirst("value_add.rent_gap_pct");
+  const vacancyUpsideNoi = getFirst("value_add.vacancy_upside_noi");
+  const physicalNeeded = getVal("value_add.physical_update_needed");
+  const nearTermExps = getFirst("value_add.near_term_expirations");
+  const expenseRatio = getFirst("value_add.expense_ratio");
+  const expenseBenchmark = getFirst("value_add.expense_ratio_benchmark");
+
+  const upsideScore = (() => {
+    if (vaScore !== undefined && vaScore >= 0) {
+      return Math.min(100, Math.round(vaScore * 10));
+    }
+    return scoreCategory([
+      { condition: rentGapPct !== undefined && rentGapPct > 15, points: 30 },
+      { condition: rentGapPct !== undefined && rentGapPct > 5, points: 15 },
+      { condition: occupancy !== undefined && occupancy < 92, points: 20 },
+      { condition: vacancyUpsideNoi !== undefined && vacancyUpsideNoi > 0, points: 10 },
+      { condition: nearTermExps !== undefined && nearTermExps >= 2, points: 15 },
+      { condition: physicalNeeded === true || physicalNeeded === "true", points: 10 },
+      { condition: expenseRatio !== undefined && expenseBenchmark !== undefined && expenseRatio > expenseBenchmark, points: 15 },
+    ]);
+  })();
+
+  // 4. TENANT (12)
+  const hasTenantInfo = hasField("tenant_info.primary_tenant") || hasField("tenant_info.tenant_name") || hasField("tenant_info.tenant_1_name");
+  const hasLeaseType = hasField("lease_data.lease_type") || hasField("lease_data.lease_structure") || hasField("tenant_info.lease_type");
+  const creditStr = String(tenantCredit || "").toLowerCase();
+  const hasInvestmentGradeCredit = creditStr.includes("investment") || creditStr.includes("grade") || ["a", "aa", "aaa", "a+", "a-", "bbb", "bbb+"].includes(creditStr);
+  const tenantScore = scoreCategory([
+    { condition: hasTenantInfo, points: 25 },
+    { condition: hasInvestmentGradeCredit, points: 25 },
+    { condition: hasLeaseType, points: 15 },
+    { condition: hasField("tenant_info.guarantor") || hasField("tenant_info.parent_company"), points: 15 },
+    { condition: occupancy !== undefined && occupancy >= 95, points: 20 },
+  ]);
+
+  // 5. ROLLOVER (10)
+  const rolloverScore = scoreCategory([
+    { condition: leaseTerms !== undefined && leaseTerms >= 7, points: 40 },
+    { condition: leaseTerms !== undefined && leaseTerms >= 4, points: 20 },
+    { condition: leaseTerms !== undefined && leaseTerms >= 2, points: 10 },
+    { condition: hasField("lease_data.options_to_renew") || hasField("lease_data.renewal_options"), points: 15 },
+    { condition: hasField("lease_data.lease_expiration") || hasField("rent_roll.earliest_expiration"), points: 15 },
+  ]);
+
+  // 6. VACANCY (8)
+  const vacancyScore = scoreCategory([
+    { condition: occupancy !== undefined && occupancy >= 95, points: 50 },
+    { condition: occupancy !== undefined && occupancy >= 85, points: 30 },
+    { condition: occupancy !== undefined && occupancy > 0, points: 20 },
+  ]);
+
+  // 7. LOCATION (10)
+  const hasTraffic = hasField("property_basics.traffic_count") || hasField("property_basics.traffic");
+  const locationScore = scoreCategory([
+    { condition: hasField("property_basics.city"), points: 20 },
+    { condition: hasField("property_basics.state"), points: 20 },
+    { condition: hasField("property_basics.zip") || hasField("property_basics.zip_code"), points: 20 },
+    { condition: hasTraffic, points: 20 },
+    { condition: hasField("property_basics.county") || hasField("property_basics.msa"), points: 20 },
+  ]);
+
+  // 8. PHYSICAL (8)
+  const physicalScore = scoreCategory([
+    { condition: yearBuilt !== undefined, points: 20 },
+    { condition: yearBuilt !== undefined && yearBuilt >= 2000, points: 15 },
+    { condition: buildingSf !== undefined && buildingSf > 0, points: 20 },
+    { condition: hasField("property_basics.parking_count") || hasField("property_basics.parking_ratio"), points: 15 },
+    { condition: hasField("property_basics.year_renovated") || hasField("property_basics.renovated"), points: 15 },
+    { condition: hasField("property_basics.lot_size") || hasField("property_basics.land_acres"), points: 15 },
+  ]);
+
+  // 9. REDEVELOPMENT (5)
+  const redevelopmentScore = scoreCategory([
+    { condition: hasField("property_basics.land_acres") || hasField("property_basics.lot_size"), points: 50 },
+    { condition: hasField("property_basics.zoning") || hasField("property_basics.zoning_code"), points: 50 },
+  ]);
+
+  // 10. CONFIDENCE (7)
+  const allFieldEntries = Object.values(fields);
+  const totalFields = allFieldEntries.length;
+  const confirmedFields = allFieldEntries.filter((f: any) => f?.confirmed).length;
+  const highConfFields = allFieldEntries.filter((f: any) => (f?.confidence || 0) >= 0.7).length;
+  const medConfFields = allFieldEntries.filter((f: any) => {
+    const conf = f?.confidence || 0;
+    return conf >= 0.4 && conf < 0.7;
+  }).length;
+
+  let confidenceScore: number;
+  if (totalFields === 0) {
+    confidenceScore = 20;
+  } else {
+    const effectiveGood = confirmedFields + highConfFields + (medConfFields * 0.6);
+    const ratio = effectiveGood / totalFields;
+    confidenceScore = Math.max(40, Math.min(100, Math.round(ratio * 100)));
+  }
+
+  const totalScore = Math.round(
+    (pricingScore * RETAIL_WEIGHTS.pricing +
+      cashflowScore * RETAIL_WEIGHTS.cashflow +
+      upsideScore * RETAIL_WEIGHTS.upside +
+      tenantScore * RETAIL_WEIGHTS.tenant +
+      rolloverScore * RETAIL_WEIGHTS.rollover +
+      vacancyScore * RETAIL_WEIGHTS.vacancy +
+      locationScore * RETAIL_WEIGHTS.location +
+      physicalScore * RETAIL_WEIGHTS.physical +
+      redevelopmentScore * RETAIL_WEIGHTS.redevelopment +
+      confidenceScore * RETAIL_WEIGHTS.confidence) / 100,
+  );
+
+  const scoreBand = retailScoreBand(totalScore);
+  const recommendation = retailRecommendation(scoreBand, totalScore, fields);
+
+  return {
+    totalScore,
+    scoreBand,
+    recommendation,
+    categories: [
+      { name: "pricing", weight: RETAIL_WEIGHTS.pricing, score: pricingScore, explanation: capRate ? `Cap rate ${capRate.toFixed(1)}%${priceSf ? `, $${Math.round(priceSf)}/SF` : ""}` : "Limited pricing data" },
+      { name: "cashflow", weight: RETAIL_WEIGHTS.cashflow, score: cashflowScore, explanation: dscr !== undefined ? `DSCR ${dscr.toFixed(2)}x` : (noi ? `NOI $${Math.round(noi).toLocaleString()}` : "Limited cashflow data") },
+      { name: "upside", weight: RETAIL_WEIGHTS.upside, score: upsideScore, explanation: vaScore !== undefined ? `Value-add score ${vaScore}` : "Market rent growth potential assessed" },
+      { name: "tenant", weight: RETAIL_WEIGHTS.tenant, score: tenantScore, explanation: hasTenantInfo ? "Tenant data captured" : "Tenant data limited" },
+      { name: "rollover", weight: RETAIL_WEIGHTS.rollover, score: rolloverScore, explanation: leaseTerms !== undefined ? `${leaseTerms.toFixed(1)}-year WALE` : "Rollover data limited" },
+      { name: "vacancy", weight: RETAIL_WEIGHTS.vacancy, score: vacancyScore, explanation: occupancy !== undefined ? `${occupancy.toFixed(0)}% occupied` : "Occupancy data limited" },
+      { name: "location", weight: RETAIL_WEIGHTS.location, score: locationScore, explanation: "Location data captured at market level" },
+      { name: "physical", weight: RETAIL_WEIGHTS.physical, score: physicalScore, explanation: yearBuilt ? `Built ${yearBuilt}` : "Building age unknown" },
+      { name: "redevelopment", weight: RETAIL_WEIGHTS.redevelopment, score: redevelopmentScore, explanation: "Redevelopment potential assessed" },
+      { name: "confidence", weight: RETAIL_WEIGHTS.confidence, score: confidenceScore, explanation: `${totalFields} data points extracted` },
+    ],
+    analysisType: "retail" as AnalysisType,
+    modelVersion: "1.1",
+  };
 }
