@@ -1143,10 +1143,10 @@ export default function OmAnalyzerPage() {
                   Quick Analysis
                 </div>
                 <h2 style={{ fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15, marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  How a Deal Becomes a <span className="ds-callout">Decision</span>.
+                  Know what you think about a deal in <span className="ds-callout">60 seconds</span>.
                 </h2>
                 <p style={{ fontSize: 17, color: "#9ca3af", lineHeight: 1.7, maxWidth: 580, margin: "0 auto" }}>
-                  Upload a deal. Get scored, organized, shareable pre-diligence back in 1 minute.
+                  Upload an OM. Get structured analysis, scoring, and a decision-ready view.
                 </p>
               </div>
 
