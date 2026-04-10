@@ -390,10 +390,12 @@ export default function OmAnalyzerPage() {
         documentText = `[${ext.toUpperCase()} file: ${selectedFile.name}]\n(Extraction failed — property name may be in filename)`;
       }
 
-      // Call parse-lite API with asset-type-specific models (same as Pro pipeline)
+      // Call unified tryme-analyze route — runs the EXACT SAME Pro pipeline
+      // (runParseEngine + runScoreEngine) against an ephemeral Firestore
+      // record. Guarantees Try Me scores match Pro scores byte-for-byte.
       setStatusMsg("Analyzing property data...");
       const analysisType = selectedAssetType === "auto" ? undefined : selectedAssetType;
-      const response = await fetch("/api/workspace/parse-lite", {
+      const response = await fetch("/api/om-analyzer/tryme-analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -407,24 +409,9 @@ export default function OmAnalyzerPage() {
       if (!response.ok) throw new Error("Analysis failed");
       const result = await response.json();
 
-      // Run scoring using the same Pro models
-      setStatusMsg("Scoring deal...");
-      try {
-        const scoreRes = await fetch("/api/om-analyzer/score-lite", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            analysisType: result.analysisType || "retail",
-            data: result,
-          }),
-        });
-        if (scoreRes.ok) {
-          const scoreData = await scoreRes.json();
-          result.proScore = scoreData;
-          setScoreResult(scoreData);
-        }
-      } catch (scoreErr) {
-        console.warn("[om-analyzer] Scoring failed (non-blocking):", scoreErr);
+      // Score is already included in the response as result.proScore
+      if (result.proScore) {
+        setScoreResult(result.proScore);
       }
 
       setData(result);
