@@ -204,6 +204,7 @@ export default function OmAnalyzerPage() {
   const [dragging, setDragging] = useState(false);
   const [globalDragging, setGlobalDragging] = useState(false);
   const dragCounter = useRef(0);
+  const dropZoneCounter = useRef(0);
   const [selectedAssetType, setSelectedAssetType] = useState<string>("auto");
   const [scoreResult, setScoreResult] = useState<any>(null);
   const [usageData, setUsageData] = useState<{ uploadsUsed: number; uploadLimit: number } | null>(null);
@@ -442,7 +443,19 @@ export default function OmAnalyzerPage() {
   }, [selectedFile, usageData, incrementUsage]);
 
   const resetAnalyzer = useCallback(() => {
-    if (heroImageUrl) URL.revokeObjectURL(heroImageUrl);
+    // Hard reset via full navigation — bulletproof, clears every piece of
+    // state including any lingering blob URLs, hero images, usage caches,
+    // and the file input. State-based reset was occasionally not flushing
+    // the result view cleanly.
+    try {
+      if (heroImageUrl && heroImageUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(heroImageUrl);
+      }
+    } catch {}
+    if (typeof window !== "undefined") {
+      window.location.href = "/om-analyzer";
+      return;
+    }
     setSelectedFile(null);
     setData(null);
     setHeroImageUrl("");
@@ -450,7 +463,6 @@ export default function OmAnalyzerPage() {
     setView("upload");
     setStatusMsg("");
     if (fileRef.current) fileRef.current.value = "";
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [heroImageUrl]);
 
   return (
@@ -714,9 +726,8 @@ export default function OmAnalyzerPage() {
       {/* ===== HERO + LANDING PAGE ===== */}
       {view === "upload" && (
         <section
-          onDragOver={e => { e.preventDefault(); setDragging(true); }}
-          onDragLeave={e => { if (e.currentTarget === e.target || !e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false); }}
-          onDrop={e => { e.preventDefault(); setDragging(false); if (e.dataTransfer.files?.length) handleFile(e.dataTransfer.files[0]); }}
+          onDragOver={e => { e.preventDefault(); }}
+          onDrop={e => { e.preventDefault(); dropZoneCounter.current = 0; setDragging(false); if (e.dataTransfer.files?.length) handleFile(e.dataTransfer.files[0]); }}
           style={{ background: "#0d0d14", paddingTop: 64 }}>
 
           {/* ── 1. HERO ── */}
@@ -914,9 +925,10 @@ export default function OmAnalyzerPage() {
 
                 {/* Upload drop zone */}
                 <div
-                  onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDragging(true); }}
-                  onDragLeave={e => { e.preventDefault(); e.stopPropagation(); setDragging(false); }}
-                  onDrop={e => { e.preventDefault(); e.stopPropagation(); setDragging(false); if (e.dataTransfer.files?.length) handleFile(e.dataTransfer.files[0]); }}
+                  onDragEnter={e => { e.preventDefault(); e.stopPropagation(); dropZoneCounter.current++; if (dropZoneCounter.current === 1) setDragging(true); }}
+                  onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
+                  onDragLeave={e => { e.preventDefault(); e.stopPropagation(); dropZoneCounter.current = Math.max(0, dropZoneCounter.current - 1); if (dropZoneCounter.current === 0) setDragging(false); }}
+                  onDrop={e => { e.preventDefault(); e.stopPropagation(); dropZoneCounter.current = 0; setDragging(false); if (e.dataTransfer.files?.length) handleFile(e.dataTransfer.files[0]); }}
                   onClick={() => !selectedFile && fileRef.current?.click()}
                   style={{
                     background: dragging ? "rgba(132,204,22,0.06)" : "rgba(255,255,255,0.03)",
