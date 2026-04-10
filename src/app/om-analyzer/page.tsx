@@ -1153,7 +1153,7 @@ export default function OmAnalyzerPage() {
               {/* ── Feature blocks: alternating left/right ── */}
               {[
                 {
-                  num: "01", title: "Extract 40+ Fields", desc: "Drop any OM, flyer, rent roll, or broker package. Price, cap rate, NOI, tenants, and lease terms populate in about a minute.",
+                  num: "01", title: "Extract 40+ Fields", desc: "Price, cap rate, NOI, rent roll, lease terms, tenants — every number and clause you'd normally hunt for, pulled straight from the PDF.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
                       {/* Scan line animation overlay */}
@@ -1209,7 +1209,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "02", title: "Get a Buy/Pass Signal", desc: "Instant buy, hold, or pass recommendation with risk tags. Know before you underwrite.",
+                  num: "02", title: "Get a Buy/Pass Signal", desc: "A verdict and the reasoning behind it — green flags, yellow flags, and red flags laid out before you open a model.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
                       {/* Subtle glow behind score */}
@@ -1258,7 +1258,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "03", title: "Score Every Deal", desc: "Six dimensions scored automatically: pricing, cashflow, tenant credit, rollover risk, location, and upside.",
+                  num: "03", title: "Rank and Decide", desc: "Side-by-side 0–100 scores across your whole pipeline. Sortable, filterable, and built for fast cuts before the IC meeting.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Scoreboard header */}
