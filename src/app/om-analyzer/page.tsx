@@ -1045,7 +1045,7 @@ export default function OmAnalyzerPage() {
                   letterSpacing: 0.5, textTransform: "uppercase" as const,
                 }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                  Quick CRE Analysis
+                  How It Works
                 </div>
                 <h2 style={{ fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15, marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                   Stop reading OMs.<br />Start <span className="ds-callout">making decisions</span>.
@@ -1153,7 +1153,7 @@ export default function OmAnalyzerPage() {
               {/* ── Feature blocks: alternating left/right ── */}
               {[
                 {
-                  num: "01", title: "Extract 40+ Fields", desc: "Price, cap rate, NOI, rent roll, lease terms, tenants — every number and clause you'd normally hunt for, pulled straight from the PDF.",
+                  num: "01", title: "Extract 40+ Fields", desc: "Every number and clause you'd normally hunt for — parsed out of the PDF into a clean, structured record you can actually work with.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
                       {/* Scan line animation overlay */}
@@ -1258,7 +1258,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "03", title: "Rank and Decide", desc: "Side-by-side 0–100 scores across your whole pipeline. Sortable, filterable, and built for fast cuts before the IC meeting.",
+                  num: "03", title: "Rank and Decide", desc: "Every deal you've uploaded, ranked 0–100 in one leaderboard. Sort, filter, and cut the bottom tier before you underwrite a single one.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Scoreboard header */}
@@ -1363,7 +1363,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "05", title: "Organize Your Pipeline", desc: "Save every deal to your DealBoard. Track by client, strategy, or market.",
+                  num: "05", title: "Organize Your Pipeline", desc: "Group by asset class, client, or strategy. Your whole book lives in one place instead of scattered across email threads and Downloads folders.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Asset type tabs */}
@@ -1423,7 +1423,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "06", title: "Compare Side-by-Side", desc: "Stack deals on a sortable scoreboard. See which wins on price, cashflow, and risk.",
+                  num: "06", title: "Compare Side-by-Side", desc: "Pull two or three contenders into a head-to-head table. The gaps on DSCR, NOI, and downside risk jump out instantly.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Header with asset type */}
@@ -1463,7 +1463,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "07", title: "Map Your Deals", desc: "Every deal pins to a map. Hover for scores and metrics. Share the view with a link.",
+                  num: "07", title: "Map Your Deals", desc: "Your pipeline plotted geographically. Click a pin for the full scorecard, and spot submarket concentration or geographic gaps at a glance.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Map area - dark themed street map */}
@@ -1541,7 +1541,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "08", title: "Share with Clients", desc: "One-click branded share link. Full or partial analysis. No login required.",
+                  num: "08", title: "Share with Clients", desc: "Generate a password-protected, branded link for investors and partners. Read-only, with optional expiration — no account needed on their end.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Share link generation */}
