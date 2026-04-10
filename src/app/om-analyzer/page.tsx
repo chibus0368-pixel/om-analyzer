@@ -660,20 +660,43 @@ export default function OmAnalyzerPage() {
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
             </div>
-            <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#ffffff", margin: "0 0 8px", letterSpacing: -0.3 }}>
-              You&apos;ve analyzed 2 deals. Ready to move faster?
-            </h3>
-            <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.6, margin: "0 0 24px" }}>
-              Upgrade to Pro and keep the speed advantage. Unlimited saves, full Excel workbooks, deal comparison, and your own DealBoard.
-            </p>
+            {(() => {
+              const used = usageData?.uploadsUsed ?? 0;
+              const limit = usageData?.uploadLimit ?? 2;
+              const isAnonGate = !usageData?.tier || usageData.tier === "anonymous" || (usageData.tier === "free" && limit <= 2);
+              const headline = isAnonGate
+                ? `You've used your ${used} free ${used === 1 ? "deal" : "deals"}. Keep going?`
+                : `You've used all ${limit} free deals. Ready to move faster?`;
+              const sub = isAnonGate
+                ? "Sign up free for 5 total deals + save to your workspace. Or start a 7-day Pro trial for 40 deals/mo."
+                : "Start a 7-day free Pro trial — 40 deals/month for $40. Card required, cancel anytime.";
+              return (
+                <>
+                  <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#ffffff", margin: "0 0 8px", letterSpacing: -0.3 }}>
+                    {headline}
+                  </h3>
+                  <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.6, margin: "0 0 24px" }}>
+                    {sub}
+                  </p>
+                </>
+              );
+            })()}
             <Link href="/workspace/login?upgrade=pro" onClick={() => trackProCTAClick("lite_result_upgrade_prompt")} style={{
               display: "inline-block", padding: "14px 36px",
               background: "linear-gradient(135deg, #84CC16, #a8d600)", color: "#0d0d14",
               borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: "none",
               marginBottom: 8,
             }}>
-              Upgrade to Pro - $40/mo
+              Start 7-Day Free Trial
             </Link>
+            {(!usageData?.tier || usageData.tier === "anonymous") && (
+              <Link href="/register" style={{
+                display: "block", padding: "10px 20px",
+                color: "#84CC16", fontSize: 13, fontWeight: 600, textDecoration: "none",
+              }}>
+                Or sign up free (5 deals total)
+              </Link>
+            )}
             <Link href="/om-analyzer#pricing" style={{
               display: "block", padding: "10px 20px",
               color: "#9ca3af", fontSize: 13, fontWeight: 500, textDecoration: "none",

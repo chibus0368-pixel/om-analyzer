@@ -89,7 +89,7 @@ export default function TrialStatusBar({ onUpgradeClick }: TrialStatusBarProps) 
   if (isPaid && !isTrial && uploadsUsed < uploadLimit * 0.8) return null;
 
   const label = isAnonymous
-    ? "Free Trial"
+    ? "Free Preview"
     : tier === "pro" && isTrial
     ? "Pro Trial"
     : tier === "pro"

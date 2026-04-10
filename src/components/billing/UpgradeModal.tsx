@@ -251,11 +251,24 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
           </div>
         )}
 
-        {/* ── Free user at limit: only show Pro trial ── */}
+        {/* ── Free user at limit: only show Pro trial + workspace link ── */}
         {isFreeLimit && (
-          <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8", margin: "8px 0 0" }}>
-            Your card won&apos;t be charged during the 7-day trial. Cancel anytime.
-          </p>
+          <>
+            <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8", margin: "8px 0 0" }}>
+              Your card won&apos;t be charged during the 7-day trial. Cancel anytime.
+            </p>
+            <div style={{ textAlign: "center", marginTop: 10 }}>
+              <a
+                href="/workspace"
+                style={{
+                  fontSize: 12, color: "#64748b", textDecoration: "underline",
+                  fontFamily: "'Inter', sans-serif",
+                }}
+              >
+                View your saved deals in workspace
+              </a>
+            </div>
+          </>
         )}
 
         {/* Maybe Later */}

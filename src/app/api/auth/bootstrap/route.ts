@@ -117,6 +117,7 @@ export async function POST(request: NextRequest) {
         tierStatus: "none",
         uploadsUsed: anonUploadsUsed,
         uploadLimit: 5,
+        isLifetimeLimit: true,
         newsletterOptIn: false,
         productUpdatesOptIn: false,
         lastLoginAt: now,

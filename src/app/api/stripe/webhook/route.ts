@@ -129,8 +129,11 @@ export async function POST(req: NextRequest) {
 
         // Find plan by price ID
         const matchedPlan = Object.values(PLANS).find(p => p.stripePriceId === priceId);
+        if (!matchedPlan) {
+          console.error(`[stripe/webhook] ⚠️ Unknown price ID ${priceId} for uid=${uid}. Falling back to free tier. Check STRIPE_PRICE_* env vars.`);
+        }
         const tier = matchedPlan?.tier || "free";
-        const uploadLimit = matchedPlan?.uploadLimit || 2;
+        const uploadLimit = matchedPlan?.uploadLimit ?? PLANS.free.uploadLimit;
 
         let tierStatus: string;
         switch (status) {
