@@ -923,12 +923,24 @@ export default function OmAnalyzerPage() {
                   </span>
                 </div>
 
-                {/* Upload drop zone */}
+                {/* Upload drop zone
+                    Flicker fix: children of the drop zone get
+                    pointer-events: none while dragging, so the browser
+                    never retargets drag events to them. This eliminates
+                    the dragleave/dragenter ping-pong that causes flicker.
+                    Also: on dragleave, double-check relatedTarget is
+                    actually outside before clearing. */}
                 <div
-                  onDragEnter={e => { e.preventDefault(); e.stopPropagation(); dropZoneCounter.current++; if (dropZoneCounter.current === 1) setDragging(true); }}
-                  onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
-                  onDragLeave={e => { e.preventDefault(); e.stopPropagation(); dropZoneCounter.current = Math.max(0, dropZoneCounter.current - 1); if (dropZoneCounter.current === 0) setDragging(false); }}
-                  onDrop={e => { e.preventDefault(); e.stopPropagation(); dropZoneCounter.current = 0; setDragging(false); if (e.dataTransfer.files?.length) handleFile(e.dataTransfer.files[0]); }}
+                  onDragEnter={e => { e.preventDefault(); e.stopPropagation(); setDragging(true); }}
+                  onDragOver={e => { e.preventDefault(); e.stopPropagation(); if (!dragging) setDragging(true); }}
+                  onDragLeave={e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const next = e.relatedTarget as Node | null;
+                    if (next && e.currentTarget.contains(next)) return;
+                    setDragging(false);
+                  }}
+                  onDrop={e => { e.preventDefault(); e.stopPropagation(); setDragging(false); if (e.dataTransfer.files?.length) handleFile(e.dataTransfer.files[0]); }}
                   onClick={() => !selectedFile && fileRef.current?.click()}
                   style={{
                     background: dragging ? "rgba(132,204,22,0.06)" : "rgba(255,255,255,0.03)",
@@ -939,6 +951,9 @@ export default function OmAnalyzerPage() {
                     transition: "border-color 0.2s, background 0.2s",
                   }}
                 >
+                  {/* Wrapper that goes pointer-events: none during drag so
+                      child elements can't become drag targets. */}
+                  <div style={{ pointerEvents: dragging ? "none" : "auto" }}>
                   {!selectedFile ? (
                     <>
                       <div style={{
@@ -983,6 +998,7 @@ export default function OmAnalyzerPage() {
                       </button>
                     </>
                   )}
+                  </div>
                 </div>
                 <input ref={fileRef} type="file" style={{ display: "none" }} accept={ACCEPTED_EXT}
                   onChange={(e) => { if (e.target.files?.length) handleFile(e.target.files[0]); }} />
@@ -2929,20 +2945,6 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
             >
               Start 7-Day Free Trial
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
-            </button>
-            <button
-              type="button"
-              onClick={() => { window.location.href = "/workspace/login?source=save_deal"; }}
-              style={{
-                display: "inline-flex", alignItems: "center",
-                padding: "14px 28px", borderRadius: 10,
-                background: "transparent", color: "#e0e0e6",
-                border: "1px solid rgba(255,255,255,0.15)",
-                fontSize: 14, fontWeight: 600, cursor: "pointer",
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-              }}
-            >
-              Sign Up Free (5 Deals)
             </button>
           </div>
           {usageData && (

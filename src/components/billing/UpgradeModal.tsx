@@ -108,7 +108,7 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
   const subtitle = isAnon
     ? "Create a free account to save deals and get 5 total analyses, or start a Pro trial for unlimited access."
     : isFreeLimit
-    ? "Start a 7-day free Pro trial to keep analyzing — 40 deals/month, full workspace, and more."
+    ? "Start a 7-day free Pro trial to keep analyzing — 100 deals/month, full workspace, and more."
     : reason === "save_required"
     ? "Sign up free to save this deal, or start a Pro trial for the full experience."
     : `Get full access with a 7-day free Pro trial.`;
@@ -199,7 +199,7 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
             </div>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
-            {["40 deals/month", "Save & organize", "Excel workbooks", "Property map", "Scoreboard", "Location Intel"].map(f => (
+            {["100 deals/month", "Save & organize", "Excel workbooks", "Property map", "Scoreboard", "Location Intel"].map(f => (
               <span key={f} style={{
                 fontSize: 11, color: "#475569", background: "#f1f5f9", padding: "3px 10px",
                 borderRadius: 20, display: "inline-flex", alignItems: "center", gap: 4,

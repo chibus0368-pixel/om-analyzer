@@ -32,7 +32,7 @@ const TIERS = [
     desc: "For active investors and small acquisition teams.",
     trialBadge: "7-Day Free Trial",
     features: [
-      { text: "Up to 40 deals/month", included: true },
+      { text: "Up to 100 deals/month", included: true },
       { text: "Save & organize deals", included: true },
       { text: "Deal Signals scoring", included: true },
       { text: "Full Excel workbooks (6 sheets)", included: true },
@@ -73,7 +73,7 @@ const FAQS = [
   { q: "What file types are supported?", a: "We support PDF (best results), Word documents (.docx), Excel files (.xlsx, .xls, .csv), and plain text. Our AI extracts property data from any standard Offering Memorandum format." },
   { q: "How accurate is the analysis?", a: "Our models achieve 99.8% precision on standard NNN retail OMs. Multi-tenant and complex documents may require manual verification. We always label outputs as first-pass directional analysis." },
   { q: "Can I cancel anytime?", a: "Yes. Cancel during your 7-day trial and you won't be charged. After that, cancel anytime and you'll keep access through the end of your billing period." },
-  { q: "What's the difference between Pro and Pro+?", a: "Pro gives you 40 deals/month with the full DealBoard, scoring, maps, Location Intelligence, white-label shareable links, and Excel exports. Pro+ scales to 200 deals/month and adds bulk portfolio uploads, custom branding, advanced exports, and priority processing." },
+  { q: "What's the difference between Pro and Pro+?", a: "Pro gives you 100 deals/month with the full DealBoard, scoring, maps, Location Intelligence, white-label shareable links, and Excel exports. Pro+ scales to 200 deals/month and adds bulk portfolio uploads, custom branding, advanced exports, and priority processing." },
 ];
 
 const UPGRADES = [

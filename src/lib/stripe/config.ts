@@ -44,11 +44,11 @@ export const PLANS: Record<string, PlanConfig> = {
     name: "Pro",
     tier: "pro",
     priceMonthly: 40,
-    uploadLimit: 40,
+    uploadLimit: 100,
     trialDays: 7,
     stripePriceId: process.env.STRIPE_PRICE_PRO_MONTHLY || null,
     features: [
-      "Up to 40 deals/month",
+      "Up to 100 deals/month",
       "Save & organize deals",
       "Deal Signals scoring",
       "6-sheet Excel workbook",
