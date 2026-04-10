@@ -118,6 +118,18 @@ const nextConfig: NextConfig = {
         destination: '/',
         permanent: true,
       },
+      // Legacy /try-pro page removed — send traffic to homepage
+      {
+        source: '/try-pro',
+        destination: '/',
+        permanent: true,
+      },
+      // Legacy standalone /pricing page removed — jump to homepage pricing section
+      {
+        source: '/pricing',
+        destination: '/#pricing',
+        permanent: true,
+      },
       // WordPress admin and login pages
       {
         source: '/wp-admin',

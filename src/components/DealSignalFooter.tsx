@@ -2,7 +2,7 @@ import Link from "next/link";
 
 /**
  * Deal Signals shared site footer — used on /pricing, /terms, /privacy,
- * /try-pro, /not-found, and any other marketing-style page.
+ * /contact, /not-found, and any other marketing-style page.
  *
  * Mirrors the main footer used inline on /om-analyzer so every public
  * page shows the same dark, 4-column layout with product + company +
@@ -23,7 +23,7 @@ export default function DealSignalFooter() {
   const linkStyle: React.CSSProperties = {
     display: "block",
     fontSize: 14,
-    color: "#8b93a8",
+    color: "#cbd2e0",
     textDecoration: "none",
     marginBottom: 12,
     fontFamily: "'Inter', sans-serif",
@@ -120,7 +120,7 @@ export default function DealSignalFooter() {
           <Link href="/om-analyzer#faq" style={linkStyle}>
             FAQ
           </Link>
-          <Link href="/pricing" style={linkStyle}>
+          <Link href="/#pricing" style={linkStyle}>
             Pricing
           </Link>
           <Link href="/om-analyzer" style={linkStyle}>
@@ -131,9 +131,9 @@ export default function DealSignalFooter() {
         {/* ── Company column ── */}
         <div>
           <div style={colHeader}>Company</div>
-          <a href="mailto:support@dealsignals.app" style={linkStyle}>
+          <Link href="/contact" style={linkStyle}>
             Contact
-          </a>
+          </Link>
           <Link href="/workspace/login" style={linkStyle}>
             Log In
           </Link>
@@ -151,12 +151,6 @@ export default function DealSignalFooter() {
           <Link href="/privacy" style={linkStyle}>
             Privacy Policy
           </Link>
-          <a
-            href="mailto:support@dealsignals.app?subject=Security%20Report"
-            style={linkStyle}
-          >
-            Security
-          </a>
         </div>
       </div>
 

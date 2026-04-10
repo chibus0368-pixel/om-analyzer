@@ -2323,21 +2323,33 @@ export default function OmAnalyzerPage() {
                 }}
               >{link.label}</a>
             ))}
-            <Link href="/pricing" style={{
-              display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12,
-              fontFamily: "'Inter', sans-serif",
-            }}>Pricing</Link>
-            <Link href="/try-pro" style={{
-              display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12,
-              fontFamily: "'Inter', sans-serif",
-            }}>Try Pro</Link>
+            <a
+              href="#pricing"
+              onClick={(e) => {
+                e.preventDefault();
+                const scroll = () => {
+                  const el = typeof document !== "undefined" ? document.getElementById("pricing") : null;
+                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                };
+                if (view !== "upload") {
+                  setView("upload");
+                  requestAnimationFrame(() => requestAnimationFrame(scroll));
+                } else {
+                  scroll();
+                }
+              }}
+              style={{
+                display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12,
+                fontFamily: "'Inter', sans-serif", cursor: "pointer",
+              }}
+            >Pricing</a>
           </div>
 
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#ffffff", marginBottom: 18, textTransform: "uppercase", letterSpacing: 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Company</div>
-            <a href="mailto:support@dealsignals.app" style={{
+            <Link href="/contact" style={{
               display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
-            }}>Contact</a>
+            }}>Contact</Link>
             <Link href="/workspace/login" style={{
               display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
             }}>Log In</Link>
@@ -2354,9 +2366,6 @@ export default function OmAnalyzerPage() {
             <Link href="/privacy" style={{
               display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
             }}>Privacy Policy</Link>
-            <a href="mailto:support@dealsignals.app?subject=Security%20Report" style={{
-              display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
-            }}>Security</a>
           </div>
         </div>
 
