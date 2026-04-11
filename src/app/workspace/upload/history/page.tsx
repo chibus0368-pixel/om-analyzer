@@ -65,7 +65,9 @@ export default function UploadHistoryPage() {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<"date" | "name" | "score" | "board">("date");
-  const [hideInCurrent, setHideInCurrent] = useState(true);
+  const [hideInCurrent, setHideInCurrent] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(25);
   const [adding, setAdding] = useState(false);
   const [progress, setProgress] = useState<string>("");
   const [toast, setToast] = useState<string | null>(null);
@@ -160,6 +162,17 @@ export default function UploadHistoryPage() {
     return rows;
   }, [allProps, query, hideInCurrent, activeWorkspace, sortBy, workspaceNameById]);
 
+  // Reset to page 1 whenever filters change
+  useEffect(() => {
+    setPage(1);
+  }, [query, hideInCurrent, sortBy, pageSize]);
+
+  const totalPages = pageSize > 0 ? Math.max(1, Math.ceil(filtered.length / pageSize)) : 1;
+  const currentPage = Math.min(page, totalPages);
+  const pageStart = pageSize > 0 ? (currentPage - 1) * pageSize : 0;
+  const pageEnd = pageSize > 0 ? pageStart + pageSize : filtered.length;
+  const paged = pageSize > 0 ? filtered.slice(pageStart, pageEnd) : filtered;
+
   function toggle(id: string) {
     setSelected(prev => {
       const next = new Set(prev);
@@ -170,7 +183,7 @@ export default function UploadHistoryPage() {
   }
 
   function toggleAllVisible() {
-    const visibleIds = filtered.map(p => p.id);
+    const visibleIds = paged.map(p => p.id);
     const allSelected = visibleIds.every(id => selected.has(id));
     setSelected(prev => {
       const next = new Set(prev);
@@ -607,8 +620,8 @@ export default function UploadHistoryPage() {
               <input
                 type="checkbox"
                 checked={
-                  filtered.length > 0 &&
-                  filtered.every(p => selected.has(p.id))
+                  paged.length > 0 &&
+                  paged.every(p => selected.has(p.id))
                 }
                 onChange={toggleAllVisible}
                 style={{ cursor: "pointer" }}
@@ -622,7 +635,7 @@ export default function UploadHistoryPage() {
           </div>
 
           {/* Rows */}
-          {filtered.map(prop => {
+          {paged.map(prop => {
             const isSelected = selected.has(prop.id);
             const wsId = prop.workspaceId || "default";
             const boardName = workspaceNameById[wsId] || "Unknown";
@@ -803,19 +816,117 @@ export default function UploadHistoryPage() {
         </div>
       )}
 
-      {/* Footer summary */}
+      {/* Footer / Pagination bar */}
       {!loading && !error && filtered.length > 0 && (
         <div
           style={{
             marginTop: 16,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 12,
             fontSize: 12,
             color: "#6B7280",
-            textAlign: "center",
           }}
         >
-          Showing {filtered.length} of {allProps.length} uploads.
+          <div>
+            {pageSize > 0 ? (
+              <>
+                Showing <strong style={{ color: "#111827" }}>{filtered.length === 0 ? 0 : pageStart + 1}</strong>
+                –<strong style={{ color: "#111827" }}>{Math.min(pageEnd, filtered.length)}</strong> of{" "}
+                <strong style={{ color: "#111827" }}>{filtered.length}</strong>
+                {filtered.length !== allProps.length && (
+                  <> (filtered from {allProps.length} total)</>
+                )}
+              </>
+            ) : (
+              <>
+                Showing all <strong style={{ color: "#111827" }}>{filtered.length}</strong>
+                {filtered.length !== allProps.length && (
+                  <> of {allProps.length}</>
+                )}{" "}
+                uploads
+              </>
+            )}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <label style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <span>Per page</span>
+              <select
+                value={pageSize}
+                onChange={e => setPageSize(Number(e.target.value))}
+                style={{
+                  padding: "6px 8px",
+                  fontSize: 12,
+                  borderRadius: 6,
+                  border: "1px solid #E5E7EB",
+                  background: "#fff",
+                  color: "#151b2b",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                }}
+              >
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+                <option value={0}>All</option>
+              </select>
+            </label>
+            {pageSize > 0 && totalPages > 1 && (
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <button
+                  onClick={() => setPage(1)}
+                  disabled={currentPage === 1}
+                  style={pgBtn(currentPage === 1)}
+                >
+                  «
+                </button>
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  style={pgBtn(currentPage === 1)}
+                >
+                  ‹ Prev
+                </button>
+                <span style={{ padding: "0 8px", fontWeight: 600, color: "#111827" }}>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  style={pgBtn(currentPage === totalPages)}
+                >
+                  Next ›
+                </button>
+                <button
+                  onClick={() => setPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                  style={pgBtn(currentPage === totalPages)}
+                >
+                  »
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
   );
+}
+
+function pgBtn(disabled: boolean): React.CSSProperties {
+  return {
+    padding: "6px 10px",
+    fontSize: 12,
+    fontWeight: 600,
+    borderRadius: 6,
+    border: "1px solid #E5E7EB",
+    background: disabled ? "#F9FAFB" : "#fff",
+    color: disabled ? "#D1D5DB" : "#151b2b",
+    cursor: disabled ? "not-allowed" : "pointer",
+    fontFamily: "inherit",
+    minWidth: 32,
+  };
 }
