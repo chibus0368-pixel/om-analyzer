@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "DealSignals: Save from Crexi",
+  "version": "0.1.0",
+  "description": "One-click save of Crexi property flyers and OMs into a DealSignals DealBoard.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*.crexi.com/*",
+    "https://*.amazonaws.com/*",
+    "https://*.cloudfront.net/*",
+    "https://*/*",
+    "https://www.dealsignals.app/*",
+    "http://localhost:3000/*"
+  ],
+  "action": {
+    "default_title": "DealSignals: Save from Crexi",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.crexi.com/properties/*",
+        "https://*.crexi.com/property/*"
+      ],
+      "js": ["content.js"],
+      "css": ["overlay.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["injected.js"],
+      "matches": ["https://*.crexi.com/*"]
+    }
+  ]
+}

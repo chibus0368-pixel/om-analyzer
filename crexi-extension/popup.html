@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>DealSignals — Settings</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      color: #0F172A;
+      background: #ffffff;
+    }
+    body { width: 320px; }
+    .header {
+      padding: 14px 16px;
+      background: #0F172A;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #84CC16;
+      box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.25);
+    }
+    .brand { font-weight: 700; font-size: 14px; letter-spacing: 0.3px; }
+    .sub   { font-size: 11px; color: #cbd5e1; margin-top: 2px; }
+    .body  { padding: 14px 16px 16px; }
+    label  {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      margin: 10px 0 4px;
+    }
+    input, select {
+      width: 100%;
+      padding: 9px 11px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #0F172A;
+      outline: none;
+      font-family: inherit;
+    }
+    input:focus, select:focus {
+      border-color: #84CC16;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.18);
+    }
+    .row { display: flex; gap: 8px; }
+    .row > * { flex: 1; min-width: 0; }
+    .actions {
+      display: flex; justify-content: flex-end; gap: 8px;
+      margin-top: 14px;
+    }
+    button {
+      padding: 9px 14px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .save {
+      background: #84CC16;
+      color: #0F172A;
+      border-color: #65a30d;
+    }
+    .save:hover { background: #a3e635; }
+    .status {
+      margin-top: 10px;
+      font-size: 12px;
+      min-height: 16px;
+      color: #64748b;
+    }
+    .status.ok  { color: #15803d; font-weight: 600; }
+    .status.err { color: #b91c1c; }
+    .hint {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+    a { color: #65a30d; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="dot"></span>
+    <div>
+      <div class="brand">DealSignals · Crexi</div>
+      <div class="sub">Save Crexi deals straight to a DealBoard</div>
+    </div>
+  </div>
+  <div class="body">
+    <label for="baseUrl">Base URL</label>
+    <input id="baseUrl" type="text" placeholder="https://www.dealsignals.app" />
+    <div class="hint">Use http://localhost:3000 when testing locally.</div>
+
+    <label for="apiKey">API key</label>
+    <input id="apiKey" type="password" placeholder="EXTENSION_API_KEY from Vercel" />
+    <div class="hint">Must match <code>EXTENSION_API_KEY</code> on the server.</div>
+
+    <div class="row">
+      <div>
+        <label for="workspaceId">Default DealBoard</label>
+        <input id="workspaceId" type="text" placeholder="default" />
+      </div>
+      <div>
+        <label for="analysisType">Analysis type</label>
+        <select id="analysisType">
+          <option value="retail">Retail</option>
+          <option value="industrial">Industrial</option>
+          <option value="office">Office</option>
+          <option value="multifamily">Multifamily</option>
+          <option value="land">Land</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="save" id="save">Save settings</button>
+    </div>
+    <div id="status" class="status"></div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
