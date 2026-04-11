@@ -94,6 +94,38 @@ export default function UploadPage() {
   const skipMismatchRef = useRef(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [processingPct, setProcessingPct] = useState(0);
+  const [processingMsgIdx, setProcessingMsgIdx] = useState(0);
+
+  // Drive the animated progress ring + rotating status copy while we're
+  // in the processing step. Matches the Try Me uploader so this page
+  // feels alive instead of static.
+  useEffect(() => {
+    if (step !== "processing") {
+      setProcessingPct(0);
+      setProcessingMsgIdx(0);
+      return;
+    }
+    const start = Date.now();
+    const duration = 50000; // ~50s to reach 95%
+    let raf = 0;
+    const tick = () => {
+      const elapsed = Date.now() - start;
+      const linear = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - linear, 3);
+      setProcessingPct(Math.min(Math.round(eased * 95), 95));
+      if (linear < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    const msgInterval = setInterval(
+      () => setProcessingMsgIdx(i => (i + 1) % 7),
+      3000,
+    );
+    return () => {
+      cancelAnimationFrame(raf);
+      clearInterval(msgInterval);
+    };
+  }, [step]);
 
   useEffect(() => {
     if (!user || !activeWorkspace) return;
@@ -593,80 +625,300 @@ export default function UploadPage() {
       )}
 
       {/* ===== PROCESSING ===== */}
-      {step === "processing" && (
-        <div style={{ background: C.surfLowest, borderRadius: C.radius, boxShadow: C.shadow, padding: 28 }}>
-          <style>{`@keyframes spin { to { transform: rotate(360deg) } }
-            @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.5 } }`}</style>
+      {step === "processing" && (() => {
+        // Compute stage flags once so they're shared between the ring
+        // and the chip rail.
+        const stages = [
+          { label: "UPLOAD",   done: statusMsg !== "Uploading files..." },
+          { label: "EXTRACT",  done: !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
+          { label: "READ",     done: statusMsg !== "Reading file contents..." && !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
+          { label: "ANALYZE",  done: !statusMsg.includes("Analyzing") && !statusMsg.includes("Reading") && !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
+          { label: "GENERATE", done: statusMsg.includes("Generating") || statusMsg.includes("complete") },
+        ];
+        const factMessages = [
+          "Scanning document structure…",
+          "Extracting financial data points…",
+          "Calculating cap rate and NOI…",
+          "Running sale price scenarios…",
+          "Scoring tenant credit quality…",
+          "Mapping location intelligence…",
+          "Building your deal analysis…",
+        ];
+        const radius = 54;
+        const circumference = 2 * Math.PI * radius;
+        const primaryFile = files[0];
 
-          <div style={{ display: "flex", gap: 0, marginBottom: 24 }}>
-            {[
-              { label: "Upload", iconPath: "M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12", done: statusMsg !== "Uploading files..." },
-              { label: "Extract Image", iconPath: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z", done: !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
-              { label: "Read Document", iconPath: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", done: statusMsg !== "Reading file contents..." && !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
-              { label: "AI Analysis", iconPath: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z", done: !statusMsg.includes("Analyzing") && !statusMsg.includes("Reading") && !statusMsg.includes("image") && statusMsg !== "Uploading files..." },
-              { label: "Generate", iconPath: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", done: statusMsg.includes("Generating") || statusMsg.includes("complete") },
-            ].map((stage, i, arr) => {
-              const isCurrent = !stage.done && (i === 0 || arr[i - 1].done);
-              return (
-                <div key={stage.label} style={{ flex: 1, textAlign: "center" }}>
-                  <div style={{
-                    width: 36, height: 36, borderRadius: "50%", margin: "0 auto 6px",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    background: stage.done ? "#D1FAE5" : isCurrent ? "rgba(132, 204, 22, 0.08)" : C.surfLow,
-                    border: isCurrent ? `2px solid ${C.primary}` : "2px solid transparent",
-                    animation: isCurrent ? "pulse 1.5s ease-in-out infinite" : "none",
+        return (
+          <div style={{
+            position: "relative",
+            background: "linear-gradient(180deg, #ffffff 0%, #f7faf1 100%)",
+            borderRadius: C.radius,
+            boxShadow: C.shadow,
+            padding: "56px 32px 44px",
+            overflow: "hidden",
+            textAlign: "center",
+          }}>
+            <style>{`
+              @keyframes wsUploadPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.55; transform: scale(0.94); } }
+              @keyframes wsUploadFactSwap { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: translateY(0); } }
+              @keyframes wsUploadRingGlow { 0%, 100% { filter: drop-shadow(0 0 6px rgba(132,204,22,0.35)); } 50% { filter: drop-shadow(0 0 14px rgba(132,204,22,0.55)); } }
+              @keyframes wsUploadShimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+            `}</style>
+
+            {/* Soft green radial glow behind the ring */}
+            <div style={{
+              position: "absolute", top: -60, left: "50%",
+              transform: "translateX(-50%)",
+              width: 420, height: 420,
+              background: "radial-gradient(circle, rgba(132,204,22,0.14) 0%, rgba(132,204,22,0) 65%)",
+              borderRadius: "50%", pointerEvents: "none", zIndex: 0,
+            }} />
+
+            <div style={{ position: "relative", zIndex: 1, maxWidth: 620, margin: "0 auto" }}>
+              {/* File name pill */}
+              {primaryFile && (
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  padding: "6px 14px",
+                  background: "rgba(132,204,22,0.1)",
+                  border: "1px solid rgba(132,204,22,0.25)",
+                  borderRadius: 999,
+                  fontSize: 12,
+                  marginBottom: 24,
+                  maxWidth: "100%",
+                }}>
+                  <span style={{
+                    padding: "2px 7px",
+                    background: "rgba(132,204,22,0.22)",
+                    borderRadius: 4,
+                    fontSize: 9, fontWeight: 800,
+                    color: "#4D7C0F",
+                    textTransform: "uppercase",
+                    letterSpacing: 0.4,
                   }}>
-                    {stage.done ? (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>
-                    ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={isCurrent ? C.primary : C.secondary} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d={stage.iconPath} /></svg>
-                    )}
-                  </div>
-                  <div style={{ fontSize: 10, fontWeight: 600, color: stage.done ? "#059669" : isCurrent ? C.primary : C.secondary }}>
-                    {stage.label}
-                  </div>
-                  {i < arr.length - 1 && (
-                    <div style={{ position: "relative", top: -26, left: "50%", width: "100%", height: 3, background: stage.done ? "#10B981" : C.surfLow, borderRadius: 2 }} />
+                    {primaryFile.file.name.split(".").pop()}
+                  </span>
+                  <span style={{
+                    maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis",
+                    whiteSpace: "nowrap", color: "#4D5466", fontWeight: 600,
+                  }}>
+                    {primaryFile.file.name}
+                  </span>
+                  {files.length > 1 && (
+                    <span style={{
+                      padding: "2px 7px",
+                      background: "rgba(21,27,43,0.06)",
+                      borderRadius: 4,
+                      fontSize: 9, fontWeight: 800,
+                      color: "#151b2b",
+                      textTransform: "uppercase",
+                      letterSpacing: 0.4,
+                    }}>
+                      +{files.length - 1}
+                    </span>
                   )}
                 </div>
-              );
-            })}
-          </div>
+              )}
 
-          <div style={{ textAlign: "center" }}>
-            <p style={{ fontSize: 14, fontWeight: 600, color: C.onSurface, margin: "0 0 4px" }}>{statusMsg}</p>
-            <p style={{ fontSize: 12, color: C.secondary, margin: "0 0 4px" }}>
-              {statusMsg.includes("Analyzing") ? "AI is extracting property data and calculating underwriting (30-60 seconds)" :
-               statusMsg.includes("Reading") ? "Extracting text from your document (5-15 seconds)" :
-               statusMsg.includes("image") ? "Capturing property image from PDF (5 seconds)" :
-               statusMsg.includes("Detecting") ? "Classifying property type..." :
-               "Processing your files..."}
-            </p>
-            <p style={{ fontSize: 11, fontWeight: 600, color: "#D97706", margin: 0 }}>
-              Please stay on this page until processing is complete.
-            </p>
-          </div>
-
-          <div style={{ marginTop: 16, textAlign: "left" }}>
-            {files.map(f => (
-              <div key={f.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0", fontSize: 12 }}>
-                <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: C.secondary }}>{f.file.name}</span>
-                {f.status === "uploading" && (
-                  <div style={{ width: 100, flexShrink: 0, display: "flex", alignItems: "center", gap: 6 }}>
-                    <div style={{ flex: 1, height: 6, background: "#E0F2F1", borderRadius: 3, overflow: "hidden" }}>
-                      <div style={{ height: "100%", background: "#0D9488", borderRadius: 3, width: `${f.progress}%`, transition: "width 0.3s" }} />
-                    </div>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: "#0D9488", minWidth: 28, textAlign: "right" }}>{f.progress}%</span>
+              {/* Progress ring with percentage */}
+              <div style={{
+                position: "relative", width: 128, height: 128,
+                margin: "0 auto 24px",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <svg width="128" height="128" viewBox="0 0 128 128" style={{
+                  position: "absolute", inset: 0,
+                  animation: "wsUploadRingGlow 2.4s ease-in-out infinite",
+                }}>
+                  <circle cx="64" cy="64" r={radius} fill="none"
+                    stroke="rgba(132,204,22,0.12)" strokeWidth="4" />
+                  <circle cx="64" cy="64" r={radius} fill="none"
+                    stroke="#84CC16" strokeWidth="4"
+                    strokeDasharray={`${circumference}`}
+                    strokeDashoffset={`${circumference * (1 - processingPct / 100)}`}
+                    strokeLinecap="round"
+                    style={{
+                      transition: "stroke-dashoffset 0.2s linear",
+                      transformOrigin: "64px 64px",
+                      transform: "rotate(-90deg)",
+                    }}
+                  />
+                </svg>
+                <div style={{ position: "relative", zIndex: 1, lineHeight: 1 }}>
+                  <div style={{
+                    fontSize: 30, fontWeight: 800, color: "#151b2b",
+                    fontVariantNumeric: "tabular-nums",
+                    fontFamily: "'Inter', sans-serif",
+                  }}>
+                    {processingPct}
+                    <span style={{ fontSize: 16, color: "#84CC16", fontWeight: 700, marginLeft: 2 }}>%</span>
                   </div>
-                )}
-                {f.status === "complete" && <span style={{ color: "#10B981", fontSize: 13, flexShrink: 0 }}>{"\u2713"}</span>}
-                {f.status === "error" && <span style={{ color: C.primary, fontSize: 10, flexShrink: 0 }}>failed</span>}
-                {f.status === "pending" && <span style={{ color: C.secondary, fontSize: 10, flexShrink: 0 }}>waiting</span>}
+                  <div style={{
+                    fontSize: 9, fontWeight: 700, color: "#9CA3AF",
+                    textTransform: "uppercase", letterSpacing: 0.8, marginTop: 4,
+                  }}>
+                    Underwriting
+                  </div>
+                </div>
               </div>
-            ))}
+
+              {/* Headline */}
+              <h2 style={{
+                fontSize: 22, fontWeight: 800, color: "#151b2b",
+                margin: "0 0 6px", letterSpacing: -0.2,
+                fontFamily: "'Inter', sans-serif",
+              }}>
+                Analyzing your deal
+              </h2>
+              <p key={`ws-fact-${processingMsgIdx}`} style={{
+                fontSize: 14, fontWeight: 600, color: "#4D7C0F",
+                margin: "0 0 28px",
+                animation: "wsUploadFactSwap 0.5s ease-out",
+              }}>
+                {factMessages[processingMsgIdx]}
+              </p>
+
+              {/* Stage chip rail */}
+              <div style={{
+                display: "flex", gap: 6,
+                justifyContent: "center", alignItems: "center",
+                flexWrap: "wrap", marginBottom: 24,
+              }}>
+                {stages.map((stage, i, arr) => {
+                  const isCurrent = !stage.done && (i === 0 || arr[i - 1].done);
+                  return (
+                    <div key={stage.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <div style={{
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        padding: "6px 12px", borderRadius: 999,
+                        background: stage.done
+                          ? "rgba(132,204,22,0.14)"
+                          : isCurrent
+                            ? "rgba(132,204,22,0.08)"
+                            : "#F3F4F6",
+                        border: `1px solid ${
+                          stage.done ? "rgba(132,204,22,0.4)"
+                          : isCurrent ? "#84CC16"
+                          : "rgba(0,0,0,0.06)"
+                        }`,
+                        transition: "all 0.25s",
+                      }}>
+                        <div style={{
+                          width: 14, height: 14, borderRadius: "50%",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          background: stage.done
+                            ? "#84CC16"
+                            : isCurrent ? "rgba(132,204,22,0.3)" : "rgba(0,0,0,0.08)",
+                          animation: isCurrent ? "wsUploadPulse 1.4s ease-in-out infinite" : "none",
+                        }}>
+                          {stage.done ? (
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none"
+                              stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M5 13l4 4L19 7" />
+                            </svg>
+                          ) : (
+                            <div style={{
+                              width: 5, height: 5, borderRadius: "50%",
+                              background: isCurrent ? "#84CC16" : "rgba(0,0,0,0.25)",
+                            }} />
+                          )}
+                        </div>
+                        <span style={{
+                          fontSize: 10, fontWeight: 800,
+                          color: stage.done ? "#4D7C0F" : isCurrent ? "#4D7C0F" : "#9CA3AF",
+                          textTransform: "uppercase", letterSpacing: 0.6,
+                        }}>
+                          {stage.label}
+                        </span>
+                      </div>
+                      {i < arr.length - 1 && (
+                        <div style={{
+                          width: 10, height: 2, borderRadius: 1,
+                          background: stage.done ? "#84CC16" : "rgba(0,0,0,0.08)",
+                        }} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Shimmering progress bar */}
+              <div style={{
+                position: "relative",
+                height: 6, borderRadius: 999,
+                background: "rgba(132,204,22,0.12)",
+                overflow: "hidden",
+                maxWidth: 440, margin: "0 auto 16px",
+              }}>
+                <div style={{
+                  height: "100%",
+                  width: `${processingPct}%`,
+                  background: "linear-gradient(90deg, #84CC16, #65A30D)",
+                  borderRadius: 999,
+                  transition: "width 0.2s linear",
+                }} />
+                <div style={{
+                  position: "absolute", top: 0, bottom: 0, width: "40%",
+                  background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)",
+                  animation: "wsUploadShimmer 1.8s linear infinite",
+                  pointerEvents: "none",
+                }} />
+              </div>
+
+              {/* Meta line */}
+              <p style={{
+                fontSize: 12, color: "#6B7280", margin: "0 0 4px", fontWeight: 500,
+              }}>
+                {statusMsg.includes("Analyzing") ? "AI is extracting property data and calculating underwriting (30–60 seconds)" :
+                 statusMsg.includes("Reading") ? "Extracting text from your document (5–15 seconds)" :
+                 statusMsg.includes("image") ? "Capturing property image from PDF (≈5 seconds)" :
+                 statusMsg.includes("Detecting") ? "Classifying property type…" :
+                 "Uploading and processing your files…"}
+              </p>
+              <p style={{
+                fontSize: 11, fontWeight: 700, color: "#D97706",
+                margin: 0, letterSpacing: 0.2,
+              }}>
+                Please stay on this page until processing is complete.
+              </p>
+
+              {/* Per-file progress list (only when uploading) */}
+              {files.some(f => f.status === "uploading" || f.status === "pending") && (
+                <div style={{
+                  marginTop: 24, textAlign: "left",
+                  background: "rgba(248, 250, 244, 0.7)",
+                  border: "1px solid rgba(132,204,22,0.15)",
+                  borderRadius: 8, padding: "10px 14px",
+                  maxWidth: 440, marginLeft: "auto", marginRight: "auto",
+                }}>
+                  {files.map(f => (
+                    <div key={f.id} style={{
+                      display: "flex", alignItems: "center", gap: 10,
+                      padding: "5px 0", fontSize: 12,
+                    }}>
+                      <span style={{
+                        flex: 1, overflow: "hidden", textOverflow: "ellipsis",
+                        whiteSpace: "nowrap", color: "#4D5466", fontWeight: 500,
+                      }}>{f.file.name}</span>
+                      {f.status === "uploading" && (
+                        <div style={{ width: 110, flexShrink: 0, display: "flex", alignItems: "center", gap: 6 }}>
+                          <div style={{ flex: 1, height: 4, background: "rgba(132,204,22,0.15)", borderRadius: 2, overflow: "hidden" }}>
+                            <div style={{ height: "100%", background: "#84CC16", borderRadius: 2, width: `${f.progress}%`, transition: "width 0.3s" }} />
+                          </div>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: "#4D7C0F", minWidth: 30, textAlign: "right" }}>{f.progress}%</span>
+                        </div>
+                      )}
+                      {f.status === "complete" && <span style={{ color: "#10B981", fontSize: 14, flexShrink: 0 }}>{"\u2713"}</span>}
+                      {f.status === "error" && <span style={{ color: "#DC2626", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>FAILED</span>}
+                      {f.status === "pending" && <span style={{ color: "#9CA3AF", fontSize: 10, flexShrink: 0 }}>waiting</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ===== STEP 2: Name Property ===== */}
       {step === "name" && (
