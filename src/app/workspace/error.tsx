@@ -21,7 +21,6 @@ export default function WorkspaceError({
 }) {
   useEffect(() => {
     // Log to console so we still see it in devtools + Vercel runtime logs
-    // eslint-disable-next-line no-console
     console.error("[workspace error boundary]", error);
   }, [error]);
 

@@ -71,16 +71,35 @@ export default function ManageWorkspacesPage() {
           </div>
           <p style={{ margin: "4px 0 0", fontSize: 13, color: "#5A7091" }}>Add, rename, clear data, or delete DealBoards.</p>
         </div>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="ws-btn-gold"
-          style={{
-            padding: "8px 18px", background: "#C49A3C", color: "#fff", border: "none",
-            borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-          }}
-        >
-          + New DealBoard
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button
+            onClick={() => router.push("/workspace/upload/history")}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              padding: "8px 16px", background: "#fff", color: "#151b2b",
+              border: "1px solid rgba(0,0,0,0.12)",
+              borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: "pointer",
+              fontFamily: "inherit", letterSpacing: "0.03em",
+            }}
+            title={`Add existing uploads to ${activeWorkspace?.name || "the active DealBoard"}`}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9" />
+              <polyline points="3 4 3 12 11 12" />
+            </svg>
+            Add from Upload History
+          </button>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="ws-btn-gold"
+            style={{
+              padding: "8px 18px", background: "#C49A3C", color: "#fff", border: "none",
+              borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+            }}
+          >
+            + New DealBoard
+          </button>
+        </div>
       </div>
 
       {/* Add workspace form */}

@@ -538,41 +538,78 @@ export default function WorkspaceDashboard() {
           </p>
         </div>
 
-        {/* Right side: Add Property button */}
-        <Link href="/workspace/upload" style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          padding: "10px 18px",
-          background: "#84CC16",
-          border: "none",
-          borderRadius: 6,
-          fontSize: 11,
-          fontWeight: 900,
-          color: "#000000",
-          textDecoration: "none",
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          transition: "all 0.2s",
-          cursor: "pointer",
-        }}
-          onMouseEnter={e => {
-            const el = e.currentTarget as HTMLElement;
-            el.style.background = "#7EC616";
-            el.style.transform = "translateY(-1px)";
+        {/* Right side: Add-from-history + Add Property buttons */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <Link href="/workspace/upload/history" style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "10px 16px",
+            background: "#FFFFFF",
+            border: "1px solid rgba(0,0,0,0.12)",
+            borderRadius: 6,
+            fontSize: 11,
+            fontWeight: 800,
+            color: "#151b2b",
+            textDecoration: "none",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            transition: "all 0.2s",
+            cursor: "pointer",
           }}
-          onMouseLeave={e => {
-            const el = e.currentTarget as HTMLElement;
-            el.style.background = "#84CC16";
-            el.style.transform = "none";
+            onMouseEnter={e => {
+              const el = e.currentTarget as HTMLElement;
+              el.style.background = "#F9FAFB";
+              el.style.transform = "translateY(-1px)";
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget as HTMLElement;
+              el.style.background = "#FFFFFF";
+              el.style.transform = "none";
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9" />
+              <polyline points="3 4 3 12 11 12" />
+            </svg>
+            Add from Upload History
+          </Link>
+
+          <Link href="/workspace/upload" style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "10px 18px",
+            background: "#84CC16",
+            border: "none",
+            borderRadius: 6,
+            fontSize: 11,
+            fontWeight: 900,
+            color: "#000000",
+            textDecoration: "none",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            transition: "all 0.2s",
+            cursor: "pointer",
           }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Add Property
-        </Link>
+            onMouseEnter={e => {
+              const el = e.currentTarget as HTMLElement;
+              el.style.background = "#7EC616";
+              el.style.transform = "translateY(-1px)";
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget as HTMLElement;
+              el.style.background = "#84CC16";
+              el.style.transform = "none";
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Add Property
+          </Link>
+        </div>
       </div>
 
       {/* Property Cards Grid */}

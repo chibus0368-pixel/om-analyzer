@@ -19,6 +19,7 @@ export async function GET(req: NextRequest) {
     const userId = decoded.uid;
 
     const workspaceId = req.nextUrl.searchParams.get("workspaceId") || "default";
+    const all = req.nextUrl.searchParams.get("all") === "true";
 
     const db = getAdminDb();
 
@@ -32,11 +33,15 @@ export async function GET(req: NextRequest) {
 
     let properties = propsSnap.docs.map(d => ({ id: d.id, ...d.data() } as any));
 
-    // Filter by workspaceId — strict filtering, no fallback
-    if (workspaceId === "default") {
-      properties = properties.filter(p => !p.workspaceId || p.workspaceId === "default");
-    } else {
-      properties = properties.filter(p => p.workspaceId === workspaceId);
+    // Filter by workspaceId — strict filtering, no fallback.
+    // When ?all=true, skip the filter and return every property for the
+    // user across all DealBoards (used by the upload-history picker).
+    if (!all) {
+      if (workspaceId === "default") {
+        properties = properties.filter(p => !p.workspaceId || p.workspaceId === "default");
+      } else {
+        properties = properties.filter(p => p.workspaceId === workspaceId);
+      }
     }
 
     // Enrich with document counts, but DO NOT let this block the response.
