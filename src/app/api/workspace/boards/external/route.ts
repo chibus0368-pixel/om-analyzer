@@ -4,10 +4,14 @@ import { getAdminDb } from "@/lib/firebase-admin";
 /**
  * External Boards List — Chrome extension / bookmarklet helper.
  *
- * Returns the list of active DealBoards for the user that the extension
- * is attributed to (EXTENSION_USER_ID). Workspaces themselves live in
- * browser localStorage in the web app, so "active boards" here means
- * distinct workspaceIds the user has at least one property row under.
+ * Returns the REAL DealBoards for the user that the extension is
+ * attributed to (EXTENSION_USER_ID). Source of truth is the
+ * `workspaces` Firestore collection (doc id = `${userId}__${wsId}`).
+ *
+ * Counts are enriched from `workspace_properties`. Property rows
+ * tagged with a stale/orphaned workspaceId that has no matching row
+ * in `workspaces` are intentionally NOT surfaced here — those are
+ * exactly the "boards i don't recognize" the user was seeing.
  *
  * Auth: same X-API-Key pattern as /api/workspace/upload/external.
  *
@@ -40,18 +44,6 @@ function corsHeaders(origin: string | null): Record<string, string> {
   };
 }
 
-/** Turn a workspace slug like "retail-2026" into a display name. */
-function prettifySlug(slug: string): string {
-  if (!slug || slug === "default") return "Default DealBoard";
-  return slug
-    .replace(/[-_]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .split(" ")
-    .map(w => (w ? w[0].toUpperCase() + w.slice(1) : w))
-    .join(" ");
-}
-
 export async function OPTIONS(req: NextRequest) {
   return new NextResponse(null, { status: 204, headers: corsHeaders(req.headers.get("origin")) });
 }
@@ -74,34 +66,50 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: cors });
   }
 
-  // ── Query Firestore for distinct workspaceIds on this user's rows ──
   try {
     const db = getAdminDb();
-    const snap = await db
+
+    // ── Real boards: the user's rows in the `workspaces` collection ─
+    const wsSnap = await db
+      .collection("workspaces")
+      .where("userId", "==", userId)
+      .get();
+
+    type Board = { id: string; name: string; count: number };
+    const realBoards = new Map<string, Board>();
+    wsSnap.docs.forEach(d => {
+      const data = d.data() as any;
+      const id = String(data?.id || d.id.split("__")[1] || "default");
+      const name = String(data?.name || "Untitled DealBoard");
+      realBoards.set(id, { id, name, count: 0 });
+    });
+
+    // Always surface "default" so new users have something to save to,
+    // even before they've opened Pro for the first time.
+    if (!realBoards.has("default")) {
+      realBoards.set("default", { id: "default", name: "Default DealBoard", count: 0 });
+    }
+
+    // ── Enrich with property counts ────────────────────────────────
+    const propsSnap = await db
       .collection("workspace_properties")
       .where("userId", "==", userId)
       .select("workspaceId")
       .get();
-
-    const counts = new Map<string, number>();
-    snap.docs.forEach(d => {
-      const data = d.data() as any;
-      const wsId: string = (data && data.workspaceId) || "default";
-      counts.set(wsId, (counts.get(wsId) || 0) + 1);
+    propsSnap.docs.forEach(d => {
+      const wsId = String((d.data() as any)?.workspaceId || "default");
+      const existing = realBoards.get(wsId);
+      if (existing) existing.count += 1;
+      // Orphaned workspaceIds (no matching real board) are intentionally
+      // dropped — they're the stale ghost boards the extension was showing.
     });
 
-    // Always include "default" even if empty so new users have something
-    if (!counts.has("default")) counts.set("default", 0);
-
-    const boards = Array.from(counts.entries())
-      .map(([id, count]) => ({ id, name: prettifySlug(id), count }))
-      .sort((a, b) => {
-        // "default" first, then by activity desc, then by name asc
-        if (a.id === "default" && b.id !== "default") return -1;
-        if (b.id === "default" && a.id !== "default") return 1;
-        if (b.count !== a.count) return b.count - a.count;
-        return a.name.localeCompare(b.name);
-      });
+    const boards = Array.from(realBoards.values()).sort((a, b) => {
+      if (a.id === "default" && b.id !== "default") return -1;
+      if (b.id === "default" && a.id !== "default") return 1;
+      if (b.count !== a.count) return b.count - a.count;
+      return a.name.localeCompare(b.name);
+    });
 
     return NextResponse.json({ boards }, { headers: cors });
   } catch (err: any) {
