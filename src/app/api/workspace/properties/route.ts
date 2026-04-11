@@ -31,7 +31,43 @@ export async function GET(req: NextRequest) {
       .where("userId", "==", userId)
       .get();
 
-    let properties = propsSnap.docs.map(d => ({ id: d.id, ...d.data() } as any));
+    // Normalize Firestore Timestamp fields to ISO strings at the API
+    // boundary. Properties created by the parse engine store createdAt/
+    // updatedAt as ISO strings, but properties created via the duplicate
+    // route use FieldValue.serverTimestamp() which Admin SDK reads back
+    // as a Timestamp instance. Without normalization those serialize as
+    // { _seconds, _nanoseconds } and break any client-side code that
+    // tries to sort them with .localeCompare.
+    const normalizeTs = (v: any): any => {
+      if (!v) return v;
+      if (typeof v === "string") return v;
+      if (typeof v === "object") {
+        if (typeof v.toDate === "function") {
+          try {
+            return v.toDate().toISOString();
+          } catch {
+            /* fall through */
+          }
+        }
+        if (typeof v._seconds === "number") {
+          return new Date(v._seconds * 1000).toISOString();
+        }
+        if (typeof v.seconds === "number") {
+          return new Date(v.seconds * 1000).toISOString();
+        }
+      }
+      return v;
+    };
+
+    let properties = propsSnap.docs.map(d => {
+      const data = d.data() as any;
+      return {
+        id: d.id,
+        ...data,
+        createdAt: normalizeTs(data.createdAt),
+        updatedAt: normalizeTs(data.updatedAt),
+      };
+    });
 
     // Filter by workspaceId — strict filtering, no fallback.
     // When ?all=true, skip the filter and return every property for the

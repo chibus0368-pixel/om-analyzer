@@ -23,6 +23,38 @@ type HistoryProperty = Property & {
   processingStatus?: string;
 };
 
+/**
+ * Normalize a timestamp field to an ISO string.
+ *
+ * Properties created by the parse engine store createdAt/updatedAt as
+ * ISO strings, but properties created via /api/workspace/duplicate use
+ * FieldValue.serverTimestamp() which the Admin SDK reads back as a
+ * Timestamp instance and Next.js serializes to { _seconds, _nanoseconds }.
+ * Without normalization, sorting on a mixed set throws
+ * "(intermediate value).localeCompare is not a function".
+ */
+function tsToString(v: any): string {
+  if (!v) return "";
+  if (typeof v === "string") return v;
+  if (typeof v === "object") {
+    if (typeof v._seconds === "number") {
+      return new Date(v._seconds * 1000).toISOString();
+    }
+    if (typeof v.seconds === "number") {
+      return new Date(v.seconds * 1000).toISOString();
+    }
+    // Raw Date-like
+    if (typeof v.toISOString === "function") {
+      try {
+        return v.toISOString();
+      } catch {
+        /* fall through */
+      }
+    }
+  }
+  return "";
+}
+
 export default function UploadHistoryPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -99,24 +131,32 @@ export default function UploadHistoryPage() {
         return hay.includes(q);
       });
     }
-    rows.sort((a, b) => {
-      switch (sortBy) {
-        case "name":
-          return (a.propertyName || "").localeCompare(b.propertyName || "");
-        case "score":
-          return ((b as any).scoreTotal || 0) - ((a as any).scoreTotal || 0);
-        case "board": {
-          const aWs = workspaceNameById[a.workspaceId || "default"] || "";
-          const bWs = workspaceNameById[b.workspaceId || "default"] || "";
-          return aWs.localeCompare(bWs);
+    try {
+      rows.sort((a, b) => {
+        switch (sortBy) {
+          case "name":
+            return String(a.propertyName || "").localeCompare(
+              String(b.propertyName || ""),
+            );
+          case "score":
+            return ((b as any).scoreTotal || 0) - ((a as any).scoreTotal || 0);
+          case "board": {
+            const aWs = workspaceNameById[a.workspaceId || "default"] || "";
+            const bWs = workspaceNameById[b.workspaceId || "default"] || "";
+            return aWs.localeCompare(bWs);
+          }
+          case "date":
+          default: {
+            const aTs = tsToString(a.updatedAt) || tsToString(a.createdAt);
+            const bTs = tsToString(b.updatedAt) || tsToString(b.createdAt);
+            return bTs.localeCompare(aTs);
+          }
         }
-        case "date":
-        default:
-          return (b.updatedAt || b.createdAt || "").localeCompare(
-            a.updatedAt || a.createdAt || "",
-          );
-      }
-    });
+      });
+    } catch (err) {
+      // Defensive: never crash the page over a sort error
+      console.warn("[upload history] sort failed", err);
+    }
     return rows;
   }, [allProps, query, hideInCurrent, activeWorkspace, sortBy, workspaceNameById]);
 
@@ -595,7 +635,8 @@ export default function UploadHistoryPage() {
             );
             const location = [prop.city, prop.state].filter(Boolean).join(", ");
             const score = (prop as any).scoreTotal || 0;
-            const uploadedAt = prop.createdAt || prop.updatedAt || "";
+            const uploadedAt =
+              tsToString(prop.createdAt) || tsToString(prop.updatedAt);
             let uploadedLabel = "";
             if (uploadedAt) {
               const d = new Date(uploadedAt);
