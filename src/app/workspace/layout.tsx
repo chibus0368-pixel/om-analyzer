@@ -68,34 +68,16 @@ function NavLink({ href, label, icon, active, collapsed, compact = false }: { hr
 }
 
 /** Sidebar user account card — shows avatar, name, email, plan & usage */
-function SidebarUserCard({ user, collapsed, userTier, onUpgradeClick }: {
+// NOTE: This component is currently unused — kept for future reuse.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _SidebarUserCard({ user, collapsed, userTier, usage, onUpgradeClick }: {
   user: import("firebase/auth").User | null;
   collapsed: boolean;
   userTier: string;
+  usage: { uploadsUsed: number; uploadLimit: number } | null;
   onUpgradeClick: () => void;
 }) {
-  const [usage, setUsage] = useState<{ uploadsUsed: number; uploadLimit: number } | null>(null);
   const router = useRouter();
-
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    async function fetchUsage() {
-      try {
-        const token = await user!.getIdToken();
-        const res = await fetch("/api/workspace/usage", { headers: { Authorization: `Bearer ${token}` } });
-        if (res.ok && !cancelled) {
-          const data = await res.json();
-          setUsage({ uploadsUsed: data.uploadsUsed || 0, uploadLimit: data.uploadLimit || 5 });
-        }
-      } catch { /* non-blocking */ }
-    }
-    fetchUsage();
-    const handler = () => fetchUsage();
-    window.addEventListener("usage-updated", handler);
-    window.addEventListener("workspace-properties-changed", handler);
-    return () => { cancelled = true; window.removeEventListener("usage-updated", handler); window.removeEventListener("workspace-properties-changed", handler); };
-  }, [user]);
 
   if (!user) return null;
 

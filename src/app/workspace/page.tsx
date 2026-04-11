@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
-import { getWorkspaceProperties, getProjectDocuments, deleteProperty, updateProperty } from "@/lib/workspace/firestore";
+import { getWorkspaceProperties, deleteProperty, updateProperty } from "@/lib/workspace/firestore";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -416,44 +416,40 @@ export default function WorkspaceDashboard() {
   useEffect(() => {
     if (!user || !activeWorkspace) return;
     setLoading(true);
-    getWorkspaceProperties(user.uid, activeWorkspace.id).then(async (props) => {
+    getWorkspaceProperties(user.uid, activeWorkspace.id).then((props) => {
       setProperties(props);
 
-      // Auto-repair: if any properties came back via fallback (wrong workspaceId),
-      // silently update them to match the active workspace so they stay visible.
+      // Document counts now come inline from /api/workspace/properties
+      // in a single batched admin-side query — no more N+1 round-trips.
+      const counts: Record<string, number> = {};
+      for (const p of props as any[]) {
+        counts[p.id] = typeof p.documentCount === "number" ? p.documentCount : 0;
+      }
+      setDocCounts(counts);
+
+      // Unblock the UI immediately — everything below is background cleanup.
+      setLoading(false);
+
+      // Auto-repair (fire-and-forget): if any properties came back via
+      // fallback (wrong workspaceId), silently update them. Run in parallel
+      // and do NOT block the dashboard on these writes.
       const orphaned = props.filter(p => p.workspaceId !== activeWorkspace.id);
       if (orphaned.length > 0 && workspaces.length <= 1) {
         console.log(`[dashboard] Auto-repairing ${orphaned.length} orphaned properties to workspace ${activeWorkspace.id}`);
-        for (const p of orphaned) {
-          try {
-            await updateProperty(p.id, { workspaceId: activeWorkspace.id } as any);
-          } catch (e) {
-            console.warn("[dashboard] Failed to repair property:", p.id, e);
-          }
-        }
+        Promise.all(
+          orphaned.map(p =>
+            updateProperty(p.id, { workspaceId: activeWorkspace.id } as any).catch(e => {
+              console.warn("[dashboard] Failed to repair property:", p.id, e);
+            }),
+          ),
+        );
       }
-
-      // Unblock the UI immediately — don't wait on N doc-count queries.
-      setLoading(false);
-
-      // Parallelize per-property document counts. Previously this ran
-      // sequentially via `for...await`, which made load time scale linearly
-      // with property count (e.g. 30 deals = 30 round-trips).
-      const countResults = await Promise.all(
-        props.map(async (prop) => {
-          try {
-            const docs = await getProjectDocuments(prop.projectId, prop.id);
-            return [prop.id, docs.length] as const;
-          } catch {
-            return [prop.id, 0] as const;
-          }
-        }),
-      );
-      const counts: Record<string, number> = {};
-      for (const [id, n] of countResults) counts[id] = n;
-      setDocCounts(counts);
     }).catch(() => setLoading(false));
-  }, [user, activeWorkspace]);
+    // Depend on the stable workspace id, not the object reference — otherwise
+    // any parent re-render that produces a new activeWorkspace object would
+    // re-trigger the loading state and re-fetch properties unnecessarily.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, activeWorkspace?.id]);
 
   if (loading) {
     return <div style={{ padding: 40, textAlign: "center", color: "#585e70" }}>Loading dashboard...</div>;

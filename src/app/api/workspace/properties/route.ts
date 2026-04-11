@@ -21,11 +21,18 @@ export async function GET(req: NextRequest) {
     const workspaceId = req.nextUrl.searchParams.get("workspaceId") || "default";
 
     const db = getAdminDb();
-    const snap = await db.collection("workspace_properties")
-      .where("userId", "==", userId)
-      .get();
 
-    let properties = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
+    // Run the properties query and a single doc-count query in parallel.
+    // The documents query is scoped to this user so we get all their
+    // document rows in one round-trip and group by propertyId in memory —
+    // this replaces the previous N+1 pattern where the client fetched a
+    // separate document query per property card.
+    const [propsSnap, docsSnap] = await Promise.all([
+      db.collection("workspace_properties").where("userId", "==", userId).get(),
+      db.collection("workspace_documents").where("userId", "==", userId).get().catch(() => null),
+    ]);
+
+    let properties = propsSnap.docs.map(d => ({ id: d.id, ...d.data() } as any));
 
     // Filter by workspaceId — strict filtering, no fallback
     if (workspaceId === "default") {
@@ -33,6 +40,25 @@ export async function GET(req: NextRequest) {
     } else {
       properties = properties.filter(p => p.workspaceId === workspaceId);
     }
+
+    // Build doc-count map keyed by propertyId (exclude soft-deleted)
+    const docCounts: Record<string, number> = {};
+    if (docsSnap) {
+      for (const d of docsSnap.docs) {
+        const data = d.data() as any;
+        if (data.isDeleted) continue;
+        const pid = data.propertyId;
+        if (!pid) continue;
+        docCounts[pid] = (docCounts[pid] || 0) + 1;
+      }
+    }
+
+    // Attach the per-property count inline so the client doesn't have to
+    // fan out N follow-up queries.
+    properties = properties.map((p: any) => ({
+      ...p,
+      documentCount: docCounts[p.id] || 0,
+    }));
 
     // Sort by propertyName
     properties.sort((a: any, b: any) => (a.propertyName || "").localeCompare(b.propertyName || ""));
