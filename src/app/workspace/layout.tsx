@@ -993,6 +993,37 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                     {item.label}
                   </Link>
                 ))}
+                {/* Divider */}
+                <div style={{ height: 1, background: "rgba(0,0,0,0.06)", margin: "4px 0" }} />
+                {/* Log out */}
+                <button
+                  onClick={async () => {
+                    setShowMoreMenu(false);
+                    try {
+                      const { getAuth, signOut } = await import("firebase/auth");
+                      await signOut(getAuth());
+                    } catch { /* non-blocking */ }
+                    router.push("/workspace/login");
+                  }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 10, width: "100%",
+                    padding: "11px 16px", fontSize: 13, fontWeight: 500,
+                    color: "#DC2626", background: "transparent",
+                    border: "none", cursor: "pointer", textAlign: "left",
+                    fontFamily: "inherit", transition: "background 0.12s",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "#FEF2F2"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                >
+                  <span style={{ color: "#DC2626", display: "flex" }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                      <polyline points="16 17 21 12 16 7" />
+                      <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                  </span>
+                  Log out
+                </button>
               </div>
             )}
           </div>
