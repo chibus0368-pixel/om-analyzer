@@ -88,14 +88,21 @@ export function buildSmartPropertyName(
  * "Name — Address" format without needing to re-save to Firestore.
  */
 export function cleanDisplayName(
-  propertyName: string,
-  address?: string,
-  city?: string,
-  state?: string,
+  propertyName: string | null | undefined,
+  address?: string | null,
+  city?: string | null,
+  state?: string | null,
 ): string {
-  if (!propertyName) return "Untitled Property";
+  if (!propertyName) {
+    // Fall back to short street address if we have one
+    if (address) {
+      const short = extractShortStreetAddress(address);
+      if (short) return short;
+    }
+    return "Untitled Property";
+  }
 
-  let name = propertyName.trim();
+  let name = String(propertyName).trim();
 
   // 1. Split on em-dash — take the first meaningful part
   if (EM_DASH_SEP.test(name)) {

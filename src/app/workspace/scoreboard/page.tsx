@@ -156,7 +156,7 @@ function ScoreDistribution({ data }: { data: PropertyData[] }) {
     else buckets["0-29"]++;
   });
 
-  const max = Math.max(...Object.values(buckets), 1);
+  const max = Object.values(buckets).reduce((a, b) => (a > b ? a : b), 1);
 
   return (
     <div style={{
@@ -799,7 +799,7 @@ export default function ScoreboardPage() {
       let cmp = 0;
       switch (sortBy) {
         case "score": cmp = ((a.property as any).scoreTotal || 0) - ((b.property as any).scoreTotal || 0); break;
-        case "name": cmp = a.property.propertyName.localeCompare(b.property.propertyName); break;
+        case "name": cmp = (a.property.propertyName || "").localeCompare(b.property.propertyName || ""); break;
         case "price": cmp = (Number(a.values.get("asking_price")) || 0) - (Number(b.values.get("asking_price")) || 0); break;
         case "cap_rate": cmp = (Number(a.values.get("cap_rate")) || 0) - (Number(b.values.get("cap_rate")) || 0); break;
         case "noi": cmp = (Number(a.values.get("noi")) || 0) - (Number(b.values.get("noi")) || 0); break;
@@ -817,7 +817,15 @@ export default function ScoreboardPage() {
     return filtered;
   }, [propertyData, sortBy, sortDir, filterAssetType, filterScoreRange]);
 
-  const maxScore = useMemo(() => Math.max(...propertyData.map(d => (d.property as any).scoreTotal || 0), 100), [propertyData]);
+  const maxScore = useMemo(() => {
+    // Avoid spread on very large arrays (call-stack risk) and guard empty case.
+    let m = 100;
+    for (const d of propertyData) {
+      const s = (d.property as any).scoreTotal || 0;
+      if (s > m) m = s;
+    }
+    return m;
+  }, [propertyData]);
 
   const stats = useMemo(() => {
     if (propertyData.length === 0) return null;
@@ -826,7 +834,7 @@ export default function ScoreboardPage() {
     const caps = propertyData.map(d => Number(d.values.get("cap_rate")) || 0).filter(c => c > 0);
     return {
       avgScore: scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0,
-      topScore: scores.length ? Math.max(...scores) : 0,
+      topScore: scores.length ? scores.reduce((a, b) => (a > b ? a : b), 0) : 0,
       totalValue: prices.reduce((a, b) => a + b, 0),
       avgCap: caps.length ? (caps.reduce((a, b) => a + b, 0) / caps.length).toFixed(2) : null,
       count: propertyData.length,
@@ -1038,7 +1046,7 @@ export default function ScoreboardPage() {
                   pd={pd}
                   rank={idx + 1}
                   totalCount={sortedData.length}
-                  maxScore={Math.max(...sortedData.map(d => (d.property as any).scoreTotal || 0), 1)}
+                  maxScore={sortedData.reduce((mx, d) => Math.max(mx, (d.property as any).scoreTotal || 0), 1)}
                   expanded={expandedId === pd.property.id}
                   onToggle={() => setExpandedId(expandedId === pd.property.id ? null : pd.property.id)}
                 />
