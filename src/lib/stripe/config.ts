@@ -71,7 +71,6 @@ export const PLANS: Record<string, PlanConfig> = {
     features: [
       "500 deal analyses/month",
       "Everything in Pro",
-      "Bulk portfolio uploads",
       "Advanced exports",
       "Priority processing",
       "Custom branding",

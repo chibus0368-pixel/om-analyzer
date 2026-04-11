@@ -1781,7 +1781,6 @@ export default function OmAnalyzerPage() {
                   features: [
                     { text: "500 deal analyses/month", included: true },
                     { text: "Everything in Pro", included: true },
-                    { text: "Bulk portfolio uploads", included: true },
                     { text: "Priority processing queue", included: true },
                     { text: "Priority support", included: true },
                     { text: "Custom branding", included: true },
