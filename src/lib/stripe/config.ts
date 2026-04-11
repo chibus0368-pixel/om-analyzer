@@ -65,11 +65,11 @@ export const PLANS: Record<string, PlanConfig> = {
     name: "Pro+",
     tier: "pro_plus",
     priceMonthly: 100,
-    uploadLimit: 200,
+    uploadLimit: 500,
     trialDays: 7,
     stripePriceId: process.env.STRIPE_PRICE_PRO_PLUS_MONTHLY || null,
     features: [
-      "200 deal analyses/month",
+      "500 deal analyses/month",
       "Everything in Pro",
       "Bulk portfolio uploads",
       "Advanced exports",

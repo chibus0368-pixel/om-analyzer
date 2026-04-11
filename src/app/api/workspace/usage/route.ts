@@ -75,7 +75,18 @@ export async function GET(req: NextRequest) {
     const tier = userData.tier || "free";
     const tierStatus = userData.tierStatus || "none";
     let uploadsUsed = userData.uploadsUsed || 0;
-    const uploadLimit = userData.uploadLimit || getUploadLimit(tier);
+    let uploadLimit = userData.uploadLimit || getUploadLimit(tier);
+
+    // ── Backfill: if a paid user's stored uploadLimit is lower than the
+    // current plan's configured limit (e.g. after a plan-wide quota bump
+    // like Pro+ 200 → 500), sync the stored value up to the new limit so
+    // existing subscribers get the upgrade without waiting for their
+    // next Stripe webhook. Never silently downgrade an existing limit.
+    const configuredLimit = getUploadLimit(tier);
+    if ((tier === "pro" || tier === "pro_plus") && uploadLimit < configuredLimit) {
+      uploadLimit = configuredLimit;
+      await userRef.update({ uploadLimit, updatedAt: new Date() });
+    }
 
     // ── Auto-reset if new billing period (paid users only) ──
     // Free tier has a lifetime limit (no monthly reset)

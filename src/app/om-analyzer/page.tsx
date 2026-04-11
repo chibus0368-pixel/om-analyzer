@@ -1757,7 +1757,7 @@ export default function OmAnalyzerPage() {
                   valueCallout: "7-day free trial · Less than 50¢ per deal",
                   features: [
                     { text: "100 deal analyses/month", included: true },
-                    { text: "One deal at a time (OM + rent roll + T12 per deal)", included: true },
+                    { text: "Bulk portfolio uploads", included: true },
                     { text: "Save deals to workspace", included: true },
                     { text: "Deal Signals scoring", included: true },
                     { text: "Downloadable XLS worksheets of analysis", included: true },
@@ -1777,12 +1777,11 @@ export default function OmAnalyzerPage() {
                   price: "100",
                   period: "/mo",
                   desc: "For high-volume deal flow and serious operators.",
-                  valueCallout: "7-day free trial · Less than $0.50 per deal",
-                  hero: "Portfolio Bulk Upload",
-                  heroSub: "Drop 10 OMs at once — each becomes its own fully-scored deal. The only way to underwrite a pipeline in minutes.",
+                  valueCallout: "7-day free trial · 20¢ per deal",
                   features: [
-                    { text: "200 deal analyses/month", included: true },
+                    { text: "500 deal analyses/month", included: true },
                     { text: "Everything in Pro", included: true },
+                    { text: "Bulk portfolio uploads", included: true },
                     { text: "Priority processing queue", included: true },
                     { text: "Priority support", included: true },
                     { text: "Custom branding", included: true },
@@ -1822,49 +1821,6 @@ export default function OmAnalyzerPage() {
                   {(tier as any).valueCallout && (
                     <div style={{ fontSize: 12, fontWeight: 700, color: "#84CC16", marginBottom: 20, letterSpacing: 0.3 }}>
                       {(tier as any).valueCallout}
-                    </div>
-                  )}
-
-                  {(tier as any).hero && (
-                    <div style={{
-                      marginBottom: 24,
-                      padding: "16px 16px 14px",
-                      borderRadius: 12,
-                      background: "linear-gradient(135deg, rgba(132,204,22,0.12) 0%, rgba(132,204,22,0.04) 100%)",
-                      border: "1px solid rgba(132,204,22,0.35)",
-                      position: "relative",
-                    }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                        </svg>
-                        <span style={{
-                          fontSize: 11,
-                          fontWeight: 800,
-                          color: "#84CC16",
-                          textTransform: "uppercase",
-                          letterSpacing: 1,
-                        }}>
-                          Pro+ exclusive
-                        </span>
-                      </div>
-                      <div style={{
-                        fontSize: 15,
-                        fontWeight: 800,
-                        color: "#ffffff",
-                        marginBottom: 4,
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        letterSpacing: -0.2,
-                      }}>
-                        {(tier as any).hero}
-                      </div>
-                      <div style={{
-                        fontSize: 12,
-                        color: "#cbd2e0",
-                        lineHeight: 1.5,
-                      }}>
-                        {(tier as any).heroSub}
-                      </div>
                     </div>
                   )}
 
@@ -1973,7 +1929,7 @@ export default function OmAnalyzerPage() {
                 {[
                   { q: "Is it really free?", a: "Yes. Try 2 deals without signing up. Create a free account for 5 total analyses with scoring, risk signals, and Excel export. Same output Pro users get." },
                   { q: "What does Pro include?", a: "Pro ($40/month) starts with a 7-day free trial. Everything in Free, plus 100 deal analyses/month, Pro DealBoard with history, deal comparison scoreboard, interactive property map, Location Intelligence, and white-label shareable links." },
-                  { q: "What about Pro+?", a: "Pro+ ($100/month) also starts with a 7-day free trial. Everything in Pro, plus 200 deal analyses/month, bulk portfolio uploads, priority processing, priority support, and custom branding." },
+                  { q: "What about Pro+?", a: "Pro+ ($100/month) also starts with a 7-day free trial. Everything in Pro, plus 500 deal analyses/month, priority processing, priority support, and custom branding. Bulk portfolio uploads are included on both Pro and Pro+." },
                 ].map((item, i) => {
                   const faqIdx = 5 + i;
                   return (

@@ -870,10 +870,10 @@ export default function ProfilePage() {
                   </div>
                   <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>
                     {(usageData?.tier || profile?.tier || "free") === "free"
-                      ? "Basic access — 2 deal analyses"
+                      ? "Basic access — 5 deal analyses"
                       : (usageData?.tier || profile?.tier) === "pro"
-                      ? "$40/month — up to 40 deals"
-                      : "$100/month — up to 200 deals"}
+                      ? "$40/month — up to 100 deals"
+                      : "$100/month — up to 500 deals"}
                   </div>
                 </div>
               </div>
