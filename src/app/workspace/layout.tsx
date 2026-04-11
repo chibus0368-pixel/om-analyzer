@@ -929,11 +929,19 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
           {/* User section — border-left divider */}
           {user && (
-            <Link href="/workspace/profile" style={{
-              display: "flex", alignItems: "center", gap: 12,
-              paddingLeft: 16, borderLeft: "1px solid rgba(255,255,255,0.1)",
-              textDecoration: "none", transition: "opacity 0.15s",
-            }}>
+            <Link
+              href="/workspace/profile"
+              onClick={() => router.push("/workspace/profile")}
+              title="Account & Profile"
+              style={{
+                display: "flex", alignItems: "center", gap: 12,
+                paddingLeft: 16, borderLeft: "1px solid rgba(255,255,255,0.1)",
+                textDecoration: "none", transition: "opacity 0.15s",
+                cursor: "pointer",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = "0.75"; }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
+            >
               <div style={{ textAlign: "right" }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", lineHeight: 1.2, letterSpacing: "0.05em", textTransform: "uppercase" }}>
                   {user.displayName || user.email?.split("@")[0] || "User"}
