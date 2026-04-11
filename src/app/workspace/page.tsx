@@ -433,17 +433,25 @@ export default function WorkspaceDashboard() {
         }
       }
 
-      const counts: Record<string, number> = {};
-      for (const prop of props) {
-        try {
-          const docs = await getProjectDocuments(prop.projectId, prop.id);
-          counts[prop.id] = docs.length;
-        } catch {
-          counts[prop.id] = 0;
-        }
-      }
-      setDocCounts(counts);
+      // Unblock the UI immediately — don't wait on N doc-count queries.
       setLoading(false);
+
+      // Parallelize per-property document counts. Previously this ran
+      // sequentially via `for...await`, which made load time scale linearly
+      // with property count (e.g. 30 deals = 30 round-trips).
+      const countResults = await Promise.all(
+        props.map(async (prop) => {
+          try {
+            const docs = await getProjectDocuments(prop.projectId, prop.id);
+            return [prop.id, docs.length] as const;
+          } catch {
+            return [prop.id, 0] as const;
+          }
+        }),
+      );
+      const counts: Record<string, number> = {};
+      for (const [id, n] of countResults) counts[id] = n;
+      setDocCounts(counts);
     }).catch(() => setLoading(false));
   }, [user, activeWorkspace]);
 

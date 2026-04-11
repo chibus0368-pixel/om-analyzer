@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { runParseEngine } from "@/lib/workspace/parse-engine";
 import { runScoreEngine } from "@/lib/workspace/score-engine";
-import { buildSmartPropertyName } from "@/lib/workspace/propertyNameUtils";
+import { buildSmartPropertyName, extractShortStreetAddress } from "@/lib/workspace/propertyNameUtils";
 
 /**
  * Background Processing Endpoint
@@ -69,10 +69,20 @@ export async function POST(req: NextRequest) {
           const parsedCity = p.city;
           const parsedState = p.state;
 
-          if (parsedName && parsedName !== "Unknown Property") {
-            const smartName = buildSmartPropertyName(parsedName, parsedAddress, parsedCity, parsedState);
+          // Prefer a short street-address label ("136 Commercial Ave") over the
+          // raw parsed name — that's what brokers/owners recognize and keeps
+          // card titles compact. Falls back to buildSmartPropertyName if we
+          // couldn't extract a usable street address from parsed content.
+          const shortStreet = extractShortStreetAddress(parsedAddress);
+          const finalName = shortStreet
+            ? shortStreet
+            : (parsedName && parsedName !== "Unknown Property"
+                ? buildSmartPropertyName(parsedName, parsedAddress, parsedCity, parsedState)
+                : null);
+
+          if (finalName) {
             await db.collection("workspace_properties").doc(propertyId).set({
-              propertyName: smartName,
+              propertyName: finalName,
               updatedAt: new Date().toISOString(),
             }, { merge: true }).catch(() => {});
           }

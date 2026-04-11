@@ -85,7 +85,12 @@ export async function GET(req: NextRequest) {
     const configuredLimit = getUploadLimit(tier);
     if ((tier === "pro" || tier === "pro_plus") && uploadLimit < configuredLimit) {
       uploadLimit = configuredLimit;
-      await userRef.update({ uploadLimit, updatedAt: new Date() });
+      // Fire-and-forget: don't block the response on a backfill write.
+      // Next fetch will see the updated value; if this particular write
+      // fails it'll just retry on the subsequent request.
+      userRef.update({ uploadLimit, updatedAt: new Date() }).catch((e) => {
+        console.warn("[usage] backfill update failed:", e?.message);
+      });
     }
 
     // ── Auto-reset if new billing period (paid users only) ──

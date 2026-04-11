@@ -1,4 +1,5 @@
 import { getAdminDb } from "@/lib/firebase-admin";
+import { extractShortStreetAddress } from "./propertyNameUtils";
 
 // ===== OpenAI API Helper =====
 async function callOpenAI(
@@ -1704,8 +1705,15 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
           }
         }
 
-        if (propName && propName !== "Unknown Property")
+        // Prefer a short street-address label ("136 Commercial Ave") as the
+        // property name — that's what investors recognize. Falls back to the
+        // extracted propName if the address can't be cleanly shortened.
+        const shortStreet = extractShortStreetAddress(propAddress);
+        if (shortStreet) {
+          propUpdate.propertyName = shortStreet;
+        } else if (propName && propName !== "Unknown Property") {
           propUpdate.propertyName = propName;
+        }
         if (propAddress && propAddress !== "Unknown Address")
           propUpdate.address1 = propAddress;
         if (propCity && propCity !== "Unknown City") propUpdate.city = propCity;

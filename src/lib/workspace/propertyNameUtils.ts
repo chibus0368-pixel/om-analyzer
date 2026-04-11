@@ -213,7 +213,52 @@ function deduplicateSegments(name: string): string {
   return name;
 }
 
-function shortenAddress(address: string): string {
+/**
+ * Extract a short street address suitable for use as a property name.
+ *
+ * Examples:
+ *   "136 Commercial Avenue, Suite 200, Garden City, NY 11530" → "136 Commercial Ave"
+ *   "1234 North Main Street" → "1234 N Main St"
+ *   "4567 West Sunset Boulevard #5" → "4567 W Sunset Blvd"
+ *
+ * Strategy: take only the street-number + street-name portion (drop anything
+ * after the first comma), strip suite/unit, abbreviate directions + street
+ * types. Returns empty string if no recognizable street portion found.
+ */
+export function extractShortStreetAddress(
+  address: string | null | undefined,
+): string {
+  if (!address) return "";
+  let a = address.trim();
+  if (!a || a.toLowerCase() === "unknown address") return "";
+
+  // Drop everything after first comma (city/state/zip)
+  const commaIdx = a.indexOf(",");
+  if (commaIdx > 0) a = a.slice(0, commaIdx).trim();
+
+  // Strip suite/unit/# that may appear without a comma
+  a = a.replace(/\s+(?:Suite|Ste|Unit|#|Apt|Apartment)\s*\S+.*$/i, "").trim();
+
+  // Must start with a street number
+  if (!/^\d/.test(a)) {
+    // Try to find the street number portion within the string
+    const m = a.match(/\d{1,6}\s+(?:[NSEW]\.?\s+)?[\w\s]+?(?:St(?:reet)?|Ave(?:nue)?|Blvd|Boulevard|Dr(?:ive)?|Rd|Road|Ln|Lane|Way|Ct|Court|Cir(?:cle)?|Pl(?:ace)?|Pkwy|Parkway|Hwy|Highway|Pike|Trail|Tr)\b/i);
+    if (m) a = m[0];
+    else return "";
+  }
+
+  // Abbreviate directions + street types
+  a = shortenAddress(a);
+
+  // Collapse whitespace
+  a = a.replace(/\s+/g, " ").trim();
+
+  // Sanity: must contain at least a number + a word
+  if (!/^\d+\s+\S/.test(a)) return "";
+  return a;
+}
+
+export function shortenAddress(address: string): string {
   // "1234 North Main Street, Suite 100" → "1234 N Main St"
   return address
     .replace(/\bNorth\b/gi, "N")
