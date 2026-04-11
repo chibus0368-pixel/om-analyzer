@@ -22,15 +22,13 @@ export async function GET(req: NextRequest) {
 
     const db = getAdminDb();
 
-    // Run the properties query and a single doc-count query in parallel.
-    // The documents query is scoped to this user so we get all their
-    // document rows in one round-trip and group by propertyId in memory —
-    // this replaces the previous N+1 pattern where the client fetched a
-    // separate document query per property card.
-    const [propsSnap, docsSnap] = await Promise.all([
-      db.collection("workspace_properties").where("userId", "==", userId).get(),
-      db.collection("workspace_documents").where("userId", "==", userId).get().catch(() => null),
-    ]);
+    // Fetch properties first — this is the critical path. The dashboard
+    // must render even if the document-count enrichment step fails or
+    // times out.
+    const propsSnap = await db
+      .collection("workspace_properties")
+      .where("userId", "==", userId)
+      .get();
 
     let properties = propsSnap.docs.map(d => ({ id: d.id, ...d.data() } as any));
 
@@ -41,16 +39,39 @@ export async function GET(req: NextRequest) {
       properties = properties.filter(p => p.workspaceId === workspaceId);
     }
 
-    // Build doc-count map keyed by propertyId (exclude soft-deleted)
+    // Enrich with document counts, but DO NOT let this block the response.
+    // We race the docs query against a 2s timeout; if the query hasn't
+    // finished in time (or errors), we serve without counts and the
+    // dashboard will just show 0 files until the next refresh.
+    //
+    // Crucially, we use .select("propertyId", "isDeleted") so we don't
+    // pull the heavy document blobs (parsed OM text etc.) — we only need
+    // two small fields to build the count map.
     const docCounts: Record<string, number> = {};
-    if (docsSnap) {
-      for (const d of docsSnap.docs) {
-        const data = d.data() as any;
-        if (data.isDeleted) continue;
-        const pid = data.propertyId;
-        if (!pid) continue;
-        docCounts[pid] = (docCounts[pid] || 0) + 1;
+    try {
+      const docsPromise = db
+        .collection("workspace_documents")
+        .where("userId", "==", userId)
+        .select("propertyId", "isDeleted")
+        .get();
+
+      const timeoutPromise = new Promise<null>(resolve =>
+        setTimeout(() => resolve(null), 2000),
+      );
+
+      const docsSnap = await Promise.race([docsPromise, timeoutPromise]);
+
+      if (docsSnap && (docsSnap as any).docs) {
+        for (const d of (docsSnap as any).docs) {
+          const data = d.data() as any;
+          if (data.isDeleted) continue;
+          const pid = data.propertyId;
+          if (!pid) continue;
+          docCounts[pid] = (docCounts[pid] || 0) + 1;
+        }
       }
+    } catch (e: any) {
+      console.warn("[properties API] doc count enrichment failed:", e?.message);
     }
 
     // Attach the per-property count inline so the client doesn't have to
