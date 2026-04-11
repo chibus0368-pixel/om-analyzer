@@ -577,10 +577,10 @@ export default function UploadPage() {
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 700, fontSize: 14, color: C.onSurface, marginBottom: 2, fontFamily: "'Inter', sans-serif" }}>
-                  Have a whole portfolio?
+                  Bulk Upload: upload up to 10 properties at once
                 </div>
                 <div style={{ fontSize: 13, color: C.secondary }}>
-                  Drop up to 10 OMs at once — each becomes its own fully-scored deal. Different from the multi-file upload above, which merges docs into a single property.
+                  Drop up to 10 OMs in one go and each file becomes its own fully-scored deal on your board. Use this when you have a portfolio of separate properties. (The multi-file upload above is different — it merges several documents into a <em>single</em> property.)
                 </div>
               </div>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
