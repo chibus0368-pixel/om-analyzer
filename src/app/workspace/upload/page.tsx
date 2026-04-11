@@ -576,11 +576,24 @@ export default function UploadPage() {
                 </svg>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: 14, color: C.onSurface, marginBottom: 2, fontFamily: "'Inter', sans-serif" }}>
-                  Have multiple properties?
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>
+                    Have a whole portfolio?
+                  </div>
+                  <span style={{
+                    fontSize: 9,
+                    fontWeight: 800,
+                    color: "#84CC16",
+                    letterSpacing: 1,
+                    textTransform: "uppercase",
+                    padding: "2px 7px",
+                    borderRadius: 999,
+                    background: "rgba(132,204,22,0.12)",
+                    border: "1px solid rgba(132,204,22,0.4)",
+                  }}>Pro+</span>
                 </div>
                 <div style={{ fontSize: 13, color: C.secondary }}>
-                  Bulk upload up to 10 OMs at once — analyze your entire pipeline in minutes
+                  Drop 10 OMs at once — each becomes its own fully-scored deal. Not the same as uploading multiple docs for one property above.
                 </div>
               </div>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
