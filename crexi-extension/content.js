@@ -376,12 +376,8 @@
     // Populate the DealBoard dropdown from the server (active workspaces
     // for this user) and pre-select the default saved in extension settings.
     const boardSelect = root.querySelector("#ds-board-select");
-    const settingsPromise = new Promise((resolve) => {
-      chrome.runtime.sendMessage({ type: "ds:getSettings" }, (s) => resolve(s || {}));
-    });
-    const boardsPromise = new Promise((resolve) => {
-      chrome.runtime.sendMessage({ type: "ds:fetchBoards" }, (res) => resolve(res || {}));
-    });
+    const settingsPromise = safeSendMessage({ type: "ds:getSettings" });
+    const boardsPromise = safeSendMessage({ type: "ds:fetchBoards" });
     Promise.all([settingsPromise, boardsPromise]).then(([settings, res]) => {
       if (!boardSelect) return;
       const preferredId = settings.workspaceId || "default";
