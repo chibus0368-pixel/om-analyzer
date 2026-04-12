@@ -80,34 +80,65 @@ export async function POST(req: NextRequest) {
   const sourceUrl = String(body?.sourceUrl || "").trim();
   const heroImageUrlIn = String(body?.heroImageUrl || "").trim();
 
-  // Create the property row up front so the extension has something to
-  // link to immediately. Pro polls workspace_properties and lights the
-  // card up as each pipeline stage writes back.
   const db = getAdminDb();
   const nowIso = new Date().toISOString();
   const initialName =
     propertyNameIn || fileName.replace(/\.[^.]+$/, "").trim() || "Untitled Property";
 
-  let propertyId: string;
+  // ── Deduplication: if a property with the same sourceUrl already
+  //    exists for this user, reuse it instead of creating a duplicate.
+  //    This handles the common case of saving the same Crexi listing
+  //    twice (accidentally or to retry after an error). We reset the
+  //    processing status so the pipeline re-runs with fresh data. ──
+  let propertyId = "";
+  let isResave = false;
   try {
-    const propertyRef = await db.collection("workspace_properties").add({
-      projectId: "workspace-default",
-      workspaceId,
-      userId,
-      propertyName: initialName,
-      sourceUrl: sourceUrl || null,
-      source: "crexi_extension",
-      parseStatus: "pending",
-      processingStatus: "uploading",
-      analysisType: fallbackAnalysisType,
-      // Crexi CDN images are publicly readable so we pass the URL
-      // straight through instead of rehosting. If empty, the property
-      // page falls back to a static map tile based on the address.
-      ...(heroImageUrlIn ? { heroImageUrl: heroImageUrlIn } : {}),
-      createdAt: nowIso,
-      updatedAt: nowIso,
-    });
-    propertyId = propertyRef.id;
+    if (sourceUrl) {
+      const existing = await db
+        .collection("workspace_properties")
+        .where("userId", "==", userId)
+        .where("sourceUrl", "==", sourceUrl)
+        .limit(1)
+        .get();
+      if (!existing.empty) {
+        const doc = existing.docs[0];
+        propertyId = doc.id;
+        isResave = true;
+        // Reset for re-processing; keep the existing property name if
+        // it was improved by the parser on the first run.
+        await doc.ref.set(
+          {
+            processingStatus: "uploading",
+            parseStatus: "pending",
+            parseError: null,
+            workspaceId,
+            analysisType: fallbackAnalysisType,
+            ...(heroImageUrlIn ? { heroImageUrl: heroImageUrlIn } : {}),
+            updatedAt: nowIso,
+          },
+          { merge: true },
+        );
+        console.log(`[external/init] resave: reusing property ${propertyId} for ${sourceUrl}`);
+      }
+    }
+
+    if (!propertyId) {
+      const propertyRef = await db.collection("workspace_properties").add({
+        projectId: "workspace-default",
+        workspaceId,
+        userId,
+        propertyName: initialName,
+        sourceUrl: sourceUrl || null,
+        source: "crexi_extension",
+        parseStatus: "pending",
+        processingStatus: "uploading",
+        analysisType: fallbackAnalysisType,
+        ...(heroImageUrlIn ? { heroImageUrl: heroImageUrlIn } : {}),
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      });
+      propertyId = propertyRef.id;
+    }
   } catch (err: any) {
     return json(
       req,
