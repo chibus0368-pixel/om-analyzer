@@ -23,14 +23,6 @@ export async function GET(req: NextRequest) {
 
     const db = getAdminDb();
 
-    // Fetch properties first — this is the critical path. The dashboard
-    // must render even if the document-count enrichment step fails or
-    // times out.
-    const propsSnap = await db
-      .collection("workspace_properties")
-      .where("userId", "==", userId)
-      .get();
-
     // Normalize Firestore Timestamp fields to ISO strings at the API
     // boundary. Properties created by the parse engine store createdAt/
     // updatedAt as ISO strings, but properties created via the duplicate
@@ -59,6 +51,18 @@ export async function GET(req: NextRequest) {
       return v;
     };
 
+    // Fetch properties — filter at the Firestore query level to avoid
+    // reading the entire user's collection when only one board is needed.
+    let propsQuery = db.collection("workspace_properties")
+      .where("userId", "==", userId);
+
+    if (!all && workspaceId !== "default") {
+      // Direct Firestore filter — reads only the properties for this board
+      propsQuery = propsQuery.where("workspaceId", "==", workspaceId);
+    }
+
+    const propsSnap = await propsQuery.get();
+
     let properties = propsSnap.docs.map(d => {
       const data = d.data() as any;
       return {
@@ -69,35 +73,42 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    // Filter by workspaceId — strict filtering, no fallback.
-    // When ?all=true, skip the filter and return every property for the
-    // user across all DealBoards (used by the upload-history picker).
-    if (!all) {
-      if (workspaceId === "default") {
-        properties = properties.filter(p => !p.workspaceId || p.workspaceId === "default");
-      } else {
-        properties = properties.filter(p => p.workspaceId === workspaceId);
-      }
+    // For the "default" workspace, we need client-side filtering because
+    // default properties may have workspaceId="" or null or "default".
+    if (!all && workspaceId === "default") {
+      properties = properties.filter(p => !p.workspaceId || p.workspaceId === "default");
     }
 
     // Enrich with document counts, but DO NOT let this block the response.
-    // We race the docs query against a 2s timeout; if the query hasn't
-    // finished in time (or errors), we serve without counts and the
-    // dashboard will just show 0 files until the next refresh.
+    // We race the docs query against a 1.5s timeout; if it hasn't finished
+    // in time (or errors), we serve with 0 counts — the dashboard still
+    // works. We use .select() to only read two small fields.
     //
-    // Crucially, we use .select("propertyId", "isDeleted") so we don't
-    // pull the heavy document blobs (parsed OM text etc.) — we only need
-    // two small fields to build the count map.
+    // Optimization: when we have ≤30 property IDs we use Firestore's
+    // `in` filter to only read documents for these specific properties
+    // rather than scanning every document the user has ever uploaded.
     const docCounts: Record<string, number> = {};
+    const propIds = properties.map((p: any) => p.id);
     try {
-      const docsPromise = db
-        .collection("workspace_documents")
-        .where("userId", "==", userId)
-        .select("propertyId", "isDeleted")
-        .get();
+      let docsPromise;
+      if (propIds.length > 0 && propIds.length <= 30) {
+        // Firestore `in` supports up to 30 values — targeted query
+        docsPromise = db
+          .collection("workspace_documents")
+          .where("propertyId", "in", propIds)
+          .select("propertyId", "isDeleted")
+          .get();
+      } else {
+        // Fallback: scan all user docs (large accounts)
+        docsPromise = db
+          .collection("workspace_documents")
+          .where("userId", "==", userId)
+          .select("propertyId", "isDeleted")
+          .get();
+      }
 
       const timeoutPromise = new Promise<null>(resolve =>
-        setTimeout(() => resolve(null), 2000),
+        setTimeout(() => resolve(null), 1500),
       );
 
       const docsSnap = await Promise.race([docsPromise, timeoutPromise]);

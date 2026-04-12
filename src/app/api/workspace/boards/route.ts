@@ -111,16 +111,22 @@ export async function GET(req: NextRequest) {
       return (a.createdAt || "").localeCompare(b.createdAt || "");
     });
 
-    // Fetch property counts per workspace (single query, client-side grouping)
+    // Fetch property counts per workspace — lightweight: only reads the
+    // workspaceId field. Raced against a 1.5s timeout so the boards list
+    // is never blocked by a slow property scan.
     const propertyCounts: Record<string, number> = {};
     try {
-      const propsSnap = await db.collection("workspace_properties")
+      const countPromise = db.collection("workspace_properties")
         .where("userId", "==", userId)
         .select("workspaceId")
         .get();
-      for (const doc of propsSnap.docs) {
-        const wsId = (doc.data() as any).workspaceId || "default";
-        propertyCounts[wsId] = (propertyCounts[wsId] || 0) + 1;
+      const timeout = new Promise<null>(r => setTimeout(() => r(null), 1500));
+      const propsSnap = await Promise.race([countPromise, timeout]);
+      if (propsSnap && (propsSnap as any).docs) {
+        for (const doc of (propsSnap as any).docs) {
+          const wsId = (doc.data() as any).workspaceId || "default";
+          propertyCounts[wsId] = (propertyCounts[wsId] || 0) + 1;
+        }
       }
     } catch (e: any) {
       console.warn("[boards] failed to count properties:", e?.message);
