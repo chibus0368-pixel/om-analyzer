@@ -266,6 +266,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
 /** Workspace dropdown — used in sidebar (dark theme) */
 function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean; onAddNew: () => void }) {
   const { workspaces, activeWorkspace, switchWorkspace } = useWorkspace();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -339,7 +340,7 @@ function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean;
           {workspaces.map(ws => (
             <button
               key={ws.id}
-              onClick={() => { switchWorkspace(ws.id); setOpen(false); }}
+              onClick={() => { switchWorkspace(ws.id); setOpen(false); router.push("/workspace"); }}
               className="ws-nav"
               style={{
                 display: "flex", alignItems: "center", gap: 10, width: "100%",
@@ -390,6 +391,7 @@ function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean;
 /** Workspace dropdown — used in top header bar */
 function HeaderWorkspaceSwitcher({ onAddNew }: { onAddNew: () => void }) {
   const { workspaces, activeWorkspace, switchWorkspace } = useWorkspace();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -449,7 +451,7 @@ function HeaderWorkspaceSwitcher({ onAddNew }: { onAddNew: () => void }) {
           {workspaces.map(ws => (
             <button
               key={ws.id}
-              onClick={() => { switchWorkspace(ws.id); setOpen(false); }}
+              onClick={() => { switchWorkspace(ws.id); setOpen(false); router.push("/workspace"); }}
               className="ws-nav"
               style={{
                 display: "flex", alignItems: "center", gap: 10, width: "100%",
