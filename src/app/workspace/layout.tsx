@@ -258,36 +258,33 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
         .ws-collapse:hover { color: #585e70 !important; background: rgba(132, 204, 22, 0.08) !important; }
         .ws-dealboard-tab:hover { color: #0F172A !important; background: rgba(0,0,0,0.04) !important; }
 
+        /* ─── Mobile drawer slide-in animation ─── */
+        @keyframes slideInRight {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
+        }
+
+        /* ─── Mobile hamburger button (hidden on desktop) ─── */
+        .ws-hamburger { display: none; }
+
         /* ─── Mobile responsive ─── */
         @media (max-width: 768px) {
-          /* === HEADER === */
-          .ws-header { padding: 0 10px !important; height: 48px !important; min-height: 48px !important; }
-          .ws-header-inner { gap: 6px !important; }
-          .ws-header-logo img { height: 22px !important; }
-          .ws-header-logo { flex-shrink: 0 !important; }
-          .ws-header-right { gap: 10px !important; }
-          /* Hide user name/email — just avatar */
-          .ws-user-text { display: none !important; }
-          .ws-user-link { padding-left: 0 !important; border-left: none !important; gap: 0 !important; }
-          .ws-avatar { width: 30px !important; height: 30px !important; font-size: 10px !important; }
-          .ws-plan-pill { font-size: 7px !important; padding: 3px 7px !important; letter-spacing: 0.06em !important; }
-          /* Board selector — very compact */
-          .ws-board-selector { padding-left: 6px !important; margin-left: 0 !important; border-left-width: 0 !important; gap: 6px !important; }
-          .ws-board-name { font-size: 12px !important; max-width: 110px !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; display: block !important; }
-          .ws-board-sub { display: none !important; }
-          .ws-board-type { font-size: 7px !important; padding: 1px 5px !important; }
-          .ws-ws-dropdown { min-width: 260px !important; max-width: calc(100vw - 20px) !important; left: -80px !important; }
+          /* === HEADER — clean: Logo + Hamburger only === */
+          .ws-header { padding: 0 14px !important; height: 54px !important; min-height: 54px !important; justify-content: space-between !important; }
+          .ws-header-inner { gap: 0 !important; flex: 0 0 auto !important; }
+          .ws-header-logo img { height: 28px !important; }
+          /* Hide everything except logo and hamburger on mobile header */
+          .ws-board-selector { display: none !important; }
+          .ws-header-right { display: none !important; }
+          /* Show hamburger */
+          .ws-hamburger { display: flex !important; align-items: center; justify-content: center; width: 40px; height: 40px; border: none; background: none; cursor: pointer; color: rgba(255,255,255,0.8); border-radius: 8px; flex-shrink: 0; }
+          .ws-hamburger:active { background: rgba(255,255,255,0.1); }
 
-          /* === NAV BAR === */
-          .ws-nav-bar { padding: 0 10px !important; height: 38px !important; min-height: 38px !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
-          .ws-nav-tabs { gap: 12px !important; }
-          .ws-nav-tabs a { font-size: 10px !important; letter-spacing: 1.2px !important; gap: 0 !important; padding-top: 2px !important; }
-          .ws-nav-tabs a span:first-child { display: none !important; }
-          .ws-nav-right { gap: 4px !important; }
-          .ws-share-btn { padding: 4px 8px !important; font-size: 8px !important; letter-spacing: 0.06em !important; }
-          .ws-share-btn svg { display: none !important; }
-          .ws-info-icon { display: none !important; }
-          .ws-share-tooltip { width: 220px !important; right: -10px !important; }
+          /* === NAV BAR — hidden on mobile (moved to drawer) === */
+          .ws-nav-bar { display: none !important; }
+
+          /* === MOBILE DRAWER === */
+          .ws-mobile-overlay { display: block !important; }
 
           /* === MAIN CONTENT === */
           .ws-main-content { padding: 10px !important; }
@@ -297,21 +294,12 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
           .ws-new-modal { width: calc(100vw - 24px) !important; max-width: 400px !important; padding: 16px !important; }
           .ws-new-modal-grid { grid-template-columns: repeat(3, 1fr) !important; }
           .ws-drag-overlay { padding: 20px 16px !important; }
-          .ws-more-menu { width: 200px !important; }
         }
         @media (max-width: 480px) {
-          .ws-header { padding: 0 8px !important; height: 44px !important; min-height: 44px !important; }
-          .ws-header-logo img { height: 18px !important; }
-          .ws-header-right { gap: 8px !important; }
-          .ws-board-name { font-size: 11px !important; max-width: 90px !important; }
-          .ws-board-type { display: none !important; }
-          .ws-plan-pill { display: none !important; }
-          .ws-avatar { width: 28px !important; height: 28px !important; font-size: 9px !important; }
-          .ws-nav-bar { height: 34px !important; min-height: 34px !important; padding: 0 8px !important; }
-          .ws-nav-tabs a { font-size: 9px !important; letter-spacing: 0.8px !important; }
-          .ws-share-btn { display: none !important; }
+          .ws-header { padding: 0 12px !important; height: 50px !important; min-height: 50px !important; }
+          .ws-header-logo img { height: 26px !important; }
           .ws-new-modal-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .ws-main-content { padding: 6px !important; }
+          .ws-main-content { padding: 8px !important; }
         }
       `}</style>
       <WorkspaceLayoutInner user={user}>{children}</WorkspaceLayoutInner>
@@ -574,6 +562,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [userTier, setUserTier] = useState<string>("free");
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [globalDrag, setGlobalDrag] = useState(false);
   const globalDragCounter = useRef(0);
   const prevWsIdRef = useRef<string | null>(null);
@@ -1102,7 +1091,170 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             )}
           </div>
         </div>
+
+        {/* ─── Hamburger button (mobile only, hidden on desktop via CSS) ─── */}
+        <button
+          className="ws-hamburger"
+          onClick={() => setShowMobileMenu(v => !v)}
+          aria-label="Open menu"
+        >
+          {showMobileMenu ? (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          ) : (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          )}
+        </button>
       </header>
+
+      {/* ─── Mobile Slide-Out Drawer (hidden on desktop via CSS: display:none) ─── */}
+      {showMobileMenu && (
+        <div className="ws-mobile-overlay" style={{ display: "none" }}>
+          {/* Backdrop */}
+          <div
+            onClick={() => setShowMobileMenu(false)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 998 }}
+          />
+          {/* Drawer */}
+          <div style={{
+            position: "fixed", top: 0, right: 0, bottom: 0, width: "min(300px, 80vw)",
+            background: "#0f1729", zIndex: 999, display: "flex", flexDirection: "column",
+            boxShadow: "-4px 0 24px rgba(0,0,0,0.4)", animation: "slideInRight 0.25s ease",
+            overflowY: "auto",
+          }}>
+            {/* Drawer header */}
+            <div style={{ padding: "16px 20px 12px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.05em" }}>Menu</span>
+              <button onClick={() => setShowMobileMenu(false)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer", padding: 4 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            {/* Dealboard selector in drawer */}
+            <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Current Dealboard</div>
+              <button
+                onClick={() => { setShowMobileMenu(false); setShowWsDropdown(true); }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10, width: "100%",
+                  padding: "10px 12px", border: "1px solid rgba(132,204,22,0.2)", borderRadius: 8,
+                  background: "rgba(132,204,22,0.06)", cursor: "pointer", textAlign: "left",
+                }}
+              >
+                <div style={{ width: 8, height: 8, borderRadius: 4, background: "#84CC16", flexShrink: 0 }} />
+                <span style={{ fontSize: 13, fontWeight: 600, color: "#FFFFFF", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {activeWorkspace?.name || "Default Dealboard"}
+                </span>
+                <span style={{
+                  fontSize: 8, fontWeight: 700, color: "#84CC16", textTransform: "uppercase",
+                  letterSpacing: "0.08em", padding: "2px 6px", borderRadius: 4,
+                  background: "rgba(132,204,22,0.1)", border: "1px solid rgba(132,204,22,0.2)",
+                }}>
+                  {ANALYSIS_TYPE_LABELS[activeWorkspace?.analysisType || "retail"] || "Retail"}
+                </span>
+              </button>
+            </div>
+
+            {/* Navigation links */}
+            <div style={{ padding: "8px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.1em", padding: "8px 8px 4px" }}>Navigate</div>
+              {[
+                { href: "/workspace", label: "Dealboard", icon: "M3 5h.01M3 12h.01M3 19h.01M8 5h13M8 12h13M8 19h13" },
+                { href: "/workspace/scoreboard", label: "Scorecard", icon: "M3 3v16a2 2 0 0 0 2 2h16M18 17V9M13 17V5M8 17v-3" },
+                { href: "/workspace/upload", label: "Upload Deal", icon: "M12 13v8M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M8 17l4-4 4 4" },
+                { href: "/workspace/map", label: "Map", icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" },
+              ].map(item => {
+                const isActive = item.href === "/workspace" ? pathname === "/workspace" || pathname.startsWith("/workspace/properties") : pathname.startsWith(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={`${item.href}${activeWorkspace?.slug ? "?ws=" + activeWorkspace.slug : ""}`}
+                    onClick={() => setShowMobileMenu(false)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 12,
+                      padding: "12px 8px", borderRadius: 8, textDecoration: "none",
+                      color: isActive ? "#84CC16" : "rgba(255,255,255,0.65)",
+                      background: isActive ? "rgba(132,204,22,0.08)" : "transparent",
+                      fontSize: 14, fontWeight: isActive ? 700 : 500,
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d={item.icon} /></svg>
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* More links */}
+            <div style={{ padding: "8px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.1em", padding: "8px 8px 4px" }}>More</div>
+              {[
+                { href: `/workspace/share${activeWorkspace?.slug ? "?ws=" + activeWorkspace.slug : ""}`, label: "Share DealBoard" },
+                { href: "/workspace/manage", label: "Manage Dealboards" },
+                { href: `/workspace/upload/history?ws=${activeWorkspace?.slug || "default"}`, label: "Upload History" },
+                { href: "/workspace/profile", label: "Account & Profile" },
+                { href: "/workspace/help", label: "Support" },
+              ].map(item => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setShowMobileMenu(false)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    padding: "12px 8px", borderRadius: 8, textDecoration: "none",
+                    color: "rgba(255,255,255,0.55)", fontSize: 14, fontWeight: 500,
+                  }}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
+            {/* User info + Logout */}
+            <div style={{ padding: "12px 16px", marginTop: "auto", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              {user && (
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: "50%", background: "#84CC16",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 11, fontWeight: 700, color: "#000", flexShrink: 0,
+                  }}>
+                    {user.displayName ? user.displayName.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2) : (user.email?.split("@")[0] || "U").substring(0, 2).toUpperCase()}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: "#FFFFFF", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {user.displayName || user.email?.split("@")[0] || "User"}
+                    </div>
+                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {user.email || ""}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <button
+                onClick={async () => {
+                  setShowMobileMenu(false);
+                  try {
+                    const { getAuth, signOut } = await import("firebase/auth");
+                    await signOut(getAuth());
+                  } catch { /* non-blocking */ }
+                  router.push("/workspace/login");
+                }}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  width: "100%", padding: "10px 0", border: "1px solid rgba(220,38,38,0.3)",
+                  borderRadius: 8, background: "rgba(220,38,38,0.08)", cursor: "pointer",
+                  color: "#EF4444", fontSize: 12, fontWeight: 600, fontFamily: "inherit",
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                Log out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ===== NAV BAR — Horizontal Tabs ===== */}
       <nav className="ws-nav-bar" style={{

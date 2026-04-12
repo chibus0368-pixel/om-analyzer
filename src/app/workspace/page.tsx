@@ -152,22 +152,27 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
     setDuplicating(false);
   }
 
+  // Score color by value
+  const scoreColor = score != null ? (score >= 75 ? "#059669" : score >= 50 ? "#D97706" : "#EF4444") : "#9CA3AF";
+  const scoreBg = score != null ? (score >= 75 ? "rgba(5,150,105,0.08)" : score >= 50 ? "rgba(217,119,6,0.08)" : "rgba(239,68,68,0.08)") : "rgba(156,163,175,0.06)";
+
   return (
     <div
       data-property-card
       onClick={() => router.push(`/workspace/properties/${property.id}`)}
+      className="db-card"
       style={{
-        background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
-        overflow: "hidden", cursor: "pointer", transition: "box-shadow 0.15s, transform 0.15s",
+        background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.06)",
+        overflow: "hidden", cursor: "pointer", transition: "box-shadow 0.2s, transform 0.2s",
         display: "flex", flexDirection: "column",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
       }}
-      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 10px 25px rgba(0,0,0,0.08)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.05)"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 30px rgba(0,0,0,0.1)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
     >
-      {/* Hero Image - 192px height */}
+      {/* Hero Image — compact */}
       <div className="db-card-hero" style={{
-        height: 192, background: "linear-gradient(135deg, #F3F4F6, #E5E7EB)",
+        height: 160, background: "linear-gradient(135deg, #F3F4F6, #E5E7EB)",
         overflow: "hidden", position: "relative",
       }}>
         {heroUrl ? (
@@ -176,24 +181,23 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
           />
         ) : (
           <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontSize: 56, opacity: 0.3 }}>📍</span>
+            <span style={{ fontSize: 48, opacity: 0.25 }}>📍</span>
           </div>
         )}
 
-        {/* Top-left: status badge */}
+        {/* Status badge — top-left */}
         <span style={{
-          position: "absolute", top: 12, left: 12,
-          padding: "2.5px 10px", borderRadius: 4, fontSize: 10, fontWeight: 700,
+          position: "absolute", top: 10, left: 10,
+          padding: "3px 8px", borderRadius: 4, fontSize: 9, fontWeight: 700,
           color: "#FFFFFF",
           background: isProcessing ? "rgba(37,99,235,0.85)" : isAnalyzed ? "rgba(132,204,22,0.9)" : "rgba(156,163,175,0.8)",
-          letterSpacing: "0.05em",
-          textTransform: "uppercase",
-          display: "flex", alignItems: "center", gap: 5,
+          letterSpacing: "0.05em", textTransform: "uppercase",
+          display: "flex", alignItems: "center", gap: 4,
           backdropFilter: "blur(4px)",
         }}>
           {isProcessing && (
             <div style={{
-              width: 10, height: 10, borderRadius: "50%",
+              width: 8, height: 8, borderRadius: "50%",
               border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff",
               animation: "spin 0.8s linear infinite",
             }} />
@@ -205,104 +209,83 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
           ) : isAnalyzed ? "Analyzed" : "Pending"}
         </span>
 
-        {/* Top-right: Score badge */}
+        {/* Score circle — top-right, prominent */}
         {score != null && (
-          <span style={{
-            position: "absolute", top: 12, right: 12,
-            padding: "4px 10px", borderRadius: 4, fontSize: 11, fontWeight: 700,
-            color: "#FFFFFF", background: "rgba(0,0,0,0.4)",
-            backdropFilter: "blur(8px)",
+          <div style={{
+            position: "absolute", top: 10, right: 10,
+            width: 44, height: 44, borderRadius: "50%",
+            background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)",
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+            border: `2px solid ${scoreColor}`,
           }}>
-            {Math.round(score)}/100
-          </span>
+            <span style={{ fontSize: 14, fontWeight: 800, color: "#FFFFFF", lineHeight: 1 }}>{Math.round(score)}</span>
+            <span style={{ fontSize: 7, color: "rgba(255,255,255,0.6)", fontWeight: 600, lineHeight: 1 }}>/100</span>
+          </div>
         )}
       </div>
 
-      {/* Content Area - 20px padding, space-y 16px */}
-      <div className="db-card-content" style={{ padding: "20px", flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
-        {/* Property name - truncated, turns lime on hover */}
-        <div
-          className="db-card-name"
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#84CC16"; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#111827"; }}
-          style={{
-            fontSize: 16, fontWeight: 700, color: "#111827",
-            lineHeight: 1.2,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            transition: "color 0.2s",
-            cursor: "pointer",
-          }}>
-          {displayName}
+      {/* Content */}
+      <div className="db-card-content" style={{ padding: "14px 16px", flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+        {/* Name + location */}
+        <div>
+          <div
+            className="db-card-name"
+            style={{
+              fontSize: 15, fontWeight: 700, color: "#111827", lineHeight: 1.25,
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              transition: "color 0.15s",
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#84CC16"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#111827"; }}
+          >
+            {displayName}
+          </div>
+          {location && (
+            <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 2 }}>{location}</div>
+          )}
         </div>
 
-        {/* City/State */}
-        {location && (
-          <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: -12 }}>
-            {location}
-          </div>
-        )}
-
-        {/* Key metrics grid — 2×2 */}
-        {cardMetrics.length > 0 && (
-          <div className="db-card-metrics" style={{
-            display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 12px",
-            padding: "10px 0", borderTop: "1px solid rgba(0,0,0,0.04)",
-          }}>
-            {cardMetrics.map(m => (
-              <div key={m.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{
-                  width: 28, height: 28, borderRadius: 6,
-                  background: "rgba(132,204,22,0.06)",
-                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={m.icon} /></svg>
-                </div>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 9, color: "#9CA3AF", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1.2 }}>{m.label}</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", lineHeight: 1.3 }}>{m.value}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Bottom row - files count (left) and score band badge (right) */}
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          paddingTop: 8,
-          marginTop: "auto",
-        }}>
-          {/* Files count */}
-          <span style={{ fontSize: 11, color: "#9CA3AF", fontWeight: 500 }}>
-            📎 {docCount} file{docCount !== 1 ? "s" : ""}
-          </span>
-
-          {/* Score band badge */}
+        {/* Score band + files row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           {band && (
             <span style={{
-              padding: "4px 10px", borderRadius: 12, fontSize: 11, fontWeight: 700,
+              padding: "3px 8px", borderRadius: 10, fontSize: 10, fontWeight: 700,
               color: band.text, background: band.bg,
-              border: `1px solid ${band.text}20`,
+              border: `1px solid ${band.text}22`,
             }}>
               {band.label}
             </span>
           )}
+          <span style={{ fontSize: 10, color: "#C4C9D4", fontWeight: 500 }}>
+            {docCount} file{docCount !== 1 ? "s" : ""}
+          </span>
         </div>
+
+        {/* Metrics — horizontal pills */}
+        {cardMetrics.length > 0 && (
+          <div className="db-card-metrics" style={{
+            display: "flex", flexWrap: "wrap", gap: 6, marginTop: 2,
+          }}>
+            {cardMetrics.map(m => (
+              <div key={m.label} style={{
+                display: "flex", alignItems: "center", gap: 5,
+                padding: "4px 8px", borderRadius: 6,
+                background: "#F8FAFC", border: "1px solid rgba(0,0,0,0.04)",
+              }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d={m.icon} /></svg>
+                <div style={{ fontSize: 10, color: "#6B7280", fontWeight: 600, lineHeight: 1 }}>{m.label}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#111827", lineHeight: 1 }}>{m.value}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Action row - border-top */}
+      {/* Action row */}
       <div className="db-card-footer" style={{
-        borderTop: "1px solid rgba(0,0,0,0.05)",
-        padding: "8px 20px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
+        borderTop: "1px solid rgba(0,0,0,0.04)", padding: "6px 16px",
+        display: "flex", justifyContent: "space-between", alignItems: "center",
       }}>
-        {/* Duplicate button */}
         <div ref={dupRef} style={{ position: "relative" }}>
           <button
             onClick={(e) => {
@@ -316,7 +299,7 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
             disabled={duplicating}
             style={{
               background: "none", border: "none", color: "#D1D5DB", cursor: "pointer",
-              fontSize: 10, fontWeight: 700, padding: 0, letterSpacing: "0.05em",
+              fontSize: 10, fontWeight: 700, padding: "4px 0", letterSpacing: "0.05em",
               textTransform: "uppercase", transition: "color 0.2s",
               opacity: duplicating ? 0.5 : 1, display: "flex", alignItems: "center", gap: 4,
             }}
@@ -362,7 +345,6 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
           )}
         </div>
 
-        {/* Delete button */}
         <button
           onClick={async (e) => {
             e.stopPropagation();
@@ -387,7 +369,7 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
           }}
           style={{
             background: "none", border: "none", color: "#D1D5DB", cursor: "pointer",
-            fontSize: 10, fontWeight: 700, padding: 0, letterSpacing: "0.05em",
+            fontSize: 10, fontWeight: 700, padding: "4px 0", letterSpacing: "0.05em",
             textTransform: "uppercase", transition: "color 0.2s",
           }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#EF4444"; }}
@@ -517,30 +499,29 @@ export default function WorkspaceDashboard() {
         .db-card-hero { transition: none; }
         @media (max-width: 768px) {
           .db-page { padding: 0 6px !important; }
-          /* Title area — compact, stacked */
           .db-header { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; padding-top: 10px !important; margin-bottom: 12px !important; }
           .db-title-row { flex-wrap: wrap !important; gap: 8px !important; }
           .db-title { font-size: 20px !important; }
           .db-type-badge { font-size: 9px !important; padding: 3px 8px !important; }
           .db-edit-btn { display: none !important; }
           .db-count { font-size: 12px !important; }
-          /* Action buttons — full width, stacked */
-          .db-actions { flex-direction: column !important; gap: 8px !important; }
-          .db-actions a, .db-actions button { font-size: 11px !important; padding: 10px 12px !important; width: 100% !important; text-align: center !important; justify-content: center !important; box-sizing: border-box !important; }
-          /* Property cards */
-          .db-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
-          .db-card-hero { height: 160px !important; }
-          .db-card-content { padding: 14px !important; gap: 10px !important; }
-          .db-card-name { font-size: 15px !important; }
-          .db-card-metrics { gap: 6px 8px !important; }
-          .db-card-footer { flex-wrap: wrap !important; gap: 6px !important; padding: 6px 14px !important; }
+          .db-actions { flex-direction: row !important; gap: 8px !important; }
+          .db-actions a, .db-actions button { font-size: 10px !important; padding: 10px 10px !important; flex: 1 !important; text-align: center !important; justify-content: center !important; box-sizing: border-box !important; }
+          /* Cards — single column, compact */
+          .db-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
+          .db-card-hero { height: 140px !important; }
+          .db-card-content { padding: 12px 14px !important; gap: 6px !important; }
+          .db-card-name { font-size: 14px !important; }
+          .db-card-metrics { gap: 4px !important; }
+          .db-card-footer { padding: 5px 14px !important; }
           .db-clear-bar { flex-direction: column !important; gap: 8px !important; align-items: stretch !important; text-align: center !important; padding: 10px 14px !important; }
         }
         @media (max-width: 480px) {
-          .db-page { padding: 0 4px !important; }
+          .db-page { padding: 0 2px !important; }
           .db-title { font-size: 18px !important; }
-          .db-card-hero { height: 140px !important; }
-          .db-card-content { padding: 12px !important; }
+          .db-card-hero { height: 120px !important; }
+          .db-card-content { padding: 10px 12px !important; }
+          .db-card-name { font-size: 13px !important; }
         }
       `}</style>
       {/* Header Section - New Design */}

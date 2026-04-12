@@ -985,20 +985,38 @@ function PropertyDetailInner({
         @media (max-width: 768px) {
           .pd-outer { flex-direction: column !important; }
           .pd-sidebar { display: none !important; }
-          .pd-inner { padding: 12px !important; }
-          .pd-summary-card { flex-direction: column !important; }
-          .pd-summary-image { width: 100% !important; flex-shrink: 1 !important; border-left: none !important; border-top: 1px solid rgba(0,0,0,0.05) !important; }
-          .pd-summary-image > div:first-child { height: 180px !important; }
-          .pd-summary-text { padding: 16px !important; }
-          .pd-metrics-strip { flex-wrap: wrap !important; }
-          .pd-metrics-strip > div { flex: 1 1 45% !important; min-width: 140px !important; }
-          .pd-signal-cards { flex-direction: column !important; }
+          .pd-inner { padding: 10px !important; }
+
+          /* Summary card — stack image on top */
+          .pd-summary-card { flex-direction: column-reverse !important; }
+          .pd-summary-image { width: 100% !important; flex-shrink: 1 !important; border-left: none !important; border-bottom: 1px solid rgba(0,0,0,0.05) !important; max-height: 200px !important; overflow: hidden !important; }
+          .pd-summary-image > div:first-child { height: 160px !important; }
+          .pd-summary-text { padding: 14px !important; }
+          .pd-summary-text > div:first-child { font-size: 16px !important; }
+          .pd-summary-text p { font-size: 13px !important; line-height: 1.6 !important; }
+
+          /* Metrics — 2 col grid on mobile */
+          .pd-metrics-strip { flex-wrap: wrap !important; gap: 8px !important; }
+          .pd-metrics-strip > div { flex: 1 1 45% !important; min-width: 130px !important; padding: 10px 12px !important; }
+
+          /* Signals — stack vertically */
+          .pd-signal-cards { flex-direction: column !important; gap: 8px !important; }
           .pd-signal-cards > div { min-width: 0 !important; }
+
+          /* Section headers */
           .pd-section-header { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
-          .pd-table-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+
+          /* Tables scroll horizontally */
+          .pd-table-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; }
+
+          /* Download buttons wrap */
+          .dl-btn { font-size: 10px !important; padding: 5px 10px !important; }
         }
         @media (max-width: 480px) {
-          .pd-metrics-strip > div { flex: 1 1 100% !important; }
+          .pd-inner { padding: 6px !important; }
+          .pd-metrics-strip > div { flex: 1 1 100% !important; min-width: 0 !important; }
+          .pd-summary-image > div:first-child { height: 120px !important; }
+          .pd-summary-text { padding: 10px !important; }
         }
       `}</style>
 
