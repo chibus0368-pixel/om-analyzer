@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { runParseEngine } from "@/lib/workspace/parse-engine";
 import { runScoreEngine } from "@/lib/workspace/score-engine";
+import { classifyDocument } from "@/lib/workspace/classify";
 import {
   buildSmartPropertyName,
   extractShortStreetAddress,
@@ -10,40 +11,39 @@ import {
 /**
  * External Upload Endpoint — Chrome extension / bookmarklet entry point.
  *
- * Accepts a PDF (multipart) plus Crexi-scraped metadata and kicks off the
- * same parse → score pipeline the web uploader uses. Auth is via a simple
- * shared API key header (EXTENSION_API_KEY env var) — NOT Firebase Auth —
- * because the extension lives outside the app's auth context.
+ * UX contract (per user request): "simply download the PDF. Everything
+ * else needs to happen behind the scenes for speed." So this route
+ * returns as soon as the property row exists, and the heavy pipeline
+ * (extract → classify → parse → generate → score) runs via `after()`
+ * after the response is flushed. The extension shows "Saved — analysis
+ * running" immediately and the user watches the record land in Pro.
  *
- * The env vars required on Vercel:
- *   EXTENSION_API_KEY   — a random opaque string the extension also stores
- *   EXTENSION_USER_ID   — the Firebase UID that every extension upload is
- *                         attributed to (MVP: single-user / personal use)
+ * Pipeline parity: the sequence of extract → classify → runParseEngine
+ * → save brief note → runScoreEngine is IDENTICAL to
+ * /api/workspace/process, so the outputs match the web portal exactly.
+ * This respects the ARCHITECTURE LOCK in CLAUDE.md — everything is a
+ * direct function import, no HTTP self-fetch.
+ *
+ * Auth is a shared API key header (EXTENSION_API_KEY) because the
+ * extension lives outside the app's Firebase auth context. Every
+ * upload is attributed to EXTENSION_USER_ID.
  *
  * Request:
  *   POST /api/workspace/upload/external
  *   Headers: X-API-Key: <EXTENSION_API_KEY>
  *   Body: multipart/form-data
- *     - file:          the PDF (required)
- *     - workspaceId:   target DealBoard id (required; use "default" for default)
- *     - analysisType:  retail | industrial | office | multifamily | land (default "retail")
- *     - propertyName:  optional — pre-fill from scraped page
- *     - address:       optional
- *     - city:          optional
- *     - state:         optional
- *     - zip:           optional
- *     - sourceUrl:     optional — the Crexi property URL
- *     - askingPrice:   optional numeric string
- *     - capRate:       optional numeric string
- *     - noi:           optional numeric string
+ *     - file:         the PDF (required)
+ *     - workspaceId:  target DealBoard id (default "default")
+ *     - propertyName: optional pre-fill
+ *     - sourceUrl:    optional Crexi URL
  *
- * Response:
- *   { success, propertyId, propertyName, fieldsExtracted, scoreTotal, scoreBand }
+ * Response (fast):
+ *   { success, propertyId, propertyName, url, status: "processing" }
  */
 
-// Allow up to 3 min for big OMs — parse+score is the slow part.
+// Generous cap; `after()` continues running past the response flush,
+// and we don't want Vercel to kill the function mid-score.
 export const maxDuration = 180;
-// Disable Next.js body parsing; we read the raw multipart ourselves via formData().
 export const dynamic = "force-dynamic";
 
 const ALLOWED_ORIGINS = [
@@ -71,21 +71,16 @@ export async function OPTIONS(req: NextRequest) {
   });
 }
 
-function json(
-  req: NextRequest,
-  data: any,
-  init?: ResponseInit,
-): NextResponse {
+function json(req: NextRequest, data: any, init?: ResponseInit): NextResponse {
   return NextResponse.json(data, {
     ...init,
     headers: { ...corsHeaders(req.headers.get("origin")), ...(init?.headers || {}) },
   });
 }
 
-/**
- * Extract text from a PDF buffer using pdf-parse. Returns empty string
- * on failure so callers can fall back to Vision OCR.
- */
+// ────────────────────────── PDF text extraction ──────────────────────────
+
+/** Fast path: pdf-parse on the raw buffer. Returns "" on failure. */
 async function extractPdfTextFast(buffer: Buffer): Promise<string> {
   try {
     const { PDFParse } = await import("pdf-parse");
@@ -100,25 +95,20 @@ async function extractPdfTextFast(buffer: Buffer): Promise<string> {
 }
 
 /**
- * Vision fallback for scanned/image-only PDFs (or PDFs that pdf-parse
- * chokes on). Ships the raw PDF to GPT-4o as an inline base64 file,
- * which handles text layer + OCR transparently server-side with no
- * canvas/Node-canvas dependencies.
- *
- * Note: OpenAI enforces a 32 MB inline file cap; larger PDFs would
- * need the Files API. In practice Crexi OMs are well under that.
+ * Vision fallback for scanned/image-only PDFs. Ships the raw PDF bytes
+ * to GPT-4o as an inline base64 file part so Vision handles both the
+ * text layer and OCR server-side without any canvas dependencies.
  */
 async function extractPdfTextViaVision(buffer: Buffer, fileName: string): Promise<string> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    console.warn("[external upload] OPENAI_API_KEY missing — cannot run Vision fallback");
+    console.warn("[external upload] OPENAI_API_KEY missing — Vision fallback skipped");
     return "";
   }
   if (buffer.length > 28 * 1024 * 1024) {
     console.warn(`[external upload] PDF ${Math.round(buffer.length / 1024 / 1024)}MB exceeds Vision inline cap`);
     return "";
   }
-
   const base64 = buffer.toString("base64");
   try {
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -153,13 +143,11 @@ async function extractPdfTextViaVision(buffer: Buffer, fileName: string): Promis
         ],
       }),
     });
-
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
       console.error("[external upload] Vision fallback HTTP", res.status, errText.slice(0, 300));
       return "";
     }
-
     const data = await res.json();
     const text = String(data?.choices?.[0]?.message?.content || "").trim();
     return text.slice(0, 80_000);
@@ -169,10 +157,7 @@ async function extractPdfTextViaVision(buffer: Buffer, fileName: string): Promis
   }
 }
 
-/**
- * Two-stage extraction: fast pdf-parse text path, then Vision OCR
- * fallback for scanned PDFs or corrupt/weird encodings.
- */
+/** pdf-parse → Vision OCR fallback. Identical coverage to the web path. */
 async function extractPdfText(buffer: Buffer, fileName: string): Promise<string> {
   const fast = await extractPdfTextFast(buffer);
   if (fast.length > 100) {
@@ -185,13 +170,185 @@ async function extractPdfText(buffer: Buffer, fileName: string): Promise<string>
     console.log(`[external upload] Vision OCR extracted ${vision.length} chars`);
     return vision;
   }
-  return fast; // return whatever we had (possibly "") so the caller can 422
+  return fast;
 }
 
-export async function POST(req: NextRequest) {
-  const origin = req.headers.get("origin");
+// ────────────────────────── Background pipeline ──────────────────────────
 
-  // ── Auth: shared API key (MVP single-user) ──
+/**
+ * The exact sequence /api/workspace/process runs, packaged so it can
+ * execute after the HTTP response is flushed via `after()`.
+ *
+ *   1. Extract text (pdf-parse → Vision)
+ *   2. Classify analysis type (retail/industrial/office/land)
+ *   3. runParseEngine (direct import — no self-fetch)
+ *   4. Save brief as a pinned note (generate step)
+ *   5. runScoreEngine
+ *   6. Mark processingStatus complete
+ */
+async function runBackgroundPipeline(args: {
+  propertyId: string;
+  userId: string;
+  fileName: string;
+  buffer: Buffer;
+  workspaceId: string;
+  fallbackAnalysisType: string;
+}) {
+  const { propertyId, userId, fileName, buffer, workspaceId, fallbackAnalysisType } = args;
+  const db = getAdminDb();
+
+  const setStatus = (patch: Record<string, any>) =>
+    db
+      .collection("workspace_properties")
+      .doc(propertyId)
+      .set({ ...patch, updatedAt: new Date().toISOString() }, { merge: true })
+      .catch(() => {});
+
+  try {
+    // ── 1. Extract text ──
+    await setStatus({ processingStatus: "extracting" });
+    const documentText = await extractPdfText(buffer, fileName);
+
+    if (!documentText) {
+      await setStatus({
+        processingStatus: "error",
+        parseStatus: "pending",
+        parseError:
+          "Could not extract text from PDF (pdf-parse + Vision both empty). File may be corrupt, password-protected, or >28 MB.",
+      });
+      return;
+    }
+
+    await db
+      .collection("workspace_documents")
+      .add({
+        projectId: "workspace-default",
+        propertyId,
+        workspaceId,
+        userId,
+        filename: fileName,
+        fileSize: buffer.length,
+        docCategory: "om",
+        source: "crexi_extension",
+        uploadedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        textExtracted: true,
+        textLength: documentText.length,
+      })
+      .catch((err: any) =>
+        console.warn("[external upload] document row failed (non-blocking):", err?.message),
+      );
+
+    // ── 2. Classify analysis type (matches web classify step) ──
+    let analysisType = fallbackAnalysisType;
+    try {
+      const classifyResult = await classifyDocument(documentText);
+      if (classifyResult.confidence >= 0.5 && classifyResult.detected_type) {
+        analysisType = classifyResult.detected_type;
+      }
+      console.log(
+        `[external upload] classify → ${classifyResult.detected_type} (confidence ${classifyResult.confidence})`,
+      );
+    } catch (err: any) {
+      console.warn("[external upload] classify failed, using fallback type:", err?.message);
+    }
+    await setStatus({ analysisType, processingStatus: "parsing" });
+
+    // ── 3. Parse (direct function call) ──
+    let parsedData: any = null;
+    let fieldsExtracted = 0;
+    let parseError = "";
+    try {
+      const parseResult = await runParseEngine({
+        projectId: "workspace-default",
+        propertyId,
+        userId,
+        documentText,
+        analysisType,
+      });
+      if (parseResult.success) {
+        fieldsExtracted = parseResult.fieldsExtracted || 0;
+        parsedData = parseResult.fields;
+        if (parsedData) {
+          const p = parsedData.property || {};
+          const parsedName = p.name || p.property_name;
+          const parsedAddress = p.address;
+          const parsedCity = p.city;
+          const parsedState = p.state;
+          const shortStreet = extractShortStreetAddress(parsedAddress);
+          const finalName =
+            shortStreet ||
+            (parsedName && parsedName !== "Unknown Property"
+              ? buildSmartPropertyName(parsedName, parsedAddress, parsedCity, parsedState)
+              : null);
+          if (finalName) {
+            await setStatus({ propertyName: finalName });
+          }
+        }
+      } else {
+        parseError = parseResult.error || "Parse returned success=false";
+      }
+    } catch (err: any) {
+      parseError = err?.message || "Parse threw";
+      console.error("[external upload] parse error:", parseError);
+    }
+
+    // ── 4. Generate: save brief as a pinned note ──
+    if (parsedData?.brief) {
+      try {
+        const n = new Date().toISOString();
+        await db.collection("workspace_notes").add({
+          projectId: "workspace-default",
+          propertyId,
+          userId,
+          noteType: "investment_thesis",
+          title: "First-Pass Investment Brief",
+          content: parsedData.brief,
+          isPinned: true,
+          createdAt: n,
+          updatedAt: n,
+        });
+      } catch { /* non-blocking */ }
+    }
+
+    // ── 5. Score (always runs, even if parse yielded few fields) ──
+    await setStatus({ processingStatus: "scoring" });
+    try {
+      await runScoreEngine({
+        propertyId,
+        projectId: "workspace-default",
+        userId,
+        analysisType,
+      });
+    } catch (err: any) {
+      console.error("[external upload] score error:", err?.message);
+    }
+
+    // ── 6. Finalize ──
+    const finalStatus = fieldsExtracted > 0 ? "parsed" : "pending";
+    await setStatus({
+      processingStatus: "complete",
+      parseStatus: finalStatus,
+      ...(parseError ? { parseError } : {}),
+    });
+    console.log(
+      `[external upload] pipeline done: property=${propertyId} fields=${fieldsExtracted} status=${finalStatus}`,
+    );
+  } catch (err: any) {
+    console.error("[external upload] background pipeline fatal:", err);
+    await setStatus({
+      processingStatus: "error",
+      parseStatus: "pending",
+      parseError: err?.message || "Background processing failed",
+    });
+  }
+}
+
+// ────────────────────────── HTTP entry point ──────────────────────────
+
+export async function POST(req: NextRequest) {
+  // Auth
   const apiKey = req.headers.get("x-api-key") || "";
   const expected = process.env.EXTENSION_API_KEY || "";
   if (!expected) {
@@ -206,7 +363,7 @@ export async function POST(req: NextRequest) {
     return json(req, { error: "EXTENSION_USER_ID not configured on server" }, { status: 500 });
   }
 
-  // ── Parse multipart body ──
+  // Multipart body
   let form: FormData;
   try {
     form = await req.formData();
@@ -222,18 +379,11 @@ export async function POST(req: NextRequest) {
   const fileName = blob.name || "crexi-upload.pdf";
 
   const workspaceId = String(form.get("workspaceId") || "default");
-  const analysisType = String(form.get("analysisType") || "retail");
+  const fallbackAnalysisType = String(form.get("analysisType") || "retail");
   const propertyNameIn = String(form.get("propertyName") || "").trim();
-  const addressIn = String(form.get("address") || "").trim();
-  const cityIn = String(form.get("city") || "").trim();
-  const stateIn = String(form.get("state") || "").trim();
-  const zipIn = String(form.get("zip") || "").trim();
   const sourceUrl = String(form.get("sourceUrl") || "").trim();
-  const askingPrice = String(form.get("askingPrice") || "").trim();
-  const capRate = String(form.get("capRate") || "").trim();
-  const noi = String(form.get("noi") || "").trim();
 
-  // ── Read the PDF bytes and extract text ──
+  // Read bytes
   let buffer: Buffer;
   try {
     const arr = await blob.arrayBuffer();
@@ -245,189 +395,58 @@ export async function POST(req: NextRequest) {
   const sizeKb = Math.round(buffer.length / 1024);
   console.log(`[external upload] file=${fileName} size=${sizeKb}KB ws=${workspaceId} src=${sourceUrl}`);
 
-  const documentText = await extractPdfText(buffer, fileName);
-  if (!documentText) {
+  // Create property row up front so the extension can link to it
+  // immediately even before the pipeline has run. Pro polls on
+  // workspace-properties-changed and will light up the card as each
+  // stage completes.
+  const db = getAdminDb();
+  const nowIso = new Date().toISOString();
+  const initialName =
+    propertyNameIn || fileName.replace(/\.[^.]+$/, "").trim() || "Untitled Property";
+
+  let propertyId: string;
+  try {
+    const propertyRef = await db.collection("workspace_properties").add({
+      projectId: "workspace-default",
+      workspaceId,
+      userId,
+      propertyName: initialName,
+      sourceUrl: sourceUrl || null,
+      source: "crexi_extension",
+      parseStatus: "pending",
+      processingStatus: "extracting",
+      analysisType: fallbackAnalysisType,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    });
+    propertyId = propertyRef.id;
+  } catch (err: any) {
     return json(
       req,
-      {
-        error:
-          "Could not extract text from PDF (both pdf-parse and Vision OCR returned empty). The file may be corrupted, password-protected, or exceed the 28 MB inline size limit.",
-      },
-      { status: 422 },
+      { error: `Failed to create property row: ${err?.message || err}` },
+      { status: 500 },
     );
   }
 
-  // ── Create the property row ──
-  const db = getAdminDb();
-  const nowIso = new Date().toISOString();
-
-  const initialName =
-    propertyNameIn ||
-    extractShortStreetAddress(addressIn) ||
-    (fileName.replace(/\.[^.]+$/, "").trim() || "Untitled Property");
-
-  const propertyRef = await db.collection("workspace_properties").add({
-    projectId: "workspace-default",
-    workspaceId,
-    userId,
-    propertyName: initialName,
-    address1: addressIn,
-    city: cityIn,
-    state: stateIn,
-    zip: zipIn,
-    sourceUrl: sourceUrl || null,
-    source: "crexi_extension",
-    parseStatus: "pending",
-    processingStatus: "parsing",
-    analysisType,
-    // Pre-fill any scraped numerics as hints for the scorer (strings for now)
-    ...(askingPrice ? { scrapedAskingPrice: askingPrice } : {}),
-    ...(capRate ? { scrapedCapRate: capRate } : {}),
-    ...(noi ? { scrapedNoi: noi } : {}),
-    createdAt: nowIso,
-    updatedAt: nowIso,
-  });
-  const propertyId = propertyRef.id;
-
-  // ── Create a document row pointing at the source URL (PDF bytes not stored
-  //    in Storage for MVP — we already have the extracted text we need). ──
-  try {
-    await db.collection("workspace_documents").add({
-      projectId: "workspace-default",
+  // Kick off the full pipeline AFTER the response is flushed. `after()`
+  // keeps the serverless function alive without making the extension
+  // wait 30-90 seconds for parse+score to complete.
+  after(async () => {
+    await runBackgroundPipeline({
       propertyId,
+      userId,
+      fileName,
+      buffer,
       workspaceId,
-      userId,
-      filename: fileName,
-      fileSize: buffer.length,
-      docCategory: "om",
-      source: "crexi_extension",
-      sourceUrl: sourceUrl || null,
-      uploadedAt: nowIso,
-      createdAt: nowIso,
-      updatedAt: nowIso,
-      textExtracted: true,
-      textLength: documentText.length,
+      fallbackAnalysisType,
     });
-  } catch (err: any) {
-    console.warn("[external upload] document row failed (non-blocking):", err?.message);
-  }
-
-  // ── Run parse engine directly ──
-  let fieldsExtracted = 0;
-  let parsedData: any = null;
-  let parseError = "";
-  try {
-    const parseResult = await runParseEngine({
-      projectId: "workspace-default",
-      propertyId,
-      userId,
-      documentText,
-      analysisType,
-    });
-    if (parseResult.success) {
-      fieldsExtracted = parseResult.fieldsExtracted || 0;
-      parsedData = parseResult.fields;
-      if (parsedData) {
-        const p = parsedData.property || {};
-        const parsedName = p.name || p.property_name;
-        const parsedAddress = p.address;
-        const parsedCity = p.city;
-        const parsedState = p.state;
-        const shortStreet = extractShortStreetAddress(parsedAddress);
-        const finalName =
-          shortStreet ||
-          (parsedName && parsedName !== "Unknown Property"
-            ? buildSmartPropertyName(parsedName, parsedAddress, parsedCity, parsedState)
-            : null);
-        if (finalName) {
-          await db
-            .collection("workspace_properties")
-            .doc(propertyId)
-            .set({ propertyName: finalName, updatedAt: new Date().toISOString() }, { merge: true })
-            .catch(() => {});
-        }
-      }
-    } else {
-      parseError = parseResult.error || "Parse returned success=false";
-    }
-  } catch (err: any) {
-    parseError = err?.message || "Parse threw";
-    console.error("[external upload] parse error:", parseError);
-  }
-
-  // ── Save brief as a pinned note if present ──
-  if (parsedData?.brief) {
-    try {
-      const n = new Date().toISOString();
-      await db.collection("workspace_notes").add({
-        projectId: "workspace-default",
-        propertyId,
-        userId,
-        noteType: "investment_thesis",
-        title: "First-Pass Investment Brief",
-        content: parsedData.brief,
-        isPinned: true,
-        createdAt: n,
-        updatedAt: n,
-      });
-    } catch { /* non-blocking */ }
-  }
-
-  // ── Run score engine ──
-  let scoreTotal = 0;
-  let scoreBand = "";
-  try {
-    await db
-      .collection("workspace_properties")
-      .doc(propertyId)
-      .set({ processingStatus: "scoring", updatedAt: new Date().toISOString() }, { merge: true })
-      .catch(() => {});
-    const scoreResult = await runScoreEngine({
-      propertyId,
-      projectId: "workspace-default",
-      userId,
-      analysisType,
-    });
-    if (scoreResult.success) {
-      scoreTotal = scoreResult.totalScore || 0;
-      scoreBand = scoreResult.scoreBand || "";
-    }
-  } catch (err: any) {
-    console.error("[external upload] score error:", err?.message);
-  }
-
-  // ── Finalize ──
-  const finalStatus = fieldsExtracted > 0 ? "parsed" : "pending";
-  await db
-    .collection("workspace_properties")
-    .doc(propertyId)
-    .set(
-      {
-        processingStatus: "complete",
-        parseStatus: finalStatus,
-        ...(parseError ? { parseError } : {}),
-        updatedAt: new Date().toISOString(),
-      },
-      { merge: true },
-    )
-    .catch(() => {});
-
-  // Read the final name back for the response
-  let finalName = initialName;
-  try {
-    const snap = await db.collection("workspace_properties").doc(propertyId).get();
-    const data = snap.data() as any;
-    if (data?.propertyName) finalName = data.propertyName;
-  } catch { /* fall through */ }
+  });
 
   return json(req, {
     success: true,
     propertyId,
-    propertyName: finalName,
-    fieldsExtracted,
-    scoreTotal,
-    scoreBand,
-    parseError: parseError || undefined,
+    propertyName: initialName,
+    status: "processing",
     url: `/workspace/properties/${propertyId}`,
   });
 }

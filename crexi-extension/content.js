@@ -531,9 +531,11 @@
         saveBtn.disabled = false; saveBtn.textContent = "Save to DealBoard";
         return;
       }
-      const score = res.scoreTotal ? (" · Score " + Math.round(res.scoreTotal) + (res.scoreBand ? " (" + res.scoreBand + ")" : "")) : "";
+      // Server acks fast: property row exists, parse+score running in
+      // the background. Tell the user it's in flight and let them jump
+      // straight into Pro where the analysis will land shortly.
       setStatus(
-        "Saved “" + (res.propertyName || "property") + "” with " + (res.fieldsExtracted || 0) + " fields" + score + ".",
+        "Saved to DealSignals. Parsing and scoring are running in the background — it'll show up in your DealBoard in about a minute.",
         "success",
       );
       saveBtn.textContent = "Open in DealSignals →";
