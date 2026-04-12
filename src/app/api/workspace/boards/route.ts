@@ -46,7 +46,7 @@ function docIdFor(userId: string, wsId: string): string {
 }
 
 function isValidAnalysisType(v: any): v is AnalysisType {
-  return v === "retail" || v === "industrial" || v === "office" || v === "land";
+  return v === "retail" || v === "industrial" || v === "office" || v === "land" || v === "multifamily";
 }
 
 async function authUserId(req: NextRequest): Promise<string | null> {
@@ -110,6 +110,26 @@ export async function GET(req: NextRequest) {
       if (b.id === "default") return 1;
       return (a.createdAt || "").localeCompare(b.createdAt || "");
     });
+
+    // Fetch property counts per workspace (single query, client-side grouping)
+    const propertyCounts: Record<string, number> = {};
+    try {
+      const propsSnap = await db.collection("workspace_properties")
+        .where("userId", "==", userId)
+        .select("workspaceId")
+        .get();
+      for (const doc of propsSnap.docs) {
+        const wsId = (doc.data() as any).workspaceId || "default";
+        propertyCounts[wsId] = (propertyCounts[wsId] || 0) + 1;
+      }
+    } catch (e: any) {
+      console.warn("[boards] failed to count properties:", e?.message);
+    }
+
+    // Attach count to each workspace
+    for (const ws of workspaces) {
+      (ws as any).propertyCount = propertyCounts[ws.id] || 0;
+    }
 
     return NextResponse.json({ workspaces });
   } catch (err: any) {

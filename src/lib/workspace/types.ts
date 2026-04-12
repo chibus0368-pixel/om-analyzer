@@ -23,6 +23,7 @@ export interface Workspace {
   slug: string;
   analysisType: AnalysisType;
   isDefault?: boolean;
+  propertyCount?: number;
   createdAt: string;
   updatedAt: string;
 }

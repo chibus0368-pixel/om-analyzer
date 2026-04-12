@@ -352,7 +352,9 @@ function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean;
             >
               {ws.id === activeWorkspace?.id && <span style={{ color: "#84CC16", fontSize: 14 }}>✓</span>}
               {ws.id !== activeWorkspace?.id && <span style={{ width: 14 }} />}
-              <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ws.name}</span>
+              <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {ws.name}{ws.propertyCount != null ? ` (${ws.propertyCount})` : ""}
+              </span>
               <span style={{
                 display: "inline-flex", alignItems: "center",
                 padding: "3px 8px", borderRadius: 6,
@@ -463,7 +465,9 @@ function HeaderWorkspaceSwitcher({ onAddNew }: { onAddNew: () => void }) {
             >
               {ws.id === activeWorkspace?.id && <span style={{ color: "#84CC16", fontSize: 13 }}>✓</span>}
               {ws.id !== activeWorkspace?.id && <span style={{ width: 13 }} />}
-              <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ws.name}</span>
+              <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {ws.name}{ws.propertyCount != null ? ` (${ws.propertyCount})` : ""}
+              </span>
               <span style={{
                 display: "inline-flex", alignItems: "center",
                 padding: "2px 7px", borderRadius: 5,
@@ -864,7 +868,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                           color: isActive ? "#FFFFFF" : "rgba(255,255,255,0.6)",
                           whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                         }}>
-                          {ws.name}
+                          {ws.name}{ws.propertyCount != null ? ` (${ws.propertyCount})` : ""}
                         </span>
                         <span style={{
                           fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em",
