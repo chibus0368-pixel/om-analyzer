@@ -981,42 +981,67 @@ function PropertyDetailInner({
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeHighlight { 0% { background: #DBEAFE; } 100% { background: transparent; } }
 
+        /* ─── Mobile-only elements (hidden on desktop) ─── */
+        .pd-mobile-score-card { display: none; }
+        .pd-mobile-hero { display: none; }
+
         /* ─── Mobile responsive ─── */
         @media (max-width: 768px) {
           .pd-outer { flex-direction: column !important; }
           .pd-sidebar { display: none !important; }
-          .pd-inner { padding: 10px !important; }
+          .pd-inner { padding: 0 !important; }
 
-          /* Summary card — stack image on top */
-          .pd-summary-card { flex-direction: column-reverse !important; }
-          .pd-summary-image { width: 100% !important; flex-shrink: 1 !important; border-left: none !important; border-bottom: 1px solid rgba(0,0,0,0.05) !important; max-height: 200px !important; overflow: hidden !important; }
-          .pd-summary-image > div:first-child { height: 160px !important; }
-          .pd-summary-text { padding: 14px !important; }
-          .pd-summary-text > div:first-child { font-size: 16px !important; }
-          .pd-summary-text p { font-size: 13px !important; line-height: 1.6 !important; }
+          /* Show mobile-only elements */
+          .pd-mobile-score-card { display: block !important; }
+          .pd-mobile-hero { display: block !important; }
 
-          /* Metrics — 2 col grid on mobile */
-          .pd-metrics-strip { flex-wrap: wrap !important; gap: 8px !important; }
-          .pd-metrics-strip > div { flex: 1 1 45% !important; min-width: 130px !important; padding: 10px 12px !important; }
+          /* Full-bleed hero on mobile */
+          .pd-mobile-hero { margin: 0 -10px !important; }
+          .pd-mobile-hero img { width: 100%; height: 200px; object-fit: cover; display: block; }
 
-          /* Signals — stack vertically */
-          .pd-signal-cards { flex-direction: column !important; gap: 8px !important; }
+          /* Property header — compact */
+          .pd-prop-header { padding: 14px 16px 0 !important; margin-bottom: 0 !important; }
+          .pd-prop-name { font-size: 22px !important; }
+          .pd-prop-location { font-size: 13px !important; }
+          .pd-dl-buttons { display: none !important; }
+
+          /* Mobile score card — the signature look */
+          .pd-mobile-score-card {
+            margin: 12px 16px !important; padding: 0 !important;
+            background: #FFFFFF !important; border-radius: 14px !important;
+            border: 1px solid rgba(0,0,0,0.06) !important;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06) !important;
+            overflow: hidden !important;
+          }
+
+          /* Summary card — hide the image panel on mobile (hero is separate) */
+          .pd-summary-card { flex-direction: column !important; margin: 0 16px 16px !important; border-radius: 14px !important; }
+          .pd-summary-image { display: none !important; }
+          .pd-summary-text { padding: 16px !important; }
+          .pd-summary-text > div:first-child { font-size: 17px !important; }
+          .pd-summary-text p { font-size: 13px !important; line-height: 1.65 !important; }
+
+          /* Metrics strip — 2×2 grid */
+          .pd-metrics-strip { flex-wrap: wrap !important; gap: 0 !important; margin: 0 16px 16px !important; border-radius: 14px !important; }
+          .pd-metrics-strip > div { flex: 1 1 48% !important; min-width: 0 !important; padding: 12px 14px !important; }
+
+          /* Signals — stack */
+          .pd-signal-cards { flex-direction: column !important; gap: 8px !important; padding: 0 16px !important; }
           .pd-signal-cards > div { min-width: 0 !important; }
 
           /* Section headers */
-          .pd-section-header { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+          .pd-section-header { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; padding: 0 16px !important; }
 
-          /* Tables scroll horizontally */
-          .pd-table-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; }
+          /* Tables scroll */
+          .pd-table-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; margin: 0 16px !important; }
 
-          /* Download buttons wrap */
+          /* Download buttons */
           .dl-btn { font-size: 10px !important; padding: 5px 10px !important; }
         }
         @media (max-width: 480px) {
-          .pd-inner { padding: 6px !important; }
-          .pd-metrics-strip > div { flex: 1 1 100% !important; min-width: 0 !important; }
-          .pd-summary-image > div:first-child { height: 120px !important; }
-          .pd-summary-text { padding: 10px !important; }
+          .pd-mobile-hero img { height: 170px; }
+          .pd-prop-name { font-size: 20px !important; }
+          .pd-metrics-strip > div { flex: 1 1 48% !important; padding: 10px 12px !important; }
         }
       `}</style>
 
@@ -1058,9 +1083,22 @@ function PropertyDetailInner({
       )}
 
       {/* ═══════════════════════════════════════════════════ */}
+      {/*  MOBILE HERO IMAGE (hidden on desktop)              */}
+      {/* ═══════════════════════════════════════════════════ */}
+      <div className="pd-mobile-hero">
+        {(property as any).heroImageUrl ? (
+          <img src={(property as any).heroImageUrl} alt={property.propertyName} />
+        ) : (
+          <div style={{ height: 200, background: "linear-gradient(135deg, #F3F4F6, #E5E7EB)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 48, opacity: 0.25 }}>📍</span>
+          </div>
+        )}
+      </div>
+
+      {/* ═══════════════════════════════════════════════════ */}
       {/*  1. PROPERTY HEADER                                  */}
       {/* ═══════════════════════════════════════════════════ */}
-      <div style={{ marginBottom: 20 }}>
+      <div className="pd-prop-header" style={{ marginBottom: 20 }}>
         {/* Top row: name + download buttons */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 4 }}>
           <EditablePropertyName
@@ -1069,7 +1107,7 @@ function PropertyDetailInner({
             onSave={(newName: string) => setProperty((prev: Property | null) => prev ? { ...prev, propertyName: newName } : prev)}
           />
           {hasData && (
-            <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+            <div className="pd-dl-buttons" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
               <button
                 onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
                 className="dl-btn"
@@ -1100,7 +1138,7 @@ function PropertyDetailInner({
           )}
         </div>
         {location && (
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div className="pd-prop-location" style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <p style={{ fontSize: 14, color: C.secondary, margin: 0 }}>{location}</p>
             <a href={`https://www.google.com/maps/search/${encodedAddress}`} target="_blank" rel="noopener noreferrer"
               style={{ fontSize: 11, color: C.secondary, textDecoration: "none", padding: "3px 10px", background: C.surfLow, borderRadius: 6, fontWeight: 500, border: `1px solid ${C.ghostBorder}` }}>
@@ -1109,6 +1147,72 @@ function PropertyDetailInner({
           </div>
         )}
       </div>
+
+      {/* ═══════════════════════════════════════════════════ */}
+      {/*  MOBILE SCORE + KEY METRICS CARD (hidden on desktop)*/}
+      {/* ═══════════════════════════════════════════════════ */}
+      {scoreTotal && (() => {
+        const b = scoreBand.toLowerCase().replace(/_/g, " ");
+        const isGreen = b === "strong buy" || b === "buy";
+        const isYellow = b === "hold" || b === "neutral";
+        const sColor = isGreen ? "#059669" : isYellow ? "#D97706" : "#DC2626";
+        const mobileCapRate = calc?.capRate ? `${calc.capRate.toFixed(2)}%` : (property.cardCapRate ? `${Number(property.cardCapRate).toFixed(2)}%` : null);
+        const mobileSf = property.cardBuildingSf || property.buildingSf;
+        const mobileSfStr = mobileSf ? (mobileSf >= 1000 ? `${(mobileSf / 1000).toFixed(mobileSf >= 10000 ? 0 : 1)}K SF` : `${mobileSf.toLocaleString()} SF`) : null;
+        return (
+          <div className="pd-mobile-score-card">
+            <div style={{ display: "flex", alignItems: "stretch" }}>
+              {/* Left: Score gauge */}
+              <div style={{ flex: "0 0 140px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "16px 12px", borderRight: "1px solid rgba(0,0,0,0.06)" }}>
+                <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#6B7280", marginBottom: 8 }}>Signal Score</div>
+                <div style={{
+                  width: 76, height: 76, borderRadius: "50%", position: "relative",
+                  background: `conic-gradient(${sColor} ${(scoreTotal / 100) * 360}deg, rgba(0,0,0,0.06) 0deg)`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <div style={{
+                    width: 60, height: 60, borderRadius: "50%", background: "#FFFFFF",
+                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <span style={{ fontSize: 22, fontWeight: 800, color: sColor, lineHeight: 1 }}>{Math.round(scoreTotal)}</span>
+                  </div>
+                </div>
+                <span style={{
+                  marginTop: 6, fontSize: 9, fontWeight: 700, textTransform: "uppercase",
+                  letterSpacing: "0.08em", color: sColor,
+                }}>{scoreBand.replace(/_/g, " ")}</span>
+              </div>
+              {/* Right: Key metrics — stacked */}
+              <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
+                {mobileCapRate && (
+                  <div style={{ padding: "12px 14px", borderBottom: "1px solid rgba(0,0,0,0.04)", borderRight: "1px solid rgba(0,0,0,0.04)" }}>
+                    <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#6B7280", marginBottom: 3 }}>Cap Rate</div>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: "#0F172A", fontFamily: "monospace" }}>{mobileCapRate}</div>
+                  </div>
+                )}
+                {mobileSfStr && (
+                  <div style={{ padding: "12px 14px", borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
+                    <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#6B7280", marginBottom: 3 }}>Size</div>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: "#0F172A", fontFamily: "monospace" }}>{mobileSfStr}</div>
+                  </div>
+                )}
+                {property.cardNoi && (
+                  <div style={{ padding: "12px 14px", borderRight: mobileCapRate ? "1px solid rgba(0,0,0,0.04)" : "none" }}>
+                    <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#6B7280", marginBottom: 3 }}>NOI</div>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: "#0F172A", fontFamily: "monospace" }}>{fmt$(property.cardNoi)}</div>
+                  </div>
+                )}
+                {property.cardAskingPrice && (
+                  <div style={{ padding: "12px 14px" }}>
+                    <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#6B7280", marginBottom: 3 }}>Asking Price</div>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: "#0F172A", fontFamily: "monospace" }}>{fmt$(property.cardAskingPrice)}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  2. DEAL SUMMARY + IMAGE + SCORE (COMBINED CARD)     */}

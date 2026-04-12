@@ -498,30 +498,28 @@ export default function WorkspaceDashboard() {
         @keyframes spin { to { transform: rotate(360deg) } }
         .db-card-hero { transition: none; }
         @media (max-width: 768px) {
-          .db-page { padding: 0 6px !important; }
-          .db-header { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; padding-top: 10px !important; margin-bottom: 12px !important; }
+          .db-page { padding: 0 !important; }
+          .db-header { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; padding: 10px 16px 0 !important; margin-bottom: 12px !important; }
           .db-title-row { flex-wrap: wrap !important; gap: 8px !important; }
-          .db-title { font-size: 20px !important; }
+          .db-title { font-size: 22px !important; }
           .db-type-badge { font-size: 9px !important; padding: 3px 8px !important; }
           .db-edit-btn { display: none !important; }
           .db-count { font-size: 12px !important; }
           .db-actions { flex-direction: row !important; gap: 8px !important; }
           .db-actions a, .db-actions button { font-size: 10px !important; padding: 10px 10px !important; flex: 1 !important; text-align: center !important; justify-content: center !important; box-sizing: border-box !important; }
-          /* Cards — single column, compact */
-          .db-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
-          .db-card-hero { height: 140px !important; }
-          .db-card-content { padding: 12px 14px !important; gap: 6px !important; }
-          .db-card-name { font-size: 14px !important; }
-          .db-card-metrics { gap: 4px !important; }
-          .db-card-footer { padding: 5px 14px !important; }
-          .db-clear-bar { flex-direction: column !important; gap: 8px !important; align-items: stretch !important; text-align: center !important; padding: 10px 14px !important; }
+          /* Cards — full width, no border-radius, edge-to-edge */
+          .db-grid { grid-template-columns: 1fr !important; gap: 10px !important; padding: 0 !important; }
+          .db-card { border-radius: 14px !important; margin: 0 12px !important; }
+          .db-card-hero { height: 180px !important; }
+          .db-card-content { padding: 14px 16px !important; gap: 8px !important; }
+          .db-card-name { font-size: 16px !important; }
+          .db-card-metrics { gap: 5px !important; }
+          .db-card-footer { padding: 6px 16px !important; }
+          .db-clear-bar { flex-direction: column !important; gap: 8px !important; align-items: stretch !important; text-align: center !important; padding: 10px 16px !important; margin: 0 12px !important; }
         }
         @media (max-width: 480px) {
-          .db-page { padding: 0 2px !important; }
-          .db-title { font-size: 18px !important; }
-          .db-card-hero { height: 120px !important; }
-          .db-card-content { padding: 10px 12px !important; }
-          .db-card-name { font-size: 13px !important; }
+          .db-title { font-size: 20px !important; }
+          .db-card-hero { height: 160px !important; }
         }
       `}</style>
       {/* Header Section - New Design */}

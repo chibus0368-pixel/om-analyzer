@@ -264,31 +264,68 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
           to { transform: translateX(0); }
         }
 
-        /* ─── Mobile hamburger button (hidden on desktop) ─── */
+        /* ─── Mobile-only elements (hidden on desktop) ─── */
         .ws-hamburger { display: none; }
+        .ws-bottom-tabs { display: none; }
 
         /* ─── Mobile responsive ─── */
         @media (max-width: 768px) {
-          /* === HEADER — clean: Logo + Hamburger only === */
-          .ws-header { padding: 0 14px !important; height: 54px !important; min-height: 54px !important; justify-content: space-between !important; }
+          /* === HEADER — Logo + three-dot menu only === */
+          .ws-header { padding: 0 16px !important; height: 52px !important; min-height: 52px !important; justify-content: space-between !important; }
           .ws-header-inner { gap: 0 !important; flex: 0 0 auto !important; }
-          .ws-header-logo img { height: 28px !important; }
-          /* Hide everything except logo and hamburger on mobile header */
+          .ws-header-logo img { height: 30px !important; }
           .ws-board-selector { display: none !important; }
           .ws-header-right { display: none !important; }
-          /* Show hamburger */
-          .ws-hamburger { display: flex !important; align-items: center; justify-content: center; width: 40px; height: 40px; border: none; background: none; cursor: pointer; color: rgba(255,255,255,0.8); border-radius: 8px; flex-shrink: 0; }
+          /* Show three-dot hamburger */
+          .ws-hamburger { display: flex !important; align-items: center; justify-content: center; width: 36px; height: 36px; border: none; background: none; cursor: pointer; color: rgba(255,255,255,0.7); border-radius: 8px; flex-shrink: 0; }
           .ws-hamburger:active { background: rgba(255,255,255,0.1); }
 
-          /* === NAV BAR — hidden on mobile (moved to drawer) === */
+          /* === NAV BAR — hidden on mobile (replaced by bottom tabs) === */
           .ws-nav-bar { display: none !important; }
 
           /* === MOBILE DRAWER === */
           .ws-mobile-overlay { display: block !important; }
 
-          /* === MAIN CONTENT === */
-          .ws-main-content { padding: 10px !important; }
-          .ws-footer { flex-direction: column !important; gap: 10px !important; padding: 12px 10px !important; }
+          /* === BOTTOM TAB BAR === */
+          .ws-bottom-tabs {
+            display: flex !important;
+            position: fixed; bottom: 0; left: 0; right: 0;
+            height: 64px;
+            background: #FFFFFF;
+            border-top: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+            z-index: 900;
+            align-items: stretch;
+            justify-content: space-around;
+            padding: 0 8px;
+            padding-bottom: env(safe-area-inset-bottom, 0);
+          }
+          .ws-bottom-tab {
+            display: flex !important; flex-direction: column; align-items: center; justify-content: center;
+            flex: 1; gap: 3px; text-decoration: none; color: #9CA3AF;
+            font-size: 9px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+            transition: color 0.15s;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+          }
+          .ws-bottom-tab.active { color: #84CC16; }
+          .ws-bottom-tab.active::before {
+            content: ''; position: absolute; top: 0; left: 20%; right: 20%;
+            height: 3px; background: #84CC16; border-radius: 0 0 3px 3px;
+          }
+          .ws-bottom-tab-upload {
+            position: relative; top: -12px;
+          }
+          .ws-bottom-tab-upload-circle {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: #84CC16; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(132,204,22,0.3);
+          }
+          .ws-bottom-tab-upload span { font-size: 9px; color: #6B7280; font-weight: 700; margin-top: 2px; }
+
+          /* === MAIN CONTENT — pad bottom for tab bar === */
+          .ws-main-content { padding: 10px !important; padding-bottom: 80px !important; }
+          .ws-footer { flex-direction: column !important; gap: 10px !important; padding: 12px 10px 80px !important; }
 
           /* === MODALS === */
           .ws-new-modal { width: calc(100vw - 24px) !important; max-width: 400px !important; padding: 16px !important; }
@@ -296,10 +333,10 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
           .ws-drag-overlay { padding: 20px 16px !important; }
         }
         @media (max-width: 480px) {
-          .ws-header { padding: 0 12px !important; height: 50px !important; min-height: 50px !important; }
-          .ws-header-logo img { height: 26px !important; }
+          .ws-header { padding: 0 12px !important; height: 48px !important; min-height: 48px !important; }
+          .ws-header-logo img { height: 28px !important; }
           .ws-new-modal-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .ws-main-content { padding: 8px !important; }
+          .ws-main-content { padding: 6px !important; padding-bottom: 76px !important; }
         }
       `}</style>
       <WorkspaceLayoutInner user={user}>{children}</WorkspaceLayoutInner>
@@ -1092,17 +1129,15 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           </div>
         </div>
 
-        {/* ─── Hamburger button (mobile only, hidden on desktop via CSS) ─── */}
+        {/* ─── Three-dot menu button (mobile only, hidden on desktop via CSS) ─── */}
         <button
           className="ws-hamburger"
           onClick={() => setShowMobileMenu(v => !v)}
           aria-label="Open menu"
         >
-          {showMobileMenu ? (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          ) : (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-          )}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" />
+          </svg>
         </button>
       </header>
 
@@ -1482,6 +1517,39 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           </div>
         </div>
       )}
+
+      {/* ─── Mobile Bottom Tab Bar (hidden on desktop via CSS) ─── */}
+      <nav className="ws-bottom-tabs">
+        {[
+          { href: "/workspace", label: "Dealboard", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>, isUpload: false },
+          { href: "/workspace/scoreboard", label: "Scorecard", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>, isUpload: false },
+          { href: "/workspace/upload", label: "Upload", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 13v8"/><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="m8 17 4-4 4 4"/></svg>, isUpload: true },
+          { href: "/workspace/map", label: "Map", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>, isUpload: false },
+        ].map(tab => {
+          const active = tab.href === "/workspace"
+            ? pathname === "/workspace" || pathname.startsWith("/workspace/properties")
+            : pathname.startsWith(tab.href);
+          const wsSlug = activeWorkspace?.slug ? `?ws=${activeWorkspace.slug}` : "";
+
+          if (tab.isUpload) {
+            return (
+              <Link key={tab.href} href={`${tab.href}${wsSlug}`} className="ws-bottom-tab ws-bottom-tab-upload" style={{ textDecoration: "none" }}>
+                <div className="ws-bottom-tab-upload-circle">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+                </div>
+                <span>Upload</span>
+              </Link>
+            );
+          }
+
+          return (
+            <Link key={tab.href} href={`${tab.href}${wsSlug}`} className={`ws-bottom-tab${active ? " active" : ""}`} style={{ textDecoration: "none" }}>
+              {tab.icon}
+              <span>{tab.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
 
       {/* Global drag-and-drop overlay */}
       {globalDrag && (
