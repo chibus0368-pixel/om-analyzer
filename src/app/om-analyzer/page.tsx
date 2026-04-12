@@ -2621,7 +2621,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
                     {parsed.strengths && parsed.strengths.length > 0 && (
                       <div style={{ marginBottom: 12 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: "#0F172A", marginBottom: 6 }}>Key Strengths</div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", marginBottom: 8 }}>Key Strengths</div>
                         {parsed.strengths.map((s: string, i: number) => (
                           <div key={i} style={{ display: "flex", gap: 7, alignItems: "flex-start", marginBottom: 5 }}>
                             <span style={{ color: "#22C55E", fontSize: 13, lineHeight: "18px", flexShrink: 0 }}>✓</span>
@@ -2633,7 +2633,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
                     {parsed.concerns && parsed.concerns.length > 0 && (
                       <div>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: "#0F172A", marginBottom: 6 }}>Primary Concerns</div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", marginBottom: 8 }}>Primary Concerns</div>
                         {parsed.concerns.map((c: string, i: number) => (
                           <div key={i} style={{ display: "flex", gap: 7, alignItems: "flex-start", marginBottom: 5 }}>
                             <span style={{ color: "#F59E0B", fontSize: 13, lineHeight: "18px", flexShrink: 0 }}>△</span>
