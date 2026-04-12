@@ -79,34 +79,44 @@ export async function POST(req: NextRequest) {
   const propertyNameIn = String(body?.propertyName || "").trim();
   const sourceUrl = String(body?.sourceUrl || "").trim();
   const heroImageUrlIn = String(body?.heroImageUrl || "").trim();
+  const nonce = String(body?.nonce || "").trim();
 
   const db = getAdminDb();
   const nowIso = new Date().toISOString();
   const initialName =
     propertyNameIn || fileName.replace(/\.[^.]+$/, "").trim() || "Untitled Property";
 
-  // ── Deduplication: if a property with the same sourceUrl already
-  //    exists for this user, reuse it instead of creating a duplicate.
-  //    This handles the common case of saving the same Crexi listing
-  //    twice (accidentally or to retry after an error). We reset the
-  //    processing status so the pipeline re-runs with fresh data. ──
+  // ── Idempotency + deduplication ──────────────────────────────────────
+  //
+  // Two layers of protection against duplicate property rows:
+  //
+  // 1. NONCE (idempotency key): the extension sends a unique nonce per
+  //    save click. We use it as the Firestore document ID. If /init is
+  //    called twice with the same nonce (service-worker retry, Vercel
+  //    cold-start replay, etc.), the second write is an idempotent merge
+  //    onto the same doc — no duplicate created.
+  //
+  // 2. SOURCE URL dedup: if the user intentionally re-saves the same
+  //    Crexi listing later (different nonce), we find the existing
+  //    property by sourceUrl and reuse it. Single-field query avoids
+  //    needing a composite Firestore index.
   let propertyId = "";
-  let isResave = false;
   try {
+    // Layer 2: sourceUrl dedup (only if no nonce match since nonce is
+    // per-click and won't match across sessions)
     if (sourceUrl) {
       const existing = await db
         .collection("workspace_properties")
-        .where("userId", "==", userId)
         .where("sourceUrl", "==", sourceUrl)
-        .limit(1)
+        .limit(5)
         .get();
-      if (!existing.empty) {
-        const doc = existing.docs[0];
-        propertyId = doc.id;
-        isResave = true;
-        // Reset for re-processing; keep the existing property name if
-        // it was improved by the parser on the first run.
-        await doc.ref.set(
+      // Filter to this user's docs client-side (avoids composite index)
+      const match = existing.docs.find(
+        (d) => (d.data() as any)?.userId === userId,
+      );
+      if (match) {
+        propertyId = match.id;
+        await match.ref.set(
           {
             processingStatus: "uploading",
             parseStatus: "pending",
@@ -122,22 +132,31 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Layer 1: if no existing property, use nonce as doc ID (idempotent)
     if (!propertyId) {
-      const propertyRef = await db.collection("workspace_properties").add({
-        projectId: "workspace-default",
-        workspaceId,
-        userId,
-        propertyName: initialName,
-        sourceUrl: sourceUrl || null,
-        source: "crexi_extension",
-        parseStatus: "pending",
-        processingStatus: "uploading",
-        analysisType: fallbackAnalysisType,
-        ...(heroImageUrlIn ? { heroImageUrl: heroImageUrlIn } : {}),
-        createdAt: nowIso,
-        updatedAt: nowIso,
-      });
-      propertyId = propertyRef.id;
+      const docId = nonce || undefined; // undefined = Firestore auto-ID
+      const docRef = docId
+        ? db.collection("workspace_properties").doc(docId)
+        : db.collection("workspace_properties").doc();
+      propertyId = docRef.id;
+
+      await docRef.set(
+        {
+          projectId: "workspace-default",
+          workspaceId,
+          userId,
+          propertyName: initialName,
+          sourceUrl: sourceUrl || null,
+          source: "crexi_extension",
+          parseStatus: "pending",
+          processingStatus: "uploading",
+          analysisType: fallbackAnalysisType,
+          ...(heroImageUrlIn ? { heroImageUrl: heroImageUrlIn } : {}),
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        },
+        { merge: true }, // merge so a retry with the same nonce is a no-op
+      );
     }
   } catch (err: any) {
     return json(

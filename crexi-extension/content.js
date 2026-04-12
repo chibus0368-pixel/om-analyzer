@@ -559,6 +559,13 @@
     // Re-scrape at save-time so gallery images that lazy-loaded after
     // the overlay opened still get captured.
     const freshMeta = scrapeMetadata();
+
+    // Idempotency nonce: if something causes the upload message to fire
+    // twice (service-worker restart, Vercel retry, etc.), the server uses
+    // this nonce as the Firestore doc id so the second call is a no-op
+    // instead of creating a duplicate property.
+    const nonce = "ext_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+
     const payload = {
       fileBytes,
       fileName,
@@ -566,6 +573,7 @@
       workspaceId: getField("workspaceId") || "default",
       sourceUrl: location.href,
       heroImageUrl: freshMeta.heroImageUrl || "",
+      nonce,
     };
 
     const res = await safeSendMessage({ type: "ds:upload", payload });
