@@ -477,6 +477,7 @@ export default function OmAnalyzerPage() {
           onDragOver={e => e.preventDefault()}
           onDragLeave={e => { e.preventDefault(); dragCounter.current = 0; setGlobalDragging(false); }}
           onDrop={e => { e.preventDefault(); dragCounter.current = 0; setGlobalDragging(false); setDragging(false); if (view === "upload" && e.dataTransfer.files?.length) handleFile(e.dataTransfer.files[0]); }}
+          className="tm-drag-overlay"
           style={{
           position: "fixed", inset: 0, zIndex: 9998,
           background: "rgba(13,13,20,0.85)", backdropFilter: "blur(8px)",
@@ -630,6 +631,29 @@ export default function OmAnalyzerPage() {
           .ds-footer-grid { grid-template-columns: 1fr !important; }
           .ds-pro-features { grid-template-columns: 1fr !important; }
         }
+
+        /* ─── Try Me result card mobile ─── */
+        @media (max-width: 768px) {
+          .tm-result-flex { flex-direction: column !important; }
+          .tm-result-image { width: 100% !important; flex-shrink: 1 !important; border-left: none !important; border-top: 1px solid rgba(0,0,0,0.05); flex-direction: row !important; padding: 12px !important; }
+          .tm-result-text { padding: 16px !important; }
+          .tm-metrics-strip { grid-template-columns: repeat(2, 1fr) !important; }
+          .tm-signal-cards { flex-direction: column !important; }
+          .tm-signal-cards > div { min-width: 0 !important; }
+          .tm-table-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+          .tm-table-wrap table { min-width: 460px !important; }
+          .ds-hero-grid { gap: 32px !important; }
+          .ds-feature-block { gap: 32px !important; }
+          .ds-section-pad { padding-left: 16px !important; padding-right: 16px !important; }
+          .ds-hero-left h1 { font-size: 28px !important; }
+          .ds-process-strip { transform: scale(0.7) !important; transform-origin: center center !important; }
+          .tm-upload-zone { padding: 32px 16px !important; }
+          .tm-drag-overlay { padding: 24px 16px !important; }
+        }
+        @media (max-width: 480px) {
+          .tm-metrics-strip { grid-template-columns: 1fr !important; }
+          .ds-hero-left h1 { font-size: 24px !important; }
+        }
       `}</style>
 
       {/* ===== UPGRADE PROMPT OVERLAY ===== */}
@@ -757,7 +781,7 @@ export default function OmAnalyzerPage() {
           style={{ background: "#0d0d14", paddingTop: 64 }}>
 
           {/* ── 1. HERO ── */}
-          <div style={{ padding: "100px 32px 120px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
+          <div className="ds-section-pad" style={{ padding: "100px 32px 120px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
             {/* Subtle line-drawing cityscape background */}
             <svg
               style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0, opacity: 0.08 }}
@@ -968,6 +992,7 @@ export default function OmAnalyzerPage() {
                   }}
                   onDrop={e => { e.preventDefault(); e.stopPropagation(); setDragging(false); if (e.dataTransfer.files?.length) handleFile(e.dataTransfer.files[0]); }}
                   onClick={() => !selectedFile && fileRef.current?.click()}
+                  className="tm-upload-zone"
                   style={{
                     background: dragging ? "rgba(132,204,22,0.06)" : "rgba(255,255,255,0.03)",
                     borderRadius: 20, padding: selectedFile ? "24px" : "48px 32px",
@@ -1064,7 +1089,7 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 2. WHY DEALSIGNALS ── */}
-          <div id="how-it-works" style={{ padding: "120px 32px 100px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
+          <div id="how-it-works" className="ds-section-pad" style={{ padding: "120px 32px 100px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
             {/* Subtle background depth */}
             <div style={{ position: "absolute", top: -100, left: "50%", transform: "translateX(-50%)", width: 800, height: 800, borderRadius: "50%", background: "rgba(132,204,22,0.03)", filter: "blur(180px)", pointerEvents: "none" }} />
 
@@ -1157,7 +1182,7 @@ export default function OmAnalyzerPage() {
           {/* testimonials section removed */}
 
           {/* ── 6. FEATURES — PRODUCT STORY ── */}
-          <div id="features" style={{ padding: "120px 32px 80px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
+          <div id="features" className="ds-section-pad" style={{ padding: "120px 32px 80px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
             {/* Background depth */}
             <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "rgba(132,204,22,0.05)", filter: "blur(160px)", pointerEvents: "none" }} />
             <div style={{ position: "absolute", bottom: -150, left: -100, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.03)", filter: "blur(140px)", pointerEvents: "none" }} />
@@ -1708,7 +1733,7 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 8. PRICING ── */}
-          <div id="pricing" style={{ maxWidth: 1000, margin: "0 auto", padding: "120px 32px 80px", position: "relative", overflow: "visible" }}>
+          <div id="pricing" className="ds-section-pad" style={{ maxWidth: 1000, margin: "0 auto", padding: "120px 32px 80px", position: "relative", overflow: "visible" }}>
             {/* Section divider */}
             <div style={{
               height: 1,
@@ -1853,7 +1878,7 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 9. FAQ ── */}
-          <div id="faq" style={{ maxWidth: 1100, margin: "0 auto", padding: "120px 32px 80px", position: "relative", zIndex: 2 }}>
+          <div id="faq" className="ds-section-pad" style={{ maxWidth: 1100, margin: "0 auto", padding: "120px 32px 80px", position: "relative", zIndex: 2 }}>
             {/* Section divider */}
             <div style={{
               height: 1,
@@ -2603,9 +2628,9 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
         <div style={{ height: 1, background: "rgba(0,0,0,0.05)", margin: "16px 0 0" }} />
 
         {/* Main content: Deal Summary (left) + Image/Score (right) */}
-        <div style={{ display: "flex", gap: 0 }}>
+        <div className="tm-result-flex" style={{ display: "flex", gap: 0 }}>
           {/* Left: Deal Summary + metadata */}
-          <div style={{ flex: 1, padding: "24px 28px", minWidth: 0 }}>
+          <div className="tm-result-text" style={{ flex: 1, padding: "24px 28px", minWidth: 0 }}>
             <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", marginBottom: 12 }}>Executive Summary</div>
             {brief ? (() => {
               let parsed: { overview?: string; strengths?: string[]; concerns?: string[] } | null = null;
@@ -2676,7 +2701,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
           </div>
 
           {/* Right: Image stacked on Score */}
-          <div style={{ width: 280, flexShrink: 0, borderLeft: "1px solid rgba(0,0,0,0.05)", display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 20px", gap: 16 }}>
+          <div className="tm-result-image" style={{ width: 280, flexShrink: 0, borderLeft: "1px solid rgba(0,0,0,0.05)", display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 20px", gap: 16 }}>
             <PropertyImage heroImageUrl={heroImageUrl} location={location} encodedAddress={encodedAddress} propertyName={d.propertyName} />
             <DealScoreRing score={dealScore} label="Deal Score" />
           </div>
@@ -2685,7 +2710,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== METRICS STRIP — Horizontal single-row key metrics ===== */}
       {metricsStripItems.length > 0 && (
-        <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", padding: "14px 0", marginBottom: 20, display: "grid", gridTemplateColumns: `repeat(${metricsStripItems.length}, 1fr)` }}>
+        <div className="tm-metrics-strip" style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", padding: "14px 0", marginBottom: 20, display: "grid", gridTemplateColumns: `repeat(${metricsStripItems.length}, 1fr)` }}>
           {metricsStripItems.map((item, idx) => (
             <div key={item.label} style={{
               padding: "10px 14px",
@@ -2717,7 +2742,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== PRICE SENSITIVITY TABLE ===== */}
       {(d.askingPrice && d.noiOm) && (
-        <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", padding: "20px", marginBottom: 20, overflow: "auto" }}>
+        <div className="tm-table-wrap" style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", padding: "20px", marginBottom: 20, overflow: "auto" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
             <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
             <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Sale Price Scenarios</h3>
@@ -2767,7 +2792,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
       {/* ===== STRENGTHS & RISKS — pro-style separate cards with tinted headers ===== */}
       {(strengths.length > 0 || risks.length > 0) && (
-        <div style={{ display: "flex", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
+        <div className="tm-signal-cards" style={{ display: "flex", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
           {/* Strengths Card */}
           <div style={{ flex: 1, minWidth: 280, background: "#ffffff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.06)", overflow: "hidden" }}>
             <div style={{ padding: "12px 18px", borderBottom: "1px solid rgba(0,0,0,0.04)", background: "#F0FDF4", display: "flex", alignItems: "center", gap: 8 }}>

@@ -257,6 +257,34 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
         /* Collapse button */
         .ws-collapse:hover { color: #585e70 !important; background: rgba(132, 204, 22, 0.08) !important; }
         .ws-dealboard-tab:hover { color: #0F172A !important; background: rgba(0,0,0,0.04) !important; }
+
+        /* ─── Mobile responsive ─── */
+        @media (max-width: 768px) {
+          .ws-header { padding: 0 12px !important; }
+          .ws-header-inner { gap: 12px !important; }
+          .ws-header-logo img { height: 28px !important; }
+          .ws-nav-bar { padding: 0 10px !important; height: 46px !important; min-height: 46px !important; overflow-x: auto; }
+          .ws-nav-tabs { gap: 6px !important; }
+          .ws-nav-tabs a { font-size: 9px !important; letter-spacing: 1.2px !important; gap: 4px !important; }
+          .ws-nav-tabs a svg { display: none !important; }
+          .ws-share-btn { padding: 6px 10px !important; font-size: 9px !important; letter-spacing: 0.1em !important; }
+          .ws-share-btn svg { display: none !important; }
+          .ws-share-tooltip { width: 220px !important; right: -10px !important; }
+          .ws-main-content { padding: 12px !important; }
+          .ws-footer { flex-direction: column !important; gap: 12px !important; }
+          .ws-new-modal { width: calc(100vw - 32px) !important; max-width: 420px !important; padding: 20px !important; }
+          .ws-new-modal-grid { grid-template-columns: repeat(3, 1fr) !important; }
+          .ws-ws-dropdown { min-width: 260px !important; max-width: calc(100vw - 24px) !important; }
+          .ws-drag-overlay { padding: 24px 20px !important; }
+          .ws-board-selector { padding-left: 12px !important; margin-left: 4px !important; }
+          .ws-board-name { font-size: 12px !important; }
+          .ws-board-type { font-size: 8px !important; }
+        }
+        @media (max-width: 480px) {
+          .ws-nav-tabs a { font-size: 8px !important; letter-spacing: 0.8px !important; }
+          .ws-share-btn span { display: none; }
+          .ws-new-modal-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
       `}</style>
       <WorkspaceLayoutInner user={user}>{children}</WorkspaceLayoutInner>
     </WorkspaceProvider>
@@ -780,7 +808,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", background: "#F7F8FA" }}>
       {/* ===== TOP HEADER BAR — Deal Signals ===== */}
-      <header style={{
+      <header className="ws-header" style={{
         display: "flex", alignItems: "center",
         height: 64, minHeight: 64,
         background: "#0b1326", borderBottom: "1px solid rgba(255,255,255,0.1)",
@@ -788,8 +816,8 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         padding: "0 32px",
       }}>
         {/* Left: Logo + DealBoard selector */}
-        <div style={{ display: "flex", alignItems: "center", gap: 48 }}>
-          <Link href="/workspace" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
+        <div className="ws-header-inner" style={{ display: "flex", alignItems: "center", gap: 48 }}>
+          <Link href="/workspace" className="ws-header-logo" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
             <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 36 }} />
           </Link>
 
@@ -797,6 +825,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           <div ref={wsDropdownRef} style={{ position: "relative" }}>
             <button
               onClick={() => setShowWsDropdown(v => !v)}
+              className="ws-board-selector"
               style={{
                 display: "flex", alignItems: "center", gap: 12,
                 paddingLeft: 24, borderLeft: "1px solid rgba(255,255,255,0.1)", marginLeft: 8,
@@ -806,7 +835,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             >
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, lineHeight: 1.4 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.025em" }}>
+                  <span className="ws-board-name" style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.025em" }}>
                     {activeWorkspace?.name || "Default Dealboard"}
                   </span>
                   <span style={{
@@ -829,7 +858,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
             {/* Workspace dropdown */}
             {showWsDropdown && (
-              <div style={{
+              <div className="ws-ws-dropdown" style={{
                 position: "absolute", top: "calc(100% + 8px)", left: 0, minWidth: 320,
                 background: "#151d2e", border: "1px solid rgba(255,255,255,0.08)",
                 borderRadius: 12, boxShadow: "0 16px 48px rgba(0,0,0,0.5)",
@@ -1046,14 +1075,14 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
       </header>
 
       {/* ===== NAV BAR — Horizontal Tabs ===== */}
-      <nav style={{
+      <nav className="ws-nav-bar" style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         height: 56, minHeight: 56,
         background: "#FFFFFF", borderBottom: "1px solid rgba(0,0,0,0.06)",
         padding: "0 32px",
       }}>
         {/* Left: Tabs with icons */}
-        <div style={{ display: "flex", alignItems: "center", gap: 32, height: "100%" }}>
+        <div className="ws-nav-tabs" style={{ display: "flex", alignItems: "center", gap: 32, height: "100%" }}>
           {[
             { href: "/workspace", label: "Dealboard", icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h.01" /><path d="M3 12h.01" /><path d="M3 19h.01" /><path d="M8 5h13" /><path d="M8 12h13" /><path d="M8 19h13" /></svg> },
             { href: "/workspace/scoreboard", label: "Scorecard", icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16" /><path d="M18 17V9" /><path d="M13 17V5" /><path d="M8 17v-3" /></svg> },
@@ -1086,6 +1115,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         {/* Right: Share DealBoard button + info icon */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Link href={`/workspace/share${activeWorkspace?.slug ? "?ws=" + activeWorkspace.slug : ""}`}
+            className="ws-share-btn"
             style={{
               display: "inline-flex", alignItems: "center", gap: 8,
               padding: "8px 16px", background: "rgba(132,204,22,0.1)", color: "#84CC16",
@@ -1119,7 +1149,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                 <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
             </div>
-            <div id="share-tooltip" style={{
+            <div id="share-tooltip" className="ws-share-tooltip" style={{
               position: "absolute", top: "calc(100% + 8px)", right: 0, width: 280,
               background: "#1a2236", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10,
               padding: "14px 16px", boxShadow: "0 12px 40px rgba(0,0,0,0.3)",
@@ -1148,7 +1178,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
       {/* Main Content — full width */}
       <main style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
-        <div style={{ flex: 1, overflow: "auto", padding: 32, display: "flex", flexDirection: "column" }}>
+        <div className="ws-main-content" style={{ flex: 1, overflow: "auto", padding: 32, display: "flex", flexDirection: "column" }}>
           {showUpgradeSuccess && (
             <div style={{
               display: "flex", alignItems: "center", gap: 10,
@@ -1163,7 +1193,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             </div>
           )}
           <div style={{ flex: 1 }}>{children}</div>
-          <footer style={{
+          <footer className="ws-footer" style={{
             padding: "32px 0 24px", marginTop: 40,
             display: "flex", justifyContent: "space-between", alignItems: "flex-start",
             fontSize: 11, color: "#585e70",
@@ -1198,6 +1228,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         >
           <div
             onClick={e => e.stopPropagation()}
+            className="ws-new-modal"
             style={{
               background: "#fff", borderRadius: 12, padding: "28px 32px", width: 420,
               boxShadow: "0 16px 48px rgba(0,0,0,0.2)",
@@ -1221,7 +1252,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             />
 
             <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#151b2b", marginBottom: 10 }}>Deal Type</label>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+            <div className="ws-new-modal-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
               {(["retail", "industrial", "office", "land", "multifamily"] as AnalysisType[]).map(type => (
                 <button
                   key={type}
@@ -1279,7 +1310,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           display: "flex", alignItems: "center", justifyContent: "center",
           pointerEvents: "none",
         }}>
-          <div style={{
+          <div className="ws-drag-overlay" style={{
             background: "#fff", borderRadius: 12, padding: "32px 48px", textAlign: "center",
             boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
           }}>

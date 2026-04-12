@@ -660,7 +660,7 @@ export default function PropertyDetailClient() {
   const omPurchasePrice = Number(g("pricing_deal_terms", "asking_price")) || null;
 
   return (
-    <div style={{ display: "flex", height: "100%", minHeight: 0 }}>
+    <div className="pd-outer" style={{ display: "flex", height: "100%", minHeight: 0 }}>
       {/* ── Main Content ──────────────────────────────────── */}
       <div style={{ flex: 1, overflow: "auto", minWidth: 0 }}>
         <PropertyDetailInner
@@ -684,7 +684,7 @@ export default function PropertyDetailClient() {
 
       {/* ── Property Sidebar (right) ─────────────────────── */}
       {siblingProps.length > 1 && (
-        <div style={{
+        <div className="pd-sidebar" style={{
           width: 260, minWidth: 260, background: "#fff", borderLeft: "1px solid rgba(0,0,0,0.06)",
           overflow: "auto", flexShrink: 0,
         }}>
@@ -968,7 +968,7 @@ function PropertyDetailInner({
   /*  RENDER                                                 */
   /* ═══════════════════════════════════════════════════════ */
   return (
-    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
+    <div className="pd-inner" style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
       <style>{`
         .card-hover { transition: all 0.2s cubic-bezier(0.4,0,0.2,1); }
         .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(21,27,43,0.08); }
@@ -980,6 +980,26 @@ function PropertyDetailInner({
         .section-row:hover { background: ${C.surfLow} !important; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeHighlight { 0% { background: #DBEAFE; } 100% { background: transparent; } }
+
+        /* ─── Mobile responsive ─── */
+        @media (max-width: 768px) {
+          .pd-outer { flex-direction: column !important; }
+          .pd-sidebar { display: none !important; }
+          .pd-inner { padding: 12px !important; }
+          .pd-summary-card { flex-direction: column !important; }
+          .pd-summary-image { width: 100% !important; flex-shrink: 1 !important; border-left: none !important; border-top: 1px solid rgba(0,0,0,0.05) !important; }
+          .pd-summary-image > div:first-child { height: 180px !important; }
+          .pd-summary-text { padding: 16px !important; }
+          .pd-metrics-strip { flex-wrap: wrap !important; }
+          .pd-metrics-strip > div { flex: 1 1 45% !important; min-width: 140px !important; }
+          .pd-signal-cards { flex-direction: column !important; }
+          .pd-signal-cards > div { min-width: 0 !important; }
+          .pd-section-header { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+          .pd-table-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+        }
+        @media (max-width: 480px) {
+          .pd-metrics-strip > div { flex: 1 1 100% !important; }
+        }
       `}</style>
 
       {/* ── Breadcrumb ──────────────────────────────────── */}
@@ -1076,13 +1096,13 @@ function PropertyDetailInner({
       {/*  2. DEAL SUMMARY + IMAGE + SCORE (COMBINED CARD)     */}
       {/* ═══════════════════════════════════════════════════ */}
       {(brief || scoreTotal) && (
-        <div style={{
+        <div className="pd-summary-card" style={{
           background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
           boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
           display: "flex", overflow: "hidden", marginBottom: 24,
         }}>
           {/* Left: Executive Summary */}
-          <div style={{ flex: 1, padding: "24px 28px" }}>
+          <div className="pd-summary-text" style={{ flex: 1, padding: "24px 28px" }}>
             {brief ? (() => {
               // Parse structured brief (JSON) or fall back to legacy plain text
               let parsed: { overview?: string; strengths?: string[]; concerns?: string[] } | null = null;
@@ -1141,7 +1161,7 @@ function PropertyDetailInner({
           </div>
 
           {/* Right: Image + Score stacked */}
-          <div style={{
+          <div className="pd-summary-image" style={{
             width: 240, flexShrink: 0, display: "flex", flexDirection: "column",
             borderLeft: "1px solid rgba(0,0,0,0.05)",
           }}>
@@ -1180,7 +1200,7 @@ function PropertyDetailInner({
           { label: "Cash-on-Cash", value: calc?.cashOnCash ? `${calc.cashOnCash.toFixed(1)}%` : "--" },
         ].filter(m => m.value !== "--");
         return (
-          <div style={{
+          <div className="pd-metrics-strip" style={{
             display: "flex", gap: 0, marginBottom: 24,
             background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
             overflow: "hidden",
@@ -1222,7 +1242,7 @@ function PropertyDetailInner({
           { label: "Zoning", value: g("land_zoning", "current_zoning") || "--" },
         ].filter(c => c.value !== "--");
         return (
-          <div style={{
+          <div className="pd-metrics-strip" style={{
             display: "flex", gap: 0, marginBottom: 24,
             background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
             overflow: "hidden",
@@ -1495,7 +1515,7 @@ function PropertyDetailInner({
         ) : null;
 
         return (
-          <div style={{ display: "flex", gap: 16, marginBottom: 16, flexWrap: "wrap" }}>
+          <div className="pd-signal-cards" style={{ display: "flex", gap: 16, marginBottom: 16, flexWrap: "wrap" }}>
             {renderSignalCard("Strengths", positives, "#059669", "#F0FDF4", "✅")}
             {renderSignalCard("Risks", negatives, "#DC2626", "#FEF2F2", "⚠️")}
           </div>
@@ -1604,7 +1624,8 @@ function PropertyDetailInner({
           <div style={{ padding: "12px 18px", borderBottom: `1px solid rgba(0,0,0,0.04)`, background: "#F9FAFB" }}>
             <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Tenant Summary</h3>
           </div>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+          <div className="pd-table-wrap" style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 500 }}>
             <thead>
               <tr style={{ background: "#F9FAFB" }}>
                 <th style={{ padding: "8px 16px", textAlign: "left", fontWeight: 600, color: C.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Tenant</th>
@@ -1642,6 +1663,7 @@ function PropertyDetailInner({
               );
             })()}
           </table>
+          </div>{/* close pd-table-wrap */}
         </div>
       )}
 
