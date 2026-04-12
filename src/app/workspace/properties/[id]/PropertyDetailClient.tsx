@@ -1094,7 +1094,7 @@ function PropertyDetailInner({
               if (parsed) {
                 return (
                   <>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>Executive Summary</div>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", marginBottom: 12 }}>Executive Summary</div>
                     <p style={{ fontSize: 14, color: "#0F172A", lineHeight: 1.75, margin: "0 0 16px" }}>{parsed.overview}</p>
 
                     {parsed.strengths && parsed.strengths.length > 0 && (

@@ -2606,7 +2606,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
         <div style={{ display: "flex", gap: 0 }}>
           {/* Left: Deal Summary + metadata */}
           <div style={{ flex: 1, padding: "24px 28px", minWidth: 0 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#84CC16", marginBottom: 10 }}>Executive Summary</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", marginBottom: 12 }}>Executive Summary</div>
             {brief ? (() => {
               let parsed: { overview?: string; strengths?: string[]; concerns?: string[] } | null = null;
               try {
