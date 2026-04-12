@@ -166,7 +166,7 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.05)"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
     >
       {/* Hero Image - 192px height */}
-      <div style={{
+      <div className="db-card-hero" style={{
         height: 192, background: "linear-gradient(135deg, #F3F4F6, #E5E7EB)",
         overflow: "hidden", position: "relative",
       }}>
@@ -219,9 +219,10 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
       </div>
 
       {/* Content Area - 20px padding, space-y 16px */}
-      <div style={{ padding: "20px", flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
+      <div className="db-card-content" style={{ padding: "20px", flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
         {/* Property name - truncated, turns lime on hover */}
         <div
+          className="db-card-name"
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#84CC16"; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#111827"; }}
           style={{
@@ -245,7 +246,7 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
 
         {/* Key metrics grid — 2×2 */}
         {cardMetrics.length > 0 && (
-          <div style={{
+          <div className="db-card-metrics" style={{
             display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 12px",
             padding: "10px 0", borderTop: "1px solid rgba(0,0,0,0.04)",
           }}>
@@ -294,7 +295,7 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
       </div>
 
       {/* Action row - border-top */}
-      <div style={{
+      <div className="db-card-footer" style={{
         borderTop: "1px solid rgba(0,0,0,0.05)",
         padding: "8px 20px",
         display: "flex",
@@ -513,21 +514,33 @@ export default function WorkspaceDashboard() {
     <div className="db-page" style={{ width: "100%", padding: "0 24px" }}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg) } }
+        .db-card-hero { transition: none; }
         @media (max-width: 768px) {
-          .db-page { padding: 0 8px !important; }
-          .db-header { flex-direction: column !important; align-items: stretch !important; gap: 12px !important; padding-top: 12px !important; margin-bottom: 16px !important; }
-          .db-title { font-size: 22px !important; }
-          .db-actions { flex-wrap: wrap !important; gap: 8px !important; }
-          .db-actions a, .db-actions button { font-size: 10px !important; padding: 8px 12px !important; flex: 1 1 auto !important; text-align: center !important; justify-content: center !important; }
-          .db-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
-          .db-card { border-radius: 10px !important; }
-          .db-card-footer { flex-wrap: wrap !important; gap: 8px !important; }
-          .db-clear-bar { flex-direction: column !important; gap: 8px !important; align-items: stretch !important; text-align: center !important; }
+          .db-page { padding: 0 6px !important; }
+          /* Title area — compact, stacked */
+          .db-header { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; padding-top: 10px !important; margin-bottom: 12px !important; }
+          .db-title-row { flex-wrap: wrap !important; gap: 8px !important; }
+          .db-title { font-size: 20px !important; }
+          .db-type-badge { font-size: 9px !important; padding: 3px 8px !important; }
+          .db-edit-btn { display: none !important; }
+          .db-count { font-size: 12px !important; }
+          /* Action buttons — full width, stacked */
+          .db-actions { flex-direction: column !important; gap: 8px !important; }
+          .db-actions a, .db-actions button { font-size: 11px !important; padding: 10px 12px !important; width: 100% !important; text-align: center !important; justify-content: center !important; box-sizing: border-box !important; }
+          /* Property cards */
+          .db-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+          .db-card-hero { height: 160px !important; }
+          .db-card-content { padding: 14px !important; gap: 10px !important; }
+          .db-card-name { font-size: 15px !important; }
+          .db-card-metrics { gap: 6px 8px !important; }
+          .db-card-footer { flex-wrap: wrap !important; gap: 6px !important; padding: 6px 14px !important; }
+          .db-clear-bar { flex-direction: column !important; gap: 8px !important; align-items: stretch !important; text-align: center !important; padding: 10px 14px !important; }
         }
         @media (max-width: 480px) {
           .db-page { padding: 0 4px !important; }
-          .db-title { font-size: 20px !important; }
-          .db-actions a, .db-actions button { font-size: 9px !important; padding: 7px 10px !important; }
+          .db-title { font-size: 18px !important; }
+          .db-card-hero { height: 140px !important; }
+          .db-card-content { padding: 12px !important; }
         }
       `}</style>
       {/* Header Section - New Design */}
@@ -541,7 +554,7 @@ export default function WorkspaceDashboard() {
         {/* Left side: Heading + Badge + Count */}
         <div>
           {/* Workspace name + Edit icon + Type badge */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+          <div className="db-title-row" style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
             <h1 className="db-title" style={{
               fontSize: 30,
               fontWeight: 700,
@@ -554,6 +567,7 @@ export default function WorkspaceDashboard() {
 
             {/* Edit icon button */}
             <button
+              className="db-edit-btn"
               onClick={() => {
                 const titleEl = document.querySelector("[data-editable-title]");
                 if (titleEl) (titleEl as HTMLElement).click();
@@ -581,7 +595,7 @@ export default function WorkspaceDashboard() {
 
             {/* Analysis type badge - green for Retail */}
             {activeWorkspace?.analysisType && (
-              <span style={{
+              <span className="db-type-badge" style={{
                 display: "inline-flex",
                 alignItems: "center",
                 padding: "5px 12px",
@@ -600,7 +614,7 @@ export default function WorkspaceDashboard() {
           </div>
 
           {/* Properties count */}
-          <p style={{
+          <p className="db-count" style={{
             fontSize: 14,
             color: "#9CA3AF",
             margin: 0,

@@ -260,48 +260,58 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
 
         /* ─── Mobile responsive ─── */
         @media (max-width: 768px) {
-          /* Header */
-          .ws-header { padding: 0 10px !important; height: 52px !important; min-height: 52px !important; }
-          .ws-header-inner { gap: 8px !important; }
-          .ws-header-logo img { height: 24px !important; }
+          /* === HEADER === */
+          .ws-header { padding: 0 10px !important; height: 48px !important; min-height: 48px !important; }
+          .ws-header-inner { gap: 6px !important; }
+          .ws-header-logo img { height: 22px !important; }
           .ws-header-logo { flex-shrink: 0 !important; }
-          /* Hide user name/email on mobile — just show avatar */
+          .ws-header-right { gap: 10px !important; }
+          /* Hide user name/email — just avatar */
           .ws-user-text { display: none !important; }
-          .ws-user-link { padding-left: 0 !important; border-left: none !important; }
-          .ws-plan-pill { font-size: 8px !important; padding: 4px 8px !important; }
-          /* Board selector — compact */
-          .ws-board-selector { padding-left: 8px !important; margin-left: 0 !important; border-left-width: 0 !important; }
-          .ws-board-name { font-size: 11px !important; max-width: 100px !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
+          .ws-user-link { padding-left: 0 !important; border-left: none !important; gap: 0 !important; }
+          .ws-avatar { width: 30px !important; height: 30px !important; font-size: 10px !important; }
+          .ws-plan-pill { font-size: 7px !important; padding: 3px 7px !important; letter-spacing: 0.06em !important; }
+          /* Board selector — very compact */
+          .ws-board-selector { padding-left: 6px !important; margin-left: 0 !important; border-left-width: 0 !important; gap: 6px !important; }
+          .ws-board-name { font-size: 12px !important; max-width: 110px !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; display: block !important; }
           .ws-board-sub { display: none !important; }
-          .ws-board-type { font-size: 7px !important; padding: 1px 4px !important; }
-          .ws-ws-dropdown { min-width: 260px !important; max-width: calc(100vw - 24px) !important; left: -60px !important; }
-          /* Nav bar */
-          .ws-nav-bar { padding: 0 8px !important; height: 42px !important; min-height: 42px !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
-          .ws-nav-tabs { gap: 4px !important; }
-          .ws-nav-tabs a { font-size: 9px !important; letter-spacing: 1px !important; gap: 4px !important; padding-top: 2px !important; }
-          .ws-nav-tabs a svg, .ws-nav-tabs a span:first-child { display: none !important; }
-          .ws-share-btn { padding: 5px 8px !important; font-size: 8px !important; letter-spacing: 0.08em !important; }
+          .ws-board-type { font-size: 7px !important; padding: 1px 5px !important; }
+          .ws-ws-dropdown { min-width: 260px !important; max-width: calc(100vw - 20px) !important; left: -80px !important; }
+
+          /* === NAV BAR === */
+          .ws-nav-bar { padding: 0 10px !important; height: 38px !important; min-height: 38px !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+          .ws-nav-tabs { gap: 12px !important; }
+          .ws-nav-tabs a { font-size: 10px !important; letter-spacing: 1.2px !important; gap: 0 !important; padding-top: 2px !important; }
+          .ws-nav-tabs a span:first-child { display: none !important; }
+          .ws-nav-right { gap: 4px !important; }
+          .ws-share-btn { padding: 4px 8px !important; font-size: 8px !important; letter-spacing: 0.06em !important; }
           .ws-share-btn svg { display: none !important; }
+          .ws-info-icon { display: none !important; }
           .ws-share-tooltip { width: 220px !important; right: -10px !important; }
-          /* Main content */
-          .ws-main-content { padding: 12px !important; }
-          .ws-footer { flex-direction: column !important; gap: 12px !important; padding: 16px 12px !important; }
-          /* Modals */
-          .ws-new-modal { width: calc(100vw - 32px) !important; max-width: 420px !important; padding: 20px !important; }
+
+          /* === MAIN CONTENT === */
+          .ws-main-content { padding: 10px !important; }
+          .ws-footer { flex-direction: column !important; gap: 10px !important; padding: 12px 10px !important; }
+
+          /* === MODALS === */
+          .ws-new-modal { width: calc(100vw - 24px) !important; max-width: 400px !important; padding: 16px !important; }
           .ws-new-modal-grid { grid-template-columns: repeat(3, 1fr) !important; }
-          .ws-drag-overlay { padding: 24px 16px !important; }
-          /* More menu (three dots) */
+          .ws-drag-overlay { padding: 20px 16px !important; }
           .ws-more-menu { width: 200px !important; }
         }
         @media (max-width: 480px) {
-          .ws-header { padding: 0 8px !important; height: 48px !important; min-height: 48px !important; }
-          .ws-header-logo img { height: 20px !important; }
-          .ws-board-name { font-size: 10px !important; max-width: 80px !important; }
+          .ws-header { padding: 0 8px !important; height: 44px !important; min-height: 44px !important; }
+          .ws-header-logo img { height: 18px !important; }
+          .ws-header-right { gap: 8px !important; }
+          .ws-board-name { font-size: 11px !important; max-width: 90px !important; }
+          .ws-board-type { display: none !important; }
           .ws-plan-pill { display: none !important; }
-          .ws-nav-tabs a { font-size: 8px !important; letter-spacing: 0.6px !important; }
+          .ws-avatar { width: 28px !important; height: 28px !important; font-size: 9px !important; }
+          .ws-nav-bar { height: 34px !important; min-height: 34px !important; padding: 0 8px !important; }
+          .ws-nav-tabs a { font-size: 9px !important; letter-spacing: 0.8px !important; }
           .ws-share-btn { display: none !important; }
           .ws-new-modal-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .ws-main-content { padding: 8px !important; }
+          .ws-main-content { padding: 6px !important; }
         }
       `}</style>
       <WorkspaceLayoutInner user={user}>{children}</WorkspaceLayoutInner>
@@ -951,7 +961,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         </div>
 
         {/* Right: Pro Plan pill + user info + settings */}
-        <div style={{ display: "flex", alignItems: "center", gap: 24, marginLeft: "auto" }}>
+        <div className="ws-header-right" style={{ display: "flex", alignItems: "center", gap: 24, marginLeft: "auto" }}>
           {userTier === "free" ? (
             <button
               onClick={() => setShowUpgrade(true)}
@@ -1005,7 +1015,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                   {user.email || ""}
                 </div>
               </div>
-              <div style={{
+              <div className="ws-avatar" style={{
                 width: 36, height: 36, borderRadius: "50%", background: "#84CC16",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: 12, fontWeight: 700, color: "#000", flexShrink: 0,
@@ -1133,7 +1143,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         </div>
 
         {/* Right: Share DealBoard button + info icon */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div className="ws-nav-right" style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Link href={`/workspace/share${activeWorkspace?.slug ? "?ws=" + activeWorkspace.slug : ""}`}
             className="ws-share-btn"
             style={{
@@ -1151,7 +1161,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             Share DealBoard
           </Link>
           {/* Info tooltip for sharing — click to toggle so user can click Learn more */}
-          <div style={{ position: "relative" }}>
+          <div className="ws-info-icon" style={{ position: "relative" }}>
             <div
               onClick={() => {
                 const tip = document.getElementById("share-tooltip");
