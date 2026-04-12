@@ -456,10 +456,23 @@ export default function UploadPage() {
   }
 
   return (
-    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <h1 style={{ fontSize: 30, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>
+    <div className="ul-container" style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .ul-container { padding: 0 16px !important; }
+          .ul-header { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+          .ul-title { font-size: 24px !important; }
+          .ul-subtitle { font-size: 13px !important; margin-bottom: 16px !important; }
+        }
+        @media (max-width: 480px) {
+          .ul-container { padding: 0 12px !important; }
+          .ul-title { font-size: 20px !important; }
+          .ul-subtitle { font-size: 12px !important; }
+        }
+      `}</style>
+      <div className="ul-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <h1 className="ul-title" style={{ fontSize: 30, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>
             Upload Deal{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}
           </h1>
           {activeWorkspace?.analysisType && (
@@ -474,7 +487,7 @@ export default function UploadPage() {
           )}
         </div>
       </div>
-      <p style={{ fontSize: 14, color: C.secondary, marginBottom: 20, lineHeight: 1.5, fontFamily: "'Inter', sans-serif" }}>
+      <p className="ul-subtitle" style={{ fontSize: 14, color: C.secondary, marginBottom: 20, lineHeight: 1.5, fontFamily: "'Inter', sans-serif" }}>
         One property at a time. A single OM is enough to get started — you can always add more files later.
       </p>
 
@@ -489,6 +502,7 @@ export default function UploadPage() {
 
           {/* Drop zone — matches landing page upload card */}
           <div
+            className="ul-dropzone"
             onDragOver={e => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
             onDragLeave={e => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
             onDrop={handleDrop}
@@ -505,27 +519,55 @@ export default function UploadPage() {
               marginBottom: 14,
             }}
           >
+            <style>{`
+              @media (max-width: 768px) {
+                .ul-dropzone { padding: ${hasFiles ? "20px 16px" : "40px 16px"} !important; }
+              }
+              @media (max-width: 480px) {
+                .ul-dropzone { padding: ${hasFiles ? "16px 12px" : "32px 12px"} !important; }
+              }
+            `}</style>
             {/* Building icon — same as landing page */}
-            <div style={{
+            <div className="ul-icon-circle" style={{
               width: 56, height: 56, borderRadius: "50%", background: "rgba(132, 204, 22, 0.08)",
               display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
             }}>
+              <style>{`
+                @media (max-width: 768px) {
+                  .ul-icon-circle { width: 48px !important; height: 48px !important; }
+                  .ul-icon-circle svg { width: 24px !important; height: 24px !important; }
+                }
+              `}</style>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9v.01M9 12v.01M9 15v.01M9 18v.01" />
               </svg>
             </div>
-            <p style={{ fontSize: 16, fontWeight: 600, color: C.onSurface, margin: "0 0 6px", fontFamily: "'Inter', sans-serif" }}>
+            <p className="ul-drop-title" style={{ fontSize: 16, fontWeight: 600, color: C.onSurface, margin: "0 0 6px", fontFamily: "'Inter', sans-serif" }}>
               {isDragging ? "Drop files here" : "Drop your OM or flyer here"}
             </p>
-            <p style={{ fontSize: 13, color: C.secondary, margin: "0 0 16px" }}>
+            <p className="ul-drop-subtitle" style={{ fontSize: 13, color: C.secondary, margin: "0 0 16px" }}>
               PDF, Excel, or CSV accepted (Max 50MB)
             </p>
+            <style>{`
+              @media (max-width: 768px) {
+                .ul-drop-title { font-size: 14px !important; }
+                .ul-drop-subtitle { font-size: 12px !important; }
+              }
+            `}</style>
             {!hasFiles && (
-              <button onClick={() => fileRef.current?.click()} style={{
+              <button className="ul-select-btn" onClick={() => fileRef.current?.click()} style={{
                 padding: "12px 32px", background: C.onSurface, color: "#fff", border: "none",
                 borderRadius: C.radius, fontSize: 14, fontWeight: 600, cursor: "pointer",
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: "'Inter', sans-serif", minHeight: 44,
               }}>
+                <style>{`
+                  @media (max-width: 768px) {
+                    .ul-select-btn { padding: 12px 24px !important; font-size: 13px !important; }
+                  }
+                  @media (max-width: 480px) {
+                    .ul-select-btn { padding: 12px 20px !important; font-size: 12px !important; width: 100% !important; }
+                  }
+                `}</style>
                 Select File from Local
               </button>
             )}
@@ -536,31 +578,51 @@ export default function UploadPage() {
           {/* File list */}
           {hasFiles && (
             <>
-              <div style={{ background: C.surfLowest, borderRadius: C.radius, boxShadow: C.shadow, overflow: "hidden", marginBottom: 16 }}>
-                <div style={{ padding: "10px 16px", borderBottom: `1px solid ${C.ghost}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div className="ul-filelist" style={{ background: C.surfLowest, borderRadius: C.radius, boxShadow: C.shadow, overflow: "hidden", marginBottom: 16 }}>
+                <style>{`
+                  @media (max-width: 768px) {
+                    .ul-filelist { overflow-x: auto; }
+                    .ul-file-row { flex-wrap: wrap !important; padding: 12px 12px !important; }
+                    .ul-file-select { width: 100% !important; margin-top: 8px !important; }
+                  }
+                  @media (max-width: 480px) {
+                    .ul-filelist-header { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+                    .ul-file-row { gap: 6px !important; }
+                    .ul-file-ext { padding: 2px 4px !important; font-size: 8px !important; }
+                    .ul-file-name { font-size: 11px !important; }
+                    .ul-file-select { min-height: 36px !important; }
+                  }
+                `}</style>
+                <div className="ul-filelist-header" style={{ padding: "10px 16px", borderBottom: `1px solid ${C.ghost}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: C.secondary }}>{files.length} file{files.length !== 1 ? "s" : ""} ready</span>
-                  <button onClick={() => setFiles([])} style={{ fontSize: 11, color: C.primary, background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}>Clear</button>
+                  <button onClick={() => setFiles([])} style={{ fontSize: 11, color: C.primary, background: "none", border: "none", cursor: "pointer", fontWeight: 600, minHeight: 32 }}>Clear</button>
                 </div>
                 {files.map(f => (
-                  <div key={f.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 16px", borderBottom: `1px solid ${C.ghost}`, fontSize: 12 }}>
-                    <span style={{ padding: "1px 5px", background: C.surfLow, borderRadius: 3, fontSize: 9, fontWeight: 700, color: C.secondary, textTransform: "uppercase", flexShrink: 0 }}>
+                  <div key={f.id} className="ul-file-row" style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 16px", borderBottom: `1px solid ${C.ghost}`, fontSize: 12 }}>
+                    <span className="ul-file-ext" style={{ padding: "1px 5px", background: C.surfLow, borderRadius: 3, fontSize: 9, fontWeight: 700, color: C.secondary, textTransform: "uppercase", flexShrink: 0 }}>
                       {f.file.name.split(".").pop()}
                     </span>
-                    <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500, color: C.onSurface }}>{f.file.name}</span>
-                    <select value={f.docCategory || ""} onChange={e => setCat(f.id, e.target.value as DocCategory)}
-                      style={{ padding: "3px 6px", border: `1px solid ${C.ghost}`, borderRadius: 4, fontSize: 10, fontFamily: "'Inter', sans-serif", width: 130, flexShrink: 0, background: C.surfLow }}>
+                    <span className="ul-file-name" style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500, color: C.onSurface }}>{f.file.name}</span>
+                    <select className="ul-file-select" value={f.docCategory || ""} onChange={e => setCat(f.id, e.target.value as DocCategory)}
+                      style={{ padding: "3px 6px", border: `1px solid ${C.ghost}`, borderRadius: 4, fontSize: 10, fontFamily: "'Inter', sans-serif", width: 130, flexShrink: 0, background: C.surfLow, minHeight: 32 }}>
                       {Object.entries(DOC_CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </select>
-                    <button onClick={() => removeFile(f.id)} style={{ background: "none", border: "none", color: C.secondary, cursor: "pointer", fontSize: 14, flexShrink: 0, padding: 0 }}>&times;</button>
+                    <button className="ul-remove-btn" onClick={() => removeFile(f.id)} style={{ background: "none", border: "none", color: C.secondary, cursor: "pointer", fontSize: 14, flexShrink: 0, padding: "4px", minHeight: 32, minWidth: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>&times;</button>
                   </div>
                 ))}
               </div>
 
-              <div style={{ display: "flex", justifyContent: "center" }}>
-                <button onClick={handleUpload} className="ws-btn-red" style={{
+              <div className="ul-upload-btn-container" style={{ display: "flex", justifyContent: "center" }}>
+                <style>{`
+                  @media (max-width: 768px) {
+                    .ul-upload-btn-container { width: 100%; }
+                    .ul-upload-btn { width: 100% !important; padding: 14px 32px !important; }
+                  }
+                `}</style>
+                <button onClick={handleUpload} className="ul-upload-btn ws-btn-red" style={{
                   padding: "14px 48px", background: C.primaryGradient, color: "#fff", border: "none",
                   borderRadius: C.radius, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Inter', sans-serif",
-                  width: "auto", display: "inline-block",
+                  width: "auto", display: "inline-block", minHeight: 44,
                 }}>
                   Upload &amp; Analyze
                 </button>
@@ -569,14 +631,27 @@ export default function UploadPage() {
           )}
 
           {/* ===== Explanatory Section ===== */}
-          <div style={{ marginTop: 28, paddingTop: 20 }}>
-            <div style={{ fontSize: 13, color: C.secondary, lineHeight: 1.7, fontFamily: "'Inter', sans-serif" }}>
+          <div className="ul-info-section" style={{ marginTop: 28, paddingTop: 20 }}>
+            <style>{`
+              @media (max-width: 768px) {
+                .ul-info-section { margin-top: 20px !important; padding-top: 16px !important; }
+                .ul-info-text { font-size: 12px !important; line-height: 1.6 !important; }
+                .ul-badge-row { margin-top: 12px !important; gap: 4px !important; }
+                .ul-badge { padding: 2px 6px !important; font-size: 9px !important; }
+                .ul-badge-hint { font-size: 10px !important; margin-left: 2px !important; }
+              }
+              @media (max-width: 480px) {
+                .ul-info-text { font-size: 11px !important; }
+                .ul-badge-row { gap: 3px !important; }
+              }
+            `}</style>
+            <div className="ul-info-text" style={{ fontSize: 13, color: C.secondary, lineHeight: 1.7, fontFamily: "'Inter', sans-serif" }}>
               <strong style={{ color: C.onSurface }}>One property at a time.</strong> Upload all files for a single property, then come back for the next one. One complete OM is enough to get started — add rent rolls, T-12s, or leases later.
             </div>
 
-            <div style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 6 }}>
+            <div className="ul-badge-row" style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 6 }}>
               {["PDF", "XLS/XLSX", "DOCX", "CSV", "TXT", "PNG", "JPG"].map(ext => (
-                <span key={ext} style={{
+                <span key={ext} className="ul-badge" style={{
                   padding: "3px 8px", background: (ext === "PDF" || ext === "XLS/XLSX") ? C.primary : C.surfLow,
                   color: (ext === "PDF" || ext === "XLS/XLSX") ? "#fff" : C.secondary,
                   borderRadius: 4, fontSize: 10, fontWeight: 600,
@@ -584,13 +659,13 @@ export default function UploadPage() {
                   {ext}
                 </span>
               ))}
-              <span style={{ fontSize: 11, color: C.secondary, alignSelf: "center", marginLeft: 4 }}>Best results with PDFs and Excel files</span>
+              <span className="ul-badge-hint" style={{ fontSize: 11, color: C.secondary, alignSelf: "center", marginLeft: 4 }}>Best results with PDFs and Excel files</span>
             </div>
 
             {/* Bulk upload callout */}
             <a
               href="/workspace/upload/bulk"
-              className="bulk-callout"
+              className="ul-bulk-callout"
               style={{
                 display: "flex", alignItems: "center", gap: 14, marginTop: 24, padding: "16px 20px",
                 background: "rgba(132, 204, 22, 0.06)", borderRadius: 8,
@@ -598,7 +673,25 @@ export default function UploadPage() {
                 transition: "all 0.2s",
               }}
             >
-              <div style={{
+              <style>{`
+                .ul-bulk-callout:hover { background: rgba(132, 204, 22, 0.1) !important; border-color: rgba(132, 204, 22, 0.35) !important; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(132, 204, 22, 0.1); }
+                @media (max-width: 768px) {
+                  .ul-bulk-callout { gap: 12px !important; padding: 14px 16px !important; }
+                  .ul-bulk-icon { width: 40px !important; height: 40px !important; }
+                  .ul-bulk-icon svg { width: 20px !important; height: 20px !important; }
+                  .ul-bulk-title { font-size: 13px !important; }
+                  .ul-bulk-text { font-size: 12px !important; }
+                  .ul-bulk-arrow { width: 16px !important; height: 16px !important; }
+                }
+                @media (max-width: 480px) {
+                  .ul-bulk-callout { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; padding: 12px 12px !important; }
+                  .ul-bulk-icon { align-self: flex-start; }
+                  .ul-bulk-arrow { display: none !important; }
+                  .ul-bulk-title { font-size: 12px !important; }
+                  .ul-bulk-text { font-size: 11px !important; }
+                }
+              `}</style>
+              <div className="ul-bulk-icon" style={{
                 width: 44, height: 44, borderRadius: 10, background: "rgba(132, 204, 22, 0.12)",
                 display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
               }}>
@@ -608,18 +701,17 @@ export default function UploadPage() {
                 </svg>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: 14, color: C.onSurface, marginBottom: 2, fontFamily: "'Inter', sans-serif" }}>
+                <div className="ul-bulk-title" style={{ fontWeight: 700, fontSize: 14, color: C.onSurface, marginBottom: 2, fontFamily: "'Inter', sans-serif" }}>
                   Bulk Upload: upload up to 10 properties at once
                 </div>
-                <div style={{ fontSize: 13, color: C.secondary }}>
+                <div className="ul-bulk-text" style={{ fontSize: 13, color: C.secondary }}>
                   Drop up to 10 OMs in one go and each file becomes its own fully-scored deal on your board. Use this when you have a portfolio of separate properties. (The multi-file upload above is different — it merges several documents into a <em>single</em> property.)
                 </div>
               </div>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <svg className="ul-bulk-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </a>
-            <style>{`.bulk-callout:hover { background: rgba(132, 204, 22, 0.1) !important; border-color: rgba(132, 204, 22, 0.35) !important; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(132, 204, 22, 0.1); }`}</style>
           </div>
         </>
       )}
@@ -649,7 +741,7 @@ export default function UploadPage() {
         const primaryFile = files[0];
 
         return (
-          <div style={{
+          <div className="ul-processing-card" style={{
             position: "relative",
             background: "linear-gradient(180deg, #ffffff 0%, #f7faf1 100%)",
             borderRadius: C.radius,
@@ -658,6 +750,14 @@ export default function UploadPage() {
             overflow: "hidden",
             textAlign: "center",
           }}>
+            <style>{`
+              @media (max-width: 768px) {
+                .ul-processing-card { padding: 40px 20px 32px !important; }
+              }
+              @media (max-width: 480px) {
+                .ul-processing-card { padding: 32px 16px 24px !important; }
+              }
+            `}</style>
             <style>{`
               @keyframes wsUploadPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.55; transform: scale(0.94); } }
               @keyframes wsUploadFactSwap { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: translateY(0); } }
@@ -763,32 +863,55 @@ export default function UploadPage() {
               </div>
 
               {/* Headline */}
-              <h2 style={{
+              <h2 className="ul-processing-headline" style={{
                 fontSize: 22, fontWeight: 800, color: "#151b2b",
                 margin: "0 0 6px", letterSpacing: -0.2,
                 fontFamily: "'Inter', sans-serif",
               }}>
                 Analyzing your deal
               </h2>
-              <p key={`ws-fact-${processingMsgIdx}`} style={{
+              <p className="ul-processing-fact" key={`ws-fact-${processingMsgIdx}`} style={{
                 fontSize: 14, fontWeight: 600, color: "#4D7C0F",
                 margin: "0 0 28px",
                 animation: "wsUploadFactSwap 0.5s ease-out",
               }}>
                 {factMessages[processingMsgIdx]}
               </p>
+              <style>{`
+                @media (max-width: 768px) {
+                  .ul-processing-headline { font-size: 18px !important; }
+                  .ul-processing-fact { font-size: 13px !important; margin-bottom: 20px !important; }
+                }
+                @media (max-width: 480px) {
+                  .ul-processing-headline { font-size: 16px !important; }
+                  .ul-processing-fact { font-size: 12px !important; margin-bottom: 16px !important; }
+                }
+              `}</style>
 
               {/* Stage chip rail */}
-              <div style={{
+              <div className="ul-stage-rail" style={{
                 display: "flex", gap: 6,
                 justifyContent: "center", alignItems: "center",
                 flexWrap: "wrap", marginBottom: 24,
               }}>
+                <style>{`
+                  @media (max-width: 768px) {
+                    .ul-stage-rail { gap: 4px !important; margin-bottom: 18px !important; }
+                    .ul-stage-chip { padding: 5px 10px !important; font-size: 9px !important; }
+                    .ul-stage-icon { width: 12px !important; height: 12px !important; }
+                    .ul-stage-dot { width: 3px !important; height: 3px !important; }
+                  }
+                  @media (max-width: 480px) {
+                    .ul-stage-rail { gap: 3px !important; }
+                    .ul-stage-chip { padding: 4px 8px !important; }
+                    .ul-stage-connector { width: 6px !important; }
+                  }
+                `}</style>
                 {stages.map((stage, i, arr) => {
                   const isCurrent = !stage.done && (i === 0 || arr[i - 1].done);
                   return (
                     <div key={stage.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <div style={{
+                      <div className="ul-stage-chip" style={{
                         display: "inline-flex", alignItems: "center", gap: 6,
                         padding: "6px 12px", borderRadius: 999,
                         background: stage.done
@@ -803,7 +926,7 @@ export default function UploadPage() {
                         }`,
                         transition: "all 0.25s",
                       }}>
-                        <div style={{
+                        <div className="ul-stage-icon" style={{
                           width: 14, height: 14, borderRadius: "50%",
                           display: "flex", alignItems: "center", justifyContent: "center",
                           background: stage.done
@@ -817,7 +940,7 @@ export default function UploadPage() {
                               <path d="M5 13l4 4L19 7" />
                             </svg>
                           ) : (
-                            <div style={{
+                            <div className="ul-stage-dot" style={{
                               width: 5, height: 5, borderRadius: "50%",
                               background: isCurrent ? "#84CC16" : "rgba(0,0,0,0.25)",
                             }} />
@@ -832,7 +955,7 @@ export default function UploadPage() {
                         </span>
                       </div>
                       {i < arr.length - 1 && (
-                        <div style={{
+                        <div className="ul-stage-connector" style={{
                           width: 10, height: 2, borderRadius: 1,
                           background: stage.done ? "#84CC16" : "rgba(0,0,0,0.08)",
                         }} />

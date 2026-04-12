@@ -29,7 +29,7 @@ function UploadFlowDiagram() {
     { icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z", label: "Output", desc: "Proforma, brief, scorecard" },
   ];
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 0, padding: "20px 0", overflowX: "auto" }}>
+    <div className="hp-diagram" style={{ display: "flex", alignItems: "center", gap: 0, padding: "20px 0", overflowX: "auto" }}>
       {steps.map((s, i) => (
         <div key={s.label} style={{ display: "flex", alignItems: "center" }}>
           <div style={{ textAlign: "center", minWidth: 100 }}>
@@ -114,7 +114,7 @@ function FileTypeBadges() {
     { ext: "PNG / JPG", best: false, desc: "Property photos, site plans" },
   ];
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 8, padding: "12px 0" }}>
+    <div className="hp-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 8, padding: "12px 0" }}>
       {types.map(t => (
         <div key={t.ext} style={{
           padding: "10px 14px", borderRadius: C.radius, background: C.surfLowest,
@@ -140,7 +140,7 @@ function WorkspaceTypesDiagram() {
     { label: "Land", icon: "🌎", desc: "Vacant land, development sites, entitled" },
   ];
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10, padding: "12px 0" }}>
+    <div className="hp-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10, padding: "12px 0" }}>
       {types.map(t => (
         <div key={t.label} style={{
           padding: "14px 16px", borderRadius: C.radius, background: C.surfLowest,
@@ -571,7 +571,7 @@ const HELP_TOPICS: HelpTopic[] = [
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Field Groups</h4>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 8, padding: "12px 0" }}>
+        <div className="hp-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 8, padding: "12px 0" }}>
           {["Property Basics", "Pricing & Deal Terms", "Income", "Expenses", "Tenant Info", "Debt Assumptions", "Returns", "Rent Roll", "Lease Data", "Signals"].map(g => (
             <div key={g} style={{ padding: "8px 12px", borderRadius: C.radius, background: C.surfLow, fontSize: 12, fontWeight: 600, color: C.onSurface }}>{g}</div>
           ))}
@@ -630,7 +630,7 @@ const HELP_TOPICS: HelpTopic[] = [
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Default Assumptions</h4>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "12px 0" }}>
+        <div className="hp-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "12px 0" }}>
           {[
             { label: "Loan-to-Value (LTV)", value: "65%" },
             { label: "Interest Rate", value: "6.50%" },
@@ -772,9 +772,28 @@ export default function HelpPage() {
   const activeTopic = HELP_TOPICS.find(t => t.id === activeId) || HELP_TOPICS[0];
 
   return (
-    <div style={{ display: "flex", gap: 0, minHeight: "calc(100vh - 120px)" }}>
+    <>
+      <style>{`
+        @media (max-width: 768px) {
+          .hp-container { flex-direction: column !important; gap: 0 !important; }
+          .hp-sidebar { width: 100% !important; border-right: none !important; border-bottom: 1px solid ${C.ghost} !important; position: static !important; max-height: none !important; padding: 12px 0 !important; }
+          .hp-content { max-width: 100% !important; padding: 16px 20px !important; }
+          .hp-diagram { flex-wrap: wrap !important; }
+          .hp-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 480px) {
+          .hp-sidebar { padding: 8px 0 !important; }
+          .hp-sidebar h2 { font-size: 16px !important; padding: 0 12px 12px !important; }
+          .hp-topic-btn { padding: 8px 12px !important; font-size: 12px !important; gap: 6px !important; }
+          .hp-topic-btn svg { width: 14px !important; height: 14px !important; }
+          .hp-content { padding: 12px 14px !important; }
+          .hp-content h4 { font-size: 14px !important; margin: 16px 0 6px !important; }
+          .hp-diagram { overflow-x: auto !important; }
+        }
+      `}</style>
+      <div className="hp-container" style={{ display: "flex", gap: 0, minHeight: "calc(100vh - 120px)" }}>
       {/* Left sidebar — topic list */}
-      <div style={{
+      <div className="hp-sidebar" style={{
         width: 240, flexShrink: 0, padding: "20px 0",
         borderRight: `1px solid ${C.ghost}`,
         position: "sticky", top: 0, alignSelf: "flex-start",
@@ -790,6 +809,7 @@ export default function HelpPage() {
           {HELP_TOPICS.map(topic => (
             <button
               key={topic.id}
+              className="hp-topic-btn"
               onClick={() => setActiveId(topic.id)}
               style={{
                 display: "flex", alignItems: "center", gap: 10,
@@ -812,7 +832,7 @@ export default function HelpPage() {
       </div>
 
       {/* Right content area */}
-      <div style={{ flex: 1, padding: "20px 40px 60px", maxWidth: 1400 }}>
+      <div className="hp-content" style={{ flex: 1, padding: "20px 40px 60px", maxWidth: 1400 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
           <div style={{
             width: 40, height: 40, borderRadius: "50%", background: "rgba(132, 204, 22, 0.08)",
@@ -833,7 +853,7 @@ export default function HelpPage() {
         {activeTopic.content}
 
         {/* Navigation between topics */}
-        <div style={{
+        <div className="hp-nav" style={{
           display: "flex", justifyContent: "space-between", marginTop: 40,
           paddingTop: 20, borderTop: `1px solid ${C.ghost}`,
         }}>
@@ -867,5 +887,6 @@ export default function HelpPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

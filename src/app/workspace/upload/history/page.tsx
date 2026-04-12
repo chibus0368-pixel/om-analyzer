@@ -250,10 +250,29 @@ export default function UploadHistoryPage() {
   }
 
   return (
-    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
+    <div className="uh-container" style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .uh-container { padding: 0 16px !important; }
+          .uh-header { margin-bottom: 16px !important; }
+          .uh-breadcrumb { font-size: 11px !important; margin-bottom: 6px !important; }
+          .uh-title-section { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+          .uh-title { font-size: 24px !important; }
+          .uh-subtitle { font-size: 13px !important; }
+          .uh-upload-btn { padding: 9px 14px !important; font-size: 10px !important; }
+        }
+        @media (max-width: 480px) {
+          .uh-container { padding: 0 12px !important; }
+          .uh-breadcrumb { font-size: 10px !important; }
+          .uh-title { font-size: 20px !important; }
+          .uh-subtitle { font-size: 12px !important; }
+          .uh-upload-btn { padding: 8px 12px !important; font-size: 9px !important; width: 100%; text-align: center; }
+        }
+      `}</style>
       {/* Header */}
-      <div style={{ marginBottom: 20 }}>
+      <div className="uh-header" style={{ marginBottom: 20 }}>
         <div
+          className="uh-breadcrumb"
           style={{
             display: "flex",
             alignItems: "center",
@@ -273,6 +292,7 @@ export default function UploadHistoryPage() {
           </Link>
         </div>
         <div
+          className="uh-title-section"
           style={{
             display: "flex",
             alignItems: "flex-start",
@@ -283,6 +303,7 @@ export default function UploadHistoryPage() {
         >
           <div>
             <h1
+              className="uh-title"
               style={{
                 fontSize: 28,
                 fontWeight: 700,
@@ -294,6 +315,7 @@ export default function UploadHistoryPage() {
               Upload History
             </h1>
             <p
+              className="uh-subtitle"
               style={{
                 fontSize: 14,
                 color: "#6B7280",
@@ -309,6 +331,7 @@ export default function UploadHistoryPage() {
             </p>
           </div>
           <Link
+            className="uh-upload-btn"
             href="/workspace/upload"
             style={{
               display: "inline-flex",
@@ -324,6 +347,7 @@ export default function UploadHistoryPage() {
               textDecoration: "none",
               letterSpacing: "0.08em",
               textTransform: "uppercase",
+              minHeight: 36,
             }}
           >
             + Upload New
@@ -333,6 +357,7 @@ export default function UploadHistoryPage() {
 
       {/* Controls row */}
       <div
+        className="uh-controls"
         style={{
           display: "flex",
           gap: 12,
@@ -341,8 +366,25 @@ export default function UploadHistoryPage() {
           flexWrap: "wrap",
         }}
       >
-        <div style={{ position: "relative", flex: "1 1 320px", minWidth: 240 }}>
+        <style>{`
+          @media (max-width: 768px) {
+            .uh-controls { gap: 10px !important; margin-bottom: 12px !important; }
+            .uh-search-input { font-size: 12px !important; padding: 8px 10px 8px 32px !important; }
+            .uh-search-icon { width: 12px !important; height: 12px !important; left: 10px !important; }
+            .uh-sort-select { font-size: 12px !important; padding: 8px 10px !important; }
+            .uh-filter-label { font-size: 12px !important; gap: 6px !important; }
+          }
+          @media (max-width: 480px) {
+            .uh-controls { flex-direction: column !important; }
+            .uh-search-wrapper { width: 100% !important; flex: 1 1 100% !important; }
+            .uh-search-input { width: 100% !important; font-size: 12px !important; }
+            .uh-sort-select { width: 100% !important; font-size: 12px !important; }
+            .uh-filter-label { width: 100% !important; font-size: 11px !important; white-space: nowrap !important; }
+          }
+        `}</style>
+        <div className="uh-search-wrapper" style={{ position: "relative", flex: "1 1 320px", minWidth: 240 }}>
           <svg
+            className="uh-search-icon"
             width="14"
             height="14"
             viewBox="0 0 24 24"
@@ -363,6 +405,7 @@ export default function UploadHistoryPage() {
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
           <input
+            className="uh-search-input"
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search by name, address, city…"
@@ -381,6 +424,7 @@ export default function UploadHistoryPage() {
         </div>
 
         <select
+          className="uh-sort-select"
           value={sortBy}
           onChange={e => setSortBy(e.target.value as any)}
           style={{
@@ -393,6 +437,7 @@ export default function UploadHistoryPage() {
             background: "#fff",
             color: "#151b2b",
             cursor: "pointer",
+            minHeight: 36,
           }}
         >
           <option value="date">Newest first</option>
@@ -402,6 +447,7 @@ export default function UploadHistoryPage() {
         </select>
 
         <label
+          className="uh-filter-label"
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -424,6 +470,7 @@ export default function UploadHistoryPage() {
       {/* Action bar */}
       {selected.size > 0 && (
         <div
+          className="uh-action-bar"
           style={{
             position: "sticky",
             top: 0,
@@ -439,10 +486,27 @@ export default function UploadHistoryPage() {
             boxShadow: "0 4px 14px rgba(0,0,0,0.12)",
           }}
         >
-          <span style={{ fontSize: 13, fontWeight: 600 }}>
+          <style>{`
+            @media (max-width: 768px) {
+              .uh-action-bar { gap: 10px !important; padding: 10px 12px !important; }
+              .uh-action-count { font-size: 12px !important; }
+              .uh-clear-btn { padding: 5px 10px !important; font-size: 11px !important; }
+              .uh-add-btn { padding: 8px 14px !important; font-size: 11px !important; }
+              .uh-progress-text { font-size: 11px !important; }
+            }
+            @media (max-width: 480px) {
+              .uh-action-bar { flex-wrap: wrap !important; gap: 8px !important; }
+              .uh-action-count { font-size: 11px !important; order: 1; }
+              .uh-clear-btn { font-size: 10px !important; padding: 4px 8px !important; order: 2; }
+              .uh-progress-flex { flex: 1 1 100% !important; order: 3; }
+              .uh-add-btn { width: 100% !important; padding: 10px 12px !important; font-size: 10px !important; order: 4; text-align: center; }
+            }
+          `}</style>
+          <span className="uh-action-count" style={{ fontSize: 13, fontWeight: 600 }}>
             {selected.size} selected
           </span>
           <button
+            className="uh-clear-btn"
             onClick={() => setSelected(new Set())}
             style={{
               padding: "6px 12px",
@@ -454,16 +518,18 @@ export default function UploadHistoryPage() {
               fontWeight: 600,
               cursor: "pointer",
               fontFamily: "inherit",
+              minHeight: 32,
             }}
           >
             Clear
           </button>
-          <div style={{ flex: 1 }}>
+          <div className="uh-progress-flex" style={{ flex: 1 }}>
             {progress && (
-              <span style={{ fontSize: 12, color: "#84CC16" }}>{progress}</span>
+              <span className="uh-progress-text" style={{ fontSize: 12, color: "#84CC16" }}>{progress}</span>
             )}
           </div>
           <button
+            className="uh-add-btn"
             onClick={handleAddSelected}
             disabled={adding || !activeWorkspace}
             style={{
@@ -479,6 +545,7 @@ export default function UploadHistoryPage() {
               textTransform: "uppercase",
               letterSpacing: "0.05em",
               whiteSpace: "nowrap",
+              minHeight: 36,
             }}
           >
             {adding
@@ -592,6 +659,7 @@ export default function UploadHistoryPage() {
         </div>
       ) : (
         <div
+          className="uh-table-container"
           style={{
             background: "#fff",
             borderRadius: 12,
@@ -600,8 +668,26 @@ export default function UploadHistoryPage() {
             boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
           }}
         >
+          <style>{`
+            @media (max-width: 768px) {
+              .uh-table-container { overflow-x: auto; }
+              .uh-table-header { gap: 8px !important; padding: 10px 12px !important; font-size: 9px !important; }
+              .uh-table-row { gap: 8px !important; padding: 12px !important; }
+              .uh-col-property { flex: 1 1 150px !important; }
+              .uh-col-board { min-width: 120px !important; }
+            }
+            @media (max-width: 480px) {
+              .uh-table-container { overflow-x: scroll; -webkit-overflow-scrolling: touch; }
+              .uh-table-header { gap: 6px !important; padding: 8px 10px !important; font-size: 8px !important; }
+              .uh-table-row { gap: 6px !important; padding: 10px !important; flex-wrap: wrap !important; }
+              .uh-col-property { flex: 1 1 200px !important; min-width: 200px !important; }
+              .uh-col-name-text { font-size: 12px !important; }
+              .uh-col-location { font-size: 11px !important; }
+            }
+          `}</style>
           {/* Table header */}
           <div
+            className="uh-table-header"
             style={{
               display: "grid",
               gridTemplateColumns: "40px 1fr 180px 110px 80px 120px",
@@ -664,6 +750,7 @@ export default function UploadHistoryPage() {
             return (
               <div
                 key={prop.id}
+                className="uh-table-row"
                 onClick={() => toggle(prop.id)}
                 style={{
                   display: "grid",
@@ -685,7 +772,7 @@ export default function UploadHistoryPage() {
                     (e.currentTarget as HTMLElement).style.background = "#fff";
                 }}
               >
-                <div>
+                <div style={{ minHeight: 20, display: "flex", alignItems: "center" }}>
                   <input
                     type="checkbox"
                     checked={isSelected}
@@ -694,8 +781,9 @@ export default function UploadHistoryPage() {
                     style={{ cursor: "pointer" }}
                   />
                 </div>
-                <div style={{ minWidth: 0 }}>
+                <div className="uh-col-property" style={{ minWidth: 0 }}>
                   <div
+                    className="uh-col-name-text"
                     style={{
                       fontSize: 14,
                       fontWeight: 700,
@@ -709,6 +797,7 @@ export default function UploadHistoryPage() {
                   </div>
                   {location && (
                     <div
+                      className="uh-col-location"
                       style={{
                         fontSize: 12,
                         color: "#6B7280",
@@ -819,6 +908,7 @@ export default function UploadHistoryPage() {
       {/* Footer / Pagination bar */}
       {!loading && !error && filtered.length > 0 && (
         <div
+          className="uh-footer"
           style={{
             marginTop: 16,
             display: "flex",
@@ -830,7 +920,26 @@ export default function UploadHistoryPage() {
             color: "#6B7280",
           }}
         >
-          <div>
+          <style>{`
+            @media (max-width: 768px) {
+              .uh-footer { font-size: 11px !important; gap: 10px !important; }
+              .uh-footer-info { flex: 1 1 100% !important; }
+              .uh-footer-controls { flex: 1 1 100% !important; }
+              .uh-page-size-select { padding: 5px 6px !important; font-size: 11px !important; }
+              .uh-pagination-buttons { gap: 4px !important; }
+              .uh-pagination-buttons button { padding: 4px 8px !important; font-size: 10px !important; }
+            }
+            @media (max-width: 480px) {
+              .uh-footer { flex-direction: column !important; gap: 8px !important; align-items: flex-start !important; }
+              .uh-footer-info { font-size: 10px !important; width: 100%; }
+              .uh-footer-controls { width: 100%; gap: 8px !important; }
+              .uh-page-size-label { flex: 1 1 auto !important; }
+              .uh-page-size-select { width: 100%; min-height: 32px !important; }
+              .uh-pagination-buttons { width: 100%; gap: 3px !important; }
+              .uh-pagination-buttons button { flex: 1; padding: 8px 4px !important; font-size: 9px !important; }
+            }
+          `}</style>
+          <div className="uh-footer-info">
             {pageSize > 0 ? (
               <>
                 Showing <strong style={{ color: "#111827" }}>{filtered.length === 0 ? 0 : pageStart + 1}</strong>
@@ -850,10 +959,11 @@ export default function UploadHistoryPage() {
               </>
             )}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <label style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <div className="uh-footer-controls" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <label className="uh-page-size-label" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
               <span>Per page</span>
               <select
+                className="uh-page-size-select"
                 value={pageSize}
                 onChange={e => setPageSize(Number(e.target.value))}
                 style={{
@@ -865,6 +975,7 @@ export default function UploadHistoryPage() {
                   color: "#151b2b",
                   cursor: "pointer",
                   fontFamily: "inherit",
+                  minHeight: 32,
                 }}
               >
                 <option value={10}>10</option>
@@ -875,7 +986,7 @@ export default function UploadHistoryPage() {
               </select>
             </label>
             {pageSize > 0 && totalPages > 1 && (
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <div className="uh-pagination-buttons" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                 <button
                   onClick={() => setPage(1)}
                   disabled={currentPage === 1}
@@ -890,7 +1001,7 @@ export default function UploadHistoryPage() {
                 >
                   ‹ Prev
                 </button>
-                <span style={{ padding: "0 8px", fontWeight: 600, color: "#111827" }}>
+                <span style={{ padding: "0 8px", fontWeight: 600, color: "#111827", fontSize: 12 }}>
                   Page {currentPage} of {totalPages}
                 </span>
                 <button

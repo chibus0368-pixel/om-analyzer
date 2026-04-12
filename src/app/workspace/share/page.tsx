@@ -235,9 +235,32 @@ export default function ShareLinksPage() {
   };
 
   return (
-    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
+    <>
+      <style>{`
+        @media (max-width: 768px) {
+          .sh-header { flex-direction: column !important; gap: 12px !important; align-items: flex-start !important; }
+          .sh-header > button { width: 100% !important; }
+          .sh-contact-grid { grid-template-columns: 1fr !important; }
+          .sh-phone-input { max-width: 100% !important; }
+          .sh-form-section { padding: 16px 20px !important; }
+          .sh-link-card { padding: 12px 14px !important; }
+          .sh-link-header { flex-direction: column !important; gap: 8px !important; align-items: flex-start !important; }
+          .sh-actions { flex-wrap: wrap !important; gap: 4px !important; }
+          .sh-badges { flex-wrap: wrap !important; gap: 4px !important; }
+        }
+        @media (max-width: 480px) {
+          .sh-container { padding: 0 12px !important; }
+          .sh-header > div { width: 100% !important; }
+          .sh-form-section { padding: 12px 14px !important; margin-bottom: 12px !important; }
+          .sh-contact-grid { gap: 8px !important; }
+          .sh-link-card { border-radius: 8px !important; }
+          .sh-actions button { font-size: 10px !important; padding: 4px 8px !important; }
+          .sh-url { font-size: 11px !important; }
+        }
+      `}</style>
+      <div className="sh-container" style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+      <div className="sh-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: C.onSurface, margin: 0, fontFamily: "'Inter', sans-serif" }}>
             Shareable Links
@@ -264,7 +287,7 @@ export default function ShareLinksPage() {
 
       {/* Create Form */}
       {showCreate && (
-        <div style={{
+        <div className="sh-form-section" style={{
           background: C.surfLowest, borderRadius: 10, padding: "24px 28px", marginBottom: 24,
           border: `1px solid ${C.ghost}`, boxShadow: C.shadow,
         }}>
@@ -308,7 +331,7 @@ export default function ShareLinksPage() {
               Displayed Contact Information <span style={{ color: C.secondary, fontWeight: 400 }}>(optional)</span>
               <span title="Your name, agency, and phone number will be shown in the header of the shared page so your client knows who to contact." style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 16, height: 16, borderRadius: "50%", background: C.surfLow, border: `1px solid ${C.ghost}`, color: C.secondary, fontSize: 10, fontWeight: 700, cursor: "help", flexShrink: 0 }}>?</span>
             </label>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+            <div className="sh-contact-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
               <input
                 value={contactName}
                 onChange={e => setContactName(e.target.value)}
@@ -323,6 +346,7 @@ export default function ShareLinksPage() {
               />
             </div>
             <input
+              className="sh-phone-input"
               value={contactPhone}
               onChange={e => setContactPhone(e.target.value)}
               placeholder="Phone number"
@@ -411,6 +435,7 @@ export default function ShareLinksPage() {
             return (
               <div
                 key={link.id}
+                className="sh-link-card"
                 style={{
                   background: C.surfLowest, borderRadius: 10, padding: "16px 20px",
                   border: isEditing ? `2px solid ${C.primary}` : `1px solid ${C.ghost}`,
@@ -465,7 +490,7 @@ export default function ShareLinksPage() {
                         Displayed Contact Information <span style={{ color: C.secondary, fontWeight: 400 }}>(optional)</span>
                         <span title="Your name, agency, and phone number will be shown in the header of the shared page so your client knows who to contact." style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 16, height: 16, borderRadius: "50%", background: C.surfLow, border: `1px solid ${C.ghost}`, color: C.secondary, fontSize: 10, fontWeight: 700, cursor: "help", flexShrink: 0 }}>?</span>
                       </label>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+                      <div className="sh-contact-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
                         <input
                           value={editContactName}
                           onChange={e => setEditContactName(e.target.value)}
@@ -480,6 +505,7 @@ export default function ShareLinksPage() {
                         />
                       </div>
                       <input
+                        className="sh-phone-input"
                         value={editContactPhone}
                         onChange={e => setEditContactPhone(e.target.value)}
                         placeholder="Phone number"
@@ -516,7 +542,7 @@ export default function ShareLinksPage() {
                     </div>
 
                     {/* URL reminder */}
-                    <div style={{
+                    <div className="sh-url" style={{
                       padding: "8px 12px", background: C.surfLow, borderRadius: C.radius,
                       fontSize: 12, color: C.secondary, fontFamily: "monospace",
                       overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
@@ -555,12 +581,12 @@ export default function ShareLinksPage() {
                 ) : (
                   /* ─── View Mode ─── */
                   <>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                    <div className="sh-link-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                       <div>
                         <h3 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: 0 }}>
                           {link.displayName || link.workspaceName}
                         </h3>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
+                        <div className="sh-badges" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
                           <span style={{
                             fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5,
                             padding: "2px 8px", borderRadius: 4,
@@ -591,7 +617,7 @@ export default function ShareLinksPage() {
                       </div>
 
                       {/* Actions */}
-                      <div style={{ display: "flex", gap: 6 }}>
+                      <div className="sh-actions" style={{ display: "flex", gap: 6 }}>
                         <button
                           onClick={() => startEdit(link)}
                           className="ws-btn-secondary"
@@ -673,7 +699,7 @@ export default function ShareLinksPage() {
                     </div>
 
                     {/* URL */}
-                    <div style={{
+                    <div className="sh-url" style={{
                       padding: "8px 12px", background: C.surfLow, borderRadius: C.radius,
                       fontSize: 12, color: C.secondary, fontFamily: "monospace",
                       overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
@@ -691,6 +717,7 @@ export default function ShareLinksPage() {
           })}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

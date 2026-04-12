@@ -48,6 +48,56 @@ export default function MapPage() {
   const [plotted, setPlotted] = useState(0);
   const [failed, setFailed] = useState(0);
 
+  // Mobile responsive styles
+  const styles = `
+    @media (max-width: 768px) {
+      .mp-header-container {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+      }
+      .mp-title-section h1 {
+        font-size: 24px !important;
+      }
+      .mp-legend-container {
+        flex-wrap: wrap !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+      }
+      .mp-legend-item {
+        font-size: 10px !important;
+      }
+      .mp-map-wrapper {
+        height: calc(100vh - 120px) !important;
+      }
+    }
+    @media (max-width: 480px) {
+      .mp-header-container {
+        padding: 8px 12px !important;
+      }
+      .mp-title-section h1 {
+        font-size: 20px !important;
+      }
+      .mp-title-section p {
+        font-size: 10px !important;
+      }
+      .mp-legend-container {
+        gap: 6px !important;
+      }
+      .mp-legend-item {
+        font-size: 9px !important;
+        gap: 2px !important;
+      }
+      .mp-legend-dot {
+        width: 8px !important;
+        height: 8px !important;
+      }
+      .mp-map-wrapper {
+        height: calc(100vh - 110px) !important;
+      }
+    }
+  `;
+
   // Load Leaflet via dynamic import
   useEffect(() => {
     if (!mapRef.current) return;
@@ -270,9 +320,11 @@ export default function MapPage() {
   }, [mapReady, properties, propFields, fieldsReady]);
 
   return (
-    <div style={{ height: "calc(100vh - 88px)", display: "flex", flexDirection: "column" }}>
-      <div style={{ padding: "12px 20px", background: "#fff", borderBottom: "1px solid rgba(227, 190, 189, 0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
+    <>
+      <style>{styles}</style>
+      <div style={{ height: "calc(100vh - 88px)", display: "flex", flexDirection: "column" }}>
+      <div className="mp-header-container" style={{ padding: "12px 20px", background: "#fff", borderBottom: "1px solid rgba(227, 190, 189, 0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div className="mp-title-section">
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <h1 style={{ fontSize: 30, fontWeight: 700, margin: 0, color: "#111827", letterSpacing: -0.5 }}>Deal Map{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}</h1>
             {activeWorkspace?.analysisType && (
@@ -294,21 +346,21 @@ export default function MapPage() {
                 : "No properties yet \u2014 upload OMs to see them on the map"}
           </p>
         </div>
-        <div style={{ display: "flex", gap: 12, alignItems: "center", fontSize: 11, flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#059669", display: "inline-block" }} /> Strong Buy (85+)
+        <div className="mp-legend-container" style={{ display: "flex", gap: 12, alignItems: "center", fontSize: 11, flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <span className="mp-legend-item" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <span className="mp-legend-dot" style={{ width: 10, height: 10, borderRadius: "50%", background: "#059669", display: "inline-block" }} /> Strong Buy (85+)
           </span>
-          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#2563EB", display: "inline-block" }} /> Buy (70–84)
+          <span className="mp-legend-item" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <span className="mp-legend-dot" style={{ width: 10, height: 10, borderRadius: "50%", background: "#2563EB", display: "inline-block" }} /> Buy (70–84)
           </span>
-          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#D97706", display: "inline-block" }} /> Neutral (50–69)
+          <span className="mp-legend-item" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <span className="mp-legend-dot" style={{ width: 10, height: 10, borderRadius: "50%", background: "#D97706", display: "inline-block" }} /> Neutral (50–69)
           </span>
-          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#EA580C", display: "inline-block" }} /> Pass (30–49)
+          <span className="mp-legend-item" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <span className="mp-legend-dot" style={{ width: 10, height: 10, borderRadius: "50%", background: "#EA580C", display: "inline-block" }} /> Pass (30–49)
           </span>
-          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#94a3b8", display: "inline-block" }} /> Not scored
+          <span className="mp-legend-item" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <span className="mp-legend-dot" style={{ width: 10, height: 10, borderRadius: "50%", background: "#94a3b8", display: "inline-block" }} /> Not scored
           </span>
         </div>
       </div>
@@ -317,6 +369,7 @@ export default function MapPage() {
           1000) can't cover sidebar/header dropdowns that sit above it. */}
       <div
         ref={mapRef}
+        className="mp-map-wrapper"
         style={{
           flex: 1,
           width: "100%",
@@ -326,5 +379,6 @@ export default function MapPage() {
         }}
       />
     </div>
+    </>
   );
 }

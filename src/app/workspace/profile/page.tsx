@@ -464,7 +464,7 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
+    <div className="pf-container" style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         .profile-input:focus { border-color: ${PRIMARY} !important; }
@@ -474,10 +474,27 @@ export default function ProfilePage() {
         .profile-toggle.on { background: ${PRIMARY}; }
         .profile-toggle.on::after { transform: translateX(18px); }
         .profile-toggle.off { background: #D8DFE9; }
+        @media (max-width: 768px) {
+          .pf-header { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+          .pf-tabs { flex-wrap: wrap !important; gap: 0 !important; }
+          .pf-tab { padding: 8px 12px !important; font-size: 12px !important; }
+          .pf-form-grid-2 { grid-template-columns: 1fr !important; }
+          .pf-card { padding: 16px 20px !important; }
+          .pf-btn-group { flex-direction: column !important; width: 100% !important; }
+          .pf-btn-group button { width: 100% !important; }
+        }
+        @media (max-width: 480px) {
+          .pf-container { padding: 0 12px !important; }
+          .pf-card { padding: 12px 14px !important; margin-bottom: 12px !important; }
+          .pf-tabs { border-bottom: 1px solid #EDF0F5 !important; margin-bottom: 12px !important; }
+          .pf-tab { padding: 6px 8px !important; font-size: 11px !important; gap: 2px !important; }
+          .pf-auth-item { flex-direction: column !important; align-items: flex-start !important; padding: 10px 12px !important; }
+          .pf-form-grid-2 { gap: 8px !important; }
+        }
       `}</style>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 6 }}>
+      <div className="pf-header" style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 6 }}>
         <div style={{
           width: 52, height: 52, borderRadius: "50%",
           background: PRIMARY,
@@ -509,7 +526,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Section tabs */}
-      <div style={{
+      <div className="pf-tabs" style={{
         display: "flex", gap: 0, borderBottom: `1px solid ${BORDER}`,
         marginBottom: 24, marginTop: 20,
       }}>
@@ -517,7 +534,7 @@ export default function ProfilePage() {
           <button
             key={s.id}
             onClick={() => setActiveSection(s.id)}
-            className="profile-tab"
+            className="profile-tab pf-tab"
             style={{
               display: "flex", alignItems: "center", gap: 6,
               padding: "10px 16px", background: "none", border: "none",
@@ -540,11 +557,11 @@ export default function ProfilePage() {
       {activeSection === "profile" && (
         <>
           {/* Personal Information */}
-          <div style={cardStyle}>
+          <div className="pf-card" style={cardStyle}>
             <h2 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 4px", color: SURFACE }}>Personal Information</h2>
             <p style={{ fontSize: 12, color: MUTED, margin: "0 0 20px" }}>This information is used across your DealBoard.</p>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+            <div className="pf-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
               <div>
                 <label style={labelStyle}>First Name</label>
                 <input className="profile-input" style={inputStyle} value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="First name" />
@@ -555,7 +572,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+            <div className="pf-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
               <div>
                 <label style={labelStyle}>Email</label>
                 <input style={{ ...inputStyle, background: "#f9fafb", color: MUTED }} value={profile?.email || ""} disabled />
@@ -566,7 +583,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+            <div className="pf-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
               <div>
                 <label style={labelStyle}>Company</label>
                 <input className="profile-input" style={inputStyle} value={company} onChange={e => setCompany(e.target.value)} placeholder="Company name" />
@@ -599,11 +616,11 @@ export default function ProfilePage() {
           </div>
 
           {/* CRE Focus */}
-          <div style={cardStyle}>
+          <div className="pf-card" style={cardStyle}>
             <h2 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 4px", color: SURFACE }}>CRE Focus</h2>
             <p style={{ fontSize: 12, color: MUTED, margin: "0 0 20px" }}>Help us tailor your analysis experience.</p>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div className="pf-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <div>
                 <label style={labelStyle}>Market Focus</label>
                 <input className="profile-input" style={inputStyle} value={marketFocus} onChange={e => setMarketFocus(e.target.value)}
@@ -618,7 +635,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Save */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 32 }}>
+          <div className="pf-btn-group" style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 32 }}>
             <button onClick={handleSave} disabled={saving} style={{
               ...btnPrimary,
               opacity: saving ? 0.7 : 1, cursor: saving ? "not-allowed" : "pointer",
@@ -641,13 +658,13 @@ export default function ProfilePage() {
       {activeSection === "security" && (
         <>
           {/* Authentication Methods */}
-          <div style={cardStyle}>
+          <div className="pf-card" style={cardStyle}>
             <h2 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 4px", color: SURFACE }}>Authentication</h2>
             <p style={{ fontSize: 12, color: MUTED, margin: "0 0 20px" }}>Manage how you sign in to your account.</p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {/* Email/Password */}
-              <div style={{
+              <div className="pf-auth-item" style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
                 padding: "14px 16px", borderRadius: 6, border: `1px solid ${BORDER}`,
                 background: isPasswordUser ? "rgba(5, 150, 105, 0.04)" : "#f9fafb",
@@ -670,7 +687,7 @@ export default function ProfilePage() {
               </div>
 
               {/* Google */}
-              <div style={{
+              <div className="pf-auth-item" style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
                 padding: "14px 16px", borderRadius: 6, border: `1px solid ${BORDER}`,
                 background: isGoogleUser ? "rgba(5, 150, 105, 0.04)" : "#f9fafb",
@@ -699,7 +716,7 @@ export default function ProfilePage() {
 
           {/* Change Password */}
           {isPasswordUser && (
-            <div style={cardStyle}>
+            <div className="pf-card" style={cardStyle}>
               <h2 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 4px", color: SURFACE }}>Change Password</h2>
               <p style={{ fontSize: 12, color: MUTED, margin: "0 0 16px" }}>Update your password or request a reset link.</p>
 

@@ -53,8 +53,29 @@ export default function ManageWorkspacesPage() {
   };
 
   return (
-    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+    <>
+      <style>{`
+        @media (max-width: 768px) {
+          .mg-header { flex-direction: column !important; gap: 12px !important; align-items: flex-start !important; }
+          .mg-header-buttons { flex-direction: column !important; width: 100% !important; gap: 8px !important; }
+          .mg-header-buttons button { width: 100% !important; }
+          .mg-type-grid { grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)) !important; }
+          .mg-actions { flex-wrap: wrap !important; gap: 4px !important; }
+        }
+        @media (max-width: 480px) {
+          .mg-container { padding: 0 12px !important; }
+          .mg-header { margin-bottom: 12px !important; }
+          .mg-header > div:first-child { width: 100% !important; }
+          .mg-form { padding: 16px 16px !important; }
+          .mg-list { gap: 6px !important; }
+          .mg-workspace-card { padding: 12px 14px !important; }
+          .mg-workspace-info { flex-direction: column !important; gap: 8px !important; }
+          .mg-actions { gap: 4px !important; font-size: 10px !important; }
+          .mg-type-grid { gap: 6px !important; }
+        }
+      `}</style>
+      <div className="mg-container" style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
+      <div className="mg-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#0B1120" }}>Manage DealBoards</h1>
@@ -71,7 +92,7 @@ export default function ManageWorkspacesPage() {
           </div>
           <p style={{ margin: "4px 0 0", fontSize: 13, color: "#5A7091" }}>Add, rename, clear data, or delete DealBoards.</p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div className="mg-header-buttons" style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <button
             onClick={() => router.push("/workspace/upload/history")}
             style={{
@@ -104,7 +125,7 @@ export default function ManageWorkspacesPage() {
 
       {/* Add workspace form */}
       {showAdd && (
-        <div style={{
+        <div className="mg-form" style={{
           background: "#fff", borderRadius: 12, padding: "24px 28px", marginBottom: 16,
           border: "1px solid #E5E9F0", boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
         }}>
@@ -123,7 +144,7 @@ export default function ManageWorkspacesPage() {
           />
 
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#151b2b", marginBottom: 10 }}>Deal Type</label>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(80px, 1fr))", gap: 10, marginBottom: 20 }}>
+          <div className="mg-type-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(80px, 1fr))", gap: 10, marginBottom: 20 }}>
             {(["retail", "industrial", "office", "land", "multifamily"] as AnalysisType[]).map(type => (
               <button
                 key={type}
@@ -171,7 +192,7 @@ export default function ManageWorkspacesPage() {
       )}
 
       {/* Workspace list */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div className="mg-list" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {workspaces.map(ws => {
           const isActive = ws.id === activeWorkspace?.id;
           const isDefault = ws.id === "default";
@@ -180,13 +201,14 @@ export default function ManageWorkspacesPage() {
           return (
             <div
               key={ws.id}
+              className="mg-workspace-card"
               style={{
                 background: "#fff", borderRadius: 10, padding: "16px 20px",
                 border: isActive ? "1.5px solid #C49A3C" : "1px solid #E5E9F0",
                 transition: "all 0.15s",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div className="mg-workspace-info" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0 }}>
                   {/* Active indicator */}
                   <div style={{
@@ -226,7 +248,7 @@ export default function ManageWorkspacesPage() {
 
                 {/* Actions */}
                 {!isEditing && (
-                  <div style={{ display: "flex", gap: 6, flexShrink: 0, marginLeft: 12 }}>
+                  <div className="mg-actions" style={{ display: "flex", gap: 6, flexShrink: 0, marginLeft: 12 }}>
                     {!isActive && (
                       <ActionButton label="Switch" onClick={() => { switchWorkspace(ws.id); router.push("/workspace"); }} color="#2563EB" />
                     )}
@@ -271,7 +293,8 @@ export default function ManageWorkspacesPage() {
           No DealBoards found. Create one to get started.
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
 

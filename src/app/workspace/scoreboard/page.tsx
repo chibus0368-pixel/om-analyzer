@@ -222,6 +222,7 @@ function LeaderboardRow({ pd, rank, totalCount, maxScore, expanded, onToggle }: 
       {/* Main row */}
       <div
         onClick={onToggle}
+        className="sb-leaderboard-row"
         style={{
           display: "grid",
           gridTemplateColumns: "26px 64px 1fr auto 28px",
@@ -307,7 +308,7 @@ function LeaderboardRow({ pd, rank, totalCount, maxScore, expanded, onToggle }: 
             <div style={{ fontSize: 12, color: "#585e70", marginBottom: 6 }}>{location}</div>
           )}
           {/* Inline key metrics */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0 16px" }}>
+          <div className="sb-inline-metrics" style={{ display: "flex", flexWrap: "wrap", gap: "0 16px" }}>
             {askingPrice && (
               <InlineMetric label="Price" value={formatValue("asking_price", askingPrice)} />
             )}
@@ -380,12 +381,12 @@ function LeaderboardRow({ pd, rank, totalCount, maxScore, expanded, onToggle }: 
 
       {/* Expanded detail panel */}
       {expanded && (
-        <div style={{
+        <div className="sb-expanded-detail" style={{
           padding: "0 16px 16px 52px",
           background: "#faf8ff",
           animation: "slideDown 0.2s ease",
         }}>
-          <div style={{
+          <div className="sb-metric-grid" style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
             gap: "10px 20px",
@@ -878,22 +879,152 @@ export default function ScoreboardPage() {
 
   return (
     <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
-      <style>{`@keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+      <style>{`
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ─── Tablet & Mobile Responsive Rules (≤768px) ─── */
+        @media (max-width: 768px) {
+          .sb-heading-area {
+            margin-bottom: 24px !important;
+          }
+          .sb-title {
+            font-size: 24px !important;
+            letter-spacing: -0.3px !important;
+          }
+          .sb-subtitle {
+            font-size: 12px !important;
+            display: none !important;
+          }
+          .sb-header-controls {
+            flex-direction: column !important;
+            gap: 12px !important;
+            align-items: flex-start !important;
+          }
+          .sb-view-toggle {
+            width: 100% !important;
+          }
+          .sb-view-toggle button {
+            flex: 1 !important;
+          }
+          .sb-leaderboard-row {
+            grid-template-columns: 24px 48px 1fr 24px !important;
+            gap: 8px !important;
+            padding: 12px 12px !important;
+          }
+          .sb-leaderboard-row > div:nth-child(2) {
+            min-width: 48px !important;
+          }
+          .sb-leaderboard-row > div:nth-child(4) {
+            display: none !important;
+          }
+          .sb-expanded-detail {
+            padding: 0 12px 12px 36px !important;
+          }
+          .sb-inline-metrics {
+            gap: 0 12px !important;
+          }
+          .sb-metric-grid {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important;
+            gap: 8px 12px !important;
+            padding: 10px 12px !important;
+          }
+          .sb-table-container {
+            overflow-x: auto !important;
+            margin-bottom: 16px !important;
+          }
+          .sb-comparison-table {
+            font-size: 12px !important;
+          }
+          .sb-comparison-table th {
+            padding: 12px 12px !important;
+            font-size: 9px !important;
+          }
+          .sb-comparison-table td {
+            padding: 12px 12px !important;
+            font-size: 12px !important;
+          }
+        }
+
+        /* ─── Mobile Responsive Rules (≤480px) ─── */
+        @media (max-width: 480px) {
+          .sb-heading-area {
+            margin-bottom: 16px !important;
+          }
+          .sb-title {
+            font-size: 20px !important;
+            letter-spacing: -0.2px !important;
+          }
+          .sb-view-toggle {
+            width: 100% !important;
+            padding: 1px !important;
+          }
+          .sb-view-toggle button {
+            padding: 5px 10px !important;
+            font-size: 10px !important;
+            flex: 1 !important;
+          }
+          .sb-leaderboard-row {
+            grid-template-columns: 20px 1fr 20px !important;
+            gap: 6px !important;
+            padding: 10px 10px !important;
+          }
+          .sb-leaderboard-row > div:nth-child(2) {
+            display: none !important;
+          }
+          .sb-leaderboard-row > div:nth-child(4) {
+            display: none !important;
+          }
+          .sb-leaderboard-row > div:nth-child(5) {
+            width: 20px !important;
+          }
+          .sb-expanded-detail {
+            padding: 0 10px 10px 30px !important;
+          }
+          .sb-inline-metrics {
+            flex-direction: column !important;
+            gap: 0 !important;
+          }
+          .sb-metric-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 6px 8px !important;
+            padding: 8px 10px !important;
+          }
+          .sb-table-container {
+            border-radius: 6px !important;
+            margin-bottom: 12px !important;
+          }
+          .sb-comparison-table th {
+            padding: 10px 8px !important;
+            font-size: 8px !important;
+            letter-spacing: 0.5px !important;
+          }
+          .sb-comparison-table td {
+            padding: 10px 8px !important;
+            font-size: 11px !important;
+          }
+          .sb-comparison-table tbody tr td:nth-child(n+3) {
+            display: none !important;
+          }
+          .sb-comparison-table thead tr th:nth-child(n+3) {
+            display: none !important;
+          }
+        }
+      `}</style>
 
       {/* HEADING AREA */}
-      <div style={{ marginBottom: 32 }}>
+      <div className="sb-heading-area" style={{ marginBottom: 32 }}>
         <div style={{ marginBottom: 4 }}>
-          <h1 style={{ fontSize: 30, fontWeight: 700, margin: 0, color: "#111827", letterSpacing: -0.5 }}>
+          <h1 className="sb-title" style={{ fontSize: 30, fontWeight: 700, margin: 0, color: "#111827", letterSpacing: -0.5 }}>
             Portfolio Scoreboard
           </h1>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <p style={{ fontSize: 14, fontWeight: 500, color: "#9CA3AF", margin: 0 }}>
+        <div className="sb-header-controls" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <p className="sb-subtitle" style={{ fontSize: 14, fontWeight: 500, color: "#9CA3AF", margin: 0 }}>
             Comparative analysis and algorithmic rankings for all dealboard assets.
           </p>
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             {/* View Toggle */}
-            <div style={{
+            <div className="sb-view-toggle" style={{
               display: "inline-flex", background: "#F3F4F6", borderRadius: 8, padding: 2,
             }}>
               <button
@@ -1056,11 +1187,11 @@ export default function ScoreboardPage() {
 
           {/* TABLE VIEW */}
           {view === "comparison" && (
-          <div style={{
+          <div className="sb-table-container" style={{
             background: "#fff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
             boxShadow: "0 1px 2px rgba(0,0,0,0.05)", overflow: "hidden", marginBottom: 24,
           }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <table className="sb-comparison-table" style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ background: "#fff", borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
                   {([
