@@ -456,10 +456,28 @@ export default function WorkspaceDashboard() {
   }
 
   return (
-    <div style={{ width: "100%", padding: "0 24px" }}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    <div className="db-page" style={{ width: "100%", padding: "0 24px" }}>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg) } }
+        @media (max-width: 768px) {
+          .db-page { padding: 0 8px !important; }
+          .db-header { flex-direction: column !important; align-items: stretch !important; gap: 12px !important; padding-top: 12px !important; margin-bottom: 16px !important; }
+          .db-title { font-size: 22px !important; }
+          .db-actions { flex-wrap: wrap !important; gap: 8px !important; }
+          .db-actions a, .db-actions button { font-size: 10px !important; padding: 8px 12px !important; flex: 1 1 auto !important; text-align: center !important; justify-content: center !important; }
+          .db-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+          .db-card { border-radius: 10px !important; }
+          .db-card-footer { flex-wrap: wrap !important; gap: 8px !important; }
+          .db-clear-bar { flex-direction: column !important; gap: 8px !important; align-items: stretch !important; text-align: center !important; }
+        }
+        @media (max-width: 480px) {
+          .db-page { padding: 0 4px !important; }
+          .db-title { font-size: 20px !important; }
+          .db-actions a, .db-actions button { font-size: 9px !important; padding: 7px 10px !important; }
+        }
+      `}</style>
       {/* Header Section - New Design */}
-      <div style={{
+      <div className="db-header" style={{
         display: "flex",
         justifyContent: "space-between",
         alignItems: "flex-start",
@@ -470,7 +488,7 @@ export default function WorkspaceDashboard() {
         <div>
           {/* Workspace name + Edit icon + Type badge */}
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-            <h1 style={{
+            <h1 className="db-title" style={{
               fontSize: 30,
               fontWeight: 700,
               color: "#111827",
@@ -539,7 +557,7 @@ export default function WorkspaceDashboard() {
         </div>
 
         {/* Right side: Add-from-history + Add Property buttons */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div className="db-actions" style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <Link href="/workspace/upload/history" style={{
             display: "inline-flex",
             alignItems: "center",
@@ -648,7 +666,7 @@ export default function WorkspaceDashboard() {
           </button>
         </div>
       ) : (
-        <div style={{
+        <div className="db-grid" style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
           gap: 24,
@@ -662,7 +680,7 @@ export default function WorkspaceDashboard() {
 
       {/* Danger Zone — collapsed */}
       {properties.length > 0 && (
-        <div style={{
+        <div className="db-clear-bar" style={{
           background: "#FFFFFF", borderRadius: 10, border: "1px solid rgba(0,0,0,0.06)",
           padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>

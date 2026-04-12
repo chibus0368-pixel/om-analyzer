@@ -260,30 +260,48 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
 
         /* ─── Mobile responsive ─── */
         @media (max-width: 768px) {
-          .ws-header { padding: 0 12px !important; }
-          .ws-header-inner { gap: 12px !important; }
-          .ws-header-logo img { height: 28px !important; }
-          .ws-nav-bar { padding: 0 10px !important; height: 46px !important; min-height: 46px !important; overflow-x: auto; }
-          .ws-nav-tabs { gap: 6px !important; }
-          .ws-nav-tabs a { font-size: 9px !important; letter-spacing: 1.2px !important; gap: 4px !important; }
-          .ws-nav-tabs a svg { display: none !important; }
-          .ws-share-btn { padding: 6px 10px !important; font-size: 9px !important; letter-spacing: 0.1em !important; }
+          /* Header */
+          .ws-header { padding: 0 10px !important; height: 52px !important; min-height: 52px !important; }
+          .ws-header-inner { gap: 8px !important; }
+          .ws-header-logo img { height: 24px !important; }
+          .ws-header-logo { flex-shrink: 0 !important; }
+          /* Hide user name/email on mobile — just show avatar */
+          .ws-user-text { display: none !important; }
+          .ws-user-link { padding-left: 0 !important; border-left: none !important; }
+          .ws-plan-pill { font-size: 8px !important; padding: 4px 8px !important; }
+          /* Board selector — compact */
+          .ws-board-selector { padding-left: 8px !important; margin-left: 0 !important; border-left-width: 0 !important; }
+          .ws-board-name { font-size: 11px !important; max-width: 100px !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
+          .ws-board-sub { display: none !important; }
+          .ws-board-type { font-size: 7px !important; padding: 1px 4px !important; }
+          .ws-ws-dropdown { min-width: 260px !important; max-width: calc(100vw - 24px) !important; left: -60px !important; }
+          /* Nav bar */
+          .ws-nav-bar { padding: 0 8px !important; height: 42px !important; min-height: 42px !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+          .ws-nav-tabs { gap: 4px !important; }
+          .ws-nav-tabs a { font-size: 9px !important; letter-spacing: 1px !important; gap: 4px !important; padding-top: 2px !important; }
+          .ws-nav-tabs a svg, .ws-nav-tabs a span:first-child { display: none !important; }
+          .ws-share-btn { padding: 5px 8px !important; font-size: 8px !important; letter-spacing: 0.08em !important; }
           .ws-share-btn svg { display: none !important; }
           .ws-share-tooltip { width: 220px !important; right: -10px !important; }
+          /* Main content */
           .ws-main-content { padding: 12px !important; }
-          .ws-footer { flex-direction: column !important; gap: 12px !important; }
+          .ws-footer { flex-direction: column !important; gap: 12px !important; padding: 16px 12px !important; }
+          /* Modals */
           .ws-new-modal { width: calc(100vw - 32px) !important; max-width: 420px !important; padding: 20px !important; }
           .ws-new-modal-grid { grid-template-columns: repeat(3, 1fr) !important; }
-          .ws-ws-dropdown { min-width: 260px !important; max-width: calc(100vw - 24px) !important; }
-          .ws-drag-overlay { padding: 24px 20px !important; }
-          .ws-board-selector { padding-left: 12px !important; margin-left: 4px !important; }
-          .ws-board-name { font-size: 12px !important; }
-          .ws-board-type { font-size: 8px !important; }
+          .ws-drag-overlay { padding: 24px 16px !important; }
+          /* More menu (three dots) */
+          .ws-more-menu { width: 200px !important; }
         }
         @media (max-width: 480px) {
-          .ws-nav-tabs a { font-size: 8px !important; letter-spacing: 0.8px !important; }
-          .ws-share-btn span { display: none; }
+          .ws-header { padding: 0 8px !important; height: 48px !important; min-height: 48px !important; }
+          .ws-header-logo img { height: 20px !important; }
+          .ws-board-name { font-size: 10px !important; max-width: 80px !important; }
+          .ws-plan-pill { display: none !important; }
+          .ws-nav-tabs a { font-size: 8px !important; letter-spacing: 0.6px !important; }
+          .ws-share-btn { display: none !important; }
           .ws-new-modal-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .ws-main-content { padding: 8px !important; }
         }
       `}</style>
       <WorkspaceLayoutInner user={user}>{children}</WorkspaceLayoutInner>
@@ -838,7 +856,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                   <span className="ws-board-name" style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.025em" }}>
                     {activeWorkspace?.name || "Default Dealboard"}
                   </span>
-                  <span style={{
+                  <span className="ws-board-type" style={{
                     background: "rgba(132,204,22,0.1)", color: "#84CC16",
                     fontSize: 9, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em",
                     padding: "2px 6px", borderRadius: 4, border: "1px solid rgba(132,204,22,0.2)",
@@ -847,7 +865,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                     {ANALYSIS_TYPE_LABELS[activeWorkspace?.analysisType || "retail"] || "Retail"}
                   </span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                <div className="ws-board-sub" style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
                   <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                     Select Dealboard
                   </span>
@@ -937,6 +955,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           {userTier === "free" ? (
             <button
               onClick={() => setShowUpgrade(true)}
+              className="ws-plan-pill"
               style={{
                 padding: "6px 16px", background: "rgba(132,204,22,0.2)", color: "#84CC16",
                 border: "1px solid rgba(132,204,22,0.3)", borderRadius: 9999,
@@ -949,7 +968,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               Upgrade to Pro
             </button>
           ) : (
-            <Link href="/workspace/profile?tab=account" style={{
+            <Link href="/workspace/profile?tab=account" className="ws-plan-pill" style={{
               padding: "6px 16px", background: "rgba(132,204,22,0.2)", color: "#84CC16",
               border: "1px solid rgba(132,204,22,0.3)", borderRadius: 9999,
               fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
@@ -968,6 +987,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               href="/workspace/profile"
               onClick={() => router.push("/workspace/profile")}
               title="Account & Profile"
+              className="ws-user-link"
               style={{
                 display: "flex", alignItems: "center", gap: 12,
                 paddingLeft: 16, borderLeft: "1px solid rgba(255,255,255,0.1)",
@@ -977,7 +997,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               onMouseEnter={e => { e.currentTarget.style.opacity = "0.75"; }}
               onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
             >
-              <div style={{ textAlign: "right" }}>
+              <div className="ws-user-text" style={{ textAlign: "right" }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", lineHeight: 1.2, letterSpacing: "0.05em", textTransform: "uppercase" }}>
                   {user.displayName || user.email?.split("@")[0] || "User"}
                 </div>
