@@ -1,6 +1,6 @@
 import { Timestamp } from 'firebase/firestore';
 
-export type AnalysisType = 'retail' | 'industrial' | 'office' | 'multifamily' | 'mixed_use';
+export type AnalysisType = 'retail' | 'industrial' | 'office' | 'land' | 'multifamily';
 
 export interface WorkspaceDoc {
   id: string;

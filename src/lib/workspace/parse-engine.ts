@@ -237,6 +237,47 @@ Rules:
 - Capture utility and power mentions exactly and conservatively
 - Keep land_notes concise and practical`;
 
+const MULTIFAMILY_ADDON_PROMPT = `You are extracting multifamily-specific first-pass deal facts.
+Return only the asset_addons object as valid JSON.
+
+Fields to consider:
+- unit_count (total number of residential units)
+- unit_mix (brief summary — e.g. "48 1BR, 32 2BR, 20 3BR")
+- avg_rent_per_unit (average monthly rent across all units)
+- avg_sf_per_unit (average square feet per unit)
+- rent_per_sf (monthly rent per square foot if calculable)
+- total_building_sf (total rentable square footage)
+- year_built (original construction year)
+- year_renovated (most recent renovation year, if any)
+- stories (number of floors/stories)
+- construction_type (wood frame, concrete, steel, etc.)
+- parking_type (surface, garage, covered — and ratio if stated)
+- parking_spaces (total number of parking spots)
+- amenities (brief list — pool, gym, laundry, dog park, etc.)
+- in_unit_washer_dryer (true/false/null — in-unit W/D or hookups)
+- vacancy_rate (current physical vacancy percentage)
+- economic_occupancy (economic occupancy if different from physical)
+- expense_ratio (operating expense ratio if stated)
+- per_unit_expenses (annual operating expenses per unit)
+- t12_noi (trailing 12 month net operating income)
+- t12_revenue (trailing 12 month gross revenue)
+- rent_growth_trailing (recent rent growth rate or trend description)
+- market_rent_comparison (brief: are rents above/at/below market?)
+- value_add_signal (brief: renovation potential, rent bump opportunity, or "stabilized")
+- section_8_flag (true/false/null — any Section 8 / HUD involvement)
+- student_housing_flag (true/false/null — purpose-built student housing)
+- senior_housing_flag (true/false/null — senior/assisted living)
+- lot_acres (total site acreage)
+- multifamily_notes
+
+Rules:
+- Only include fields that are reasonably supported by the OM
+- Use null for unknown values
+- unit_count and unit_mix are critical — search thoroughly
+- avg_rent_per_unit should be monthly, not annual
+- value_add_signal should be concise: "Heavy value-add", "Light renovation", or "Stabilized"
+- Keep multifamily_notes to 1 or 2 concise sentences`;
+
 // ===== Broker pattern regex =====
 const brokerPatterns =
   /\b(realty|brokerage|advisors|capital|partners|group|associates|investments|commercial|cushman|cbre|jll|marcus\s*&\s*millichap|colliers|newmark|berkadia|kw\s+commercial|lee\s*&\s*associates|svn|nai|coldwell|century\s*21|keller\s+williams|re\/max|sotheby|loopnet)\b/i;
@@ -546,6 +587,7 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
         industrial: INDUSTRIAL_ADDON_PROMPT,
         office: OFFICE_ADDON_PROMPT,
         land: LAND_ADDON_PROMPT,
+        multifamily: MULTIFAMILY_ADDON_PROMPT,
       };
 
       const addonPrompt = addonPrompts[analysisType];

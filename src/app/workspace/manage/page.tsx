@@ -123,8 +123,8 @@ export default function ManageWorkspacesPage() {
           />
 
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#151b2b", marginBottom: 10 }}>Deal Type</label>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10, marginBottom: 20 }}>
-            {(["retail", "industrial", "office", "land"] as AnalysisType[]).map(type => (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(80px, 1fr))", gap: 10, marginBottom: 20 }}>
+            {(["retail", "industrial", "office", "land", "multifamily"] as AnalysisType[]).map(type => (
               <button
                 key={type}
                 onClick={() => setNewType(type)}

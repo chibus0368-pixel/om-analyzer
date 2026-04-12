@@ -7,7 +7,7 @@
  * Missing data reduces weights and re-normalizes for fairness.
  */
 
-export type AnalysisType = "retail" | "industrial" | "office" | "land";
+export type AnalysisType = "retail" | "industrial" | "office" | "land" | "multifamily";
 
 export interface ScoringCategory {
   name: string;
@@ -1321,6 +1321,492 @@ export function scoreLand(fields: Record<string, any>): ScoringResult {
 }
 
 // ==============================================================================
+// MULTIFAMILY SCORING MODEL
+// ==============================================================================
+
+export function scoreMultifamily(fields: Record<string, any>): ScoringResult {
+  const categories: Record<string, number> = {};
+  const explanations: Record<string, string> = {};
+  const hasDataMap: Record<string, boolean> = {};
+  const totalFields = Object.keys(fields).length;
+
+  // ===== PRICING (20% weight) =====
+  const pricingData = { score: 50, explanation: "" };
+  let pricingConditions = 0;
+  let pricingPoints = 0;
+
+  const capRate = getField(fields, "pricing_deal_terms.cap_rate_actual") ||
+    getField(fields, "pricing_deal_terms.cap_rate_asking") ||
+    getField(fields, "pricing_deal_terms.cap_rate_om") ||
+    getField(fields, "pricing_deal_terms.entry_cap_rate");
+  const askingPrice = getField(fields, "pricing_deal_terms.asking_price") ||
+    getField(fields, "pricing_deal_terms.purchase_price");
+  const unitCount = getField(fields, "multifamily.unit_count") ||
+    getField(fields, "property_basics.unit_count") ||
+    getField(fields, "property_basics.suite_count");
+  const pricePerUnit = getField(fields, "pricing_deal_terms.price_per_unit");
+
+  if (capRate !== null && capRate !== undefined) {
+    pricingConditions++;
+    // Multifamily cap rates: 4.0-5.0% compressed, 5.0-6.5% market, 6.5%+ value-add
+    if (capRate >= 6.5) {
+      pricingPoints += 40;
+      pricingData.explanation += `${capRate.toFixed(1)}% cap rate (value-add opportunity). `;
+    } else if (capRate >= 5.0) {
+      pricingPoints += 35;
+      pricingData.explanation += `${capRate.toFixed(1)}% cap rate (market). `;
+    } else if (capRate >= 4.0) {
+      pricingPoints += 20;
+      pricingData.explanation += `${capRate.toFixed(1)}% cap rate (compressed). `;
+    } else {
+      pricingPoints += 10;
+      pricingData.explanation += `${capRate.toFixed(1)}% cap rate (very thin). `;
+    }
+  }
+
+  // Price per unit
+  const effectivePPU = pricePerUnit || (askingPrice && unitCount && unitCount > 0 ? askingPrice / unitCount : null);
+  if (effectivePPU !== null && effectivePPU !== undefined) {
+    pricingConditions++;
+    // $50k-100k/unit value, $100k-175k market, $175k+ premium
+    if (effectivePPU <= 100000) {
+      pricingPoints += 40;
+      pricingData.explanation += `$${Math.round(effectivePPU / 1000)}k/unit (value). `;
+    } else if (effectivePPU <= 175000) {
+      pricingPoints += 30;
+      pricingData.explanation += `$${Math.round(effectivePPU / 1000)}k/unit (market). `;
+    } else if (effectivePPU <= 250000) {
+      pricingPoints += 20;
+      pricingData.explanation += `$${Math.round(effectivePPU / 1000)}k/unit (premium). `;
+    } else {
+      pricingPoints += 10;
+      pricingData.explanation += `$${Math.round(effectivePPU / 1000)}k/unit (very high). `;
+    }
+  }
+
+  hasDataMap.pricing = pricingConditions > 0;
+  pricingData.score = pricingConditions > 0
+    ? Math.round((pricingPoints / (pricingConditions * 40)) * 100)
+    : 50;
+  categories.pricing = pricingData.score;
+  explanations.pricing = pricingData.explanation.trim();
+
+  // ===== CASH FLOW (20% weight) =====
+  const cashflowData = { score: 50, explanation: "" };
+  let cfConditions = 0;
+  let cfPoints = 0;
+
+  const noi = getField(fields, "expenses.noi") ||
+    getField(fields, "expenses.noi_om") ||
+    getField(fields, "multifamily.t12_noi");
+  const t12Revenue = getField(fields, "multifamily.t12_revenue") ||
+    getField(fields, "expenses.gross_income") ||
+    getField(fields, "expenses.effective_gross_income");
+  const expenseRatio = getField(fields, "multifamily.expense_ratio") ||
+    getField(fields, "expenses.expense_ratio");
+  const economicOccupancy = getField(fields, "multifamily.economic_occupancy");
+
+  if (noi !== null && noi !== undefined && askingPrice) {
+    cfConditions++;
+    const impliedCap = (noi / askingPrice) * 100;
+    if (impliedCap >= 6) {
+      cfPoints += 40;
+      cashflowData.explanation += `NOI implies ${impliedCap.toFixed(1)}% yield (strong). `;
+    } else if (impliedCap >= 4.5) {
+      cfPoints += 30;
+      cashflowData.explanation += `NOI implies ${impliedCap.toFixed(1)}% yield (market). `;
+    } else {
+      cfPoints += 15;
+      cashflowData.explanation += `NOI implies ${impliedCap.toFixed(1)}% yield (thin). `;
+    }
+  }
+
+  if (expenseRatio !== null && expenseRatio !== undefined) {
+    cfConditions++;
+    // Multifamily typical expense ratio 40-55%
+    if (expenseRatio <= 40) {
+      cfPoints += 40;
+      cashflowData.explanation += `${expenseRatio.toFixed(0)}% expense ratio (efficient). `;
+    } else if (expenseRatio <= 50) {
+      cfPoints += 30;
+      cashflowData.explanation += `${expenseRatio.toFixed(0)}% expense ratio (typical). `;
+    } else if (expenseRatio <= 60) {
+      cfPoints += 20;
+      cashflowData.explanation += `${expenseRatio.toFixed(0)}% expense ratio (high). `;
+    } else {
+      cfPoints += 10;
+      cashflowData.explanation += `${expenseRatio.toFixed(0)}% expense ratio (very high). `;
+    }
+  }
+
+  if (economicOccupancy !== null && economicOccupancy !== undefined) {
+    cfConditions++;
+    if (economicOccupancy >= 95) {
+      cfPoints += 35;
+      cashflowData.explanation += `${economicOccupancy.toFixed(0)}% economic occupancy (strong). `;
+    } else if (economicOccupancy >= 90) {
+      cfPoints += 25;
+      cashflowData.explanation += `${economicOccupancy.toFixed(0)}% economic occupancy (solid). `;
+    } else {
+      cfPoints += 10;
+      cashflowData.explanation += `${economicOccupancy.toFixed(0)}% economic occupancy (soft). `;
+    }
+  }
+
+  hasDataMap.cashflow = cfConditions > 0;
+  cashflowData.score = cfConditions > 0
+    ? Math.round((cfPoints / (cfConditions * 40)) * 100)
+    : 50;
+  categories.cashflow = cashflowData.score;
+  explanations.cashflow = cashflowData.explanation.trim();
+
+  // ===== UNIT QUALITY (15% weight) =====
+  const unitData = { score: 50, explanation: "" };
+  let unitConditions = 0;
+  let unitPoints = 0;
+
+  if (unitCount !== null && unitCount !== undefined) {
+    unitConditions++;
+    // 50-200 units institutional sweet spot
+    if (unitCount >= 50 && unitCount <= 200) {
+      unitPoints += 35;
+      unitData.explanation += `${unitCount} units (institutional scale). `;
+    } else if (unitCount >= 20) {
+      unitPoints += 25;
+      unitData.explanation += `${unitCount} units (mid-size). `;
+    } else if (unitCount >= 200) {
+      unitPoints += 30;
+      unitData.explanation += `${unitCount} units (large community). `;
+    } else {
+      unitPoints += 15;
+      unitData.explanation += `${unitCount} units (small). `;
+    }
+  }
+
+  const avgRent = getField(fields, "multifamily.avg_rent_per_unit") ||
+    getField(fields, "rent_roll.avg_rent");
+  if (avgRent !== null && avgRent !== undefined) {
+    unitConditions++;
+    if (avgRent >= 1200 && avgRent <= 2000) {
+      unitPoints += 35;
+      unitData.explanation += `$${Math.round(avgRent)}/unit avg rent (strong demand). `;
+    } else if (avgRent >= 800) {
+      unitPoints += 25;
+      unitData.explanation += `$${Math.round(avgRent)}/unit avg rent (workforce). `;
+    } else if (avgRent > 2000) {
+      unitPoints += 30;
+      unitData.explanation += `$${Math.round(avgRent)}/unit avg rent (luxury). `;
+    } else {
+      unitPoints += 15;
+      unitData.explanation += `$${Math.round(avgRent)}/unit avg rent (below market). `;
+    }
+  }
+
+  const avgSf = getField(fields, "multifamily.avg_sf_per_unit");
+  const unitMix = getField(fields, "multifamily.unit_mix");
+  const amenities = getField(fields, "multifamily.amenities");
+  const inUnitWD = getField(fields, "multifamily.in_unit_washer_dryer");
+
+  if (avgSf !== null && avgSf !== undefined) {
+    unitConditions++;
+    if (avgSf >= 700 && avgSf <= 1100) {
+      unitPoints += 30;
+      unitData.explanation += `${Math.round(avgSf)} SF avg (market standard). `;
+    } else if (avgSf > 1100) {
+      unitPoints += 25;
+      unitData.explanation += `${Math.round(avgSf)} SF avg (spacious). `;
+    } else {
+      unitPoints += 15;
+      unitData.explanation += `${Math.round(avgSf)} SF avg (compact). `;
+    }
+  }
+
+  if (amenities) {
+    unitConditions++;
+    unitPoints += 25;
+    unitData.explanation += "Amenities present. ";
+  }
+
+  if (inUnitWD) {
+    unitConditions++;
+    const wdStr = String(inUnitWD).toLowerCase();
+    if (wdStr.includes("yes") || wdStr === "true") {
+      unitPoints += 30;
+      unitData.explanation += "In-unit W/D (premium). ";
+    } else {
+      unitPoints += 15;
+      unitData.explanation += "No in-unit W/D. ";
+    }
+  }
+
+  hasDataMap.unit_quality = unitConditions > 0;
+  unitData.score = unitConditions > 0
+    ? Math.round((unitPoints / (unitConditions * 35)) * 100)
+    : 50;
+  categories.unit_quality = unitData.score;
+  explanations.unit_quality = unitData.explanation.trim();
+
+  // ===== OCCUPANCY & DEMAND (15% weight) =====
+  const occData = { score: 50, explanation: "" };
+  let occConditions = 0;
+  let occPoints = 0;
+
+  const occupancy = getField(fields, "property_basics.occupancy_pct") ||
+    getField(fields, "property_basics.occupancy") ||
+    getField(fields, "multifamily.vacancy_rate");
+  const rentGrowth = getField(fields, "multifamily.rent_growth_trailing");
+  const marketRentComp = getField(fields, "multifamily.market_rent_comparison");
+
+  if (occupancy !== null && occupancy !== undefined) {
+    occConditions++;
+    // May be vacancy_rate (inverse) or occupancy_pct
+    let occ = occupancy;
+    if (occ <= 20) occ = 100 - occ; // Treat as vacancy rate if very low
+    if (occ >= 95) {
+      occPoints += 40;
+      occData.explanation += `${occ.toFixed(0)}% occupied (strong demand). `;
+    } else if (occ >= 90) {
+      occPoints += 30;
+      occData.explanation += `${occ.toFixed(0)}% occupied (solid). `;
+    } else if (occ >= 85) {
+      occPoints += 20;
+      occData.explanation += `${occ.toFixed(0)}% occupied (softening). `;
+    } else {
+      occPoints += 10;
+      occData.explanation += `${occ.toFixed(0)}% occupied (weak). `;
+    }
+  }
+
+  if (rentGrowth !== null && rentGrowth !== undefined) {
+    occConditions++;
+    if (rentGrowth >= 5) {
+      occPoints += 40;
+      occData.explanation += `${rentGrowth.toFixed(1)}% rent growth (strong). `;
+    } else if (rentGrowth >= 2) {
+      occPoints += 30;
+      occData.explanation += `${rentGrowth.toFixed(1)}% rent growth (healthy). `;
+    } else if (rentGrowth >= 0) {
+      occPoints += 15;
+      occData.explanation += `${rentGrowth.toFixed(1)}% rent growth (flat). `;
+    } else {
+      occPoints += 5;
+      occData.explanation += `${rentGrowth.toFixed(1)}% rent growth (declining). `;
+    }
+  }
+
+  if (marketRentComp) {
+    occConditions++;
+    const compStr = String(marketRentComp).toLowerCase();
+    if (compStr.includes("below") || compStr.includes("under")) {
+      occPoints += 40;
+      occData.explanation += "Below market rents (upside). ";
+    } else if (compStr.includes("at") || compStr.includes("market")) {
+      occPoints += 25;
+      occData.explanation += "At market rents. ";
+    } else if (compStr.includes("above") || compStr.includes("over")) {
+      occPoints += 10;
+      occData.explanation += "Above market rents (risk). ";
+    } else {
+      occPoints += 20;
+      occData.explanation += `Market comparison: ${marketRentComp}. `;
+    }
+  }
+
+  hasDataMap.occupancy_demand = occConditions > 0;
+  occData.score = occConditions > 0
+    ? Math.round((occPoints / (occConditions * 40)) * 100)
+    : 50;
+  categories.occupancy_demand = occData.score;
+  explanations.occupancy_demand = occData.explanation.trim();
+
+  // ===== BUILDING QUALITY (15% weight) =====
+  const bldgData = { score: 50, explanation: "" };
+  let bldgConditions = 0;
+  let bldgPoints = 0;
+
+  const yearBuilt = getField(fields, "property_basics.year_built") ||
+    getField(fields, "multifamily.year_built");
+  const yearRenovated = getField(fields, "property_basics.year_renovated") ||
+    getField(fields, "multifamily.year_renovated");
+  const constructionType = getField(fields, "multifamily.construction_type");
+  const buildingSf = getField(fields, "property_basics.building_sf") ||
+    getField(fields, "multifamily.total_building_sf");
+  const valueAddSignal = getField(fields, "multifamily.value_add_signal");
+  const stories = getField(fields, "multifamily.stories") ||
+    getField(fields, "property_basics.stories");
+
+  if (yearBuilt !== null && yearBuilt !== undefined) {
+    bldgConditions++;
+    const effectiveYear = yearRenovated && yearRenovated > yearBuilt ? yearRenovated : yearBuilt;
+    const age = 2026 - effectiveYear;
+    if (age <= 10) {
+      bldgPoints += 40;
+      bldgData.explanation += `Built/renovated ${effectiveYear} (newer). `;
+    } else if (age <= 25) {
+      bldgPoints += 30;
+      bldgData.explanation += `Built/renovated ${effectiveYear} (good condition expected). `;
+    } else if (age <= 40) {
+      bldgPoints += 20;
+      bldgData.explanation += `Built ${yearBuilt}${yearRenovated ? `, renovated ${yearRenovated}` : ""} (aging). `;
+    } else {
+      bldgPoints += 10;
+      bldgData.explanation += `Built ${yearBuilt} (significant age). `;
+    }
+  }
+
+  if (constructionType) {
+    bldgConditions++;
+    const ctStr = String(constructionType).toLowerCase();
+    if (ctStr.includes("concrete") || ctStr.includes("steel")) {
+      bldgPoints += 35;
+      bldgData.explanation += `${constructionType} construction (durable). `;
+    } else if (ctStr.includes("wood") || ctStr.includes("frame")) {
+      bldgPoints += 20;
+      bldgData.explanation += `${constructionType} construction (standard). `;
+    } else {
+      bldgPoints += 25;
+      bldgData.explanation += `${constructionType} construction. `;
+    }
+  }
+
+  if (valueAddSignal) {
+    bldgConditions++;
+    const vaStr = String(valueAddSignal).toLowerCase();
+    if (vaStr.includes("yes") || vaStr.includes("significant") || vaStr.includes("strong")) {
+      bldgPoints += 40;
+      bldgData.explanation += "Value-add opportunity identified. ";
+    } else if (vaStr.includes("moderate") || vaStr.includes("some")) {
+      bldgPoints += 25;
+      bldgData.explanation += "Moderate value-add potential. ";
+    } else {
+      bldgPoints += 15;
+      bldgData.explanation += "Limited value-add signal. ";
+    }
+  }
+
+  hasDataMap.building_quality = bldgConditions > 0;
+  bldgData.score = bldgConditions > 0
+    ? Math.round((bldgPoints / (bldgConditions * 40)) * 100)
+    : 50;
+  categories.building_quality = bldgData.score;
+  explanations.building_quality = bldgData.explanation.trim();
+
+  // ===== LOCATION (10% weight) =====
+  const locData = { score: 50, explanation: "" };
+  let locConditions = 0;
+  let locPoints = 0;
+
+  const locationProfile = getField(fields, "property_basics.location_profile") ||
+    getField(fields, "property_basics.submarket");
+  const studentHousing = getField(fields, "multifamily.student_housing_flag");
+  const seniorHousing = getField(fields, "multifamily.senior_housing_flag");
+  const section8 = getField(fields, "multifamily.section_8_flag");
+
+  if (locationProfile) {
+    locConditions++;
+    const locStr = String(locationProfile).toLowerCase();
+    if (locStr.includes("urban") || locStr.includes("downtown") || locStr.includes("core")) {
+      locPoints += 35;
+      locData.explanation += "Urban/core location (premium). ";
+    } else if (locStr.includes("suburban") || locStr.includes("growth")) {
+      locPoints += 30;
+      locData.explanation += "Suburban/growth corridor. ";
+    } else if (locStr.includes("rural")) {
+      locPoints += 15;
+      locData.explanation += "Rural location (limited demand). ";
+    } else {
+      locPoints += 25;
+      locData.explanation += `Location: ${locationProfile}. `;
+    }
+  }
+
+  // Niche flags — inform but don't penalize heavily
+  if (studentHousing) {
+    const sh = String(studentHousing).toLowerCase();
+    if (sh.includes("yes") || sh === "true") {
+      locConditions++;
+      locPoints += 20;
+      locData.explanation += "Student housing (niche demand). ";
+    }
+  }
+  if (seniorHousing) {
+    const sn = String(seniorHousing).toLowerCase();
+    if (sn.includes("yes") || sn === "true") {
+      locConditions++;
+      locPoints += 25;
+      locData.explanation += "Senior housing (stable demand). ";
+    }
+  }
+  if (section8) {
+    const s8 = String(section8).toLowerCase();
+    if (s8.includes("yes") || s8 === "true") {
+      locConditions++;
+      locPoints += 25;
+      locData.explanation += "Section 8 (guaranteed income stream). ";
+    }
+  }
+
+  hasDataMap.location = locConditions > 0;
+  locData.score = locConditions > 0
+    ? Math.round((locPoints / (locConditions * 35)) * 100)
+    : 50;
+  categories.location = locData.score;
+  explanations.location = locData.explanation.trim();
+
+  // ===== DATA CONFIDENCE (5% weight) =====
+  const requiredFieldsMF = [
+    "pricing_deal_terms.asking_price",
+    "pricing_deal_terms.cap_rate_actual",
+    "multifamily.unit_count",
+    "multifamily.avg_rent_per_unit",
+    "property_basics.occupancy_pct",
+    "multifamily.t12_noi",
+    "multifamily.expense_ratio",
+    "multifamily.year_built",
+    "multifamily.unit_mix",
+    "multifamily.value_add_signal",
+  ];
+  const confScore = scoreDataConfidence(fields, requiredFieldsMF);
+  categories.data_confidence = confScore;
+  explanations.data_confidence = `${confScore}/100 based on ${totalFields} extracted fields.`;
+
+  // Calculate weighted total
+  const weights = {
+    pricing: 20,
+    cashflow: 20,
+    unit_quality: 15,
+    occupancy_demand: 15,
+    building_quality: 15,
+    location: 10,
+    data_confidence: 5,
+  };
+
+  const normalizedWeights = normalizeWeights(weights, hasDataMap);
+  const totalScore = calculateWeightedTotal(categories, normalizedWeights);
+  const scoreBand = getScoreBand(totalScore);
+  const recommendation = getRecommendation(scoreBand, totalScore, "multifamily");
+
+  const categoryList: ScoringCategory[] = [
+    { name: "Pricing", weight: weights.pricing, score: categories.pricing, explanation: explanations.pricing },
+    { name: "Cash Flow", weight: weights.cashflow, score: categories.cashflow, explanation: explanations.cashflow },
+    { name: "Unit Quality", weight: weights.unit_quality, score: categories.unit_quality, explanation: explanations.unit_quality },
+    { name: "Occupancy & Demand", weight: weights.occupancy_demand, score: categories.occupancy_demand, explanation: explanations.occupancy_demand },
+    { name: "Building Quality", weight: weights.building_quality, score: categories.building_quality, explanation: explanations.building_quality },
+    { name: "Location", weight: weights.location, score: categories.location, explanation: explanations.location },
+    { name: "Data Confidence", weight: weights.data_confidence, score: categories.data_confidence, explanation: explanations.data_confidence },
+  ];
+
+  return {
+    totalScore,
+    scoreBand,
+    recommendation,
+    categories: categoryList,
+    analysisType: "multifamily",
+    modelVersion: "1.0",
+  };
+}
+
+// ==============================================================================
 // DISPATCH FUNCTION
 // ==============================================================================
 
@@ -1338,6 +1824,8 @@ export function scoreByType(
       return scoreOffice(fields);
     case "land":
       return scoreLand(fields);
+    case "multifamily":
+      return scoreMultifamily(fields);
     case "retail":
       return scoreRetailPure(fields);
     default:

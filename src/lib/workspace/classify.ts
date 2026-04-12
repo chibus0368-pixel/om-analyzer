@@ -7,7 +7,7 @@
  * serverless cannot reliably call its own routes over HTTP.
  */
 
-export type AnalysisType = "retail" | "industrial" | "office" | "land";
+export type AnalysisType = "retail" | "industrial" | "office" | "land" | "multifamily";
 
 export interface ClassifyResult {
   detected_type: AnalysisType;
@@ -20,15 +20,16 @@ const CLASSIFY_PROMPT = `You classify commercial real estate offering materials 
 Return only valid JSON.
 
 Choose exactly one:
-retail, industrial, office, land
+retail, industrial, office, land, multifamily
 
 Rules:
 - retail = retail assets broadly, including single-tenant net lease, absolute NNN, ground lease retail, sale-leaseback with one main retail tenant, multi-tenant retail strip center, neighborhood center, or small-shop retail
 - industrial = warehouse, flex industrial, distribution, manufacturing, industrial outdoor storage if tied to building utility
 - office = professional office, medical office, clinic, suburban office, office condo portfolio
-- land = raw land, development land, redevelopment land, outparcel, pad site, parcel marketed primarily as land`;
+- land = raw land, development land, redevelopment land, outparcel, pad site, parcel marketed primarily as land
+- multifamily = apartment buildings, apartment complexes, garden-style apartments, mid-rise/high-rise residential, student housing, senior housing/assisted living, affordable housing, workforce housing, mixed-use with primarily residential units, townhome portfolios, duplex/triplex/fourplex portfolios`;
 
-const VALID_TYPES: AnalysisType[] = ["retail", "industrial", "office", "land"];
+const VALID_TYPES: AnalysisType[] = ["retail", "industrial", "office", "land", "multifamily"];
 
 /**
  * Classify a document's analysis type using GPT-4o. Returns a safe

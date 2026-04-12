@@ -1,7 +1,7 @@
 // ===== DealSignals Deal Analyzer - Core Types =====
 
 // --- Enums ---
-export type AnalysisType = "retail" | "industrial" | "office" | "land";
+export type AnalysisType = "retail" | "industrial" | "office" | "land" | "multifamily";
 export type ProjectStatus = "active" | "under_review" | "due_diligence" | "closed" | "passed" | "archived";
 export type AssetType = "retail" | "industrial" | "office" | "medical_office" | "mixed_use" | "restaurant" | "auto" | "bank" | "pharmacy" | "dollar_store" | "convenience" | "other";
 export type DocCategory = "om" | "flyer" | "rent_roll" | "t12" | "underwriting" | "lease" | "market_report" | "site_plan" | "image" | "note" | "misc";
@@ -350,6 +350,7 @@ export interface FeatureFlags {
   industrialEnabled: boolean;
   officeEnabled: boolean;
   landEnabled: boolean;
+  multifamilyEnabled: boolean;
 }
 
 export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
@@ -357,6 +358,7 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   industrialEnabled: true,
   officeEnabled: true,
   landEnabled: true,
+  multifamilyEnabled: true,
 };
 
 // --- UI helpers ---
@@ -365,6 +367,7 @@ export const ANALYSIS_TYPE_LABELS: Record<AnalysisType, string> = {
   industrial: "Industrial",
   office: "Office / Medical Office",
   land: "Land",
+  multifamily: "Multifamily",
 };
 
 export const ANALYSIS_TYPE_ICONS: Record<AnalysisType, string> = {
@@ -372,6 +375,7 @@ export const ANALYSIS_TYPE_ICONS: Record<AnalysisType, string> = {
   industrial: "🏭",
   office: "🏢",
   land: "📍",
+  multifamily: "🏠",
 };
 
 export const ANALYSIS_TYPE_COLORS: Record<AnalysisType, string> = {
@@ -379,6 +383,7 @@ export const ANALYSIS_TYPE_COLORS: Record<AnalysisType, string> = {
   industrial: "#F59E0B",
   office: "#3B82F6",
   land: "#8B5CF6",
+  multifamily: "#EC4899",
 };
 
 export const TOP_METRICS: Record<AnalysisType, string[]> = {
@@ -386,6 +391,7 @@ export const TOP_METRICS: Record<AnalysisType, string[]> = {
   industrial: ["asking_price", "building_sf", "rent_per_sf", "clear_height", "loading_type", "lease_term", "score"],
   office: ["asking_price", "building_sf", "occupancy", "rent_per_sf", "tenant_mix", "near_term_rollover", "score"],
   land: ["asking_price", "land_acres", "price_per_acre", "zoning", "utilities_signal", "access_signal", "score"],
+  multifamily: ["asking_price", "cap_rate", "noi", "unit_count", "avg_rent_per_unit", "occupancy", "score"],
 };
 
 export const ASSET_TYPE_LABELS: Record<AssetType, string> = {
