@@ -150,6 +150,38 @@
 
     const ogTitle = pick('meta[property="og:title"]', "content");
     const ogDesc = pick('meta[property="og:description"]', "content");
+    const ogImage = pick('meta[property="og:image"]', "content");
+
+    // Hero image: prefer JSON-LD, then og:image, then the first gallery
+    // <img> (Crexi's photo carousel). We pass an absolute https URL so
+    // the server can just store it as heroImageUrl — no rehosting needed
+    // because Crexi's CDN is publicly readable.
+    function absolutize(u) {
+      if (!u) return "";
+      try { return new URL(u, location.href).toString(); } catch (_) { return u; }
+    }
+    function firstGalleryImg() {
+      const imgs = Array.from(document.querySelectorAll(
+        'img[src*="crexi"], img[src*="cloudfront"], img[data-cy="property-photo"], .photo-gallery img, .carousel img, [class*="Gallery"] img, [class*="photo"] img'
+      ));
+      for (const img of imgs) {
+        const src = img.currentSrc || img.src || img.getAttribute("data-src") || "";
+        if (!src) continue;
+        // Skip tiny icons/logos/placeholders
+        const w = img.naturalWidth || img.width || 0;
+        const h = img.naturalHeight || img.height || 0;
+        if ((w && w < 200) || (h && h < 150)) continue;
+        if (/logo|icon|avatar|sprite|placeholder/i.test(src)) continue;
+        return src;
+      }
+      return "";
+    }
+    let heroImageUrl = firstText(
+      () => listing && (listing.image && (typeof listing.image === "string" ? listing.image : listing.image.url || listing.image[0])),
+      () => ogImage,
+      () => firstGalleryImg(),
+    );
+    heroImageUrl = absolutize(heroImageUrl);
 
     // Title: prefer og:title, then document title, strip " | Crexi" style suffixes
     let propertyName = firstText(
@@ -202,6 +234,7 @@
       noi,
       sourceUrl: location.href,
       ogDesc,
+      heroImageUrl,
     };
   }
 
@@ -512,12 +545,16 @@
     // (address, financials, analysis type) is extracted server-side when
     // the parser runs. Sending lots of half-scraped DOM text here just
     // fights the parser for which value "wins".
+    // Re-scrape at save-time so gallery images that lazy-loaded after
+    // the overlay opened still get captured.
+    const freshMeta = scrapeMetadata();
     const payload = {
       fileBytes,
       fileName,
       propertyName: getField("propertyName"),
       workspaceId: getField("workspaceId") || "default",
       sourceUrl: location.href,
+      heroImageUrl: freshMeta.heroImageUrl || "",
     };
 
     chrome.runtime.sendMessage({ type: "ds:upload", payload }, (res) => {

@@ -58,6 +58,7 @@ async function uploadToDealSignals(payload) {
         analysisType,
         propertyName: payload.propertyName || "",
         sourceUrl: payload.sourceUrl || "",
+        heroImageUrl: payload.heroImageUrl || "",
       }),
     });
     const txt = await initRes.text();

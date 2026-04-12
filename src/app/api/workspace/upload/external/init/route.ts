@@ -78,6 +78,7 @@ export async function POST(req: NextRequest) {
   const fallbackAnalysisType = String(body?.analysisType || "retail");
   const propertyNameIn = String(body?.propertyName || "").trim();
   const sourceUrl = String(body?.sourceUrl || "").trim();
+  const heroImageUrlIn = String(body?.heroImageUrl || "").trim();
 
   // Create the property row up front so the extension has something to
   // link to immediately. Pro polls workspace_properties and lights the
@@ -99,6 +100,10 @@ export async function POST(req: NextRequest) {
       parseStatus: "pending",
       processingStatus: "uploading",
       analysisType: fallbackAnalysisType,
+      // Crexi CDN images are publicly readable so we pass the URL
+      // straight through instead of rehosting. If empty, the property
+      // page falls back to a static map tile based on the address.
+      ...(heroImageUrlIn ? { heroImageUrl: heroImageUrlIn } : {}),
       createdAt: nowIso,
       updatedAt: nowIso,
     });
