@@ -42,7 +42,10 @@ Extract these sections:
 
 "tenants" - Include EVERY tenant. Each needs: name, sf, annual_rent, monthly_rent, rent_per_sf, reimb, lease_type, lease_start, lease_end, extension, status, notes (under 20 words). Use empty array [] if property is vacant or no tenants listed.
 
-"brief" - Write 2 concise paragraphs about THIS property. Direct acquisitions tone. For vacant/owner-user properties, focus on building specs, lot size, location, and potential uses.
+"brief" - Return a JSON object with three keys:
+  "overview": A single dense paragraph (3-5 sentences) summarizing the deal in direct acquisitions tone. Include property type, unit count or GLA, location, asking price, price/SF or price/unit, cap rate, NOI, occupancy, key tenant(s), WALE, and any standout features. For vacant/owner-user properties focus on building specs, lot size, location, and potential uses.
+  "strengths": Array of exactly 3 strings. Each is one specific, data-backed strength (1-2 sentences). Reference actual numbers from the document. Tailor to asset type — for retail: cap rate, tenant credit, WALE, NNN structure, traffic; for industrial: clear height, dock count, price/SF, location; for office: occupancy, TI/LC, parking ratio; for multifamily: unit count, avg rent, occupancy, value-add potential, rent growth.
+  "concerns": Array of exactly 3 strings. Each is one specific risk or concern (1-2 sentences). Reference actual data gaps, unfavorable terms, or market risks. Include things like short remaining lease term, deferred maintenance, below-market rents, missing financials, variable rate debt, tenant concentration, etc.
 
 RULES:
 - "name" is the PROPERTY name or address, NOT the broker/agent/company name. If in doubt, use the street address as the name.
@@ -72,7 +75,10 @@ Extract these sections:
 
 "improvements" - existing_structures, demolition_needed, site_work_notes
 
-"brief" - Write 2 concise paragraphs about THIS land opportunity. Direct acquisitions tone. Focus on location, zoning viability, development potential, and pricing relative to area comps.
+"brief" - Return a JSON object with three keys:
+  "overview": A single dense paragraph (3-5 sentences) summarizing this land opportunity in direct acquisitions tone. Include total acres, asking price, price/acre, zoning, planned use, utilities, access, and development potential.
+  "strengths": Array of exactly 3 strings. Each is one specific, data-backed strength (1-2 sentences). Reference actual numbers. Focus on: pricing/value (price/acre vs comps), entitlements/zoning (approved, in-process), utilities availability, access/frontage, location/corridor quality, development potential.
+  "concerns": Array of exactly 3 strings. Each is one specific risk or concern (1-2 sentences). Include things like: missing environmental reports, utility gaps, zoning restrictions, access limitations, flood zone, topography challenges, entitlement timeline, unclear pricing.
 
 RULES:
 - "name" is the PROPERTY name, site name, or street address — NOT the broker/agent/company name.
@@ -1655,8 +1661,9 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
       await batch.commit();
     }
 
-    // Save brief as pinned note
-    const brief = stage1.brief || "";
+    // Save brief as pinned note — brief can be a string (legacy) or structured object {overview, strengths, concerns}
+    const rawBrief = stage1.brief || "";
+    const brief = typeof rawBrief === "object" ? JSON.stringify(rawBrief) : rawBrief;
     if (brief && propertyId) {
       try {
         await db.collection("workspace_notes").add({

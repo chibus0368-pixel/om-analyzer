@@ -243,7 +243,7 @@ export async function POST(request: NextRequest) {
       parking: get("property_basics.parking_count"),
       traffic: get("property_basics.traffic"),
       broker: get("property_basics.broker"),
-      brief: parseResult.brief || "",
+      brief: typeof parseResult.brief === "object" ? JSON.stringify(parseResult.brief) : (parseResult.brief || ""),
 
       // Pricing
       askingPrice: get("pricing_deal_terms.asking_price"),

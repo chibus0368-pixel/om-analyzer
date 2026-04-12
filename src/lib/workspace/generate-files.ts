@@ -606,6 +606,29 @@ ${addonRows.map(([label, val]) => `<tr><td>${label}</td><td class="metric-val">$
     ? "This is a first-pass land analysis based on the provided documents and clearly labeled assumptions. Directional assessment only — not a final acquisition model."
     : "This is a first-pass underwriting screen based on the provided documents and clearly labeled assumptions. Directional assessment only — not a final investment model.";
 
+  // Build brief section HTML (supports structured JSON or legacy plain text)
+  let briefSectionHtml = "";
+  try {
+    const briefObj = JSON.parse(brief);
+    if (briefObj && typeof briefObj.overview === "string") {
+      briefSectionHtml = `<div class="brief-text"><p>${briefObj.overview}</p></div>`;
+      if (briefObj.strengths?.length) {
+        briefSectionHtml += `<h3>Key Strengths</h3>`;
+        briefSectionHtml += briefObj.strengths.map((s: string) => `<div class="strength-item"><span class="strength-mark">✓</span>${s}</div>`).join("");
+      }
+      if (briefObj.concerns?.length) {
+        briefSectionHtml += `<h3>Primary Concerns</h3>`;
+        briefSectionHtml += briefObj.concerns.map((c: string) => `<div class="concern-item"><span class="concern-mark">△</span>${c}</div>`).join("");
+      }
+    }
+  } catch {
+    // Legacy plain text brief
+    briefSectionHtml = `<div class="brief-text">${(brief || "No brief generated.").split("\n").map(p => p.trim() ? `<p>${p}</p>` : "").join("")}</div>`;
+  }
+  if (!briefSectionHtml) {
+    briefSectionHtml = `<div class="brief-text">${(brief || "No brief generated.").split("\n").map(p => p.trim() ? `<p>${p}</p>` : "").join("")}</div>`;
+  }
+
   // Build HTML document that Word can open
   const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
 <head><meta charset="utf-8"><style>
@@ -625,14 +648,17 @@ ${addonRows.map(([label, val]) => `<tr><td>${label}</td><td class="metric-val">$
   .signal-red { color: #DC2626; }
   .brief-text { margin: 12px 0; }
   .brief-text p { margin: 8px 0; line-height: 1.6; }
+  .strength-item, .concern-item { margin: 6px 0; line-height: 1.5; }
+  .strength-mark { color: #059669; font-weight: 700; margin-right: 6px; }
+  .concern-mark { color: #D97706; font-weight: 700; margin-right: 6px; }
 </style></head><body>
 <h1>${briefTitle}</h1>
 <h2>${propertyName}</h2>
 <div class="type-badge">${typeLabel} Analysis</div>
 <p class="subtitle">${disclaimer}</p>
 
-<h2>Initial Assessment</h2>
-<div class="brief-text">${(brief || "No brief generated.").split("\n").map(p => p.trim() ? `<p>${p}</p>` : "").join("")}</div>
+<h2>Executive Summary</h2>
+${briefSectionHtml}
 
 ${addonSection}
 

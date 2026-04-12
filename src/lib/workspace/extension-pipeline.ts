@@ -249,13 +249,15 @@ export async function runExtensionUploadPipeline(args: RunPipelineArgs): Promise
     if (parsedData?.brief) {
       try {
         const n = new Date().toISOString();
+        const rawBrief = parsedData.brief;
+        const briefContent = typeof rawBrief === "object" ? JSON.stringify(rawBrief) : rawBrief;
         await db.collection("workspace_notes").add({
           projectId: "workspace-default",
           propertyId,
           userId,
           noteType: "investment_thesis",
           title: "First-Pass Investment Brief",
-          content: parsedData.brief,
+          content: briefContent,
           isPinned: true,
           createdAt: n,
           updatedAt: n,

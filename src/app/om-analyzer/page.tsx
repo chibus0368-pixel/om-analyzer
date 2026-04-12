@@ -2606,14 +2606,55 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
         <div style={{ display: "flex", gap: 0 }}>
           {/* Left: Deal Summary + metadata */}
           <div style={{ flex: 1, padding: "24px 28px", minWidth: 0 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#84CC16", marginBottom: 10 }}>Deal Summary</div>
-            {brief ? (
-              <div style={{ fontSize: 14, color: "#374151", lineHeight: 1.75 }}>
-                {brief.split("\n").filter((p: string) => p.trim()).slice(0, 3).map((p: string, i: number) => (
-                  <p key={i} style={{ margin: i === 0 ? "0 0 12px" : "0 0 12px" }}>{p}</p>
-                ))}
-              </div>
-            ) : (
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#84CC16", marginBottom: 10 }}>Executive Summary</div>
+            {brief ? (() => {
+              let parsed: { overview?: string; strengths?: string[]; concerns?: string[] } | null = null;
+              try {
+                const obj = JSON.parse(brief);
+                if (obj && typeof obj.overview === "string") parsed = obj;
+              } catch { /* legacy plain text */ }
+
+              if (parsed) {
+                return (
+                  <div>
+                    <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.75, margin: "0 0 14px" }}>{parsed.overview}</p>
+
+                    {parsed.strengths && parsed.strengths.length > 0 && (
+                      <div style={{ marginBottom: 12 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#0F172A", marginBottom: 6 }}>Key Strengths</div>
+                        {parsed.strengths.map((s: string, i: number) => (
+                          <div key={i} style={{ display: "flex", gap: 7, alignItems: "flex-start", marginBottom: 5 }}>
+                            <span style={{ color: "#22C55E", fontSize: 13, lineHeight: "18px", flexShrink: 0 }}>✓</span>
+                            <span style={{ fontSize: 12, color: "#374151", lineHeight: "18px" }}>{s}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {parsed.concerns && parsed.concerns.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#0F172A", marginBottom: 6 }}>Primary Concerns</div>
+                        {parsed.concerns.map((c: string, i: number) => (
+                          <div key={i} style={{ display: "flex", gap: 7, alignItems: "flex-start", marginBottom: 5 }}>
+                            <span style={{ color: "#F59E0B", fontSize: 13, lineHeight: "18px", flexShrink: 0 }}>△</span>
+                            <span style={{ fontSize: 12, color: "#374151", lineHeight: "18px" }}>{c}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              // Legacy fallback
+              return (
+                <div style={{ fontSize: 14, color: "#374151", lineHeight: 1.75 }}>
+                  {brief.split("\n").filter((p: string) => p.trim()).slice(0, 3).map((p: string, i: number) => (
+                    <p key={i} style={{ margin: "0 0 12px" }}>{p}</p>
+                  ))}
+                </div>
+              );
+            })() : (
               <p style={{ fontSize: 13, color: "#9CA3AF", fontStyle: "italic" }}>Analysis summary will appear here once processing completes.</p>
             )}
 
