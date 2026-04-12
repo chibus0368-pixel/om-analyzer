@@ -2,12 +2,19 @@
  * DealSignals Crexi extension — background service worker.
  *
  * Responsibilities:
- *  - Provide a single message channel ("ds:upload") that the content script
- *    uses to ship a PDF + scraped metadata to the DealSignals API. Doing the
- *    upload here (not the content script) keeps us outside Crexi's page CSP
- *    and avoids cross-origin headaches.
- *  - Expose a small "ds:getSettings" helper so both the content script and
- *    popup can read settings without duplicating chrome.storage plumbing.
+ *  - Provide a single message channel ("ds:upload") the content script uses
+ *    to ship a PDF into DealSignals. The upload is a THREE-STEP flow because
+ *    Vercel serverless has a hard 4.5 MB request body cap and real OMs are
+ *    routinely 5–20 MB:
+ *
+ *       1. POST /api/workspace/upload/external/init  → returns a V4 signed
+ *          GCS PUT URL and a property row id.
+ *       2. PUT  <signed GCS URL>                     → raw PDF bytes go
+ *          straight to Firebase Storage, bypassing Vercel entirely.
+ *       3. POST /api/workspace/upload/external/finalize → triggers the
+ *          extract → classify → parse → score pipeline via `after()`.
+ *
+ *  - Expose "ds:getSettings", "ds:fetchPdf", "ds:fetchBoards" helpers.
  */
 
 const DEFAULT_BASE_URL = "https://www.dealsignals.app";
@@ -28,56 +35,99 @@ async function uploadToDealSignals(payload) {
   }
 
   const baseUrl = (settings.baseUrl || DEFAULT_BASE_URL).replace(/\/$/, "");
-  const url = `${baseUrl}/api/workspace/upload/external`;
 
   // payload.fileBytes arrives as a plain number array (JSON-safe) because
   // chrome.runtime messaging can't send ArrayBuffers directly.
   const bytes = new Uint8Array(payload.fileBytes);
-  const blob = new Blob([bytes], { type: "application/pdf" });
+  const fileName = payload.fileName || "crexi.pdf";
+  const workspaceId = payload.workspaceId || settings.workspaceId || "default";
+  const analysisType = payload.analysisType || settings.analysisType || "retail";
 
-  const form = new FormData();
-  form.append("file", blob, payload.fileName || "crexi.pdf");
-  form.append("workspaceId", payload.workspaceId || settings.workspaceId || "default");
-  form.append("analysisType", payload.analysisType || settings.analysisType || "retail");
-  if (payload.propertyName) form.append("propertyName", payload.propertyName);
-  if (payload.address)      form.append("address", payload.address);
-  if (payload.city)         form.append("city", payload.city);
-  if (payload.state)        form.append("state", payload.state);
-  if (payload.zip)          form.append("zip", payload.zip);
-  if (payload.sourceUrl)    form.append("sourceUrl", payload.sourceUrl);
-  if (payload.askingPrice)  form.append("askingPrice", String(payload.askingPrice));
-  if (payload.capRate)      form.append("capRate", String(payload.capRate));
-  if (payload.noi)          form.append("noi", String(payload.noi));
-
+  // ── Step 1: init ── create property row + signed upload URL
+  let initData;
   try {
-    const res = await fetch(url, {
+    const initRes = await fetch(`${baseUrl}/api/workspace/upload/external/init`, {
       method: "POST",
-      headers: { "X-API-Key": settings.apiKey },
-      body: form,
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": settings.apiKey,
+      },
+      body: JSON.stringify({
+        fileName,
+        workspaceId,
+        analysisType,
+        propertyName: payload.propertyName || "",
+        sourceUrl: payload.sourceUrl || "",
+      }),
     });
-    const text = await res.text();
-    let data = null;
-    try { data = JSON.parse(text); } catch { /* non-JSON error */ }
-
-    if (!res.ok) {
+    const txt = await initRes.text();
+    try { initData = JSON.parse(txt); } catch { initData = null; }
+    if (!initRes.ok || !initData || !initData.uploadUrl) {
       return {
         ok: false,
-        status: res.status,
-        error: (data && data.error) || `HTTP ${res.status}: ${text.slice(0, 200)}`,
+        status: initRes.status,
+        error: (initData && initData.error) || `init HTTP ${initRes.status}: ${txt.slice(0, 200)}`,
       };
     }
-    return {
-      ok: true,
-      propertyId: data && data.propertyId,
-      propertyName: data && data.propertyName,
-      scoreTotal: data && data.scoreTotal,
-      scoreBand: data && data.scoreBand,
-      fieldsExtracted: data && data.fieldsExtracted,
-      url: (data && data.url && `${baseUrl}${data.url}`) || `${baseUrl}/workspace`,
-    };
   } catch (err) {
-    return { ok: false, error: (err && err.message) || String(err) };
+    return { ok: false, error: "init failed: " + ((err && err.message) || String(err)) };
   }
+
+  // ── Step 2: PUT raw bytes directly to Firebase Storage ──
+  try {
+    const putRes = await fetch(initData.uploadUrl, {
+      method: "PUT",
+      headers: { "Content-Type": "application/pdf" },
+      body: bytes,
+    });
+    if (!putRes.ok) {
+      const errText = await putRes.text().catch(() => "");
+      return {
+        ok: false,
+        status: putRes.status,
+        error: `Storage PUT failed: HTTP ${putRes.status} ${errText.slice(0, 200)}`,
+      };
+    }
+  } catch (err) {
+    return { ok: false, error: "Storage PUT threw: " + ((err && err.message) || String(err)) };
+  }
+
+  // ── Step 3: finalize — triggers the background pipeline ──
+  let finData;
+  try {
+    const finRes = await fetch(`${baseUrl}/api/workspace/upload/external/finalize`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": settings.apiKey,
+      },
+      body: JSON.stringify({
+        propertyId: initData.propertyId,
+        storagePath: initData.storagePath,
+        fileName,
+        workspaceId,
+        analysisType,
+      }),
+    });
+    const txt = await finRes.text();
+    try { finData = JSON.parse(txt); } catch { finData = null; }
+    if (!finRes.ok) {
+      return {
+        ok: false,
+        status: finRes.status,
+        error: (finData && finData.error) || `finalize HTTP ${finRes.status}: ${txt.slice(0, 200)}`,
+      };
+    }
+  } catch (err) {
+    return { ok: false, error: "finalize failed: " + ((err && err.message) || String(err)) };
+  }
+
+  return {
+    ok: true,
+    propertyId: initData.propertyId,
+    propertyName: initData.propertyName,
+    url: `${baseUrl}${initData.url || "/workspace"}`,
+  };
 }
 
 /**
