@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse, after } from "next/server";
-import { getAdminDb } from "@/lib/firebase-admin";
+import { getAdminDb, getAdminStorage } from "@/lib/firebase-admin";
 import { runParseEngine } from "@/lib/workspace/parse-engine";
 import { runScoreEngine } from "@/lib/workspace/score-engine";
 import { classifyDocument } from "@/lib/workspace/classify";
@@ -219,6 +219,35 @@ async function runBackgroundPipeline(args: {
       return;
     }
 
+    // ── Upload the PDF bytes to Firebase Storage so the Source
+    //    Documents section on the property page can open them,
+    //    matching the web upload flow exactly. ──
+    const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const storedFilename = `${Date.now()}_${safeName}`;
+    const storagePath = `workspace/${userId}/workspace-default/${propertyId}/inputs/${storedFilename}`;
+    let storageUploaded = false;
+    try {
+      const bucket = getAdminStorage().bucket();
+      const gcsFile = bucket.file(storagePath);
+      await gcsFile.save(buffer, {
+        contentType: "application/pdf",
+        resumable: false,
+        metadata: { contentType: "application/pdf" },
+      });
+      storageUploaded = true;
+      console.log(`[external upload] uploaded ${buffer.length} bytes → ${storagePath}`);
+    } catch (err: any) {
+      console.warn("[external upload] storage upload failed (non-blocking):", err?.message);
+    }
+
+    // ── Write a proper ProjectDocument row using the exact field
+    //    names the web path writes and the property page reads:
+    //    originalFilename / storedFilename / fileExt / mimeType /
+    //    fileSizeBytes / storagePath / parserStatus / isArchived /
+    //    isDeleted. Without these, the Source Documents panel was
+    //    silently dropping the row. ──
+    const nowIso2 = new Date().toISOString();
+    const fileExt = (fileName.split(".").pop() || "pdf").toLowerCase();
     await db
       .collection("workspace_documents")
       .add({
@@ -226,13 +255,19 @@ async function runBackgroundPipeline(args: {
         propertyId,
         workspaceId,
         userId,
-        filename: fileName,
-        fileSize: buffer.length,
+        originalFilename: fileName,
+        storedFilename,
+        fileExt,
+        mimeType: "application/pdf",
+        fileSizeBytes: buffer.length,
+        storagePath,
         docCategory: "om",
-        source: "crexi_extension",
-        uploadedAt: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        uploadSource: "crexi_extension",
+        parserStatus: storageUploaded ? "uploaded" : "pending",
+        isArchived: false,
+        isDeleted: false,
+        uploadedAt: nowIso2,
+        updatedAt: nowIso2,
         textExtracted: true,
         textLength: documentText.length,
       })
