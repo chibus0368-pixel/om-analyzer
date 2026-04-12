@@ -83,22 +83,109 @@ function json(
 }
 
 /**
- * Extract text from a PDF buffer using pdf-parse.
- * Returns the first ~25k chars which is what the parse engine expects.
+ * Extract text from a PDF buffer using pdf-parse. Returns empty string
+ * on failure so callers can fall back to Vision OCR.
  */
-async function extractPdfText(buffer: Buffer): Promise<string> {
+async function extractPdfTextFast(buffer: Buffer): Promise<string> {
   try {
     const { PDFParse } = await import("pdf-parse");
     const parser = new PDFParse({ data: new Uint8Array(buffer) });
     const result = await parser.getText();
-    // TextResult exposes a concatenated doc string under `text` (and per-page pages[])
     const text = String((result as any)?.text || "").trim();
-    // Hard cap to protect the LLM from pathologically long documents.
     return text.slice(0, 80_000);
   } catch (err: any) {
     console.error("[external upload] pdf-parse failed:", err?.message);
     return "";
   }
+}
+
+/**
+ * Vision fallback for scanned/image-only PDFs (or PDFs that pdf-parse
+ * chokes on). Ships the raw PDF to GPT-4o as an inline base64 file,
+ * which handles text layer + OCR transparently server-side with no
+ * canvas/Node-canvas dependencies.
+ *
+ * Note: OpenAI enforces a 32 MB inline file cap; larger PDFs would
+ * need the Files API. In practice Crexi OMs are well under that.
+ */
+async function extractPdfTextViaVision(buffer: Buffer, fileName: string): Promise<string> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    console.warn("[external upload] OPENAI_API_KEY missing — cannot run Vision fallback");
+    return "";
+  }
+  if (buffer.length > 28 * 1024 * 1024) {
+    console.warn(`[external upload] PDF ${Math.round(buffer.length / 1024 / 1024)}MB exceeds Vision inline cap`);
+    return "";
+  }
+
+  const base64 = buffer.toString("base64");
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        temperature: 0.1,
+        max_tokens: 8000,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a document OCR specialist. Extract ALL text from the attached commercial real estate PDF. Return the raw text content organized by page when possible. Include every number, address, tenant name, lease term, financial figure, and footnote exactly as shown. Do not summarize.",
+          },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: `Extract all text from this commercial real estate document (${fileName}).` },
+              {
+                type: "file",
+                file: {
+                  filename: fileName || "document.pdf",
+                  file_data: `data:application/pdf;base64,${base64}`,
+                },
+              },
+            ],
+          },
+        ],
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.error("[external upload] Vision fallback HTTP", res.status, errText.slice(0, 300));
+      return "";
+    }
+
+    const data = await res.json();
+    const text = String(data?.choices?.[0]?.message?.content || "").trim();
+    return text.slice(0, 80_000);
+  } catch (err: any) {
+    console.error("[external upload] Vision fallback threw:", err?.message);
+    return "";
+  }
+}
+
+/**
+ * Two-stage extraction: fast pdf-parse text path, then Vision OCR
+ * fallback for scanned PDFs or corrupt/weird encodings.
+ */
+async function extractPdfText(buffer: Buffer, fileName: string): Promise<string> {
+  const fast = await extractPdfTextFast(buffer);
+  if (fast.length > 100) {
+    console.log(`[external upload] pdf-parse extracted ${fast.length} chars`);
+    return fast;
+  }
+  console.warn(`[external upload] pdf-parse returned ${fast.length} chars — falling back to Vision OCR`);
+  const vision = await extractPdfTextViaVision(buffer, fileName);
+  if (vision.length > 50) {
+    console.log(`[external upload] Vision OCR extracted ${vision.length} chars`);
+    return vision;
+  }
+  return fast; // return whatever we had (possibly "") so the caller can 422
 }
 
 export async function POST(req: NextRequest) {
@@ -158,9 +245,16 @@ export async function POST(req: NextRequest) {
   const sizeKb = Math.round(buffer.length / 1024);
   console.log(`[external upload] file=${fileName} size=${sizeKb}KB ws=${workspaceId} src=${sourceUrl}`);
 
-  const documentText = await extractPdfText(buffer);
+  const documentText = await extractPdfText(buffer, fileName);
   if (!documentText) {
-    return json(req, { error: "Could not extract text from PDF" }, { status: 422 });
+    return json(
+      req,
+      {
+        error:
+          "Could not extract text from PDF (both pdf-parse and Vision OCR returned empty). The file may be corrupted, password-protected, or exceed the 28 MB inline size limit.",
+      },
+      { status: 422 },
+    );
   }
 
   // ── Create the property row ──
