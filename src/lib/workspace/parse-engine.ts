@@ -1786,6 +1786,28 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
           if (propData.lease_rate) propUpdate.leaseRate = propData.lease_rate;
         }
 
+        // ── Card-level summary metrics (displayed on DealBoard cards) ──
+        const pricing = { ...(stage1.pricing || {}), ...(stage2.pricing || {}) };
+        const expenses = { ...(stage1.expenses || {}), ...(stage2.expenses || {}) };
+        const askPrice = Number(pricing.asking_price);
+        const noiVal = Number(expenses.noi_om || expenses.noi_stated);
+        const capVal = Number(pricing.entry_cap_om || pricing.cap_rate_om || pricing.cap_rate_actual);
+        const sfVal = Number(propData.gla_sf || propData.building_sf);
+
+        if (askPrice > 0) propUpdate.cardAskingPrice = askPrice;
+        if (noiVal > 0) propUpdate.cardNoi = noiVal;
+        if (capVal > 0) propUpdate.cardCapRate = capVal;
+        else if (askPrice > 0 && noiVal > 0) propUpdate.cardCapRate = Math.round((noiVal / askPrice) * 10000) / 100;
+        if (sfVal > 0) propUpdate.cardBuildingSf = sfVal;
+        // Land-specific: save price/acre and total acres for card display
+        if (isLand) {
+          const pricePerAcre = Number(pricing.price_per_acre);
+          const totalAcres = Number(propData.total_acres);
+          if (pricePerAcre > 0) propUpdate.cardPricePerAcre = pricePerAcre;
+          if (totalAcres > 0) propUpdate.cardTotalAcres = totalAcres;
+          if (askPrice > 0) propUpdate.cardAskingPrice = askPrice;
+        }
+
         await db
           .collection("workspace_properties")
           .doc(propertyId)

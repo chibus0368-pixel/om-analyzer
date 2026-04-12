@@ -68,6 +68,36 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
   const location = [property.city, property.state].filter(Boolean).join(", ");
   const displayName = cleanDisplayName(property.propertyName, property.address1, property.city, property.state);
 
+  // Card-level summary metrics (saved at parse time)
+  const cardPrice = property.cardAskingPrice;
+  const cardCapRate = property.cardCapRate;
+  const cardNoi = property.cardNoi;
+  const cardSf = property.cardBuildingSf || property.buildingSf;
+  const cardAcres = property.cardTotalAcres;
+  const isLandType = property.analysisType === "land";
+
+  const fmtPrice = (v: number) => {
+    if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(v % 1_000_000 === 0 ? 0 : 1)}M`;
+    if (v >= 1_000) return `$${(v / 1_000).toFixed(0)}K`;
+    return `$${v.toLocaleString()}`;
+  };
+  const fmtSf = (v: number) => v >= 1000 ? `${(v / 1000).toFixed(1).replace(/\.0$/, "")}K SF` : `${v.toLocaleString()} SF`;
+  const fmtNoi = (v: number) => {
+    if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(v % 100_000 === 0 ? 0 : 1)}M`;
+    if (v >= 1_000) return `$${(v / 1_000).toFixed(0)}K`;
+    return `$${v.toLocaleString()}`;
+  };
+
+  const cardMetrics: { label: string; value: string; icon: string }[] = [];
+  if (cardPrice) cardMetrics.push({ label: "Asking Price", value: fmtPrice(cardPrice), icon: "M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" });
+  if (cardCapRate) cardMetrics.push({ label: "Cap Rate", value: `${Number(cardCapRate).toFixed(2)}%`, icon: "M22 12h-4l-3 9L9 3l-3 9H2" });
+  if (cardNoi) cardMetrics.push({ label: "NOI", value: fmtNoi(cardNoi), icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" });
+  if (isLandType && cardAcres) {
+    cardMetrics.push({ label: "Acreage", value: `${Number(cardAcres).toFixed(1)} AC`, icon: "M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11" });
+  } else if (cardSf) {
+    cardMetrics.push({ label: "Building SF", value: fmtSf(cardSf), icon: "M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11" });
+  }
+
   const bandColors: Record<string, { bg: string; text: string; label: string }> = {
     strong_buy: { bg: "#F0FDF4", text: "#059669", label: "Strong Buy" },
     buy: { bg: "#F0FDF4", text: "#059669", label: "Buy" },
@@ -210,6 +240,30 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
         {location && (
           <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: -12 }}>
             {location}
+          </div>
+        )}
+
+        {/* Key metrics grid — 2×2 */}
+        {cardMetrics.length > 0 && (
+          <div style={{
+            display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 12px",
+            padding: "10px 0", borderTop: "1px solid rgba(0,0,0,0.04)",
+          }}>
+            {cardMetrics.map(m => (
+              <div key={m.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: 6,
+                  background: "rgba(132,204,22,0.06)",
+                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={m.icon} /></svg>
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 9, color: "#9CA3AF", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1.2 }}>{m.label}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", lineHeight: 1.3 }}>{m.value}</div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

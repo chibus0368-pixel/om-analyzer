@@ -114,6 +114,13 @@ export interface Property {
   // Hero + gallery images
   heroImageUrl?: string;
   galleryImages?: GalleryImage[];
+  // Card-level summary metrics (written at parse time for DealBoard cards)
+  cardAskingPrice?: number;
+  cardCapRate?: number;
+  cardNoi?: number;
+  cardBuildingSf?: number;
+  cardTotalAcres?: number;
+  cardPricePerAcre?: number;
 }
 
 export interface GalleryImage {
