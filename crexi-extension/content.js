@@ -496,6 +496,28 @@
     return el ? (el.value || "").trim() : "";
   }
 
+  /** Safe wrapper around chrome.runtime.sendMessage that won't throw
+   *  if the extension context has been invalidated (e.g. after a reload). */
+  function safeSendMessage(msg) {
+    return new Promise((resolve) => {
+      try {
+        if (!chrome.runtime || !chrome.runtime.sendMessage) {
+          resolve({ ok: false, error: "Extension context lost. Please refresh this page." });
+          return;
+        }
+        chrome.runtime.sendMessage(msg, (res) => {
+          if (chrome.runtime.lastError) {
+            resolve({ ok: false, error: chrome.runtime.lastError.message || "Extension error" });
+            return;
+          }
+          resolve(res || { ok: false, error: "No response from background worker" });
+        });
+      } catch (err) {
+        resolve({ ok: false, error: (err && err.message) || "Extension context invalidated. Refresh this page." });
+      }
+    });
+  }
+
   async function onSave() {
     if (!pendingFile && !(detectedPdf && detectedPdf.url)) {
       setStatus("Attach a PDF first (or open one in the Crexi viewer).", "error");
@@ -521,12 +543,9 @@
       // Pull bytes from the embedded PDF viewer via the background worker
       // (runs with host_permissions so it can hit any CDN Crexi uses).
       setStatus("Grabbing the PDF from the Crexi viewer…", "info");
-      const fetchRes = await new Promise((resolve) => {
-        chrome.runtime.sendMessage(
-          { type: "ds:fetchPdf", url: detectedPdf.url, referrer: location.href },
-          resolve,
-        );
-      });
+      const fetchRes = await safeSendMessage(
+        { type: "ds:fetchPdf", url: detectedPdf.url, referrer: location.href },
+      );
       if (!fetchRes || !fetchRes.ok) {
         setStatus(
           "Couldn't fetch the PDF: " + ((fetchRes && fetchRes.error) || "no response") +
@@ -541,10 +560,6 @@
       setStatus("Uploading and running the parser…", "info");
     }
 
-    // Minimal payload: the user supplies name + board, everything else
-    // (address, financials, analysis type) is extracted server-side when
-    // the parser runs. Sending lots of half-scraped DOM text here just
-    // fights the parser for which value "wins".
     // Re-scrape at save-time so gallery images that lazy-loaded after
     // the overlay opened still get captured.
     const freshMeta = scrapeMetadata();
@@ -557,28 +572,27 @@
       heroImageUrl: freshMeta.heroImageUrl || "",
     };
 
-    chrome.runtime.sendMessage({ type: "ds:upload", payload }, (res) => {
-      if (!res) {
-        setStatus("No response from the background worker. Is the extension loaded?", "error");
-        saveBtn.disabled = false; saveBtn.textContent = "Save to DealBoard";
-        return;
-      }
-      if (!res.ok) {
-        setStatus("Failed: " + (res.error || "unknown error"), "error");
-        saveBtn.disabled = false; saveBtn.textContent = "Save to DealBoard";
-        return;
-      }
-      // Server acks fast: property row exists, parse+score running in
-      // the background. Tell the user it's in flight and let them jump
-      // straight into Pro where the analysis will land shortly.
-      setStatus(
-        "Saved to DealSignals. Parsing and scoring are running in the background — it'll show up in your DealBoard in about a minute.",
-        "success",
-      );
-      saveBtn.textContent = "Open in DealSignals →";
-      saveBtn.disabled = false;
-      saveBtn.onclick = () => window.open(res.url, "_blank");
-    });
+    const res = await safeSendMessage({ type: "ds:upload", payload });
+    if (!res) {
+      setStatus("No response from the background worker. Is the extension loaded?", "error");
+      saveBtn.disabled = false; saveBtn.textContent = "Save to DealBoard";
+      return;
+    }
+    if (!res.ok) {
+      setStatus("Failed: " + (res.error || "unknown error"), "error");
+      saveBtn.disabled = false; saveBtn.textContent = "Save to DealBoard";
+      return;
+    }
+    // Server acks fast: property row exists, parse+score running in
+    // the background. Tell the user it's in flight and let them jump
+    // straight into Pro where the analysis will land shortly.
+    setStatus(
+      "Saved to DealSignals. Parsing and scoring are running in the background — it'll show up in your DealBoard in about a minute.",
+      "success",
+    );
+    saveBtn.textContent = "Open in DealSignals →";
+    saveBtn.disabled = false;
+    saveBtn.onclick = () => window.open(res.url, "_blank");
   }
 
   // ───────────── Utils ─────────────
