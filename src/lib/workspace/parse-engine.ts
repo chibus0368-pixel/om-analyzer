@@ -38,9 +38,9 @@ Extract these sections:
 
 "income" - base_rent, nnn_reimbursements, other_income, total_income (use null for ALL if property is vacant/owner-occupied with no income data — this is normal for flyers)
 
-"expenses" - cam, real_estate_taxes, insurance, management_fee_stated, other_expenses, total_expenses_stated, noi_stated (use null for ALL if not provided — do NOT fabricate)
+"expenses" - cam, real_estate_taxes, insurance, management_fee_stated, other_expenses, total_expenses_stated, noi_stated (CRITICAL: if the document states a specific NOI figure, extract it exactly as-is — do NOT adjust for pending tenants, vacancy projections, or pro-forma assumptions. The stated NOI is the OM's number. Use null for ALL expense fields if not provided — do NOT fabricate)
 
-"tenants" - Include EVERY tenant. Each needs: name, sf, annual_rent, monthly_rent, rent_per_sf, reimb, lease_type, lease_start, lease_end, extension, status, notes (under 20 words). Use empty array [] if property is vacant or no tenants listed.
+"tenants" - Include EVERY tenant. Each needs: name, sf, annual_rent, monthly_rent, rent_per_sf, reimb, lease_type, lease_start, lease_end, extension, status, notes (under 20 words). For pending/proposed tenants, set status to "pending" and INCLUDE their rent in income totals — the OM's stated NOI includes pending tenant income. Use empty array [] if property is vacant or no tenants listed.
 
 "brief" - Return a JSON object with three keys:
   "overview": A single dense paragraph (3-5 sentences) summarizing the deal in direct acquisitions tone. Include property type, unit count or GLA, location, asking price, price/SF or price/unit, cap rate, NOI, occupancy, key tenant(s), WALE, and any standout features. For vacant/owner-user properties focus on building specs, lot size, location, and potential uses.
@@ -108,7 +108,12 @@ Calculate and return JSON with:
 
 "income" - potential_gross_income, vacancy_allowance, effective_gross_income, rent_per_sf. If no income data: estimate market rent/SF for the asset type and location, flag as estimated.
 
-"expenses" - management_fee, reserves, total_expenses, noi_om, noi_adjusted, noi_per_sf. If no expense data: estimate using standard assumptions.
+"expenses" - management_fee, reserves, total_expenses, noi_om, noi_adjusted, noi_per_sf.
+  CRITICAL NOI RULES:
+  - noi_om MUST equal the document's stated NOI (noi_stated from Stage 1) without any recalculation. If the OM says NOI is $221,000, noi_om = 221000 — period.
+  - noi_adjusted = your conservative recalculation using ONLY in-place, signed tenants. If a tenant is listed as "pending", "proposed", or "LOI", EXCLUDE their rent from noi_adjusted. Apply your vacancy/management/reserve assumptions to the remaining in-place income.
+  - These two numbers SHOULD differ when there are pending tenants or pro-forma assumptions in the OM. That gap is valuable information.
+  If no expense data: estimate using standard assumptions.
 
 "debt" - loan_amount (price*0.65), equity_required, annual_debt_service, monthly_payment, dscr_om, dscr_adjusted, debt_yield, cash_on_cash_om, cash_on_cash_adjusted. Always calculate if asking_price exists.
 
@@ -128,7 +133,7 @@ Calculate and return JSON with:
 
 "validation" - array of strings, each a check:
   - "GLA check: [tenant SF sum] vs [stated GLA] — [PASS/MISMATCH/N/A if vacant]"
-  - "NOI check: EGI - expenses = [calculated] vs stated [stated] — [PASS/MISMATCH/N/A]"
+  - "NOI check: noi_om=[stated from OM] vs noi_adjusted=[your calculation] — [MATCH/DIFFERS BY X%/N/A]. If they differ by >3%, explain why (vacancy deduction, management fee, pending tenant exclusion, etc.)"
   - "Cap rate check: NOI/price = [calculated]% vs stated [stated]% — [PASS/MISMATCH/N/A]"
   - "DSCR check: NOI/DS = [calculated] — [PASS/BELOW TARGET/N/A]"
   - "Rent/SF check: base_rent/GLA = [calculated] — [REASONABLE/LOW/HIGH/N/A]"
@@ -953,11 +958,39 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
       // ===== INCOME PROPERTY FIELD SAVING (retail, industrial, office) =====
 
       // Merge stage 1 + stage 2
+      // Merge stage1 + stage2 expenses, but PROTECT noi_stated from Stage 1.
+      // The OM's stated NOI may include pending/proposed tenants that aren't yet
+      // in place. GPT-4o in Stage 2 may calculate a lower noi_adjusted based on
+      // actual in-place tenants only — that's actually more conservative/accurate.
+      //
+      // Strategy: preserve BOTH numbers for the investor to see.
+      // - noi_stated (from Stage 1) = the OM's marketed NOI (may include pending tenants)
+      // - noi_om = same as noi_stated (the document's number)
+      // - noi_adjusted (from Stage 2) = conservative in-place NOI
+      // - noi (canonical) = noi_adjusted (score on the conservative number)
+      // - Log a warning if they differ significantly so the UI can flag it
+      const mergedExpenses = { ...(stage1.expenses || {}), ...(stage2.expenses || {}) };
+      const stage1NoiStated = stage1.expenses?.noi_stated;
+      if (stage1NoiStated !== null && stage1NoiStated !== undefined) {
+        mergedExpenses.noi_stated = stage1NoiStated; // never let Stage 2 overwrite
+        // Always preserve the OM's stated NOI as noi_om
+        mergedExpenses.noi_om = stage1NoiStated;
+        // Detect and log NOI gap between stated and adjusted
+        const adjustedNoi = Number(mergedExpenses.noi_adjusted);
+        const statedNoi = Number(stage1NoiStated);
+        if (adjustedNoi > 0 && statedNoi > 0 && Math.abs(adjustedNoi - statedNoi) / statedNoi > 0.03) {
+          const gapPct = Math.round(((statedNoi - adjustedNoi) / statedNoi) * 100);
+          console.warn(`[parser] NOI gap: OM states $${statedNoi.toLocaleString()} but in-place NOI is $${adjustedNoi.toLocaleString()} (${gapPct}% gap — likely pending tenant or pro-forma assumption)`);
+          mergedExpenses._noi_gap_pct = gapPct;
+          mergedExpenses._noi_gap_reason = "OM NOI may include pending/proposed tenants not yet in place";
+        }
+      }
+
       const parsed = {
         property: stage1.property || {},
         pricing: { ...(stage1.pricing || {}), ...(stage2.pricing || {}) },
         income: { ...(stage1.income || {}), ...(stage2.income || {}) },
-        expenses: { ...(stage1.expenses || {}), ...(stage2.expenses || {}) },
+        expenses: mergedExpenses,
         debt: stage2.debt || {},
         breakeven: stage2.breakeven || {},
         exit: stage2.exit || {},
@@ -1107,6 +1140,7 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
           0.85,
           "calculated"
         );
+        // noi_om: the OM's stated NOI — preserved exactly from the document.
         saveField(
           "expenses",
           "noi_om",
@@ -1114,6 +1148,7 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
           0.9,
           "confirmed"
         );
+        // noi_adjusted: conservative in-place NOI (may exclude pending tenants)
         saveField(
           "expenses",
           "noi_adjusted",
@@ -1121,6 +1156,10 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
           0.85,
           "calculated"
         );
+        // Canonical noi: use the conservative in-place number for scoring.
+        // The OM's stated NOI may include pending/proposed tenants that aren't
+        // yet paying rent. Scoring on the in-place number is more accurate.
+        // The OM figure is still saved as noi_om for display/comparison.
         saveField(
           "expenses",
           "noi",
@@ -1128,6 +1167,23 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
           0.85,
           "calculated"
         );
+        // Save NOI gap signal if detected (for UI flagging)
+        if (exp._noi_gap_pct) {
+          saveField(
+            "expenses",
+            "noi_gap_pct",
+            exp._noi_gap_pct,
+            0.8,
+            "calculated"
+          );
+          saveField(
+            "expenses",
+            "noi_gap_reason",
+            exp._noi_gap_reason || "OM NOI differs from in-place NOI",
+            0.8,
+            "calculated"
+          );
+        }
         saveField(
           "expenses",
           "noi_per_sf",
@@ -1788,9 +1844,13 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
 
         // ── Card-level summary metrics (displayed on DealBoard cards) ──
         const pricing = { ...(stage1.pricing || {}), ...(stage2.pricing || {}) };
-        const expenses = { ...(stage1.expenses || {}), ...(stage2.expenses || {}) };
+        const cardExpenses = { ...(stage1.expenses || {}), ...(stage2.expenses || {}) };
+        // Card NOI: show the OM's stated NOI (what the broker is marketing).
+        // The score uses the conservative in-place number, but cards show
+        // the headline figure for quick comparison while browsing.
+        const omNoi = Number(stage1.expenses?.noi_stated);
         const askPrice = Number(pricing.asking_price);
-        const noiVal = Number(expenses.noi_om || expenses.noi_stated);
+        const noiVal = (omNoi > 0) ? omNoi : Number(cardExpenses.noi_om || cardExpenses.noi_stated);
         const capVal = Number(pricing.entry_cap_om || pricing.cap_rate_om || pricing.cap_rate_actual);
         const sfVal = Number(propData.gla_sf || propData.building_sf);
 
