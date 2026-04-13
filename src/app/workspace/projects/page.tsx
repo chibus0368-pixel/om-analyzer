@@ -154,6 +154,28 @@ export default function ProjectsListPage() {
 
   return (
     <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .pj-table { font-size: 12px !important; }
+          /* Hide Asset Type (2nd), Tags (5th), Updated (6th), Delete (7th) */
+          .pj-table thead th:nth-child(2),
+          .pj-table tbody td:nth-child(2),
+          .pj-table thead th:nth-child(5),
+          .pj-table tbody td:nth-child(5),
+          .pj-table thead th:nth-child(6),
+          .pj-table tbody td:nth-child(6),
+          .pj-table thead th:nth-child(7),
+          .pj-table tbody td:nth-child(7) { display: none !important; }
+          .pj-table th, .pj-table td { padding: 10px 8px !important; }
+          .pj-filters { flex-direction: column !important; gap: 8px !important; }
+          .pj-filters input, .pj-filters select { width: 100% !important; }
+        }
+        @media (max-width: 480px) {
+          /* Also hide Deal Score (4th) — show only Project + Status */
+          .pj-table thead th:nth-child(4),
+          .pj-table tbody td:nth-child(4) { display: none !important; }
+        }
+      `}</style>
       {showCreate && (
         <CreateProjectModal
           onClose={() => setShowCreate(false)}
@@ -173,7 +195,7 @@ export default function ProjectsListPage() {
       </div>
 
       {/* Filters */}
-      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
+      <div className="pj-filters" style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -212,7 +234,7 @@ export default function ProjectsListPage() {
             )}
           </div>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <table className="pj-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
               <tr style={{ background: "#F6F8FB" }}>
                 <th style={{ padding: "10px 16px", textAlign: "left", fontWeight: 600, color: "#5A7091" }}>Project</th>

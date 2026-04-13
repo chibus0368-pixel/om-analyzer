@@ -76,8 +76,17 @@ export default function ComparePage() {
 
       {/* Comparison Table */}
       {compared.length >= 2 ? (
-        <div style={{ background: "#fff", borderRadius: 12, border: "1px solid rgba(227, 190, 189, 0.15)", overflow: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+        <>
+        <style>{`
+          @media (max-width: 768px) {
+            .cmp-table-wrap { overflow-x: hidden !important; }
+            .cmp-table { display: none !important; }
+            .cmp-cards { display: flex !important; }
+          }
+        `}</style>
+        <div className="cmp-table-wrap" style={{ background: "#fff", borderRadius: 12, border: "1px solid rgba(227, 190, 189, 0.15)", overflow: "auto" }}>
+          {/* Desktop table */}
+          <table className="cmp-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
               <tr style={{ background: "#f2f3ff" }}>
                 <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 600, color: "#585e70", minWidth: 140 }}>Metric</th>
@@ -99,7 +108,23 @@ export default function ComparePage() {
               ))}
             </tbody>
           </table>
+          {/* Mobile stacked cards — one card per project with all metrics */}
+          <div className="cmp-cards" style={{ display: "none", flexDirection: "column", gap: 16, padding: 12 }}>
+            {compared.map(p => (
+              <div key={p.id} style={{ background: "#F9FAFB", borderRadius: 10, padding: 14, border: "1px solid rgba(0,0,0,0.06)" }}>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 10, color: "#111827" }}>{p.projectName}</div>
+                {rows.map(row => (
+                  <div key={row.label} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(0,0,0,0.04)", fontSize: 12 }}>
+                    <span style={{ fontWeight: 600, color: "#585e70" }}>{row.label}</span>
+                    <span style={{ fontWeight: 500, color: "#111827" }}>{row.get(p)}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
+        </>
+
       ) : (
         <div style={{ background: "#fff", borderRadius: 12, border: "1px solid rgba(227, 190, 189, 0.15)", padding: 48, textAlign: "center", color: "#585e70" }}>
           Select at least 2 projects above to compare.

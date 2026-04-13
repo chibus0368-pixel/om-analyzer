@@ -950,20 +950,29 @@ export default function ScoreboardPage() {
             padding: 10px 12px !important;
           }
           .sb-table-container {
-            overflow-x: auto !important;
+            overflow-x: hidden !important;
             margin-bottom: 16px !important;
           }
           .sb-comparison-table {
             font-size: 12px !important;
           }
           .sb-comparison-table th {
-            padding: 12px 12px !important;
+            padding: 12px 8px !important;
             font-size: 9px !important;
           }
           .sb-comparison-table td {
-            padding: 12px 12px !important;
+            padding: 12px 8px !important;
             font-size: 12px !important;
           }
+          /* Hide GLA (6th), Value-Add (7th), Signal (8th) on tablet */
+          .sb-comparison-table thead tr th:nth-child(n+6),
+          .sb-comparison-table tbody tr td:nth-child(n+6) {
+            display: none !important;
+          }
+          /* Tighten property thumbnail */
+          .sb-comparison-table td:first-child { padding: 10px 8px !important; }
+          .sb-comparison-table td:first-child img,
+          .sb-comparison-table td:first-child div:first-child { width: 36px !important; height: 36px !important; }
         }
 
         /* ─── Mobile Responsive Rules (≤480px) ─── */
@@ -1014,6 +1023,11 @@ export default function ScoreboardPage() {
             border-radius: 6px !important;
             margin-bottom: 12px !important;
           }
+          /* Hide Price (3rd), Cap (4th), NOI (5th) too — show only Property + Score */
+          .sb-comparison-table thead tr th:nth-child(n+3),
+          .sb-comparison-table tbody tr td:nth-child(n+3) {
+            display: none !important;
+          }
           .sb-comparison-table th {
             padding: 10px 8px !important;
             font-size: 8px !important;
@@ -1023,12 +1037,8 @@ export default function ScoreboardPage() {
             padding: 10px 8px !important;
             font-size: 11px !important;
           }
-          .sb-comparison-table tbody tr td:nth-child(n+3) {
-            display: none !important;
-          }
-          .sb-comparison-table thead tr th:nth-child(n+3) {
-            display: none !important;
-          }
+          /* Smaller score ring on mobile table */
+          .sb-comparison-table td:nth-child(2) svg { width: 44px !important; height: 44px !important; }
         }
       `}</style>
 

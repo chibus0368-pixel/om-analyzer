@@ -1047,8 +1047,21 @@ function PropertyDetailInner({
           /* Section headers */
           .pd-section-header { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; padding: 0 16px !important; }
 
-          /* Tables scroll */
-          .pd-table-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; margin: 0 16px !important; }
+          /* Tables — prevent horizontal scroll, hide less-critical columns */
+          .pd-table-wrap { overflow-x: hidden !important; margin: 0 16px !important; }
+          /* Tenant Summary: hide Type (4th) & Lease End (5th) cols */
+          .pd-table-wrap table thead th:nth-child(n+4),
+          .pd-table-wrap table tbody td:nth-child(n+4),
+          .pd-table-wrap table tfoot td:nth-child(n+4) { display: none !important; }
+          .pd-table-wrap table { min-width: 0 !important; font-size: 11px !important; }
+          .pd-table-wrap table th,
+          .pd-table-wrap table td { padding: 8px 10px !important; }
+          /* Sale Price Scenarios: hide DSCR (4th) & Cash-on-Cash (5th) cols */
+          .pd-scenarios-table thead th:nth-child(n+4),
+          .pd-scenarios-table tbody td:nth-child(n+4) { display: none !important; }
+          .pd-scenarios-table { font-size: 11px !important; }
+          .pd-scenarios-table th,
+          .pd-scenarios-table td { padding: 8px 10px !important; }
 
           /* Download buttons */
           .dl-btn { font-size: 10px !important; padding: 5px 10px !important; }
@@ -1431,8 +1444,8 @@ function PropertyDetailInner({
               </div>
               <p style={{ fontSize: 12, color: C.secondary, margin: "4px 0 0 11px", lineHeight: 1.4 }}>See how purchase price impacts returns</p>
             </div>
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: "'Inter', sans-serif" }}>
+            <div className="pd-scenarios-wrap" style={{ overflowX: "auto" }}>
+              <table className="pd-scenarios-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: "'Inter', sans-serif" }}>
                 <thead>
                   <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
                     {["Scenario", "Purchase Price", "Cap Rate", "DSCR", "Cash-on-Cash"].map(h => (
