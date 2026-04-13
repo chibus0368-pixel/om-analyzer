@@ -664,20 +664,9 @@ function HeroShowcase() {
                     </div>
                   </div>
 
-                  {/* Floating AI signal callout on first card */}
-                  {c.signal && i === 0 && (
-                    <div style={{
-                      position: "absolute", bottom: -16, right: -18,
-                      background: "#0d0d14",
-                      border: "1px solid rgba(132,204,22,0.35)",
-                      borderRadius: 10, padding: "10px 12px",
-                      maxWidth: 200, zIndex: 3, pointerEvents: "none",
-                      boxShadow: "0 10px 30px rgba(0,0,0,0.6), 0 0 30px rgba(132,204,22,0.15)",
-                    }}>
-                      <div style={{ fontSize: 10, color: "#84CC16", fontWeight: 700, marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.3 }}>AI Signal</div>
-                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.85)", lineHeight: 1.35 }}>{c.signal}</div>
-                    </div>
-                  )}
+                  {/* (Removed floating AI signal callout — it overlapped
+                      neighboring cards on narrow/mobile layouts. Signals
+                      are still surfaced inside the detail modal.) */}
                 </button>
               );
             })}
