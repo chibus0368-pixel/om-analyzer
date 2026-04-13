@@ -1088,6 +1088,19 @@ export default function OmAnalyzerPage() {
             </div>
           </div>
 
+          {/* ── Hero showcase image ── */}
+          <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 32px 80px", position: "relative" }}>
+            <img
+              src="/home-hero1.png"
+              alt="DealSignals — 11 deals analyzed, 3 worth pursuing"
+              style={{
+                width: "100%", borderRadius: 16,
+                boxShadow: "0 20px 60px rgba(0,0,0,0.5), 0 0 80px rgba(132,204,22,0.08)",
+                border: "1px solid rgba(255,255,255,0.06)",
+              }}
+            />
+          </div>
+
           {/* ── 2. WHY DEALSIGNALS ── */}
           <div id="how-it-works" className="ds-section-pad" style={{ padding: "120px 32px 100px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
             {/* Subtle background depth */}
