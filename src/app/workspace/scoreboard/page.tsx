@@ -751,31 +751,10 @@ export default function ScoreboardPage() {
       setPropertyData(data);
       setLoading(false);
 
-      // Phase 2: Background-load full extracted fields to enrich data
-      // This runs after the UI is already interactive
-      if (runId !== enrichRunId.current) return; // check again before expensive N+1
-      const enriched: PropertyData[] = await Promise.all(
-        data.map(async (pd) => {
-          const values = new Map(pd.values);
-          try {
-            const propFields = await getPropertyExtractedFields(pd.property.id);
-            for (const [metricKey, fieldKeys] of Object.entries(FIELD_MAP)) {
-              const val = getFieldValue(propFields, fieldKeys);
-              if (val) values.set(metricKey, val);
-            }
-          } catch { /* no fields */ }
-          // Preserve fallback values if extracted fields didn't have them
-          if (!values.has("address")) {
-            const addr = [pd.property.address1, pd.property.city, pd.property.state].filter(Boolean).join(", ");
-            if (addr) values.set("address", addr);
-          }
-          if (!values.has("building_sf") && pd.property.buildingSf) values.set("building_sf", String(pd.property.buildingSf));
-          if (!values.has("occupancy") && pd.property.occupancyPct) values.set("occupancy", String(pd.property.occupancyPct));
-          return { property: pd.property, values };
-        })
-      );
-      if (runId !== enrichRunId.current) return; // stale — don't overwrite newer data
-      setPropertyData(enriched);
+      // Phase 2: Skip automatic background enrichment on load.
+      // Card-level metrics (Phase 1) cover the scoreboard table.
+      // Full extracted fields are fetched on-demand (e.g. rescoreAll, CSV export)
+      // to avoid 14+ individual API calls that add 5-10s of latency.
     }).catch(() => { if (runId === enrichRunId.current) setLoading(false); });
     // Use stable primitives — object refs change every render and cause infinite loops
     // eslint-disable-next-line react-hooks/exhaustive-deps

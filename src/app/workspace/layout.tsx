@@ -201,20 +201,42 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
     return <>{children}</>;
   }
 
-  if (!mounted || authLoading) {
+  if (!mounted) {
+    // Server render: show nothing to prevent hydration mismatch
+    return null;
+  }
+
+  if (authLoading) {
+    // Auth initializing: show a branded skeleton shell instead of a blank spinner
+    // so the user sees the app is loading, not broken
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#faf8ff" }}>
-        <div style={{ textAlign: "center", color: "#585e70" }}>
-          <div style={{
-            width: 32, height: 32,
-            border: "3px solid rgba(0,0,0,0.06)",
-            borderTopColor: "#84CC16",
-            borderRadius: "50%",
-            animation: "spin 0.8s linear infinite",
-            margin: "0 auto 12px",
-          }} />
-          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-          <span style={{ fontSize: 13 }}>Loading workspace...</span>
+      <div style={{ minHeight: "100vh", background: "#faf8ff" }}>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        {/* Skeleton header bar */}
+        <div style={{ height: 56, background: "#fff", borderBottom: "1px solid #e2e8f0", display: "flex", alignItems: "center", padding: "0 20px", gap: 16 }}>
+          <div style={{ width: 120, height: 24, borderRadius: 6, background: "#e2e8f0" }} />
+          <div style={{ flex: 1 }} />
+          <div style={{ width: 80, height: 28, borderRadius: 6, background: "#e2e8f0" }} />
+        </div>
+        {/* Skeleton nav bar */}
+        <div style={{ height: 42, background: "#fff", borderBottom: "1px solid #e2e8f0", display: "flex", alignItems: "center", padding: "0 20px", gap: 24 }}>
+          {[80, 90, 60, 50].map((w, i) => (
+            <div key={i} style={{ width: w, height: 14, borderRadius: 4, background: i === 0 ? "rgba(132,204,22,0.2)" : "#e2e8f0" }} />
+          ))}
+        </div>
+        {/* Skeleton content */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 98px)" }}>
+          <div style={{ textAlign: "center", color: "#585e70" }}>
+            <div style={{
+              width: 32, height: 32,
+              border: "3px solid rgba(0,0,0,0.06)",
+              borderTopColor: "#84CC16",
+              borderRadius: "50%",
+              animation: "spin 0.8s linear infinite",
+              margin: "0 auto 12px",
+            }} />
+            <span style={{ fontSize: 13 }}>Loading workspace...</span>
+          </div>
         </div>
       </div>
     );
