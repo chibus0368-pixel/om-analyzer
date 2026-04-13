@@ -459,7 +459,7 @@ export default function UploadPage() {
     <div className="ul-container" style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
       <style>{`
         @media (max-width: 768px) {
-          .ul-container { padding: 0 16px !important; }
+          .ul-container { padding: 0 12px !important; }
           .ul-header { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
           .ul-title { font-size: 24px !important; }
           .ul-subtitle { font-size: 13px !important; margin-bottom: 16px !important; }

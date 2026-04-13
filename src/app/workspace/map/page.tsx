@@ -68,7 +68,7 @@ export default function MapPage() {
         font-size: 10px !important;
       }
       .mp-map-wrapper {
-        height: calc(100vh - 120px) !important;
+        height: calc(100vh - 180px) !important;
       }
     }
     @media (max-width: 480px) {

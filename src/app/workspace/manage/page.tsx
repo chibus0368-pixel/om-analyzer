@@ -56,6 +56,7 @@ export default function ManageWorkspacesPage() {
     <>
       <style>{`
         @media (max-width: 768px) {
+          .mg-container { padding: 0 12px !important; }
           .mg-header { flex-direction: column !important; gap: 12px !important; align-items: flex-start !important; }
           .mg-header-buttons { flex-direction: column !important; width: 100% !important; gap: 8px !important; }
           .mg-header-buttons button { width: 100% !important; }

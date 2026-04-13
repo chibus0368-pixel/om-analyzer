@@ -475,6 +475,7 @@ export default function ProfilePage() {
         .profile-toggle.on::after { transform: translateX(18px); }
         .profile-toggle.off { background: #D8DFE9; }
         @media (max-width: 768px) {
+          .pf-container { padding: 0 12px !important; }
           .pf-header { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
           .pf-tabs { flex-wrap: wrap !important; gap: 0 !important; }
           .pf-tab { padding: 8px 12px !important; font-size: 12px !important; }

@@ -775,9 +775,9 @@ export default function HelpPage() {
     <>
       <style>{`
         @media (max-width: 768px) {
-          .hp-container { flex-direction: column !important; gap: 0 !important; }
-          .hp-sidebar { width: 100% !important; border-right: none !important; border-bottom: 1px solid ${C.ghost} !important; position: static !important; max-height: none !important; padding: 12px 0 !important; }
-          .hp-content { max-width: 100% !important; padding: 16px 20px !important; }
+          .hp-container { gap: 0 !important; padding: 0 !important; }
+          .hp-sidebar { width: 100% !important; border-right: none !important; border-bottom: 1px solid ${C.ghost} !important; position: static !important; max-height: none !important; padding: 8px 12px !important; }
+          .hp-content { max-width: 100% !important; padding: 14px 16px !important; }
           .hp-diagram { flex-wrap: wrap !important; }
           .hp-grid { grid-template-columns: 1fr !important; }
         }

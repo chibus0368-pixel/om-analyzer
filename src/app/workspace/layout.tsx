@@ -1244,8 +1244,35 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               ))}
             </div>
 
-            {/* User info + Logout */}
+            {/* Plan + User info + Logout */}
             <div style={{ padding: "12px 16px", marginTop: "auto", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              {/* Plan pill — visible in mobile drawer */}
+              <div style={{ marginBottom: 12 }}>
+                {userTier === "free" ? (
+                  <button
+                    onClick={() => { setShowMobileMenu(false); setShowUpgrade(true); }}
+                    style={{
+                      width: "100%", padding: "10px 0", background: "rgba(132,204,22,0.15)", color: "#84CC16",
+                      border: "1px solid rgba(132,204,22,0.25)", borderRadius: 8,
+                      fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
+                      cursor: "pointer", fontFamily: "inherit",
+                    }}
+                  >
+                    Upgrade to Pro
+                  </button>
+                ) : (
+                  <div style={{
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    padding: "8px 0", background: "rgba(132,204,22,0.1)", borderRadius: 8,
+                    border: "1px solid rgba(132,204,22,0.2)",
+                  }}>
+                    <div style={{ width: 6, height: 6, borderRadius: 3, background: "#84CC16" }} />
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                      {userTier === "pro" ? "Pro Plan" : userTier === "pro_plus" ? "Pro+ Plan" : "Active Plan"}
+                    </span>
+                  </div>
+                )}
+              </div>
               {user && (
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                   <div style={{

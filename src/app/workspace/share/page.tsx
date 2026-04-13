@@ -238,6 +238,7 @@ export default function ShareLinksPage() {
     <>
       <style>{`
         @media (max-width: 768px) {
+          .sh-container { padding: 0 12px !important; }
           .sh-header { flex-direction: column !important; gap: 12px !important; align-items: flex-start !important; }
           .sh-header > button { width: 100% !important; }
           .sh-contact-grid { grid-template-columns: 1fr !important; }

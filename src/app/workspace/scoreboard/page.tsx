@@ -885,10 +885,11 @@ export default function ScoreboardPage() {
         /* ─── Tablet & Mobile Responsive Rules (≤768px) ─── */
         @media (max-width: 768px) {
           .sb-heading-area {
-            margin-bottom: 24px !important;
+            margin-bottom: 16px !important;
+            padding: 0 4px !important;
           }
           .sb-title {
-            font-size: 24px !important;
+            font-size: 22px !important;
             letter-spacing: -0.3px !important;
           }
           .sb-subtitle {

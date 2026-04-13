@@ -253,7 +253,7 @@ export default function UploadHistoryPage() {
     <div className="uh-container" style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
       <style>{`
         @media (max-width: 768px) {
-          .uh-container { padding: 0 16px !important; }
+          .uh-container { padding: 0 12px !important; }
           .uh-header { margin-bottom: 16px !important; }
           .uh-breadcrumb { font-size: 11px !important; margin-bottom: 6px !important; }
           .uh-title-section { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
