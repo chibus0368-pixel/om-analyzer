@@ -415,7 +415,7 @@ function buildLocationPrompt(
     ? `This is a LAND deal. Focus on: zoning and entitlements, utility access, road frontage and traffic counts, surrounding development pattern, highest-and-best-use analysis, growth direction of the city.`
     : `This is a RETAIL property. Focus on: foot traffic generators, consumer spending power, retail competition and co-tenancy, drive-by traffic, anchor tenants within 1 mile, retail vacancy trends in the trade area.`;
 
-  return `You are a senior CRE location intelligence analyst preparing a trade-area report for an institutional investor. Analyze this property's surroundings using ALL the real data provided below. Be specific — name names, cite numbers, reference actual data points. This is NOT a generic report; it must be specific to THIS location.
+  return `You are a senior CRE location intelligence analyst. Produce a CONCISE visual-style location report. No lengthy paragraphs — think dashboard, not essay.
 
 PROPERTY:
 - Name: ${propertyName}
@@ -431,122 +431,54 @@ ${tenants.length > 0 ? `- Known Tenants: ${tenants.join(", ")}` : ""}
 
 ${assetContext}
 
-─── REAL DATA INPUTS ───
+─── DATA ───
 
 ${censusSection}
 
-CITY/AREA BACKGROUND (Wikipedia):
-${wiki ? `${wiki.title}: ${wiki.extract}` : `No Wikipedia data found for ${geo.city}.`}
+CITY BACKGROUND: ${wiki ? `${wiki.title}: ${wiki.extract}` : "N/A"}
 
-NEARBY BUSINESSES (within 1 mile — ${nearbyPlaces.length} total from Google Places):
-
-  ANCHOR/NATIONAL TENANTS (${cats.anchors.length}):
-    ${formatPlaces(cats.anchors)}
-
-  RESTAURANTS & DINING (${cats.restaurants.length}):
-    ${formatPlaces(cats.restaurants)}
-
-  RETAIL & SHOPPING (${cats.retail.length}):
-    ${formatPlaces(cats.retail)}
-
-  SERVICES — Banks, Medical, Professional (${cats.services.length}):
-    ${formatPlaces(cats.services)}
-
-  FITNESS & RECREATION (${cats.fitness_rec.length}):
-    ${formatPlaces(cats.fitness_rec)}
-
-  EDUCATION (${cats.education.length}):
-    ${formatPlaces(cats.education)}
-
-  AUTOMOTIVE — Gas, Auto, Dealers (${cats.automotive.length}):
-    ${formatPlaces(cats.automotive)}
-
-  OTHER BUSINESSES (${cats.other.length}):
-    ${formatPlaces(cats.other, 5)}
+NEARBY BUSINESSES (1mi radius — ${nearbyPlaces.length} total):
+  Anchors (${cats.anchors.length}): ${formatPlaces(cats.anchors, 6)}
+  Restaurants (${cats.restaurants.length}): ${formatPlaces(cats.restaurants, 5)}
+  Retail (${cats.retail.length}): ${formatPlaces(cats.retail, 5)}
+  Services (${cats.services.length}): ${formatPlaces(cats.services, 4)}
+  Education (${cats.education.length}): ${formatPlaces(cats.education, 3)}
+  Fitness (${cats.fitness_rec.length}): ${formatPlaces(cats.fitness_rec, 3)}
+  Auto/Gas (${cats.automotive.length}): ${formatPlaces(cats.automotive, 3)}
+  Other (${cats.other.length}): ${formatPlaces(cats.other, 3)}
 
 ${developmentSection}
 
 ${newsSection}
 
-─── OUTPUT FORMAT ───
+─── OUTPUT (JSON only) ───
 
-Return a JSON object with EXACTLY this structure. Each section MUST have 2-5 items. Be specific and reference actual data from above.
+Return EXACTLY this structure. Keep text SHORT — 1 sentence per finding, max 15 words per label.
 
 {
-  "summary": "3-4 sentence executive overview of this trade area. Reference specific data: population, income, anchors, development activity. End with a 1-sentence investment thesis.",
-  "sections": [
+  "locationGrade": "A|A-|B+|B|B-|C+|C|C-|D",
+  "gradeRationale": "1 sentence explaining the grade using specific data",
+  "summary": "2 sentences max. Reference key data points: population, income, anchors.",
+  "signals": [
     {
-      "title": "Trade Area Demographics",
-      "icon": "demographics",
-      "items": [
-        { "label": "Population & Growth", "finding": "Use Census data + Wikipedia to describe the population, trends, and city character", "signal": "green|yellow|red" },
-        { "label": "Income & Spending Power", "finding": "Median income, home values, what this means for retail/commercial demand", "signal": "green|yellow|red" },
-        { "label": "Employment Base", "finding": "Unemployment rate, major employers, labor force characteristics", "signal": "green|yellow|red" }
-      ]
-    },
-    {
-      "title": "Nearby Anchors & Traffic Drivers",
-      "icon": "traffic",
-      "items": [
-        { "label": "Anchor Tenant", "finding": "Name the actual anchor stores and national chains within 1 mile. Include ratings and review counts as popularity indicators", "signal": "green|yellow|red" },
-        { "label": "Dining & Food", "finding": "Count and name specific restaurants — chains vs independents, rating quality, dining cluster strength", "signal": "green|yellow|red" },
-        { "label": "Service Density", "finding": "Banks, medical offices, schools — these indicate a mature, self-sustaining trade area", "signal": "green|yellow|red" },
-        { "label": "Overall Business Mix", "finding": "Total business count within 1 mile, what this says about commercial activity levels. Reference SPECIFIC numbers from each category", "signal": "green|yellow|red" }
-      ]
-    },
-    {
-      "title": "Competition & Market Position",
-      "icon": "comps",
-      "items": [
-        { "label": "Direct Competition", "finding": "For the asset type, what competing properties exist? Retail: other shopping centers. Office: other office parks. Industrial: other warehouse/distribution. Multifamily: other apartment communities", "signal": "green|yellow|red" },
-        { "label": "Co-Tenancy Benefit", "finding": "How do nearby businesses complement this property? Synergy analysis", "signal": "green|yellow|red" }
-      ]
-    },
-    {
-      "title": "Development & Construction Activity",
-      "icon": "development",
-      "items": [
-        { "label": "Nearby Projects", "finding": "What's being built or planned? Reference specific development projects from the data", "signal": "green|yellow|red" },
-        { "label": "Growth Direction", "finding": "Which way is the city growing? Is this property in the path of growth or behind it?", "signal": "green|yellow|red" }
-      ]
-    },
-    {
-      "title": "Recent News & Market Signals",
-      "icon": "news",
-      "items": [
-        { "label": "Headline", "finding": "Reference specific news articles about this area. What's the narrative?", "signal": "green|yellow|red" }
-      ]
-    },
-    {
-      "title": "Infrastructure & Access",
-      "icon": "civic",
-      "items": [
-        { "label": "Road Access & Visibility", "finding": "Major roads, highway access, drive-by traffic assessment based on location", "signal": "green|yellow|red" },
-        { "label": "Public Infrastructure", "finding": "Transit, public services, municipal investment in the area", "signal": "green|yellow|red" }
-      ]
-    },
-    {
-      "title": "Investment Implications",
-      "icon": "investment",
-      "items": [
-        { "label": "Location Grade", "finding": "Rate the location A/B/C and explain why, using all the data above", "signal": "green|yellow|red" },
-        { "label": "Key Risk", "finding": "What's the primary location-based risk for this investment?", "signal": "green|yellow|red" },
-        { "label": "Key Opportunity", "finding": "What's the primary location-based upside?", "signal": "green|yellow|red" }
-      ]
+      "label": "Short label (max 5 words)",
+      "detail": "1 sentence with specific data — name a business, cite a number, reference an article",
+      "signal": "green|yellow|red",
+      "icon": "traffic|demographics|development|news|civic|investment|comps"
     }
   ],
-  "bottomLine": "2-3 sentence verdict — is this a strong, average, or weak location for this asset type? What should an investor focus on in due diligence?"
+  "topAnchors": ["Name1", "Name2", "Name3"],
+  "bottomLine": "1 sentence — bullish, neutral, or cautious on this location and why"
 }
 
 RULES:
-- Reference SPECIFIC data from the inputs — actual business names, Census numbers, news headlines, Wikipedia facts
-- If a category has businesses, you MUST name them. Never say "no significant businesses" when the data shows businesses exist
-- If Census data is available, you MUST use the actual numbers in your analysis
+- "signals" array: return ONLY 4-6 items. Only the most investment-relevant findings. Skip anything generic.
+- Each signal "detail" must be 1 sentence, max 25 words. Cite specific names/numbers.
+- "topAnchors": list the 3-5 most notable anchor/national businesses within 1 mile. Use actual names from the data.
+- If businesses exist in the data, you MUST name them. Never say "no businesses found" when data shows otherwise.
 - "signal" must be exactly "green", "yellow", or "red"
-- green = positive for investment, yellow = neutral/mixed, red = concern
-- Each section should have 2-5 items. Items should be substantive (2-3 sentences each), not one-liners
-- Do NOT make up data that isn't in the inputs — say "limited data available" if a section has sparse info
-- Return ONLY valid JSON, no markdown fences`;
+- Do NOT invent data. If sparse, say so briefly.
+- Return ONLY valid JSON, no markdown`;
 }
 
 // ── POST handler ────────────────────────────────────────────

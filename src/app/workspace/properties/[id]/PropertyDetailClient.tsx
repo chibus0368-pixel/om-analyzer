@@ -2157,150 +2157,148 @@ function PropertyDetailInner({
               </>
             ) : (
               <div>
-                {/* Summary */}
-                {deepResearch.summary && (
-                  <div style={{
-                    padding: "14px 16px", background: "#EEF2FF", borderRadius: 8,
-                    fontSize: 13, color: "#312E81", lineHeight: 1.6, marginBottom: 16,
-                    borderLeft: "3px solid #6366F1",
-                  }}>
-                    {deepResearch.summary}
-                  </div>
-                )}
-
-                {/* Census Demographics Strip */}
-                {deepResearch.census && (
-                  <div style={{
-                    display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
-                    gap: 8, marginBottom: 20, padding: "14px 16px",
-                    background: "#F8FAFC", borderRadius: 8, border: `1px solid ${C.ghostBorder}`,
-                  }}>
-                    {[
-                      { label: "Population", value: deepResearch.census.population?.toLocaleString(), icon: "👥" },
-                      { label: "Median Income", value: deepResearch.census.medianIncome ? `$${deepResearch.census.medianIncome.toLocaleString()}` : null, icon: "💰" },
-                      { label: "Median Age", value: deepResearch.census.medianAge, icon: "📊" },
-                      { label: "Home Value", value: deepResearch.census.medianHomeValue ? `$${deepResearch.census.medianHomeValue.toLocaleString()}` : null, icon: "🏠" },
-                      { label: "Unemployment", value: deepResearch.census.unemploymentRate !== null ? `${deepResearch.census.unemploymentRate}%` : null, icon: "📈" },
-                    ].filter(d => d.value).map((d, i) => (
-                      <div key={i} style={{ textAlign: "center" }}>
-                        <div style={{ fontSize: 10, color: C.secondary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>{d.label}</div>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: C.onSurface }}>{d.value}</div>
+                {/* ── Row 1: Grade badge + Summary ── */}
+                <div style={{ display: "flex", gap: 14, marginBottom: 16, alignItems: "flex-start" }}>
+                  {/* Location Grade */}
+                  {deepResearch.locationGrade && (() => {
+                    const grade = deepResearch.locationGrade;
+                    const gradeColor = grade.startsWith("A") ? "#059669" : grade.startsWith("B") ? "#2563EB" : grade.startsWith("C") ? "#D97706" : "#DC2626";
+                    const gradeBg = grade.startsWith("A") ? "#D1FAE5" : grade.startsWith("B") ? "#DBEAFE" : grade.startsWith("C") ? "#FEF3C7" : "#FEE2E2";
+                    return (
+                      <div style={{
+                        minWidth: 64, textAlign: "center", padding: "10px 12px",
+                        background: gradeBg, borderRadius: 10, border: `1.5px solid ${gradeColor}20`, flexShrink: 0,
+                      }}>
+                        <div style={{ fontSize: 28, fontWeight: 800, color: gradeColor, lineHeight: 1 }}>{grade}</div>
+                        <div style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: gradeColor, marginTop: 2 }}>Location</div>
                       </div>
-                    ))}
-                    <div style={{ gridColumn: "1 / -1", fontSize: 9, color: C.secondary, textAlign: "right", marginTop: 4 }}>Source: U.S. Census Bureau, ACS 2022</div>
-                  </div>
-                )}
-
-                {/* Map */}
-                {deepResearch.mapData?.center && (
-                  <div style={{ marginBottom: 20 }}>
-                    <div style={{
-                      width: "100%", height: 280, borderRadius: 8, overflow: "hidden",
-                      border: `1px solid ${C.ghostBorder}`, position: "relative",
-                    }}>
-                      <LocationIntelMap mapData={deepResearch.mapData} />
-                    </div>
-                    {deepResearch.sourceCounts && (
-                      <div style={{ display: "flex", gap: 12, marginTop: 8, flexWrap: "wrap" }}>
-                        {[
-                          { label: "Nearby Places", count: deepResearch.sourceCounts.nearbyPlaces, color: "#6366F1" },
-                          ...(deepResearch.sourceCounts.categoryCounts ? [
-                            { label: "Anchors", count: deepResearch.sourceCounts.categoryCounts.anchors, color: "#DC2626" },
-                            { label: "Restaurants", count: deepResearch.sourceCounts.categoryCounts.restaurants, color: "#EA580C" },
-                            { label: "Retail", count: deepResearch.sourceCounts.categoryCounts.retail, color: "#2563EB" },
-                            { label: "Services", count: deepResearch.sourceCounts.categoryCounts.services, color: "#059669" },
-                          ] : []),
-                        ].filter(d => d.count > 0).map((d, i) => (
-                          <div key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                            <span style={{ width: 8, height: 8, borderRadius: "50%", background: d.color }} />
-                            <span style={{ fontSize: 10, color: C.secondary }}>{d.label}: {d.count}</span>
-                          </div>
-                        ))}
+                    );
+                  })()}
+                  <div style={{ flex: 1 }}>
+                    {deepResearch.summary && (
+                      <div style={{ fontSize: 13, color: "#312E81", lineHeight: 1.55, marginBottom: 4 }}>
+                        {deepResearch.summary}
+                      </div>
+                    )}
+                    {deepResearch.gradeRationale && (
+                      <div style={{ fontSize: 11, color: C.secondary, lineHeight: 1.4 }}>
+                        {deepResearch.gradeRationale}
                       </div>
                     )}
                   </div>
-                )}
+                </div>
 
-                {/* Sections */}
-                {deepResearch.sections?.map((section: any, si: number) => {
-                  const sectionIcons: Record<string, string> = {
-                    demographics: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z",
-                    traffic: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6",
-                    comps: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
-                    development: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4",
-                    news: "M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z",
-                    civic: "M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7",
-                    investment: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6",
-                    tenant: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z",
-                    location: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z",
-                    lease: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
-                    risk: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z",
-                    upside: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6",
-                  };
-                  const signalColors: Record<string, { bg: string; color: string; dot: string }> = {
-                    green: { bg: "#F0FDF4", color: "#15803D", dot: "#22C55E" },
-                    yellow: { bg: "#FFFBEB", color: "#92400E", dot: "#F59E0B" },
-                    red: { bg: "#FEF2F2", color: "#991B1B", dot: "#EF4444" },
-                  };
-
-                  return (
-                    <div key={si} style={{ marginBottom: 20 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4338CA" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                          <path d={sectionIcons[section.icon] || sectionIcons.location} />
-                        </svg>
-                        <h4 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: C.onSurface, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                          {section.title}
-                        </h4>
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                        {section.items?.map((item: any, ii: number) => {
-                          const sig = signalColors[item.signal] || signalColors.yellow;
-                          return (
-                            <div key={ii} style={{
-                              padding: "10px 14px", background: sig.bg, borderRadius: 8,
-                              borderLeft: `3px solid ${sig.dot}`,
-                            }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                                <span style={{ width: 7, height: 7, borderRadius: "50%", background: sig.dot, flexShrink: 0 }} />
-                                <span style={{ fontSize: 12, fontWeight: 700, color: sig.color }}>{item.label}</span>
-                              </div>
-                              <div style={{ fontSize: 12, color: sig.color, lineHeight: 1.5, paddingLeft: 13 }}>
-                                {item.finding}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {/* Bottom Line */}
-                {deepResearch.bottomLine && (
+                {/* ── Row 2: Census strip ── */}
+                {deepResearch.census && (
                   <div style={{
-                    padding: "14px 16px", background: "#F8FAFC", borderRadius: 8,
-                    border: `1px solid ${C.ghostBorder}`, marginTop: 8,
+                    display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))",
+                    gap: 1, marginBottom: 16, background: C.ghostBorder, borderRadius: 8, overflow: "hidden",
+                    border: `1px solid ${C.ghostBorder}`,
                   }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: C.secondary, marginBottom: 4 }}>Bottom Line</div>
-                    <div style={{ fontSize: 13, color: C.onSurface, lineHeight: 1.5, fontWeight: 500 }}>{deepResearch.bottomLine}</div>
+                    {[
+                      { label: "Population", value: deepResearch.census.population?.toLocaleString() },
+                      { label: "Med. Income", value: deepResearch.census.medianIncome ? `$${(deepResearch.census.medianIncome / 1000).toFixed(0)}K` : null },
+                      { label: "Med. Age", value: deepResearch.census.medianAge },
+                      { label: "Home Value", value: deepResearch.census.medianHomeValue ? `$${(deepResearch.census.medianHomeValue / 1000).toFixed(0)}K` : null },
+                      { label: "Unemployment", value: deepResearch.census.unemploymentRate !== null && deepResearch.census.unemploymentRate !== undefined ? `${deepResearch.census.unemploymentRate}%` : null },
+                    ].filter(d => d.value).map((d, i) => (
+                      <div key={i} style={{ textAlign: "center", padding: "10px 8px", background: "#fff" }}>
+                        <div style={{ fontSize: 9, color: C.secondary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>{d.label}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: C.onSurface }}>{d.value}</div>
+                      </div>
+                    ))}
                   </div>
                 )}
 
-                {/* Re-run button + metadata */}
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16 }}>
+                {/* ── Row 3: Map ── */}
+                {deepResearch.mapData?.center && (
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{
+                      width: "100%", height: 240, borderRadius: 8, overflow: "hidden",
+                      border: `1px solid ${C.ghostBorder}`,
+                    }}>
+                      <LocationIntelMap mapData={deepResearch.mapData} />
+                    </div>
+                    {/* Map legend */}
+                    <div style={{ display: "flex", gap: 10, marginTop: 6, flexWrap: "wrap" }}>
+                      {[
+                        { label: "Property", color: "#4338CA" },
+                        { label: "Anchors", color: "#DC2626", count: deepResearch.sourceCounts?.categoryCounts?.anchors },
+                        { label: "Dining", color: "#EA580C", count: deepResearch.sourceCounts?.categoryCounts?.restaurants },
+                        { label: "Retail", color: "#2563EB", count: deepResearch.sourceCounts?.categoryCounts?.retail },
+                        { label: "Services", color: "#059669", count: deepResearch.sourceCounts?.categoryCounts?.services },
+                      ].filter(d => !d.count || d.count > 0).map((d, i) => (
+                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                          <span style={{ width: 7, height: 7, borderRadius: d.label === "Property" ? 7 : "50%", background: d.color, border: d.label === "Property" ? "1.5px solid #fff" : "none", boxShadow: d.label === "Property" ? "0 0 0 1px #4338CA" : "none" }} />
+                          <span style={{ fontSize: 9, color: C.secondary }}>{d.label}{d.count ? ` (${d.count})` : ""}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Row 4: Top Anchors strip ── */}
+                {deepResearch.topAnchors?.length > 0 && (
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: C.secondary, textTransform: "uppercase", letterSpacing: 0.5, alignSelf: "center", marginRight: 4 }}>Nearby Anchors</span>
+                    {deepResearch.topAnchors.map((name: string, i: number) => (
+                      <span key={i} style={{
+                        padding: "3px 10px", background: "#F3F4F6", borderRadius: 20,
+                        fontSize: 11, fontWeight: 600, color: C.onSurface, border: `1px solid ${C.ghostBorder}`,
+                      }}>{name}</span>
+                    ))}
+                  </div>
+                )}
+
+                {/* ── Row 5: Key Signals (compact cards) ── */}
+                {(deepResearch.signals || []).length > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
+                    {(deepResearch.signals || []).map((sig: any, i: number) => {
+                      const colors: Record<string, { bg: string; border: string; dot: string; text: string }> = {
+                        green: { bg: "#F0FDF4", border: "#BBF7D0", dot: "#22C55E", text: "#15803D" },
+                        yellow: { bg: "#FFFBEB", border: "#FDE68A", dot: "#F59E0B", text: "#92400E" },
+                        red: { bg: "#FEF2F2", border: "#FECACA", dot: "#EF4444", text: "#991B1B" },
+                      };
+                      const c = colors[sig.signal] || colors.yellow;
+                      return (
+                        <div key={i} style={{
+                          display: "flex", alignItems: "center", gap: 10,
+                          padding: "8px 12px", background: c.bg, borderRadius: 8,
+                          borderLeft: `3px solid ${c.dot}`,
+                        }}>
+                          <span style={{ width: 7, height: 7, borderRadius: "50%", background: c.dot, flexShrink: 0 }} />
+                          <span style={{ fontSize: 12, fontWeight: 700, color: c.text, minWidth: 100, flexShrink: 0 }}>{sig.label}</span>
+                          <span style={{ fontSize: 12, color: c.text, lineHeight: 1.4 }}>{sig.detail}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* ── Bottom Line ── */}
+                {deepResearch.bottomLine && (
+                  <div style={{
+                    padding: "12px 16px", background: "#F8FAFC", borderRadius: 8,
+                    border: `1px solid ${C.ghostBorder}`, fontSize: 12, color: C.onSurface, lineHeight: 1.5, fontWeight: 500,
+                  }}>
+                    {deepResearch.bottomLine}
+                  </div>
+                )}
+
+                {/* Re-run */}
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
                   <button
                     onClick={() => setDeepResearch(null)}
                     style={{
-                      padding: "6px 16px", background: "transparent",
+                      padding: "5px 14px", background: "transparent",
                       border: `1px solid ${C.ghostBorder}`, borderRadius: 6,
-                      fontSize: 11, color: C.secondary, cursor: "pointer", fontFamily: "inherit",
+                      fontSize: 10, color: C.secondary, cursor: "pointer", fontFamily: "inherit",
                     }}>
-                    Refresh Location Intel
+                    Refresh
                   </button>
                   {deepResearch.createdAt && (
-                    <span style={{ fontSize: 10, color: C.secondary }}>
-                      Last run: {new Date(deepResearch.createdAt).toLocaleDateString()}
+                    <span style={{ fontSize: 9, color: C.secondary }}>
+                      {new Date(deepResearch.createdAt).toLocaleDateString()}
                     </span>
                   )}
                 </div>
