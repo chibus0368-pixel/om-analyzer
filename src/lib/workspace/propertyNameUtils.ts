@@ -60,8 +60,8 @@ export function buildSmartPropertyName(
 
   // 5. Clean up separators and whitespace
   name = name
-    .replace(/[,\-–-|/]+\s*$/, "")   // trailing separators
-    .replace(/^\s*[,\-–-|/]+/, "")   // leading separators
+    .replace(/[,\-–|/]+\s*$/, "")   // trailing separators
+    .replace(/^\s*[,\-–|/]+/, "")   // leading separators
     .replace(/\s+/g, " ")
     .trim();
 
@@ -146,8 +146,8 @@ export function cleanDisplayName(
 
   // 6. Final cleanup
   name = name
-    .replace(/[,\-–-|/]+\s*$/, "")
-    .replace(/^\s*[,\-–-|/]+/, "")
+    .replace(/[,\-–|/]+\s*$/, "")
+    .replace(/^\s*[,\-–|/]+/, "")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -184,7 +184,7 @@ function stripTrailingCityState(
   // Remove trailing "City, ST" or "City, ST 12345"
   if (city && city !== "Unknown City") {
     const cityPattern = new RegExp(
-      `[,\\s\\-–-]*${escapeRegex(city)}[,\\s]*(?:${state || "[A-Z]{2}"})?[\\s]*\\d{0,5}\\s*$`,
+      `[,\\s\\-–]*${escapeRegex(city)}[,\\s]*(?:${state || "[A-Z]{2}"})?[\\s]*\\d{0,5}\\s*$`,
       "i",
     );
     const stripped = name.replace(cityPattern, "").trim();
