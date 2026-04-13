@@ -2275,6 +2275,130 @@ export default function OmAnalyzerPage() {
           {/* ── Hero showcase (native HTML/CSS mockup) ── */}
           <HeroShowcase />
 
+          {/* ── ASSET-SPECIFIC MODELS (highlight only, no backend detail) ── */}
+          <div id="asset-models" className="ds-section-pad" style={{
+            padding: "100px 32px 80px", background: "#0d0d14",
+            position: "relative", overflow: "hidden",
+            borderTop: "1px solid rgba(255,255,255,0.04)",
+          }}>
+            {/* Soft backdrop glow */}
+            <div style={{
+              position: "absolute", top: "15%", left: "50%", transform: "translateX(-50%)",
+              width: 900, height: 500, borderRadius: "50%",
+              background: "rgba(132,204,22,0.04)", filter: "blur(160px)",
+              pointerEvents: "none",
+            }} />
+
+            <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
+              {/* Section header */}
+              <div style={{ textAlign: "center", marginBottom: 48 }}>
+                <div style={{
+                  display: "inline-flex", alignItems: "center", padding: "6px 16px",
+                  borderRadius: 50, background: "rgba(132,204,22,0.08)", color: "#84CC16",
+                  fontSize: 12, fontWeight: 700, marginBottom: 16, gap: 6,
+                  letterSpacing: 0.5, textTransform: "uppercase" as const,
+                  border: "1px solid rgba(132,204,22,0.18)",
+                }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+                  </svg>
+                  Asset-Specific Models
+                </div>
+                <h2 style={{
+                  fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15,
+                  marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif",
+                }}>
+                  Purpose-built for <span className="ds-callout">every asset class</span>.
+                </h2>
+                <p style={{ fontSize: 17, color: "#9ca3af", lineHeight: 1.7, maxWidth: 640, margin: "0 auto" }}>
+                  A grocery-anchored center doesn&apos;t score the same way as a single-tenant NNN or a medical office.
+                  DealSignals uses a dedicated model for each asset type — so the signal you get is the signal that matters.
+                </p>
+              </div>
+
+              {/* Asset tile grid */}
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(4, 1fr)",
+                gap: 12,
+              }} className="ds-asset-grid">
+                {[
+                  { label: "Retail",          icon: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10" },
+                  { label: "Grocery-Anchored", icon: "M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18 M16 10a4 4 0 0 1-8 0" },
+                  { label: "Industrial",      icon: "M2 20h20 M4 20V8l6 4V8l6 4V8l4 2v10" },
+                  { label: "Office",          icon: "M3 21V7l9-4 9 4v14 M9 9h.01 M15 9h.01 M9 13h.01 M15 13h.01 M9 17h.01 M15 17h.01" },
+                  { label: "Medical Office",  icon: "M12 2v20 M2 12h20 M4 8l16 8" },
+                  { label: "Mixed Use",       icon: "M3 21V10l9-7 9 7v11 M9 21v-7h6v7" },
+                  { label: "Restaurant",      icon: "M3 3v18 M7 3v8a4 4 0 0 1-4 4 M15 3c-2 2-3 5-3 8s1 6 3 8 M21 3v18" },
+                  { label: "Single-Tenant NNN", icon: "M3 10h18 M5 10V6l7-3 7 3v4 M5 10v10h14V10 M10 15h4" },
+                  { label: "QSR",             icon: "M4 10h16v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z M4 10a8 8 0 0 1 16 0 M8 14h8" },
+                  { label: "Pharmacy",        icon: "M4.93 4.93l14.14 14.14 M19.07 4.93L4.93 19.07 M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z" },
+                  { label: "Auto / C-Store",  icon: "M5 18V9l2-5h10l2 5v9 M5 14h14 M8 18v2 M16 18v2" },
+                  { label: "Dollar / Variety",icon: "M12 2v20 M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" },
+                ].map((a, i) => (
+                  <div
+                    key={a.label}
+                    className="ds-asset-tile"
+                    style={{
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
+                      padding: "22px 14px",
+                      background: "linear-gradient(180deg, rgba(22,26,35,0.55) 0%, rgba(14,14,22,0.65) 100%)",
+                      border: "1px solid rgba(255,255,255,0.06)",
+                      borderRadius: 14,
+                      textAlign: "center",
+                      transition: "all 0.2s ease",
+                      cursor: "default",
+                      animationDelay: `${i * 40}ms`,
+                    }}
+                  >
+                    <div style={{
+                      width: 42, height: 42, borderRadius: 10,
+                      background: "rgba(132,204,22,0.08)",
+                      border: "1px solid rgba(132,204,22,0.18)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d={a.icon} />
+                      </svg>
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", lineHeight: 1.3 }}>{a.label}</div>
+                    <div style={{
+                      fontSize: 9, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase",
+                      color: "#84CC16",
+                      background: "rgba(132,204,22,0.08)",
+                      padding: "2px 7px", borderRadius: 4,
+                      border: "1px solid rgba(132,204,22,0.2)",
+                    }}>Model</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Footer note */}
+              <div style={{
+                marginTop: 32, textAlign: "center",
+                fontSize: 13, color: "rgba(255,255,255,0.45)",
+              }}>
+                We auto-detect the asset type from your OM and route it to the right model.
+                <span style={{ color: "#84CC16", fontWeight: 600 }}> No extra clicks.</span>
+              </div>
+            </div>
+
+            <style jsx>{`
+              :global(.ds-asset-tile):hover {
+                transform: translateY(-2px);
+                border-color: rgba(132,204,22,0.3) !important;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.35), 0 0 30px rgba(132,204,22,0.06);
+              }
+              @media (max-width: 900px) {
+                :global(.ds-asset-grid) { grid-template-columns: repeat(3, 1fr) !important; }
+              }
+              @media (max-width: 640px) {
+                :global(.ds-asset-grid) { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+              }
+            `}</style>
+          </div>
+
           {/* ── 2. WHY DEALSIGNALS ── */}
           <div id="how-it-works" className="ds-section-pad" style={{ padding: "120px 32px 100px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
             {/* Subtle background depth */}
