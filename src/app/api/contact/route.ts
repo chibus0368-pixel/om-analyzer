@@ -75,7 +75,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const docRef = await addDoc(messagesRef, messageDoc);
 
-    // Send notification email to admin
+    // Send notification email to admin (support@dealsignals.app by default).
+    // Reply-To is set to the submitter's address so hitting "Reply" in Gmail
+    // goes straight back to the prospect instead of to the no-reply sender.
     const adminEmail = process.env.ADMIN_EMAIL_ADDRESS || 'support@dealsignals.app';
     const adminNotificationHtml = generateAdminNotificationEmail(
       sanitizedName,
@@ -87,15 +89,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     await sendEmail(
       adminEmail,
       `New Contact Form Submission from ${sanitizedName}`,
-      adminNotificationHtml
+      adminNotificationHtml,
+      undefined,
+      undefined,
+      undefined,
+      { replyTo: sanitizedEmail }
     );
 
-    // Send confirmation to user
+    // Send confirmation to user. Reply-To points to support@ so if the
+    // customer replies to the confirmation, it lands in the human mailbox.
     const userConfirmationHtml = generateUserConfirmationEmail(sanitizedName);
     await sendEmail(
       sanitizedEmail,
       'We Received Your Message - Deal Signals',
-      userConfirmationHtml
+      userConfirmationHtml,
+      undefined,
+      undefined,
+      undefined,
+      { replyTo: adminEmail }
     );
 
     return NextResponse.json(

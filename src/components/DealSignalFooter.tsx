@@ -111,6 +111,9 @@ export default function DealSignalFooter() {
         {/* ── Product column ── */}
         <div>
           <div style={colHeader}>Product</div>
+          <Link href="/om-analyzer#examples" style={linkStyle}>
+            Examples
+          </Link>
           <Link href="/om-analyzer#how-it-works" style={linkStyle}>
             How it works
           </Link>

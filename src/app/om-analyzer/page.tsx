@@ -398,34 +398,36 @@ function HeroShowcase() {
       hero: "linear-gradient(135deg, #1f3a3a 0%, #2d5555 40%, #84CC16 180%)",
       pricePerSf: "$146/SF", dscr: "1.38x", coc: "9.2%", debtYield: "11.8%",
       occupancy: "91%", yearBuilt: "1995", tenantCount: "7", walt: "4.1 yrs", submarket: "Milwaukee West",
-      executive: "Neighborhood retail center in a stable Wauwatosa submarket with strong surrounding demographics. In-place cap rate is attractive relative to submarket comps, though the single non-credit anchor and a modest CapEx backlog are considerations.",
+      executive: "Coffee-anchored neighborhood center in a stable Wauwatosa submarket with strong surrounding demographics. Stone Creek Coffee draws daily, repeat foot traffic that lifts every shop tenant in the roster. In-place cap rate is attractive relative to submarket comps, though the non-credit local anchor and a modest CapEx backlog are considerations.",
       strengths: [
+        "Stone Creek Coffee draws daily repeat traffic - benefits every shop tenant",
         "In-place cap rate ~40 bps above submarket averages",
         "Strong $92K median HH income within 3-mile radius",
       ],
       concerns: [
-        "Single non-credit anchor - concentration risk",
+        "Non-credit local anchor - no rated credit backstop",
         "Deferred CapEx backlog estimated at ~$240K (paving, HVAC)",
       ],
       signal: null,
       aiSignals: [
         { title: "Price vs market", detail: "8.39% going-in cap vs. 7.85% submarket median for similar assets", impact: "pos" },
-        { title: "Anchor risk", detail: "Non-credit anchor, 4.1 yr remaining term - re-trade if renewal falters", impact: "neg" },
+        { title: "Anchor draw", detail: "Stone Creek Coffee = destination local brand; pulls daily foot traffic", impact: "pos" },
+        { title: "Anchor credit", detail: "Non-credit anchor, 4.1 yr remaining term - re-trade if renewal falters", impact: "neg" },
         { title: "CapEx", detail: "Parking lot re-seal + 2 HVAC units at end of life - ~$240K", impact: "neg" },
       ],
       tenants: [
-        { name: "Local Anchor (Fitness)", sf: "18,500", rent: "$185K", term: "Jun 2030" },
-        { name: "State Farm",             sf: "1,600",  rent: "$44K",  term: "Dec 2027" },
-        { name: "H&R Block",              sf: "1,400",  rent: "$38K",  term: "Nov 2026" },
-        { name: "Panera Bread",           sf: "3,200",  rent: "$98K",  term: "Aug 2030" },
-        { name: "AT&T",                   sf: "1,800",  rent: "$55K",  term: "Jul 2028" },
+        { name: "Stone Creek Coffee (Anchor)", sf: "4,200",  rent: "$128K", term: "Jun 2030" },
+        { name: "Panera Bread",                sf: "3,200",  rent: "$98K",  term: "Aug 2030" },
+        { name: "AT&T",                        sf: "1,800",  rent: "$55K",  term: "Jul 2028" },
+        { name: "State Farm",                  sf: "1,600",  rent: "$44K",  term: "Dec 2027" },
+        { name: "H&R Block",                   sf: "1,400",  rent: "$38K",  term: "Nov 2026" },
       ],
       reviewItems: [
         "CapEx reserves not included - allocate $240K for deferred items",
-        "Anchor health ratio not available - requires verification",
+        "Anchor health ratio not available - request Stone Creek sales/SF",
       ],
-      greenFlags: ["In-place cap rate above market", "Strong submarket demographics"],
-      yellowFlags: ["Single non-credit anchor", "CapEx backlog ~$240K"],
+      greenFlags: ["Stone Creek Coffee anchor draws daily foot traffic", "In-place cap rate above market", "Strong submarket demographics"],
+      yellowFlags: ["Non-credit local anchor", "CapEx backlog ~$240K"],
       redFlags: [],
       locationIntel: {
         grade: "A-",
@@ -4046,6 +4048,7 @@ export default function OmAnalyzerPage() {
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#ffffff", marginBottom: 18, textTransform: "uppercase", letterSpacing: 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Product</div>
             {[
+              { label: "Examples", hash: "examples" },
               { label: "How it works", hash: "how-it-works" },
               { label: "Features", hash: "features" },
               { label: "FAQ", hash: "faq" },

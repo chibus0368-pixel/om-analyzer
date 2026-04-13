@@ -69,7 +69,7 @@ export async function sendEmail(
   text?: string,
   from: string = DEFAULT_FROM,
   manageToken?: string,
-  options?: { bcc?: string | string[] }
+  options?: { bcc?: string | string[]; replyTo?: string | string[] }
 ): Promise<EmailResult> {
   try {
     // Validate email format
@@ -105,6 +105,11 @@ export async function sendEmail(
     // Add BCC if provided
     if (options?.bcc) {
       emailPayload.bcc = options.bcc;
+    }
+
+    // Add Reply-To if provided. Resend expects `reply_to` in its JSON API.
+    if (options?.replyTo) {
+      emailPayload.reply_to = options.replyTo;
     }
 
     const response = await getResend().emails.send(emailPayload);
