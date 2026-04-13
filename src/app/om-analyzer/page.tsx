@@ -188,6 +188,15 @@ function PropertyImage({ heroImageUrl, location, encodedAddress, propertyName }:
    Uses REAL CRE property images + metrics mirror the actual app's detail page
    =========================================================================== */
 type HeroTenant = { name: string; sf: string; rent: string; term: string };
+type HeroSignal = { label: string; detail: string; tone: "green" | "yellow" | "red" };
+type HeroCensus = { population: string; medianIncome: string; medianAge: string; homeValue: string; unemployment: string };
+type HeroLocationIntel = {
+  grade: string;             // "A-", "B+", "C", etc.
+  summary: string;           // 1-2 sentence area narrative
+  census: HeroCensus;
+  anchors: string[];         // Nearby co-tenant / anchor names
+  signals: HeroSignal[];     // Traffic / demographics / comps signals
+};
 type HeroCard = {
   name: string; city: string; type: string;
   score: number; verdict: "BUY" | "NEUTRAL" | "PASS";
@@ -217,6 +226,7 @@ type HeroCard = {
   greenFlags: string[];
   yellowFlags: string[];
   redFlags: string[];
+  locationIntel: HeroLocationIntel;
 };
 
 // Real CRE exterior photos on Unsplash CDN - curated to match each asset type
@@ -294,12 +304,23 @@ function HeroShowcase() {
       greenFlags: ["Anchor tenant 12 yrs remaining", "Rents 18% below market comps", "37K VPD on primary frontage"],
       yellowFlags: ["3 tenants rolling in next 24 months", "Roof nearing end of useful life"],
       redFlags: [],
+      locationIntel: {
+        grade: "B+",
+        summary: "Established retail corridor in the south-Milwaukee suburbs. Stable, middle-income trade area with dense daytime traffic on 76th St and healthy household formation in a 3-mile ring. Not a trophy market — but durable, defensible retail demand.",
+        census: { population: "118,400", medianIncome: "$81,200", medianAge: "39.8", homeValue: "$302K", unemployment: "3.4%" },
+        anchors: ["Meijer", "Walmart Supercenter", "Home Depot", "Planet Fitness", "Starbucks"],
+        signals: [
+          { label: "Traffic", detail: "76th St corridor at 37,400 VPD — top quartile for the submarket", tone: "green" },
+          { label: "Rooftops", detail: "+1.4% annual population growth in 3-mile ring over last 5 yrs", tone: "green" },
+          { label: "Retail pipeline", detail: "No new competitive multi-tenant construction within 2 miles", tone: "green" },
+        ],
+      },
     },
     {
       name: "Hales Corners Plaza", city: "Hales Corners, WI", type: "Grocery-Anchored Retail",
       score: 72, verdict: "BUY",
       price: "$9.4M", cap: "8.34%", noi: "$784K", sf: "62.5K SF",
-      photoUrl: PHOTO.grocery,
+      photoUrl: "https://images.unsplash.com/photo-1506781961370-37a89d6b3095?w=1000&q=85&auto=format&fit=crop",
       hero: "linear-gradient(135deg, #2d1f4e 0%, #4a2d5f 40%, #84CC16 180%)",
       pricePerSf: "$150/SF", dscr: "1.51x", coc: "10.4%", debtYield: "12.4%",
       occupancy: "97%", yearBuilt: "2003", tenantCount: "9", walt: "5.4 yrs", submarket: "Milwaukee South",
@@ -333,6 +354,17 @@ function HeroShowcase() {
       greenFlags: ["Grocery-anchored, recession-resistant", "Below replacement cost at $150/SF", "8 yrs anchor term"],
       yellowFlags: ["Limited rent growth history"],
       redFlags: [],
+      locationIntel: {
+        grade: "B+",
+        summary: "Inner-ring suburb 15 minutes from downtown Milwaukee. Mature grocery trade area with high daytime population density and stable, owner-occupied rooftops. A classic infill grocery location — not high-growth, but sticky.",
+        census: { population: "96,800", medianIncome: "$78,400", medianAge: "42.1", homeValue: "$284K", unemployment: "3.2%" },
+        anchors: ["Sendik's Food Market", "Target", "Walgreens", "CVS", "Pick 'n Save"],
+        signals: [
+          { label: "Grocery moat", detail: "Sendik's = #2 regional grocer by sales/SF in MKE MSA", tone: "green" },
+          { label: "Rooftops", detail: "Mature, owner-occupied rooftops — 72% ownership in 1-mile ring", tone: "green" },
+          { label: "Submarket growth", detail: "Flat population trend — stable but not growing", tone: "yellow" },
+        ],
+      },
     },
     {
       name: "Harwood Retail Center", city: "Wauwatosa, WI", type: "Neighborhood Center",
@@ -371,12 +403,23 @@ function HeroShowcase() {
       greenFlags: ["In-place cap rate above market", "Strong submarket demographics"],
       yellowFlags: ["Single non-credit anchor", "CapEx backlog ~$240K"],
       redFlags: [],
+      locationIntel: {
+        grade: "A-",
+        summary: "Wauwatosa is one of the strongest inner-ring suburbs in the Milwaukee MSA — high median incomes, dense rooftops, and a healthy mix of medical office and specialty retail. The immediate corridor benefits from hospital-related daytime employment.",
+        census: { population: "134,200", medianIncome: "$94,600", medianAge: "40.5", homeValue: "$348K", unemployment: "2.9%" },
+        anchors: ["Froedtert Hospital", "Mayfair Mall", "Trader Joe's", "Whole Foods", "Chick-fil-A"],
+        signals: [
+          { label: "Demographics", detail: "$94.6K median HH income — top decile for Milwaukee MSA", tone: "green" },
+          { label: "Daytime pop", detail: "Hospital + medical campus drives 14K daytime employees within 1 mile", tone: "green" },
+          { label: "Anchor credit", detail: "Local fitness anchor is non-rated — no credit backstop", tone: "yellow" },
+        ],
+      },
     },
     {
       name: "Outback Steakhouse", city: "Fredericksburg, VA", type: "Single-Tenant NNN",
       score: 45, verdict: "PASS",
       price: "$4.8M", cap: "5.6%", noi: "$269K", sf: "6.2K SF",
-      photoUrl: PHOTO.restaurant,
+      photoUrl: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1000&q=85&auto=format&fit=crop",
       hero: "linear-gradient(135deg, #4a1f1f 0%, #6b2d2d 40%, #F87171 180%)",
       pricePerSf: "$774/SF", dscr: "1.08x", coc: "3.1%", debtYield: "7.9%",
       occupancy: "100%", yearBuilt: "2001", tenantCount: "1", walt: "5.0 yrs", submarket: "I-95 Corridor",
@@ -406,6 +449,17 @@ function HeroShowcase() {
       greenFlags: ["Corporate guarantee", "Interstate visibility"],
       yellowFlags: ["5 yrs remaining, no options exercised"],
       redFlags: ["Cap rate 80 bps below market for QSR NNN", "Aging building, TI burden at lease end"],
+      locationIntel: {
+        grade: "C+",
+        summary: "Secondary I-95 off-ramp retail node between DC and Richmond. Reasonable traffic counts but the restaurant pad sits in a saturated casual-dining cluster with nearby competition from Applebee's, Red Lobster, and Olive Garden. Site is functional, but undifferentiated.",
+        census: { population: "74,100", medianIncome: "$67,300", medianAge: "36.9", homeValue: "$268K", unemployment: "4.1%" },
+        anchors: ["Central Park Mall", "Applebee's", "Red Lobster", "Olive Garden", "Walmart Supercenter"],
+        signals: [
+          { label: "Comp saturation", detail: "5 competing casual-dining concepts within 1/4 mile", tone: "red" },
+          { label: "Traffic", detail: "I-95 off-ramp @ 48K VPD — good visibility, but not a destination node", tone: "yellow" },
+          { label: "Demographic fit", detail: "Median income at MSA average — no premium dining tailwind", tone: "yellow" },
+        ],
+      },
     },
     {
       name: "Fredericksburg Center", city: "Fredericksburg, VA", type: "Mixed-Use Retail",
@@ -444,6 +498,17 @@ function HeroShowcase() {
       greenFlags: ["Diversified tenant base", "Growing suburban submarket"],
       yellowFlags: ["WALT under 4 yrs", "2 vacant suites"],
       redFlags: [],
+      locationIntel: {
+        grade: "B",
+        summary: "Growing suburban trade area 50 miles south of DC along the I-95 corridor. Demographics are improving as DC-commuters push further out for affordability. Mid-tier retail demand with healthy rooftop growth but no dominant anchor magnet nearby.",
+        census: { population: "142,800", medianIncome: "$72,900", medianAge: "35.4", homeValue: "$316K", unemployment: "3.8%" },
+        anchors: ["Spotsylvania Mall", "Walmart Supercenter", "Home Depot", "Wegmans", "Lowe's"],
+        signals: [
+          { label: "Rooftop growth", detail: "+2.1% annual population growth (3-mile) — strongest in submarket", tone: "green" },
+          { label: "Tenant mix", detail: "14-tenant roster spans value, services, and fitness — diversified", tone: "green" },
+          { label: "Leasing velocity", detail: "2 vacant suites — comparable centers averaging 9-month lease-up", tone: "yellow" },
+        ],
+      },
     },
     {
       name: "Silvernail Commons", city: "Pewaukee, WI", type: "Neighborhood Strip",
@@ -483,6 +548,17 @@ function HeroShowcase() {
       greenFlags: ["Good daytime traffic"],
       yellowFlags: ["Near-term rollover exposure"],
       redFlags: ["Below-threshold DSCR at current debt", "3 of 6 tenants month-to-month"],
+      locationIntel: {
+        grade: "C",
+        summary: "Tertiary Lake Country strip location with adequate drive-by traffic but limited daytime employment and a weak shop-tenant draw. Node lacks a true anchor — surrounding centers pull most of the retail demand.",
+        census: { population: "48,600", medianIncome: "$83,100", medianAge: "43.2", homeValue: "$334K", unemployment: "3.0%" },
+        anchors: ["Woodman's Market", "Kohl's", "Target (4 mi)", "Home Depot (3 mi)"],
+        signals: [
+          { label: "Anchor vacuum", detail: "No anchor within center — tenants rely on drive-by, not cross-shopping", tone: "red" },
+          { label: "Submarket pull", detail: "Woodman's + Target cluster 3-4 mi east captures most retail trips", tone: "red" },
+          { label: "Demographics", detail: "Income profile is fine — just not enough daytime retail demand here", tone: "yellow" },
+        ],
+      },
     },
   ];
 
@@ -517,10 +593,10 @@ function HeroShowcase() {
         <div>
           <div style={{ marginBottom: 16 }}>
             <h3 style={{ fontSize: 42, fontWeight: 800, color: "#fff", margin: 0, letterSpacing: -0.5, lineHeight: 1.05 }}>
-              11 Deals. <span style={{ color: "#84CC16" }}>3 Worth Pursuing.</span>
+              Quickly <span style={{ color: "#84CC16" }}>score and rank</span> on-market deals.
             </h3>
             <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 15, margin: "8px 0 0", fontWeight: 500 }}>
-              Instantly scored and ranked
+              Upload an OM, get a verdict and a rent roll in under a minute.
             </p>
           </div>
 
@@ -973,7 +1049,6 @@ function HeroCardModal({ card: c, displayPhoto, verdictColor, onClose }: {
               <div style={{ fontSize: 13, fontWeight: 700, color: LT.text }}>Price Sensitivity</div>
               <div style={{ fontSize: 11, color: LT.muted, marginTop: 2 }}>How the deal math moves with asking price</div>
             </div>
-            <span style={{ fontSize: 9, fontWeight: 800, background: LT.limeSoft, color: LT.lime, padding: "3px 8px", borderRadius: 4, border: `1px solid ${LT.limeBorder}`, letterSpacing: 0.5 }}>UNDERWRITING</span>
           </div>
           <div style={{
             background: LT.bg, border: `1px solid ${LT.border}`, borderRadius: 10, overflow: "hidden",
@@ -1205,7 +1280,6 @@ function HeroCardModal({ card: c, displayPhoto, verdictColor, onClose }: {
               <div style={{ fontSize: 13, fontWeight: 700, color: LT.text }}>AI Signals</div>
               <div style={{ fontSize: 11, color: LT.muted, marginTop: 2 }}>Actionable insights extracted from the OM</div>
             </div>
-            <span style={{ fontSize: 9, fontWeight: 800, background: LT.limeSoft, color: LT.lime, padding: "3px 8px", borderRadius: 4, border: `1px solid ${LT.limeBorder}`, letterSpacing: 0.5 }}>GPT-4o</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {c.aiSignals.map((s, i) => {
@@ -1227,6 +1301,107 @@ function HeroCardModal({ card: c, displayPhoto, verdictColor, onClose }: {
                 </div>
               );
             })}
+          </div>
+        </div>
+
+        {/* Location Intel / Deep Research (mirrors the real deep research section) */}
+        <div style={{ padding: "14px 22px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: LT.text }}>Location Intel</div>
+              <div style={{ fontSize: 11, color: LT.muted, marginTop: 2 }}>Deep research on the trade area, comps, and rooftops</div>
+            </div>
+            {(() => {
+              const g = c.locationIntel.grade;
+              const letter = g.charAt(0).toUpperCase();
+              const tone =
+                letter === "A" ? { bg: LT.limeSoft, border: LT.limeBorder, fg: LT.lime } :
+                letter === "B" ? { bg: LT.limeSoft, border: LT.limeBorder, fg: LT.lime } :
+                letter === "C" ? { bg: LT.amberSoft, border: LT.amberBorder, fg: LT.amber } :
+                                 { bg: LT.redSoft,  border: LT.redBorder,  fg: LT.red };
+              return (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  background: tone.bg, border: `1px solid ${tone.border}`,
+                  padding: "6px 12px", borderRadius: 8,
+                }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: LT.muted, letterSpacing: 0.5, textTransform: "uppercase" }}>Location</span>
+                  <span style={{ fontSize: 18, fontWeight: 900, color: tone.fg, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{g}</span>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Narrative summary */}
+          <div style={{
+            background: LT.surface, border: `1px solid ${LT.border}`, borderRadius: 10,
+            padding: "14px 16px", fontSize: 13, color: LT.text, lineHeight: 1.6,
+            marginBottom: 10,
+          }}>
+            {c.locationIntel.summary}
+          </div>
+
+          {/* Census strip - 5 mini stats in a row */}
+          <div style={{
+            display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, marginBottom: 10,
+          }} className="hero-census-grid">
+            {[
+              { label: "Population (3-mi)", value: c.locationIntel.census.population },
+              { label: "Median HHI", value: c.locationIntel.census.medianIncome },
+              { label: "Median Age", value: c.locationIntel.census.medianAge },
+              { label: "Home Value", value: c.locationIntel.census.homeValue },
+              { label: "Unemployment", value: c.locationIntel.census.unemployment },
+            ].map(s => (
+              <div key={s.label} style={{
+                background: LT.bg, border: `1px solid ${LT.border}`, borderRadius: 8, padding: "9px 10px",
+              }}>
+                <div style={{ fontSize: 9, color: LT.mutedSoft, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 3 }}>{s.label}</div>
+                <div style={{ fontSize: 13, color: LT.text, fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>{s.value}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Nearby anchors / co-tenants */}
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ fontSize: 10, color: LT.mutedSoft, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Nearby Anchors</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {c.locationIntel.anchors.map((a, i) => (
+                <span key={i} style={{
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  fontSize: 11, fontWeight: 600, color: LT.text,
+                  background: LT.surface, border: `1px solid ${LT.border}`,
+                  padding: "5px 10px", borderRadius: 20,
+                }}>
+                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: LT.lime }} />
+                  {a}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Key signals - 3 color-coded cards */}
+          <div>
+            <div style={{ fontSize: 10, color: LT.mutedSoft, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Key Signals</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }} className="hero-locsig-grid">
+              {c.locationIntel.signals.map((s, i) => {
+                const tone = s.tone === "green"
+                  ? { bg: LT.limeSoft, border: LT.limeBorder, fg: LT.lime, label: "Strong" }
+                  : s.tone === "yellow"
+                  ? { bg: LT.amberSoft, border: LT.amberBorder, fg: LT.amber, label: "Watch" }
+                  : { bg: LT.redSoft, border: LT.redBorder, fg: LT.red, label: "Weak" };
+                return (
+                  <div key={i} style={{
+                    background: tone.bg, border: `1px solid ${tone.border}`, borderRadius: 9, padding: "10px 12px",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: LT.text }}>{s.label}</div>
+                      <span style={{ fontSize: 8, fontWeight: 800, color: tone.fg, textTransform: "uppercase", letterSpacing: 0.4 }}>{tone.label}</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: LT.text, lineHeight: 1.45 }}>{s.detail}</div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -1358,9 +1533,12 @@ function HeroCardModal({ card: c, displayPhoto, verdictColor, onClose }: {
           :global(.hero-modal-basics) { grid-template-columns: repeat(2, 1fr) !important; }
           :global(.hero-modal-downloads) { grid-template-columns: 1fr !important; }
           :global(.hero-sens-head), :global(.hero-sens-row) { grid-template-columns: 1.2fr 1fr 0.8fr 0.8fr 0.9fr !important; font-size: 11px !important; padding: 9px 10px !important; }
+          :global(.hero-census-grid) { grid-template-columns: repeat(3, 1fr) !important; }
+          :global(.hero-locsig-grid) { grid-template-columns: 1fr !important; }
         }
         @media (max-width: 640px) {
           :global(.hero-flags-grid) { grid-template-columns: 1fr !important; }
+          :global(.hero-census-grid) { grid-template-columns: repeat(2, 1fr) !important; }
         }
       `}</style>
     </div>
@@ -2309,74 +2487,220 @@ export default function OmAnalyzerPage() {
                   fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15,
                   marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif",
                 }}>
-                  Purpose-built for <span className="ds-callout">every asset class</span>.
+                  A dedicated model for <span className="ds-callout">every asset class</span>.
                 </h2>
                 <p style={{ fontSize: 17, color: "#9ca3af", lineHeight: 1.7, maxWidth: 640, margin: "0 auto" }}>
-                  A grocery-anchored center doesn&apos;t score the same way as a single-tenant NNN or a medical office.
-                  DealSignals uses a dedicated model for each asset type — so the signal you get is the signal that matters.
+                  A grocery-anchored center doesn&apos;t score the same way as a warehouse, an apartment building, or raw land.
+                  Each asset type gets its own purpose-built model — so the signal you get is the signal that matters.
                 </p>
               </div>
 
-              {/* Asset tile grid */}
+              {/* Asset tile grid - five purpose-built models with detailed line drawings */}
               <div style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gap: 12,
+                gridTemplateColumns: "repeat(5, 1fr)",
+                gap: 16,
               }} className="ds-asset-grid">
                 {[
-                  { label: "Retail",          icon: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10" },
-                  { label: "Grocery-Anchored", icon: "M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18 M16 10a4 4 0 0 1-8 0" },
-                  { label: "Industrial",      icon: "M2 20h20 M4 20V8l6 4V8l6 4V8l4 2v10" },
-                  { label: "Office",          icon: "M3 21V7l9-4 9 4v14 M9 9h.01 M15 9h.01 M9 13h.01 M15 13h.01 M9 17h.01 M15 17h.01" },
-                  { label: "Medical Office",  icon: "M12 2v20 M2 12h20 M4 8l16 8" },
-                  { label: "Mixed Use",       icon: "M3 21V10l9-7 9 7v11 M9 21v-7h6v7" },
-                  { label: "Restaurant",      icon: "M3 3v18 M7 3v8a4 4 0 0 1-4 4 M15 3c-2 2-3 5-3 8s1 6 3 8 M21 3v18" },
-                  { label: "Single-Tenant NNN", icon: "M3 10h18 M5 10V6l7-3 7 3v4 M5 10v10h14V10 M10 15h4" },
-                  { label: "QSR",             icon: "M4 10h16v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z M4 10a8 8 0 0 1 16 0 M8 14h8" },
-                  { label: "Pharmacy",        icon: "M4.93 4.93l14.14 14.14 M19.07 4.93L4.93 19.07 M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z" },
-                  { label: "Auto / C-Store",  icon: "M5 18V9l2-5h10l2 5v9 M5 14h14 M8 18v2 M16 18v2" },
-                  { label: "Dollar / Variety",icon: "M12 2v20 M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" },
+                  {
+                    label: "Retail",
+                    blurb: "Shopping centers, grocery-anchored, single-tenant NNN, QSR, mixed-use.",
+                    weights: ["Tenant roster", "Rollover", "Anchor credit"],
+                    /* Shopping center — canopy with 4 storefronts + signage + sidewalk */
+                    draw: (
+                      <>
+                        <path d="M4 38 L46 38" />
+                        <path d="M6 38 L6 20 L44 20 L44 38" />
+                        <path d="M4 20 L46 20 L46 16 L4 16 Z" />
+                        <path d="M12 38 L12 26 L18 26 L18 38" />
+                        <path d="M21 38 L21 26 L27 26 L27 38" />
+                        <path d="M30 38 L30 26 L36 26 L36 38" />
+                        <path d="M8 24 L40 24" strokeDasharray="2 2" />
+                        <circle cx="15" cy="32" r="0.8" fill="currentColor" />
+                        <circle cx="24" cy="32" r="0.8" fill="currentColor" />
+                        <circle cx="33" cy="32" r="0.8" fill="currentColor" />
+                      </>
+                    ),
+                  },
+                  {
+                    label: "Industrial",
+                    blurb: "Warehouse, distribution, flex, last-mile logistics.",
+                    weights: ["Clear height", "Dock doors", "Tenant credit"],
+                    /* Warehouse — big box + sawtooth roof + loading docks */
+                    draw: (
+                      <>
+                        <path d="M4 38 L46 38" />
+                        <path d="M6 38 L6 18" />
+                        <path d="M44 38 L44 18" />
+                        <path d="M6 18 L14 14 L14 18 L22 14 L22 18 L30 14 L30 18 L38 14 L38 18 L44 18" />
+                        <path d="M10 38 L10 28 L16 28 L16 38" />
+                        <path d="M19 38 L19 28 L25 28 L25 38" />
+                        <path d="M28 38 L28 28 L34 28 L34 38" />
+                        <path d="M37 38 L37 28 L41 28 L41 38" />
+                        <path d="M10 33 L16 33" />
+                        <path d="M19 33 L25 33" />
+                        <path d="M28 33 L34 33" />
+                      </>
+                    ),
+                  },
+                  {
+                    label: "Office",
+                    blurb: "Multi-tenant office, medical office, suburban & urban CBD.",
+                    weights: ["WALT", "Tenant credit", "TI/LC load"],
+                    /* Office tower — tall building with window grid */
+                    draw: (
+                      <>
+                        <path d="M4 38 L46 38" />
+                        <path d="M10 38 L10 8 L40 8 L40 38" />
+                        <path d="M10 12 L40 12" />
+                        <path d="M13 12 L13 38" />
+                        <path d="M18 12 L18 38" />
+                        <path d="M23 12 L23 38" />
+                        <path d="M28 12 L28 38" />
+                        <path d="M33 12 L33 38" />
+                        <path d="M37 12 L37 38" />
+                        <path d="M10 18 L40 18" />
+                        <path d="M10 24 L40 24" />
+                        <path d="M10 30 L40 30" />
+                        <path d="M22 30 L22 38 L28 38 L28 30" />
+                      </>
+                    ),
+                  },
+                  {
+                    label: "Multifamily",
+                    blurb: "Garden-style, mid-rise, high-rise, build-to-rent.",
+                    weights: ["Rent growth", "OpEx", "Occupancy"],
+                    /* Apartment — building with balconies + pitched roof */
+                    draw: (
+                      <>
+                        <path d="M4 38 L46 38" />
+                        <path d="M8 38 L8 14 L42 14 L42 38" />
+                        <path d="M6 14 L25 6 L44 14" />
+                        <path d="M12 18 L18 18 L18 22 L12 22 Z" />
+                        <path d="M22 18 L28 18 L28 22 L22 22 Z" />
+                        <path d="M32 18 L38 18 L38 22 L32 22 Z" />
+                        <path d="M12 26 L18 26 L18 30 L12 30 Z" />
+                        <path d="M22 26 L28 26 L28 30 L22 30 Z" />
+                        <path d="M32 26 L38 26 L38 30 L32 30 Z" />
+                        <path d="M22 32 L28 32 L28 38" />
+                        <path d="M11 34 L19 34" />
+                        <path d="M31 34 L39 34" />
+                      </>
+                    ),
+                  },
+                  {
+                    label: "Land",
+                    blurb: "Raw land, entitled parcels, development sites.",
+                    weights: ["Entitlements", "Topography", "Utilities"],
+                    /* Land — rolling hills + tree + survey stake */
+                    draw: (
+                      <>
+                        <path d="M4 38 L46 38" />
+                        <path d="M4 30 Q 14 22 24 30 T 46 30" />
+                        <path d="M4 34 Q 16 28 28 34 T 46 34" />
+                        <path d="M34 30 L34 18" />
+                        <circle cx="34" cy="15" r="3.5" />
+                        <path d="M34 15 L30 13" />
+                        <path d="M34 15 L38 13" />
+                        <path d="M12 30 L12 20" />
+                        <path d="M10 22 L14 22 L10 18 L14 18 L10 14 L14 14" strokeWidth="1.2" />
+                        <path d="M42 14 L42 22 L46 22 L46 14 Z" strokeDasharray="1.5 1.5" />
+                        <path d="M44 14 L44 10" />
+                      </>
+                    ),
+                  },
                 ].map((a, i) => (
                   <div
                     key={a.label}
                     className="ds-asset-tile"
                     style={{
-                      display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
-                      padding: "22px 14px",
-                      background: "linear-gradient(180deg, rgba(22,26,35,0.55) 0%, rgba(14,14,22,0.65) 100%)",
-                      border: "1px solid rgba(255,255,255,0.06)",
-                      borderRadius: 14,
-                      textAlign: "center",
-                      transition: "all 0.2s ease",
+                      position: "relative",
+                      display: "flex", flexDirection: "column", gap: 12,
+                      padding: "22px 18px 20px",
+                      background: "linear-gradient(180deg, rgba(22,26,35,0.65) 0%, rgba(14,14,22,0.8) 100%)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: 16,
+                      textAlign: "left",
+                      transition: "all 0.25s ease",
                       cursor: "default",
-                      animationDelay: `${i * 40}ms`,
+                      animationDelay: `${i * 60}ms`,
+                      overflow: "hidden",
                     }}
                   >
+                    {/* Corner glow */}
                     <div style={{
-                      width: 42, height: 42, borderRadius: 10,
-                      background: "rgba(132,204,22,0.08)",
-                      border: "1px solid rgba(132,204,22,0.18)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
+                      position: "absolute", top: -30, right: -30, width: 110, height: 110,
+                      background: "radial-gradient(circle, rgba(132,204,22,0.10) 0%, rgba(132,204,22,0) 70%)",
+                      pointerEvents: "none",
+                    }} />
+
+                    {/* Line drawing illustration */}
+                    <div style={{
+                      position: "relative",
+                      height: 96, borderRadius: 10,
+                      background: "linear-gradient(180deg, rgba(132,204,22,0.05) 0%, rgba(132,204,22,0.00) 100%)",
+                      border: "1px solid rgba(132,204,22,0.12)",
+                      display: "flex", alignItems: "flex-end", justifyContent: "center",
+                      padding: "10px 0 6px",
                     }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <path d={a.icon} />
+                      {/* Subtle grid lines */}
+                      <div style={{
+                        position: "absolute", inset: 0, borderRadius: 10,
+                        backgroundImage: "linear-gradient(rgba(132,204,22,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(132,204,22,0.04) 1px, transparent 1px)",
+                        backgroundSize: "10px 10px",
+                        pointerEvents: "none",
+                      }} />
+                      <svg
+                        viewBox="0 0 50 42"
+                        width="100%"
+                        height="100%"
+                        fill="none"
+                        stroke="#84CC16"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{ position: "relative", maxWidth: 150 }}
+                      >
+                        {a.draw}
                       </svg>
                     </div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", lineHeight: 1.3 }}>{a.label}</div>
-                    <div style={{
-                      fontSize: 9, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase",
-                      color: "#84CC16",
-                      background: "rgba(132,204,22,0.08)",
-                      padding: "2px 7px", borderRadius: 4,
-                      border: "1px solid rgba(132,204,22,0.2)",
-                    }}>Model</div>
+
+                    {/* Label + tag */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", letterSpacing: -0.2 }}>{a.label}</div>
+                      <div style={{
+                        fontSize: 9, fontWeight: 800, letterSpacing: 0.6, textTransform: "uppercase",
+                        color: "#84CC16",
+                        background: "rgba(132,204,22,0.10)",
+                        padding: "3px 8px", borderRadius: 4,
+                        border: "1px solid rgba(132,204,22,0.22)",
+                      }}>Model</div>
+                    </div>
+
+                    {/* Blurb */}
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.60)", lineHeight: 1.55, minHeight: 54 }}>
+                      {a.blurb}
+                    </div>
+
+                    {/* Weights */}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: "auto" }}>
+                      {a.weights.map(w => (
+                        <span key={w} style={{
+                          fontSize: 9.5, fontWeight: 700,
+                          color: "rgba(255,255,255,0.75)",
+                          background: "rgba(255,255,255,0.05)",
+                          border: "1px solid rgba(255,255,255,0.08)",
+                          padding: "3px 7px", borderRadius: 20,
+                        }}>{w}</span>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
 
               {/* Footer note */}
               <div style={{
-                marginTop: 32, textAlign: "center",
+                marginTop: 36, textAlign: "center",
                 fontSize: 13, color: "rgba(255,255,255,0.45)",
               }}>
                 We auto-detect the asset type from your OM and route it to the right model.
@@ -2386,15 +2710,18 @@ export default function OmAnalyzerPage() {
 
             <style jsx>{`
               :global(.ds-asset-tile):hover {
-                transform: translateY(-2px);
-                border-color: rgba(132,204,22,0.3) !important;
-                box-shadow: 0 8px 24px rgba(0,0,0,0.35), 0 0 30px rgba(132,204,22,0.06);
+                transform: translateY(-3px);
+                border-color: rgba(132,204,22,0.32) !important;
+                box-shadow: 0 12px 32px rgba(0,0,0,0.45), 0 0 40px rgba(132,204,22,0.08);
               }
-              @media (max-width: 900px) {
+              @media (max-width: 1000px) {
                 :global(.ds-asset-grid) { grid-template-columns: repeat(3, 1fr) !important; }
               }
-              @media (max-width: 640px) {
-                :global(.ds-asset-grid) { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+              @media (max-width: 700px) {
+                :global(.ds-asset-grid) { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+              }
+              @media (max-width: 420px) {
+                :global(.ds-asset-grid) { grid-template-columns: 1fr !important; }
               }
             `}</style>
           </div>
