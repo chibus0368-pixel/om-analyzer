@@ -2330,8 +2330,8 @@ export default function OmAnalyzerPage() {
               <div style={{ animation: "fadeInUp 0.5s ease-out 0.1s both", marginTop: -40 }}>
                 {/* "Try now" label */}
                 <div style={{ textAlign: "center", marginBottom: 14 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "#84CC16", letterSpacing: 0.5 }}>
-                    Analyze two CRE deals free. Try now.
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#84CC16", letterSpacing: 0.3 }}>
+                    Analyze CRE on-market deals. Try now.
                   </span>
                 </div>
 
