@@ -515,13 +515,43 @@ function HeroShowcase() {
 
         {/* Left side: headline + cards */}
         <div>
-          <div style={{ marginBottom: 24 }}>
+          <div style={{ marginBottom: 16 }}>
             <h3 style={{ fontSize: 42, fontWeight: 800, color: "#fff", margin: 0, letterSpacing: -0.5, lineHeight: 1.05 }}>
               11 Deals. <span style={{ color: "#84CC16" }}>3 Worth Pursuing.</span>
             </h3>
             <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 15, margin: "8px 0 0", fontWeight: 500 }}>
               Instantly scored and ranked
             </p>
+          </div>
+
+          {/* UNMISTAKABLE example banner - diagonal hazard stripe */}
+          <div style={{
+            marginBottom: 16,
+            background: "repeating-linear-gradient(-45deg, #F59E0B, #F59E0B 14px, #78350F 14px, #78350F 28px)",
+            padding: "2px",
+            borderRadius: 10,
+          }}>
+            <div style={{
+              background: "#0d0d14",
+              borderRadius: 8,
+              padding: "10px 14px",
+              display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{
+                  fontSize: 11, fontWeight: 900, letterSpacing: 1.5,
+                  color: "#0d0d14", background: "#F59E0B",
+                  padding: "4px 10px", borderRadius: 4,
+                  boxShadow: "0 0 0 2px rgba(245,158,11,0.25)",
+                }}>EXAMPLE DEALS</span>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
+                  These are sample outputs — your real OMs get the same analysis.
+                </span>
+              </div>
+              <span style={{ fontSize: 10, color: "rgba(245,158,11,0.9)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                Not live deals
+              </span>
+            </div>
           </div>
 
           <div style={{
@@ -575,14 +605,14 @@ function HeroShowcase() {
                       position: "absolute", inset: 0, background: `linear-gradient(180deg, transparent 0%, transparent 60%, ${vc.bg} 140%)`,
                       mixBlendMode: "overlay", opacity: 0.7,
                     }} />
-                    {/* ANALYZED badge */}
+                    {/* EXAMPLE badge - makes it unmistakable these are sample deals */}
                     <span style={{
                       position: "absolute", top: 8, left: 8,
-                      fontSize: 9, fontWeight: 800, letterSpacing: 0.5, textTransform: "uppercase",
-                      background: "rgba(132,204,22,0.2)", color: "#84CC16",
-                      padding: "4px 8px", borderRadius: 4, backdropFilter: "blur(6px)",
-                      border: "1px solid rgba(132,204,22,0.3)",
-                    }}>ANALYZED</span>
+                      fontSize: 9, fontWeight: 900, letterSpacing: 1, textTransform: "uppercase",
+                      background: "#F59E0B", color: "#0d0d14",
+                      padding: "4px 8px", borderRadius: 4,
+                      boxShadow: "0 0 0 1.5px rgba(245,158,11,0.45), 0 4px 10px rgba(0,0,0,0.3)",
+                    }}>Example</span>
                     {/* Score ring */}
                     <div style={{
                       position: "absolute", top: 8, right: 8,
@@ -986,10 +1016,11 @@ function HeroCardModal({ card: c, displayPhoto, verdictColor, onClose }: {
                 v >= 1e6 ? `$${(v / 1e6).toFixed(2)}M` : v >= 1e3 ? `$${Math.round(v / 1e3)}K` : `$${v.toLocaleString()}`;
 
               const rows = [
-                { label: "Downside (-5%)",  delta: -0.05, tone: "pos" as const },
-                { label: "At Asking",       delta: 0,     tone: "base" as const },
-                { label: "Upside (+5%)",    delta: 0.05,  tone: "neg" as const },
-                { label: "Stretch (+10%)",  delta: 0.10,  tone: "neg" as const },
+                { label: "Under (-10%)", delta: -0.10, tone: "pos" as const },
+                { label: "Under (-5%)",  delta: -0.05, tone: "pos" as const },
+                { label: "At Asking",    delta: 0,     tone: "base" as const },
+                { label: "Over (+5%)",   delta: 0.05,  tone: "neg" as const },
+                { label: "Over (+10%)",  delta: 0.10,  tone: "neg" as const },
               ];
 
               return rows.map((r, i) => {

@@ -1,13 +1,13 @@
 /**
- * Public showcase API - returns up to 6 real property hero photos from the
- * workspace to power the landing-page hero mockup cards.
+ * Public showcase API - returns real property hero photos from the
+ * workspace_properties collection to power the landing-page hero cards.
  *
- * Anonymized: we return heroImageUrl + a minimal identifier only. No names,
- * no addresses, no financials - the landing page already has hardcoded deal
- * narratives; this endpoint only supplies the real imagery layer.
+ * Anonymized: we return heroImageUrl + asset type + verdict band only.
+ * No names, no addresses, no financials - the landing page supplies the
+ * deal narratives; this endpoint only supplies the real imagery layer.
  *
- * Cached aggressively at the edge so it costs us one Firestore read per hour
- * regardless of landing-page traffic.
+ * Cached aggressively at the edge so traffic costs one Firestore read
+ * per hour regardless of how many people hit the landing page.
  */
 import { NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
@@ -25,41 +25,52 @@ export async function GET() {
   try {
     const db = getAdminDb();
 
-    // Pull a pool of recent properties that actually have hero photos.
-    // We over-query (40) so we can pick a diverse set after client-side dedup.
+    // Pull recent workspace_properties that have hero photos. We don't filter
+    // by userId because this is a curated site-wide showcase - we just want
+    // real CRE imagery to replace the Unsplash stock on the landing page.
+    // No orderBy to avoid requiring a composite index; we fetch a pool
+    // and take the first N with valid images.
     const snap = await db
-      .collection("properties")
-      .orderBy("updatedAt", "desc")
-      .limit(200)
+      .collection("workspace_properties")
+      .limit(400)
       .get();
 
     const seen = new Set<string>();
     const photos: ShowcasePhoto[] = [];
 
+    // Prefer properties that actually got scored (scoreTotal > 0) so we show
+    // real, completed deals. Fall back to any property with a hero image.
+    const primary: ShowcasePhoto[] = [];
+    const fallback: ShowcasePhoto[] = [];
+
     for (const doc of snap.docs) {
       const d = doc.data() as any;
       const url: string | undefined = d.heroImageUrl;
       if (!url || !url.startsWith("https://")) continue;
-      // Dedup by URL (same photo sometimes copied across re-parses)
       if (seen.has(url)) continue;
       seen.add(url);
 
-      // Map score band -> verdict
       const score = Number(d.scoreTotal || d.score || 0);
       const verdict: ShowcasePhoto["verdict"] =
         score >= 70 ? "BUY" : score >= 55 ? "NEUTRAL" : "PASS";
 
-      photos.push({
+      const entry: ShowcasePhoto = {
         heroImageUrl: url,
         assetType: d.assetType || d.analysisType || undefined,
         verdict: score > 0 ? verdict : undefined,
-      });
+      };
 
-      if (photos.length >= 12) break;
+      if (score > 0) primary.push(entry); else fallback.push(entry);
+    }
+
+    // Combine - scored first, then unscored; cap at 12
+    photos.push(...primary.slice(0, 12));
+    if (photos.length < 12) {
+      photos.push(...fallback.slice(0, 12 - photos.length));
     }
 
     return NextResponse.json(
-      { photos },
+      { photos, count: photos.length },
       {
         headers: {
           // Edge cache for 1 hour, serve stale for another hour while revalidating
@@ -68,7 +79,7 @@ export async function GET() {
       }
     );
   } catch (err: any) {
-    console.error("[showcase] failed:", err);
-    return NextResponse.json({ photos: [] }, { status: 200 });
+    console.error("[showcase] failed:", err?.message || err);
+    return NextResponse.json({ photos: [], error: err?.message || "failed" }, { status: 200 });
   }
 }
