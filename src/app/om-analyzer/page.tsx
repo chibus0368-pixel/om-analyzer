@@ -237,6 +237,21 @@ const PHOTO = {
 
 function HeroShowcase() {
   const [openCard, setOpenCard] = React.useState<number | null>(null);
+  // Real property hero photos pulled from the user's workspace (live Firestore)
+  const [realPhotos, setRealPhotos] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+    let aborted = false;
+    fetch("/api/showcase", { cache: "no-store" })
+      .then(r => r.ok ? r.json() : { photos: [] })
+      .then((d: { photos?: { heroImageUrl: string }[] }) => {
+        if (aborted) return;
+        const urls = (d.photos || []).map(p => p.heroImageUrl).filter(Boolean);
+        if (urls.length) setRealPhotos(urls);
+      })
+      .catch(() => { /* fallback to curated Unsplash stays in place */ });
+    return () => { aborted = true; };
+  }, []);
 
   const cards: HeroCard[] = [
     {
@@ -514,6 +529,8 @@ function HeroShowcase() {
           }} className="hero-cards-grid">
             {cards.map((c, i) => {
               const vc = verdictColor[c.verdict];
+              // Prefer real photo from workspace over curated fallback
+              const displayPhoto = realPhotos[i] || c.photoUrl;
               return (
                 <button
                   key={i}
@@ -536,9 +553,9 @@ function HeroShowcase() {
                     position: "relative", height: 110, background: c.hero, overflow: "hidden",
                     borderBottom: "1px solid rgba(255,255,255,0.06)",
                   }}>
-                    {/* Real property image */}
+                    {/* Real property image - pulls from workspace when available */}
                     <img
-                      src={c.photoUrl}
+                      src={displayPhoto}
                       alt={c.name}
                       loading="lazy"
                       style={{
@@ -690,19 +707,53 @@ function HeroShowcase() {
 
       {/* Property detail modal */}
       {openCard !== null && (
-        <HeroCardModal card={cards[openCard]} verdictColor={verdictColor} onClose={() => setOpenCard(null)} />
+        <HeroCardModal
+          card={cards[openCard]}
+          displayPhoto={realPhotos[openCard] || cards[openCard].photoUrl}
+          verdictColor={verdictColor}
+          onClose={() => setOpenCard(null)}
+        />
       )}
     </div>
   );
 }
 
-/* Property quick-view modal - mirrors real PropertyDetailClient structure with auto-scroll */
-function HeroCardModal({ card: c, verdictColor, onClose }: {
+/* Property quick-view modal - WHITE THEME, mirrors real PropertyDetailClient
+   Auto-scroll cinematic reveal + price sensitivity table */
+function HeroCardModal({ card: c, displayPhoto, verdictColor, onClose }: {
   card: HeroCard;
+  displayPhoto: string;
   verdictColor: Record<string, { bg: string; fg: string; ring: string }>;
   onClose: () => void;
 }) {
   const vc = verdictColor[c.verdict];
+  // Light theme palette (mirrors PropertyDetailClient real app)
+  const LT = {
+    bg: "#FFFFFF",
+    surface: "#F8FAFC",
+    surfaceLow: "#F1F5F9",
+    border: "rgba(15, 23, 42, 0.08)",
+    borderSoft: "rgba(15, 23, 42, 0.05)",
+    text: "#0F172A",
+    muted: "#6B7280",
+    mutedSoft: "#94A3B8",
+    lime: "#65A30D",
+    limeSoft: "#F7FEE7",
+    limeBorder: "rgba(132, 204, 22, 0.35)",
+    amber: "#B45309",
+    amberSoft: "#FFFBEB",
+    amberBorder: "rgba(245, 158, 11, 0.3)",
+    red: "#B91C1C",
+    redSoft: "#FEF2F2",
+    redBorder: "rgba(239, 68, 68, 0.3)",
+    blue: "#2563EB",
+  };
+  const verdictLight: Record<string, { ring: string; fg: string; bg: string }> = {
+    BUY:     { ring: "#65A30D", fg: "#4D7C0F", bg: "#ECFCCB" },
+    NEUTRAL: { ring: "#D97706", fg: "#B45309", bg: "#FEF3C7" },
+    PASS:    { ring: "#DC2626", fg: "#B91C1C", bg: "#FEE2E2" },
+  };
+  const vcL = verdictLight[c.verdict];
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const [autoPaused, setAutoPaused] = React.useState(false);
 
@@ -762,7 +813,7 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
       onClick={onClose}
       style={{
         position: "fixed", inset: 0, zIndex: 1000,
-        background: "rgba(0,0,0,0.78)", backdropFilter: "blur(8px)",
+        background: "rgba(15, 23, 42, 0.55)", backdropFilter: "blur(6px)",
         display: "flex", alignItems: "center", justifyContent: "center",
         padding: "20px 14px",
         animation: "heroModalFadeIn 0.2s ease",
@@ -772,63 +823,63 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
         onClick={(e) => e.stopPropagation()}
         ref={scrollRef}
         style={{
-          position: "relative", maxWidth: 860, width: "100%", maxHeight: "92vh", overflow: "auto",
-          background: "linear-gradient(180deg, #16161e 0%, #0d0d14 100%)",
-          border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16,
-          boxShadow: "0 30px 80px rgba(0,0,0,0.7), 0 0 80px rgba(132,204,22,0.08)",
+          position: "relative", maxWidth: 880, width: "100%", maxHeight: "92vh", overflow: "auto",
+          background: LT.bg,
+          border: `1px solid ${LT.border}`, borderRadius: 16,
+          boxShadow: "0 30px 80px rgba(15,23,42,0.25), 0 2px 8px rgba(15,23,42,0.08)",
           animation: "heroModalSlideIn 0.25s ease",
           scrollBehavior: "smooth",
+          color: LT.text,
         }}
       >
         {/* Sample banner */}
         <div style={{
           position: "sticky", top: 0, zIndex: 5,
-          background: "linear-gradient(180deg, rgba(132,204,22,0.15) 0%, rgba(132,204,22,0.06) 100%)",
-          borderBottom: "1px solid rgba(132,204,22,0.2)",
-          padding: "8px 20px",
+          background: "linear-gradient(180deg, rgba(132,204,22,0.12) 0%, rgba(132,204,22,0.04) 100%)",
+          borderBottom: `1px solid ${LT.limeBorder}`,
+          padding: "9px 22px",
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
           backdropFilter: "blur(8px)",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{
-              fontSize: 9, fontWeight: 800, color: "#84CC16",
-              background: "rgba(132,204,22,0.15)", padding: "3px 8px", borderRadius: 4,
-              border: "1px solid rgba(132,204,22,0.35)", letterSpacing: 0.5,
+              fontSize: 9, fontWeight: 800, color: "#4D7C0F",
+              background: "#ECFCCB", padding: "3px 8px", borderRadius: 4,
+              border: "1px solid rgba(132,204,22,0.45)", letterSpacing: 0.5,
             }}>SAMPLE</span>
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)" }}>
+            <span style={{ fontSize: 11, color: LT.muted, fontWeight: 500 }}>
               This is how every OM you upload is analyzed
             </span>
           </div>
           <button onClick={onClose} style={{
             width: 28, height: 28, borderRadius: "50%",
-            background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.15)",
-            color: "#fff", cursor: "pointer",
+            background: LT.surface, border: `1px solid ${LT.border}`,
+            color: LT.text, cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
-            backdropFilter: "blur(8px)",
           }} aria-label="Close">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
           </button>
         </div>
 
         {/* Hero banner with real photo */}
-        <div style={{ position: "relative", height: 220, overflow: "hidden" }}>
+        <div style={{ position: "relative", height: 240, overflow: "hidden" }}>
           <img
-            src={c.photoUrl}
+            src={displayPhoto}
             alt={c.name}
             style={{
               position: "absolute", inset: 0, width: "100%", height: "100%",
               objectFit: "cover",
-              filter: c.verdict === "PASS" ? "saturate(0.6) brightness(0.8)" : "saturate(1.05)",
+              filter: c.verdict === "PASS" ? "saturate(0.75) brightness(0.95)" : "saturate(1.05)",
             }}
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
           />
-          {/* Gradient overlay */}
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(13,13,20,0.55) 60%, rgba(13,13,20,0.96) 100%)" }} />
+          {/* Gradient overlay - dark at bottom for text legibility */}
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(15,23,42,0) 0%, rgba(15,23,42,0.25) 55%, rgba(15,23,42,0.85) 100%)" }} />
           {/* Asset type + name */}
-          <div style={{ position: "absolute", bottom: 18, left: 22, right: 22 }}>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", fontWeight: 600, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.8 }}>{c.type}</div>
-            <div style={{ fontSize: 24, fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: 4 }}>{c.name}</div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ position: "absolute", bottom: 20, left: 24, right: 24 }}>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", fontWeight: 600, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.8 }}>{c.type}</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: 4, textShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>{c.name}</div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", display: "flex", alignItems: "center", gap: 6 }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2a8 8 0 0 0-8 8c0 6 8 12 8 12s8-6 8-12a8 8 0 0 0-8-8z" /><circle cx="12" cy="10" r="3" /></svg>
               {c.city} · {c.submarket}
             </div>
@@ -837,28 +888,28 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
 
         {/* DealSignal Score + verdict strip */}
         <div style={{
-          display: "flex", alignItems: "center", gap: 18, padding: "20px 22px",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
-          background: "linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 100%)",
+          display: "flex", alignItems: "center", gap: 18, padding: "20px 24px",
+          borderBottom: `1px solid ${LT.borderSoft}`,
+          background: LT.surface,
         }}>
           <div style={{
             width: 80, height: 80, borderRadius: "50%",
-            background: `conic-gradient(${vc.ring} ${(c.score / 100) * 360}deg, rgba(255,255,255,0.08) 0deg)`,
+            background: `conic-gradient(${vcL.ring} ${(c.score / 100) * 360}deg, ${LT.surfaceLow} 0deg)`,
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-            boxShadow: `0 0 40px ${vc.ring}33`,
+            boxShadow: `0 4px 16px ${vcL.ring}25`,
           }}>
             <div style={{
               width: 66, height: 66, borderRadius: "50%",
-              background: "#16161e",
+              background: LT.bg,
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
             }}>
-              <div style={{ fontSize: 26, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{c.score}</div>
-              <div style={{ fontSize: 8, fontWeight: 700, color: vc.fg, letterSpacing: 0.6, marginTop: 3 }}>{c.verdict}</div>
+              <div style={{ fontSize: 26, fontWeight: 800, color: LT.text, lineHeight: 1 }}>{c.score}</div>
+              <div style={{ fontSize: 8, fontWeight: 800, color: vcL.fg, letterSpacing: 0.6, marginTop: 3 }}>{c.verdict}</div>
             </div>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>DealSignal Score</div>
-            <div style={{ fontSize: 15, color: "#fff", fontWeight: 600, lineHeight: 1.35, marginTop: 4 }}>
+            <div style={{ fontSize: 10, color: LT.mutedSoft, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>DealSignal Score</div>
+            <div style={{ fontSize: 15, color: LT.text, fontWeight: 600, lineHeight: 1.4, marginTop: 4 }}>
               {c.verdict === "BUY" && "Worth pursuing. Clean fundamentals, manageable risks."}
               {c.verdict === "NEUTRAL" && "Not a clear winner. Proceed only if thesis fits."}
               {c.verdict === "PASS" && "Skip. Risk profile doesn't justify the price."}
@@ -868,104 +919,186 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
 
         {/* Metrics strip (mirrors PropertyDetailClient metrics strip) */}
         <div style={{
-          display: "flex", gap: 0, margin: "0 22px", marginTop: 18,
-          background: "rgba(255,255,255,0.03)", borderRadius: 10, border: "1px solid rgba(255,255,255,0.06)",
+          display: "flex", gap: 0, margin: "18px 22px 0",
+          background: LT.surface, borderRadius: 10, border: `1px solid ${LT.border}`,
           overflow: "hidden",
         }} className="hero-modal-metrics">
           {metricsStrip.map((m, i) => (
             <div key={m.label} style={{
               flex: 1, padding: "12px 14px",
-              borderRight: i < metricsStrip.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
+              borderRight: i < metricsStrip.length - 1 ? `1px solid ${LT.border}` : "none",
               position: "relative",
             }}>
               <div style={{
                 fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8,
-                color: "rgba(255,255,255,0.45)", marginBottom: 4,
+                color: LT.mutedSoft, marginBottom: 4,
                 display: "flex", alignItems: "center", gap: 4,
               }}>
                 {m.label}
                 {m.editable && (
-                  <span style={{ fontSize: 8, fontWeight: 700, background: "rgba(132,204,22,0.18)", color: "#84CC16", padding: "1px 5px", borderRadius: 3, letterSpacing: 0.3 }}>EDIT</span>
+                  <span style={{ fontSize: 8, fontWeight: 800, background: LT.limeSoft, color: LT.lime, padding: "1px 5px", borderRadius: 3, letterSpacing: 0.3, border: `1px solid ${LT.limeBorder}` }}>EDIT</span>
                 )}
               </div>
               <div style={{
-                fontSize: 15, fontWeight: 800, color: "#fff",
+                fontSize: 15, fontWeight: 800, color: LT.text,
                 fontVariantNumeric: "tabular-nums",
               }}>{m.value}</div>
             </div>
           ))}
         </div>
 
+        {/* Price Sensitivity table (mirrors real PropertyDetailClient sensitivities) */}
+        <div style={{ padding: "22px 22px 6px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: LT.text }}>Price Sensitivity</div>
+              <div style={{ fontSize: 11, color: LT.muted, marginTop: 2 }}>How the deal math moves with asking price</div>
+            </div>
+            <span style={{ fontSize: 9, fontWeight: 800, background: LT.limeSoft, color: LT.lime, padding: "3px 8px", borderRadius: 4, border: `1px solid ${LT.limeBorder}`, letterSpacing: 0.5 }}>UNDERWRITING</span>
+          </div>
+          <div style={{
+            background: LT.bg, border: `1px solid ${LT.border}`, borderRadius: 10, overflow: "hidden",
+          }}>
+            <div style={{
+              display: "grid", gridTemplateColumns: "1.2fr 1.1fr 0.9fr 0.9fr 1fr", gap: 0,
+              padding: "9px 14px", fontSize: 9, fontWeight: 800, color: LT.mutedSoft,
+              textTransform: "uppercase", letterSpacing: 0.6,
+              borderBottom: `1px solid ${LT.border}`, background: LT.surface,
+            }} className="hero-sens-head">
+              <div>Scenario</div><div>Purchase Price</div><div>Cap Rate</div><div>DSCR</div><div>Cash-on-Cash</div>
+            </div>
+            {(() => {
+              // Parse baseline numbers from the card strings
+              const parseMoney = (s: string) => {
+                const m = s.match(/([\d.]+)([MK])?/);
+                if (!m) return 0;
+                const n = parseFloat(m[1]);
+                return m[2] === "M" ? n * 1e6 : m[2] === "K" ? n * 1e3 : n;
+              };
+              const parsePct = (s: string) => parseFloat(s.replace("%", "")) || 0;
+              const parseDscr = (s: string) => parseFloat(s.replace("x", "")) || 0;
+              const basePrice = parseMoney(c.price);
+              const baseNoi = parseMoney(c.noi);
+              const baseCap = parsePct(c.cap);
+              const baseDscr = parseDscr(c.dscr);
+              const baseCoc = parsePct(c.coc);
+              const fmtMoney = (v: number) =>
+                v >= 1e6 ? `$${(v / 1e6).toFixed(2)}M` : v >= 1e3 ? `$${Math.round(v / 1e3)}K` : `$${v.toLocaleString()}`;
+
+              const rows = [
+                { label: "Downside (-5%)",  delta: -0.05, tone: "pos" as const },
+                { label: "At Asking",       delta: 0,     tone: "base" as const },
+                { label: "Upside (+5%)",    delta: 0.05,  tone: "neg" as const },
+                { label: "Stretch (+10%)",  delta: 0.10,  tone: "neg" as const },
+              ];
+
+              return rows.map((r, i) => {
+                const price = basePrice * (1 + r.delta);
+                // Cap rate = NOI / price -> inversely proportional to price shift
+                const cap = baseCap / (1 + r.delta);
+                // DSCR scales roughly inversely with price (same debt service trajectory, flexing LTV)
+                const dscr = baseDscr * (1 - r.delta * 0.8);
+                // Cash-on-cash also flexes inversely
+                const coc = baseCoc * (1 - r.delta * 1.4);
+
+                const rowBg = r.tone === "base" ? LT.limeSoft : i % 2 === 0 ? LT.bg : LT.surface;
+                const rowBorder = r.tone === "base" ? LT.limeBorder : LT.border;
+                const labelColor = r.tone === "base" ? LT.lime : r.tone === "pos" ? "#047857" : r.tone === "neg" ? LT.red : LT.text;
+
+                return (
+                  <div key={r.label} style={{
+                    display: "grid", gridTemplateColumns: "1.2fr 1.1fr 0.9fr 0.9fr 1fr", gap: 0,
+                    padding: "11px 14px",
+                    borderBottom: i < rows.length - 1 ? `1px solid ${LT.borderSoft}` : "none",
+                    fontSize: 12.5, color: LT.text,
+                    background: rowBg,
+                    borderLeft: r.tone === "base" ? `3px solid ${LT.lime}` : "3px solid transparent",
+                  }} className="hero-sens-row">
+                    <div style={{ fontWeight: 700, color: labelColor, display: "flex", alignItems: "center", gap: 6 }}>
+                      {r.label}
+                      {r.tone === "base" && <span style={{ fontSize: 8, fontWeight: 800, background: LT.lime, color: "#fff", padding: "1px 5px", borderRadius: 3, letterSpacing: 0.3 }}>NOW</span>}
+                    </div>
+                    <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700 }}>{fmtMoney(price)}</div>
+                    <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 600 }}>{cap.toFixed(2)}%</div>
+                    <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 600, color: dscr < 1.2 ? LT.red : dscr < 1.3 ? LT.amber : "#047857" }}>{dscr.toFixed(2)}x</div>
+                    <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 600, color: coc < 5 ? LT.red : coc < 7 ? LT.amber : "#047857" }}>{coc.toFixed(1)}%</div>
+                  </div>
+                );
+              });
+            })()}
+          </div>
+        </div>
+
         {/* Downloads section - mirrors the real property page download buttons */}
         <div style={{ padding: "18px 22px 6px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>Downloadable Deliverables</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>Every analyzed deal ships with these exports</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: LT.text }}>Downloadable Deliverables</div>
+              <div style={{ fontSize: 11, color: LT.muted, marginTop: 2 }}>Every analyzed deal ships with these exports</div>
             </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }} className="hero-modal-downloads">
-            {/* Workbook XLSX */}
+            {/* Workbook XLSX (emerald) */}
             <button type="button" onClick={(e) => e.preventDefault()} style={{
-              background: "rgba(16, 185, 129, 0.08)",
-              border: "1px solid rgba(16, 185, 129, 0.3)",
+              background: "#ECFDF5",
+              border: "1px solid rgba(16, 185, 129, 0.28)",
               borderRadius: 10, padding: "14px",
               cursor: "pointer", color: "inherit", font: "inherit",
               textAlign: "left", display: "flex", alignItems: "center", gap: 12,
               transition: "all 0.15s ease",
             }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(16, 185, 129, 0.14)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(16, 185, 129, 0.08)"; e.currentTarget.style.transform = "translateY(0)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#D1FAE5"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(16,185,129,0.15)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#ECFDF5"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
             >
               <div style={{
                 width: 38, height: 38, borderRadius: 8,
-                background: "rgba(16, 185, 129, 0.18)",
+                background: "#D1FAE5",
                 display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                border: "1px solid rgba(16, 185, 129, 0.35)",
+                border: "1px solid rgba(16, 185, 129, 0.3)",
               }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34D399" strokeWidth="2.2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M8 8l8 8M16 8l-8 8" /></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0A7E5A" strokeWidth="2.2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M8 8l8 8M16 8l-8 8" /></svg>
               </div>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                  <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff" }}>Workbook</div>
-                  <span style={{ padding: "1px 5px", background: "rgba(16, 185, 129, 0.2)", borderRadius: 3, fontSize: 8.5, fontWeight: 800, color: "#34D399", letterSpacing: 0.3 }}>XLSX</span>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: LT.text }}>Workbook</div>
+                  <span style={{ padding: "1px 5px", background: "#A7F3D0", borderRadius: 3, fontSize: 8.5, fontWeight: 800, color: "#065F46", letterSpacing: 0.3 }}>XLSX</span>
                 </div>
-                <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", lineHeight: 1.35 }}>Full underwriting model, sensitivities, rent roll</div>
+                <div style={{ fontSize: 10.5, color: LT.muted, lineHeight: 1.35 }}>Full underwriting model, sensitivities, rent roll</div>
               </div>
             </button>
 
-            {/* Brief DOC */}
+            {/* Brief DOCX (blue) */}
             <button type="button" onClick={(e) => e.preventDefault()} style={{
-              background: "rgba(59, 130, 246, 0.08)",
-              border: "1px solid rgba(59, 130, 246, 0.3)",
+              background: "#EFF6FF",
+              border: "1px solid rgba(59, 130, 246, 0.28)",
               borderRadius: 10, padding: "14px",
               cursor: "pointer", color: "inherit", font: "inherit",
               textAlign: "left", display: "flex", alignItems: "center", gap: 12,
               transition: "all 0.15s ease",
             }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(59, 130, 246, 0.14)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(59, 130, 246, 0.08)"; e.currentTarget.style.transform = "translateY(0)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#DBEAFE"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(59,130,246,0.15)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#EFF6FF"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
             >
               <div style={{
                 width: 38, height: 38, borderRadius: 8,
-                background: "rgba(59, 130, 246, 0.18)",
+                background: "#DBEAFE",
                 display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                border: "1px solid rgba(59, 130, 246, 0.35)",
+                border: "1px solid rgba(59, 130, 246, 0.3)",
               }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" strokeWidth="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="8" y1="13" x2="16" y2="13" /><line x1="8" y1="17" x2="14" y2="17" /></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="8" y1="13" x2="16" y2="13" /><line x1="8" y1="17" x2="14" y2="17" /></svg>
               </div>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                  <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff" }}>Brief</div>
-                  <span style={{ padding: "1px 5px", background: "rgba(59, 130, 246, 0.2)", borderRadius: 3, fontSize: 8.5, fontWeight: 800, color: "#60A5FA", letterSpacing: 0.3 }}>DOCX</span>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: LT.text }}>Brief</div>
+                  <span style={{ padding: "1px 5px", background: "#BFDBFE", borderRadius: 3, fontSize: 8.5, fontWeight: 800, color: "#1E3A8A", letterSpacing: 0.3 }}>DOCX</span>
                 </div>
-                <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", lineHeight: 1.35 }}>Investment memo with summary, flags, signals</div>
+                <div style={{ fontSize: 10.5, color: LT.muted, lineHeight: 1.35 }}>Investment memo with summary, flags, signals</div>
               </div>
             </button>
 
-            {/* Strategy XLSX PRO+ */}
+            {/* Strategy XLSX PRO+ (amber/gold) */}
             <button type="button" onClick={(e) => e.preventDefault()} style={{
-              background: "linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.08) 100%)",
+              background: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
               border: "1px solid rgba(251, 191, 36, 0.35)",
               borderRadius: 10, padding: "14px",
               cursor: "pointer", color: "inherit", font: "inherit",
@@ -973,23 +1106,23 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
               transition: "all 0.15s ease",
               position: "relative",
             }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(251,191,36,0.2)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
             >
               <div style={{
                 width: 38, height: 38, borderRadius: 8,
-                background: "rgba(251, 191, 36, 0.2)",
+                background: "#FDE68A",
                 display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                 border: "1px solid rgba(251, 191, 36, 0.4)",
               }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" strokeWidth="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B45309" strokeWidth="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
               </div>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                  <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff" }}>Strategy</div>
-                  <span style={{ padding: "1px 5px", background: "rgba(251, 191, 36, 0.25)", borderRadius: 3, fontSize: 8.5, fontWeight: 800, color: "#FBBF24", letterSpacing: 0.3 }}>PRO+</span>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: LT.text }}>Strategy</div>
+                  <span style={{ padding: "1px 5px", background: "#FCD34D", borderRadius: 3, fontSize: 8.5, fontWeight: 800, color: "#78350F", letterSpacing: 0.3 }}>PRO+</span>
                 </div>
-                <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", lineHeight: 1.35 }}>Core / Value-Add / Opportunistic lens</div>
+                <div style={{ fontSize: 10.5, color: LT.muted, lineHeight: 1.35 }}>Core / Value-Add / Opportunistic lens</div>
               </div>
             </button>
           </div>
@@ -997,26 +1130,26 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
 
         {/* Executive summary (mirrors real deal summary card) */}
         <div style={{ padding: "22px", paddingBottom: 8 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Executive Summary</div>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.88)", lineHeight: 1.7, margin: "0 0 16px" }}>{c.executive}</p>
+          <div style={{ fontSize: 10, fontWeight: 800, color: LT.lime, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Executive Summary</div>
+          <p style={{ fontSize: 14, color: LT.text, lineHeight: 1.7, margin: "0 0 16px" }}>{c.executive}</p>
 
           {/* Strengths + concerns */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }} className="hero-modal-strengths-grid">
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Key Strengths</div>
+            <div style={{ background: LT.limeSoft, border: `1px solid ${LT.limeBorder}`, borderRadius: 10, padding: "12px 14px" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: LT.lime, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Key Strengths</div>
               {c.strengths.map((s, i) => (
                 <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 8 }}>
-                  <span style={{ color: "#84CC16", fontSize: 13, lineHeight: "18px", flexShrink: 0, fontWeight: 800 }}>✓</span>
-                  <span style={{ fontSize: 12.5, color: "rgba(255,255,255,0.85)", lineHeight: 1.55 }}>{s}</span>
+                  <span style={{ color: LT.lime, fontSize: 13, lineHeight: "18px", flexShrink: 0, fontWeight: 800 }}>✓</span>
+                  <span style={{ fontSize: 12.5, color: LT.text, lineHeight: 1.55 }}>{s}</span>
                 </div>
               ))}
             </div>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#F59E0B", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Primary Concerns</div>
+            <div style={{ background: LT.amberSoft, border: `1px solid ${LT.amberBorder}`, borderRadius: 10, padding: "12px 14px" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: LT.amber, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Primary Concerns</div>
               {c.concerns.map((s, i) => (
                 <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 8 }}>
-                  <span style={{ color: "#F59E0B", fontSize: 13, lineHeight: "18px", flexShrink: 0, fontWeight: 800 }}>△</span>
-                  <span style={{ fontSize: 12.5, color: "rgba(255,255,255,0.85)", lineHeight: 1.55 }}>{s}</span>
+                  <span style={{ color: LT.amber, fontSize: 13, lineHeight: "18px", flexShrink: 0, fontWeight: 800 }}>△</span>
+                  <span style={{ fontSize: 12.5, color: LT.text, lineHeight: 1.55 }}>{s}</span>
                 </div>
               ))}
             </div>
@@ -1025,7 +1158,7 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
 
         {/* Property basics grid */}
         <div style={{ padding: "14px 22px" }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>From the OM</div>
+          <div style={{ fontSize: 10, fontWeight: 800, color: LT.mutedSoft, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>From the OM</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }} className="hero-modal-basics">
             {[
               ["GLA", c.sf],
@@ -1037,9 +1170,9 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
               ["Submarket", c.submarket],
               ["Asset Type", c.type],
             ].map(([label, val]) => (
-              <div key={label} style={{ background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "9px 11px", border: "1px solid rgba(255,255,255,0.05)" }}>
-                <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>{label}</div>
-                <div style={{ fontSize: 12, color: "#fff", fontWeight: 700, lineHeight: 1.2 }}>{val}</div>
+              <div key={label} style={{ background: LT.surface, borderRadius: 8, padding: "9px 11px", border: `1px solid ${LT.border}` }}>
+                <div style={{ fontSize: 9, color: LT.mutedSoft, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>{label}</div>
+                <div style={{ fontSize: 12, color: LT.text, fontWeight: 700, lineHeight: 1.2 }}>{val}</div>
               </div>
             ))}
           </div>
@@ -1049,16 +1182,18 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
         <div style={{ padding: "14px 22px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>AI Signals</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>Actionable insights extracted from the OM</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: LT.text }}>AI Signals</div>
+              <div style={{ fontSize: 11, color: LT.muted, marginTop: 2 }}>Actionable insights extracted from the OM</div>
             </div>
-            <span style={{ fontSize: 9, fontWeight: 700, background: "rgba(132,204,22,0.15)", color: "#84CC16", padding: "3px 8px", borderRadius: 4, border: "1px solid rgba(132,204,22,0.25)", letterSpacing: 0.5 }}>GPT-4o</span>
+            <span style={{ fontSize: 9, fontWeight: 800, background: LT.limeSoft, color: LT.lime, padding: "3px 8px", borderRadius: 4, border: `1px solid ${LT.limeBorder}`, letterSpacing: 0.5 }}>GPT-4o</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {c.aiSignals.map((s, i) => {
-              const colors = s.impact === "pos" ? { bg: "rgba(132,204,22,0.06)", border: "rgba(132,204,22,0.22)", ring: "#84CC16" }
-                : s.impact === "neg" ? { bg: "rgba(248,113,113,0.06)", border: "rgba(248,113,113,0.22)", ring: "#F87171" }
-                : { bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.22)", ring: "#F59E0B" };
+              const colors = s.impact === "pos"
+                ? { bg: LT.limeSoft, border: LT.limeBorder, ring: LT.lime, fg: "#365314" }
+                : s.impact === "neg"
+                ? { bg: LT.redSoft, border: LT.redBorder, ring: LT.red, fg: "#7F1D1D" }
+                : { bg: LT.amberSoft, border: LT.amberBorder, ring: LT.amber, fg: "#78350F" };
               return (
                 <div key={i} style={{
                   background: colors.bg, border: `1px solid ${colors.border}`, borderRadius: 9, padding: "10px 14px",
@@ -1066,8 +1201,8 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
                 }}>
                   <div style={{ width: 6, height: 6, borderRadius: "50%", background: colors.ring, marginTop: 8, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12, color: "#fff", fontWeight: 700, marginBottom: 2 }}>{s.title}</div>
-                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", lineHeight: 1.45 }}>{s.detail}</div>
+                    <div style={{ fontSize: 12, color: colors.fg, fontWeight: 700, marginBottom: 2 }}>{s.title}</div>
+                    <div style={{ fontSize: 12, color: LT.text, lineHeight: 1.45 }}>{s.detail}</div>
                   </div>
                 </div>
               );
@@ -1078,20 +1213,20 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
         {/* Rent Roll table (mirrors real tenant rent roll) */}
         <div style={{ padding: "14px 22px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>Rent Roll</div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>{c.tenants.length} tenants · {c.walt} WALT</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: LT.text }}>Rent Roll</div>
+            <div style={{ fontSize: 11, color: LT.muted }}>{c.tenants.length} tenants · {c.walt} WALT</div>
           </div>
           <div style={{
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.06)",
+            background: LT.bg,
+            border: `1px solid ${LT.border}`,
             borderRadius: 10, overflow: "hidden",
           }}>
             <div style={{
               display: "grid", gridTemplateColumns: "2fr 0.9fr 0.9fr 0.9fr", gap: 0,
-              padding: "8px 14px", fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.45)",
+              padding: "8px 14px", fontSize: 9, fontWeight: 800, color: LT.mutedSoft,
               textTransform: "uppercase", letterSpacing: 0.6,
-              borderBottom: "1px solid rgba(255,255,255,0.06)",
-              background: "rgba(0,0,0,0.2)",
+              borderBottom: `1px solid ${LT.border}`,
+              background: LT.surface,
             }}>
               <div>Tenant</div><div>SF</div><div>Rent</div><div>Lease End</div>
             </div>
@@ -1099,13 +1234,14 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
               <div key={i} style={{
                 display: "grid", gridTemplateColumns: "2fr 0.9fr 0.9fr 0.9fr", gap: 0,
                 padding: "10px 14px",
-                borderBottom: i < c.tenants.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
-                fontSize: 12, color: "rgba(255,255,255,0.88)",
+                borderBottom: i < c.tenants.length - 1 ? `1px solid ${LT.borderSoft}` : "none",
+                fontSize: 12, color: LT.text,
+                background: i % 2 === 0 ? LT.bg : LT.surface,
               }}>
                 <div style={{ fontWeight: 600 }}>{t.name}</div>
                 <div style={{ fontVariantNumeric: "tabular-nums" }}>{t.sf}</div>
                 <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 600 }}>{t.rent}</div>
-                <div style={{ fontVariantNumeric: "tabular-nums", color: t.term === "MTM" ? "#F87171" : "rgba(255,255,255,0.75)" }}>{t.term}</div>
+                <div style={{ fontVariantNumeric: "tabular-nums", color: t.term === "MTM" ? LT.red : LT.text, fontWeight: t.term === "MTM" ? 700 : 500 }}>{t.term}</div>
               </div>
             ))}
           </div>
@@ -1114,15 +1250,15 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
         {/* Review items (mirrors the "review items" section) */}
         {c.reviewItems.length > 0 && (
           <div style={{ padding: "14px 22px" }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 8 }}>Needs Review</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: LT.text, marginBottom: 8 }}>Needs Review</div>
             <div style={{
-              background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.22)",
+              background: LT.amberSoft, border: `1px solid ${LT.amberBorder}`,
               borderRadius: 9, padding: "12px 14px",
             }}>
               <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
                 {c.reviewItems.map((it, i) => (
-                  <li key={i} style={{ fontSize: 12, color: "rgba(255,255,255,0.82)", lineHeight: 1.5, paddingLeft: 18, position: "relative" }}>
-                    <span style={{ position: "absolute", left: 0, top: 1, color: "#F59E0B", fontWeight: 800 }}>!</span>
+                  <li key={i} style={{ fontSize: 12, color: LT.text, lineHeight: 1.5, paddingLeft: 18, position: "relative" }}>
+                    <span style={{ position: "absolute", left: 0, top: 1, color: LT.amber, fontWeight: 800 }}>!</span>
                     {it}
                   </li>
                 ))}
@@ -1132,25 +1268,25 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
         )}
 
         {/* Flags grid (compact) */}
-        <div style={{ padding: "14px 22px" }}>
+        <div style={{ padding: "14px 22px 22px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }} className="hero-flags-grid">
             {[
-              { label: "Green flags", items: c.greenFlags, color: "#84CC16", bg: "rgba(132,204,22,0.06)", border: "rgba(132,204,22,0.22)" },
-              { label: "Yellow flags", items: c.yellowFlags, color: "#F59E0B", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.22)" },
-              { label: "Red flags", items: c.redFlags, color: "#F87171", bg: "rgba(248,113,113,0.06)", border: "rgba(248,113,113,0.22)" },
+              { label: "Green flags",  items: c.greenFlags,  color: LT.lime,  bg: LT.limeSoft,  border: LT.limeBorder },
+              { label: "Yellow flags", items: c.yellowFlags, color: LT.amber, bg: LT.amberSoft, border: LT.amberBorder },
+              { label: "Red flags",    items: c.redFlags,    color: LT.red,   bg: LT.redSoft,   border: LT.redBorder },
             ].map(section => (
               <div key={section.label} style={{
                 background: section.bg, border: `1px solid ${section.border}`, borderRadius: 10, padding: "12px",
               }}>
-                <div style={{ fontSize: 10, color: section.color, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>
+                <div style={{ fontSize: 10, color: section.color, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>
                   {section.label}
                 </div>
                 {section.items.length === 0 ? (
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontStyle: "italic" }}>None</div>
+                  <div style={{ fontSize: 11, color: LT.mutedSoft, fontStyle: "italic" }}>None</div>
                 ) : (
                   <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
                     {section.items.map((it, idx) => (
-                      <li key={idx} style={{ fontSize: 11, color: "rgba(255,255,255,0.85)", lineHeight: 1.4, paddingLeft: 10, position: "relative" }}>
+                      <li key={idx} style={{ fontSize: 11, color: LT.text, lineHeight: 1.4, paddingLeft: 10, position: "relative" }}>
                         <span style={{ position: "absolute", left: 0, top: 6, width: 4, height: 4, borderRadius: "50%", background: section.color }} />
                         {it}
                       </li>
@@ -1162,29 +1298,29 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
           </div>
         </div>
 
-        {/* CTA footer - sticky hook */}
+        {/* CTA footer - sticky hook (light theme) */}
         <div style={{
           position: "sticky", bottom: 0, zIndex: 5,
-          marginTop: 16, padding: "16px 22px",
-          background: "linear-gradient(180deg, rgba(13,13,20,0.6) 0%, rgba(13,13,20,0.96) 30%, #0d0d14 100%)",
-          borderTop: "1px solid rgba(132,204,22,0.25)",
+          padding: "16px 22px",
+          background: "linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.98) 35%, #FFFFFF 100%)",
+          borderTop: `1px solid ${LT.limeBorder}`,
           backdropFilter: "blur(10px)",
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14,
           flexWrap: "wrap",
         }}>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 13, color: "#fff", fontWeight: 700, marginBottom: 2 }}>
+            <div style={{ fontSize: 13, color: LT.text, fontWeight: 800, marginBottom: 2 }}>
               Get this for your next deal
             </div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>
+            <div style={{ fontSize: 11, color: LT.muted }}>
               Upload an OM and get the same scored brief in under 60 seconds.
             </div>
           </div>
           <button onClick={onClose} style={{
-            background: "#84CC16", color: "#0d0d14", border: "none", borderRadius: 10,
+            background: LT.lime, color: "#fff", border: "none", borderRadius: 10,
             padding: "12px 22px", fontSize: 13, fontWeight: 800, cursor: "pointer",
             letterSpacing: 0.3, display: "flex", alignItems: "center", gap: 8,
-            boxShadow: "0 6px 20px rgba(132,204,22,0.35)",
+            boxShadow: "0 6px 20px rgba(101,163,13,0.35)",
           }}>
             Analyze my OM
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="9 18 15 12 9 6" /></svg>
@@ -1197,10 +1333,11 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
         @keyframes heroModalSlideIn { from { opacity: 0; transform: translateY(14px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
         @media (max-width: 720px) {
           :global(.hero-modal-metrics) { flex-wrap: wrap !important; }
-          :global(.hero-modal-metrics) > div { flex: 1 1 33% !important; border-bottom: 1px solid rgba(255,255,255,0.06); }
+          :global(.hero-modal-metrics) > div { flex: 1 1 33% !important; border-bottom: 1px solid rgba(15,23,42,0.08); }
           :global(.hero-modal-strengths-grid) { grid-template-columns: 1fr !important; }
           :global(.hero-modal-basics) { grid-template-columns: repeat(2, 1fr) !important; }
           :global(.hero-modal-downloads) { grid-template-columns: 1fr !important; }
+          :global(.hero-sens-head), :global(.hero-sens-row) { grid-template-columns: 1.2fr 1fr 0.8fr 0.8fr 0.9fr !important; font-size: 11px !important; padding: 9px 10px !important; }
         }
         @media (max-width: 640px) {
           :global(.hero-flags-grid) { grid-template-columns: 1fr !important; }
