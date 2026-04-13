@@ -969,7 +969,7 @@ export default function OmAnalyzerPage() {
                 {/* "Try now" label */}
                 <div style={{ textAlign: "center", marginBottom: 14 }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: "#84CC16", letterSpacing: 0.5 }}>
-                    Try now — two deals free
+                    Analyze two CRE deals free. Try now.
                   </span>
                 </div>
 
