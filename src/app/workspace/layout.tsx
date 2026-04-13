@@ -784,7 +784,27 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         });
         if (res.ok && !cancelled) {
           const data = await res.json();
-          setUserTier(data.tier || "free");
+          const tier = data.tier || "free";
+          setUserTier(tier);
+
+          // Self-healing: if Firestore says "free" but a Stripe subscription
+          // exists, the webhook likely mis-matched (e.g. missing env var).
+          // Call sync-subscription to read the real plan from Stripe.
+          if (tier === "free" && data.stripeSubscriptionId) {
+            try {
+              const syncRes = await fetch("/api/stripe/sync-subscription", {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              if (syncRes.ok && !cancelled) {
+                const syncData = await syncRes.json();
+                if (syncData.tier && syncData.tier !== "free") {
+                  setUserTier(syncData.tier);
+                  console.log(`[layout] Self-healed tier: free → ${syncData.tier}`);
+                }
+              }
+            } catch { /* non-blocking */ }
+          }
         }
       } catch { /* non-blocking */ }
     }

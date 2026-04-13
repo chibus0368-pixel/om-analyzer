@@ -127,10 +127,21 @@ export async function POST(req: NextRequest) {
         const status = sub.status;
         const priceId = sub.items.data[0]?.price.id;
 
-        // Find plan by price ID
-        const matchedPlan = Object.values(PLANS).find(p => p.stripePriceId === priceId);
+        // Find plan by price ID first, then fall back to subscription metadata.
+        // The metadata fallback is critical: if STRIPE_PRICE_* env vars aren't set
+        // on the deployment, price matching silently fails (stripePriceId is null)
+        // and the user gets downgraded to free. The metadata.plan value is set at
+        // checkout creation time and lives on the Stripe subscription object, so it
+        // always reflects the correct plan regardless of env var configuration.
+        let matchedPlan = Object.values(PLANS).find(p => p.stripePriceId === priceId);
+        if (!matchedPlan && sub.metadata?.plan) {
+          matchedPlan = PLANS[sub.metadata.plan];
+          if (matchedPlan) {
+            console.log(`[stripe/webhook] Price ID ${priceId} not matched via env vars, resolved via subscription metadata plan="${sub.metadata.plan}"`);
+          }
+        }
         if (!matchedPlan) {
-          console.error(`[stripe/webhook] ⚠️ Unknown price ID ${priceId} for uid=${uid}. Falling back to free tier. Check STRIPE_PRICE_* env vars.`);
+          console.error(`[stripe/webhook] ⚠️ Unknown price ID ${priceId} for uid=${uid}. No metadata.plan fallback. Falling back to free tier. Check STRIPE_PRICE_* env vars.`);
         }
         const tier = matchedPlan?.tier || "free";
         const uploadLimit = matchedPlan?.uploadLimit ?? PLANS.free.uploadLimit;
