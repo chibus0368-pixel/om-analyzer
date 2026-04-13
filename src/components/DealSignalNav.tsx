@@ -16,6 +16,7 @@ export default function DealSignalNav() {
   const [authedUser, setAuthedUser] = useState<{ displayName: string | null; email: string | null } | null>(null);
   const [activeSection, setActiveSection] = useState<string>("");
   const [resultShowing, setResultShowing] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
@@ -170,8 +171,8 @@ export default function DealSignalNav() {
           })}
         </div>
 
-        {/* Right side CTA */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        {/* Right side CTA — desktop */}
+        <div className="ds-nav-cta" style={{ display: "flex", alignItems: "center", gap: 16 }}>
           {authedUser ? (
             <Link href="/workspace" style={{
               display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
@@ -213,8 +214,119 @@ export default function DealSignalNav() {
             </>
           )}
         </div>
+
+        {/* Hamburger button — mobile only */}
+        <button
+          className="ds-hamburger"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          style={{
+            display: "none", background: "none", border: "none", cursor: "pointer",
+            padding: 6, marginLeft: "auto",
+          }}
+          aria-label="Toggle menu"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e0e0e6" strokeWidth="2" strokeLinecap="round">
+            {mobileMenuOpen ? (
+              <>
+                <line x1="6" y1="6" x2="18" y2="18" />
+                <line x1="6" y1="18" x2="18" y2="6" />
+              </>
+            ) : (
+              <>
+                <line x1="4" y1="7" x2="20" y2="7" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <line x1="4" y1="17" x2="20" y2="17" />
+              </>
+            )}
+          </svg>
+        </button>
       </nav>
       </div>
+
+      {/* Mobile slide-down menu */}
+      {mobileMenuOpen && (
+        <div className="ds-mobile-menu" style={{
+          position: "absolute", top: 64, left: 0, right: 0,
+          background: "rgba(13,13,20,0.97)", backdropFilter: "blur(24px)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          padding: "16px 24px 20px",
+          display: "flex", flexDirection: "column", gap: 4,
+          animation: "dsMobileSlide 0.2s ease-out",
+          zIndex: 49,
+        }}>
+          {isOnLanding && (
+            <button
+              onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setMobileMenuOpen(false); }}
+              style={{
+                background: "none", border: "none", color: "#84CC16",
+                fontSize: 15, fontWeight: 700, padding: "12px 0", cursor: "pointer",
+                textAlign: "left", fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}
+            >
+              Try It
+            </button>
+          )}
+          {NAV_LINKS.map(({ href, label, sectionId }) => (
+            <Link
+              key={sectionId}
+              href={href}
+              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                color: activeSection === sectionId ? "#84CC16" : "#e0e0e6",
+                fontSize: 15, fontWeight: 600, padding: "12px 0",
+                textDecoration: "none", borderBottom: "1px solid rgba(255,255,255,0.04)",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}
+            >
+              {label}
+            </Link>
+          ))}
+          <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
+            {authedUser ? (
+              <Link href="/workspace" onClick={() => setMobileMenuOpen(false)} style={{
+                flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                padding: "10px 0", background: "#84CC16", color: "#0d0d14",
+                borderRadius: 8, fontSize: 14, fontWeight: 700, textDecoration: "none",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}>
+                Open App
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </Link>
+            ) : (
+              <>
+                <Link href="/workspace/login" onClick={() => setMobileMenuOpen(false)} style={{
+                  flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+                  padding: "10px 0", border: "1px solid rgba(255,255,255,0.12)", color: "#e0e0e6",
+                  borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: "none",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                }}>
+                  Sign in
+                </Link>
+                <Link href="/workspace/login" onClick={() => setMobileMenuOpen(false)} style={{
+                  flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+                  padding: "10px 0", background: "#84CC16", color: "#0d0d14",
+                  borderRadius: 8, fontSize: 14, fontWeight: 700, textDecoration: "none",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                }}>
+                  Get Started Free
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes dsMobileSlide {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 900px) {
+          .ds-nav-links { display: none !important; }
+          .ds-nav-cta { display: none !important; }
+          .ds-hamburger { display: flex !important; }
+        }
+      `}</style>
     </header>
   );
 }

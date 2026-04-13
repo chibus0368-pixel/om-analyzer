@@ -642,17 +642,32 @@ export default function OmAnalyzerPage() {
           .tm-signal-cards > div { min-width: 0 !important; }
           .tm-table-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
           .tm-table-wrap table { min-width: 460px !important; }
-          .ds-hero-grid { gap: 32px !important; }
-          .ds-feature-block { gap: 32px !important; }
-          .ds-section-pad { padding-left: 16px !important; padding-right: 16px !important; }
-          .ds-hero-left h1 { font-size: 28px !important; }
+          .ds-hero-grid { gap: 24px !important; }
+          .ds-feature-block { gap: 24px !important; }
+          .ds-section-pad { padding-left: 16px !important; padding-right: 16px !important; padding-top: 60px !important; padding-bottom: 48px !important; }
+          .ds-hero-section { padding-top: 80px !important; padding-bottom: 40px !important; }
+          .ds-hero-left h1 { font-size: 28px !important; line-height: 1.15 !important; }
+          .ds-hero-left p { font-size: 16px !important; margin-bottom: 24px !important; }
           .ds-process-strip { transform: scale(0.7) !important; transform-origin: center center !important; }
           .tm-upload-zone { padding: 32px 16px !important; }
           .tm-drag-overlay { padding: 24px 16px !important; }
+          /* Reduce section header margins */
+          .ds-section-pad h2 { font-size: 26px !important; margin-bottom: 10px !important; }
+          .ds-section-pad p { max-width: 100% !important; }
+          /* Pricing grid — single column on mobile */
+          .ds-pricing-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+          /* Secondary features — stack vertically */
+          .ds-secondary-features { grid-template-columns: 1fr !important; gap: 16px !important; }
+          /* Section dividers — reduce negative margins */
+          .ds-section-divider { margin: -40px auto 32px !important; }
+          /* Footer tighter on mobile */
+          .ds-footer-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
+          footer { padding: 40px 16px 24px !important; }
         }
         @media (max-width: 480px) {
           .tm-metrics-strip { grid-template-columns: 1fr !important; }
           .ds-hero-left h1 { font-size: 24px !important; }
+          .ds-section-pad { padding-top: 40px !important; padding-bottom: 36px !important; }
         }
       `}</style>
 
@@ -781,7 +796,7 @@ export default function OmAnalyzerPage() {
           style={{ background: "#0d0d14", paddingTop: 64 }}>
 
           {/* ── 1. HERO ── */}
-          <div className="ds-section-pad" style={{ padding: "100px 32px 120px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
+          <div className="ds-section-pad ds-hero-section" style={{ padding: "100px 32px 120px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
             {/* Subtle line-drawing cityscape background */}
             <svg
               style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0, opacity: 0.08 }}
@@ -953,23 +968,14 @@ export default function OmAnalyzerPage() {
                 }}>
                   DealSignals turns deals and OMs into actionable investment insight, powering faster pre-diligence decisions.
                 </p>
-                <p style={{
-                  fontSize: 14, color: "#84CC16", fontWeight: 600, letterSpacing: 0.2,
-                  marginBottom: 0, marginTop: 0,
-                }}>
-                  Decide before others even open Excel.
-                </p>
               </div>
 
               {/* Right — upload column */}
               <div style={{ animation: "fadeInUp 0.5s ease-out 0.1s both", marginTop: -40 }}>
                 {/* "Try now" label */}
                 <div style={{ textAlign: "center", marginBottom: 14 }}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: "#ffffff", marginBottom: 4 }}>
-                    Pre-Diligence Analysis
-                  </div>
                   <span style={{ fontSize: 12, fontWeight: 600, color: "#84CC16", letterSpacing: 0.5 }}>
-                    Try now - two deals free
+                    Try now — two deals free
                   </span>
                 </div>
 
@@ -1735,7 +1741,7 @@ export default function OmAnalyzerPage() {
           {/* ── 8. PRICING ── */}
           <div id="pricing" className="ds-section-pad" style={{ maxWidth: 1000, margin: "0 auto", padding: "120px 32px 80px", position: "relative", overflow: "visible" }}>
             {/* Section divider */}
-            <div style={{
+            <div className="ds-section-divider" style={{
               height: 1,
               background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06) 50%, transparent)",
               maxWidth: 600,
@@ -1753,7 +1759,7 @@ export default function OmAnalyzerPage() {
             </div>
 
             {/* 3-tier pricing grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 60 }}>
+            <div className="ds-pricing-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 60 }}>
               {[
                 {
                   name: "Free",
@@ -1880,7 +1886,7 @@ export default function OmAnalyzerPage() {
           {/* ── 9. FAQ ── */}
           <div id="faq" className="ds-section-pad" style={{ maxWidth: 1100, margin: "0 auto", padding: "120px 32px 80px", position: "relative", zIndex: 2 }}>
             {/* Section divider */}
-            <div style={{
+            <div className="ds-section-divider" style={{
               height: 1,
               background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06) 50%, transparent)",
               maxWidth: 600,
