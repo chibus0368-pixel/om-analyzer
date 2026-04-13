@@ -184,16 +184,92 @@ function PropertyImage({ heroImageUrl, location, encodedAddress, propertyName }:
 }
 
 /* ===========================================================================
-   HERO SHOWCASE - Native CSS mockup replacing AI-generated image
+   HERO SHOWCASE - Interactive native mockup with clickable property cards
    =========================================================================== */
+type HeroCard = {
+  name: string; city: string; type: string;
+  score: number; verdict: "BUY" | "NEUTRAL" | "PASS";
+  price: string; cap: string; noi: string; sf: string;
+  hero: string;   // CSS gradient for the thumbnail
+  signal: string | null;
+  greenFlags: string[];
+  yellowFlags: string[];
+  redFlags: string[];
+  tenantMix?: string;
+  walt?: string;
+  submarket?: string;
+};
+
 function HeroShowcase() {
-  const cards = [
-    { name: "Greenfield Shopping Center", city: "Greenfield, WI", score: 78, verdict: "BUY",  price: "$14.2M", cap: "7.8%",  noi: "$1.11M", sf: "94.2K SF",  signal: "Below-market rents with strong traffic. Watch rollover risk.", signalType: "neutral" },
-    { name: "Hales Corners Plaza",        city: "Hales Corners, WI",  score: 72, verdict: "BUY",  price: "$9.4M",  cap: "8.34%", noi: "$784K",  sf: "62.5K SF",  signal: "Below-replacement cost, anchor 8 yrs remaining.", signalType: "positive" },
-    { name: "Harwood Retail Center",      city: "Wauwatosa, WI",      score: 69, verdict: "BUY",  price: "$7.0M",  cap: "8.39%", noi: "$587K",  sf: "48.1K SF",  signal: null, signalType: null },
-    { name: "Outback Steakhouse",         city: "Fredericksburg, VA", score: 45, verdict: "PASS", price: "$4.8M",  cap: "5.6%",  noi: "$269K",  sf: "6.2K SF",   signal: "Single-tenant risk, cap rate below market.", signalType: "negative" },
-    { name: "Fredericksburg Center",      city: "Fredericksburg, VA", score: 62, verdict: "NEUTRAL", price: "$11.8M", cap: "7.2%", noi: "$850K", sf: "72.4K SF", signal: null, signalType: null },
-    { name: "Silvernail Commons",         city: "Pewaukee, WI",       score: 51, verdict: "PASS", price: "$2.9M",  cap: "6.8%",  noi: "$197K",  sf: "10.3K SF",  signal: null, signalType: null },
+  const [openCard, setOpenCard] = React.useState<number | null>(null);
+
+  const cards: HeroCard[] = [
+    {
+      name: "Greenfield Shopping Center", city: "Greenfield, WI", type: "Multi-Tenant Retail",
+      score: 78, verdict: "BUY",
+      price: "$14.2M", cap: "7.80%", noi: "$1.11M", sf: "94.2K SF",
+      hero: "linear-gradient(135deg, #1e3a5f 0%, #2d4a6b 40%, #84CC16 180%)",
+      signal: "Below-market rents with strong traffic. Watch rollover risk.",
+      greenFlags: ["Anchor tenant 12 yrs remaining", "Rents 18% below market comps", "37K VPD on primary frontage"],
+      yellowFlags: ["3 tenants rolling in next 24 months", "Roof nearing end of useful life"],
+      redFlags: [],
+      tenantMix: "Anchor + 11 shop tenants", walt: "6.2 yrs", submarket: "Milwaukee MSA",
+    },
+    {
+      name: "Hales Corners Plaza", city: "Hales Corners, WI", type: "Grocery-Anchored Retail",
+      score: 72, verdict: "BUY",
+      price: "$9.4M", cap: "8.34%", noi: "$784K", sf: "62.5K SF",
+      hero: "linear-gradient(135deg, #2d1f4e 0%, #4a2d5f 40%, #84CC16 180%)",
+      signal: "Below-replacement cost, anchor 8 yrs remaining.",
+      greenFlags: ["Grocery-anchored, recession-resistant", "Below replacement cost at $150/SF", "8 yrs anchor term"],
+      yellowFlags: ["Limited rent growth history"],
+      redFlags: [],
+      tenantMix: "Grocery anchor + 8 shops", walt: "5.4 yrs", submarket: "Milwaukee South",
+    },
+    {
+      name: "Harwood Retail Center", city: "Wauwatosa, WI", type: "Neighborhood Center",
+      score: 69, verdict: "BUY",
+      price: "$7.0M", cap: "8.39%", noi: "$587K", sf: "48.1K SF",
+      hero: "linear-gradient(135deg, #1f3a3a 0%, #2d5555 40%, #84CC16 180%)",
+      signal: null,
+      greenFlags: ["In-place cap rate above market", "Strong submarket demographics"],
+      yellowFlags: ["Single non-credit anchor", "CapEx backlog ~$240K"],
+      redFlags: [],
+      tenantMix: "1 anchor + 6 shops", walt: "4.1 yrs", submarket: "Milwaukee West",
+    },
+    {
+      name: "Outback Steakhouse", city: "Fredericksburg, VA", type: "Single-Tenant NNN",
+      score: 45, verdict: "PASS",
+      price: "$4.8M", cap: "5.6%", noi: "$269K", sf: "6.2K SF",
+      hero: "linear-gradient(135deg, #4a1f1f 0%, #6b2d2d 40%, #F87171 180%)",
+      signal: "Single-tenant risk, cap rate below market.",
+      greenFlags: ["Corporate guarantee", "Interstate visibility"],
+      yellowFlags: ["5 yrs remaining, no options exercised"],
+      redFlags: ["Cap rate 80 bps below market for QSR NNN", "Aging building, TI burden at lease end"],
+      tenantMix: "Single tenant (corporate)", walt: "5.0 yrs", submarket: "I-95 Corridor",
+    },
+    {
+      name: "Fredericksburg Center", city: "Fredericksburg, VA", type: "Mixed-Use Retail",
+      score: 62, verdict: "NEUTRAL",
+      price: "$11.8M", cap: "7.20%", noi: "$850K", sf: "72.4K SF",
+      hero: "linear-gradient(135deg, #3a2d1f 0%, #5f4a2d 40%, #F59E0B 180%)",
+      signal: null,
+      greenFlags: ["Diversified tenant base", "Growing suburban submarket"],
+      yellowFlags: ["WALT under 4 yrs", "2 vacant suites"],
+      redFlags: [],
+      tenantMix: "14 tenants, no anchor", walt: "3.8 yrs", submarket: "Fredericksburg",
+    },
+    {
+      name: "Silvernail Commons", city: "Pewaukee, WI", type: "Neighborhood Strip",
+      score: 51, verdict: "PASS",
+      price: "$2.9M", cap: "6.80%", noi: "$197K", sf: "10.3K SF",
+      hero: "linear-gradient(135deg, #2d2d3a 0%, #3a3a4e 40%, #F87171 180%)",
+      signal: null,
+      greenFlags: ["Good daytime traffic"],
+      yellowFlags: ["Near-term rollover exposure"],
+      redFlags: ["Below-threshold DSCR at current debt", "3 of 6 tenants month-to-month"],
+      tenantMix: "6 small-shop tenants", walt: "2.1 yrs", submarket: "Lake Country",
+    },
   ];
 
   const verdictColor: Record<string, { bg: string; fg: string; ring: string }> = {
@@ -201,6 +277,14 @@ function HeroShowcase() {
     NEUTRAL: { bg: "rgba(217,119,6,0.15)",  fg: "#F59E0B", ring: "#F59E0B" },
     PASS:    { bg: "rgba(239,68,68,0.12)",  fg: "#F87171", ring: "#F87171" },
   };
+
+  // ESC key to close modal
+  React.useEffect(() => {
+    if (openCard === null) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpenCard(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [openCard]);
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 100px", position: "relative" }}>
@@ -232,71 +316,114 @@ function HeroShowcase() {
             {cards.map((c, i) => {
               const vc = verdictColor[c.verdict];
               return (
-                <div key={i} style={{
-                  position: "relative",
-                  background: "linear-gradient(180deg, rgba(22,22,32,0.95) 0%, rgba(16,16,24,0.95) 100%)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: 14, padding: 14,
-                  backdropFilter: "blur(8px)",
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
-                }}>
-                  {/* Top row: ANALYZED badge + score ring */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                    <span style={{
-                      fontSize: 9, fontWeight: 800, letterSpacing: 0.5, textTransform: "uppercase",
-                      background: "rgba(132,204,22,0.15)", color: "#84CC16",
-                      padding: "4px 8px", borderRadius: 4,
-                    }}>ANALYZED</span>
+                <button
+                  key={i}
+                  onClick={() => setOpenCard(i)}
+                  className="hero-deal-card"
+                  style={{
+                    position: "relative", textAlign: "left", padding: 0,
+                    background: "linear-gradient(180deg, rgba(22,22,32,0.95) 0%, rgba(14,14,22,0.95) 100%)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: 14, overflow: "hidden",
+                    backdropFilter: "blur(8px)",
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                    cursor: "pointer", font: "inherit", color: "inherit",
+                    transition: "transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease",
+                    width: "100%",
+                  }}
+                >
+                  {/* Property hero image (CSS gradient silhouette) */}
+                  <div style={{
+                    position: "relative", height: 90, background: c.hero, overflow: "hidden",
+                    borderBottom: "1px solid rgba(255,255,255,0.06)",
+                  }}>
+                    {/* Building silhouette overlay */}
+                    <svg viewBox="0 0 300 90" preserveAspectRatio="xMidYMax slice" style={{
+                      position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.5,
+                    }}>
+                      <path d="M0,90 L0,55 L30,55 L30,40 L70,40 L70,50 L110,50 L110,30 L160,30 L160,45 L200,45 L200,35 L240,35 L240,50 L300,50 L300,90 Z"
+                            fill="rgba(0,0,0,0.5)" />
+                      {/* Window dots */}
+                      {[40, 80, 120, 170, 210, 250].map((x, idx) => (
+                        <g key={idx}>
+                          <rect x={x} y={55} width="3" height="3" fill="rgba(255,255,255,0.35)" />
+                          <rect x={x+8} y={55} width="3" height="3" fill="rgba(255,255,255,0.2)" />
+                          <rect x={x} y={65} width="3" height="3" fill="rgba(255,255,255,0.3)" />
+                          <rect x={x+8} y={65} width="3" height="3" fill="rgba(255,255,255,0.35)" />
+                        </g>
+                      ))}
+                    </svg>
+                    {/* Gradient fade at bottom */}
                     <div style={{
+                      position: "absolute", inset: 0,
+                      background: "linear-gradient(180deg, transparent 0%, transparent 50%, rgba(14,14,22,0.85) 100%)",
+                    }} />
+                    {/* ANALYZED badge */}
+                    <span style={{
+                      position: "absolute", top: 8, left: 8,
+                      fontSize: 9, fontWeight: 800, letterSpacing: 0.5, textTransform: "uppercase",
+                      background: "rgba(132,204,22,0.2)", color: "#84CC16",
+                      padding: "4px 8px", borderRadius: 4, backdropFilter: "blur(6px)",
+                      border: "1px solid rgba(132,204,22,0.3)",
+                    }}>ANALYZED</span>
+                    {/* Score ring */}
+                    <div style={{
+                      position: "absolute", top: 8, right: 8,
                       width: 42, height: 42, borderRadius: "50%",
                       border: `2px solid ${vc.ring}`,
                       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                      background: "rgba(0,0,0,0.3)",
+                      background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)",
                     }}>
                       <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{c.score}</div>
                       <div style={{ fontSize: 6.5, fontWeight: 700, color: vc.fg, letterSpacing: 0.3, marginTop: 1 }}>{c.verdict}</div>
                     </div>
                   </div>
 
-                  {/* Property name + city */}
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", lineHeight: 1.2, marginBottom: 2 }}>{c.name}</div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginBottom: 10 }}>{c.city}</div>
+                  {/* Card body */}
+                  <div style={{ padding: "12px 14px 14px" }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", lineHeight: 1.2, marginBottom: 2 }}>{c.name}</div>
+                    <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", marginBottom: 10, display: "flex", alignItems: "center", gap: 4 }}>
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2a8 8 0 0 0-8 8c0 6 8 12 8 12s8-6 8-12a8 8 0 0 0-8-8z" /><circle cx="12" cy="10" r="3" /></svg>
+                      {c.city}
+                    </div>
 
-                  {/* Metrics grid */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginTop: 8 }}>
-                    <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 6, padding: "6px 8px" }}>
-                      <div style={{ fontSize: 8.5, color: "rgba(255,255,255,0.4)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3 }}>Price</div>
-                      <div style={{ fontSize: 11, color: "#fff", fontWeight: 700 }}>{c.price}</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                      {[
+                        ["Price", c.price], ["Cap", c.cap], ["NOI", c.noi], ["Size", c.sf],
+                      ].map(([label, val]) => (
+                        <div key={label} style={{ background: "rgba(255,255,255,0.04)", borderRadius: 6, padding: "6px 8px" }}>
+                          <div style={{ fontSize: 8.5, color: "rgba(255,255,255,0.4)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3 }}>{label}</div>
+                          <div style={{ fontSize: 11, color: "#fff", fontWeight: 700 }}>{val}</div>
+                        </div>
+                      ))}
                     </div>
-                    <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 6, padding: "6px 8px" }}>
-                      <div style={{ fontSize: 8.5, color: "rgba(255,255,255,0.4)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3 }}>Cap</div>
-                      <div style={{ fontSize: 11, color: "#fff", fontWeight: 700 }}>{c.cap}</div>
-                    </div>
-                    <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 6, padding: "6px 8px" }}>
-                      <div style={{ fontSize: 8.5, color: "rgba(255,255,255,0.4)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3 }}>NOI</div>
-                      <div style={{ fontSize: 11, color: "#fff", fontWeight: 700 }}>{c.noi}</div>
-                    </div>
-                    <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 6, padding: "6px 8px" }}>
-                      <div style={{ fontSize: 8.5, color: "rgba(255,255,255,0.4)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3 }}>Size</div>
-                      <div style={{ fontSize: 11, color: "#fff", fontWeight: 700 }}>{c.sf}</div>
+
+                    {/* View details hint */}
+                    <div style={{
+                      marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,255,255,0.05)",
+                      display: "flex", alignItems: "center", justifyContent: "space-between",
+                      fontSize: 10, color: "rgba(132,204,22,0.85)", fontWeight: 600,
+                    }}>
+                      <span>View analysis</span>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="9 18 15 12 9 6" /></svg>
                     </div>
                   </div>
 
-                  {/* Floating signal callout on first card */}
+                  {/* Floating AI signal callout on first card */}
                   {c.signal && i === 0 && (
                     <div style={{
-                      position: "absolute", bottom: -18, right: -14,
+                      position: "absolute", bottom: -16, right: -18,
                       background: "#0d0d14",
                       border: "1px solid rgba(132,204,22,0.35)",
                       borderRadius: 10, padding: "10px 12px",
-                      maxWidth: 200, zIndex: 2,
+                      maxWidth: 200, zIndex: 3, pointerEvents: "none",
                       boxShadow: "0 10px 30px rgba(0,0,0,0.6), 0 0 30px rgba(132,204,22,0.15)",
                     }}>
                       <div style={{ fontSize: 10, color: "#84CC16", fontWeight: 700, marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.3 }}>AI Signal</div>
                       <div style={{ fontSize: 11, color: "rgba(255,255,255,0.85)", lineHeight: 1.35 }}>{c.signal}</div>
                     </div>
                   )}
-                </div>
+                </button>
               );
             })}
           </div>
@@ -333,6 +460,11 @@ function HeroShowcase() {
       </div>
 
       <style jsx>{`
+        :global(.hero-deal-card):hover {
+          transform: translateY(-4px);
+          border-color: rgba(132,204,22,0.35) !important;
+          box-shadow: 0 14px 36px rgba(0,0,0,0.55), 0 0 40px rgba(132,204,22,0.1) !important;
+        }
         @media (max-width: 900px) {
           :global(.hero-showcase-grid) {
             grid-template-columns: 1fr !important;
@@ -345,6 +477,177 @@ function HeroShowcase() {
           :global(.hero-cards-grid) {
             grid-template-columns: repeat(2, 1fr) !important;
           }
+        }
+      `}</style>
+
+      {/* Property detail modal */}
+      {openCard !== null && (
+        <HeroCardModal card={cards[openCard]} verdictColor={verdictColor} onClose={() => setOpenCard(null)} />
+      )}
+    </div>
+  );
+}
+
+/* Property quick-view modal */
+function HeroCardModal({ card: c, verdictColor, onClose }: {
+  card: HeroCard;
+  verdictColor: Record<string, { bg: string; fg: string; ring: string }>;
+  onClose: () => void;
+}) {
+  const vc = verdictColor[c.verdict];
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 1000,
+        background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "24px 16px",
+        animation: "heroModalFadeIn 0.2s ease",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          position: "relative", maxWidth: 680, width: "100%", maxHeight: "90vh", overflow: "auto",
+          background: "linear-gradient(180deg, #16161e 0%, #0d0d14 100%)",
+          border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16,
+          boxShadow: "0 30px 80px rgba(0,0,0,0.7), 0 0 80px rgba(132,204,22,0.08)",
+          animation: "heroModalSlideIn 0.25s ease",
+        }}
+      >
+        {/* Close button */}
+        <button onClick={onClose} style={{
+          position: "absolute", top: 14, right: 14, zIndex: 2,
+          width: 32, height: 32, borderRadius: "50%",
+          background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.15)",
+          color: "#fff", cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          backdropFilter: "blur(8px)",
+        }} aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+        </button>
+
+        {/* Hero banner */}
+        <div style={{ position: "relative", height: 160, background: c.hero, overflow: "hidden", borderRadius: "16px 16px 0 0" }}>
+          <svg viewBox="0 0 300 90" preserveAspectRatio="xMidYMax slice" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.5 }}>
+            <path d="M0,90 L0,55 L30,55 L30,40 L70,40 L70,50 L110,50 L110,30 L160,30 L160,45 L200,45 L200,35 L240,35 L240,50 L300,50 L300,90 Z" fill="rgba(0,0,0,0.5)" />
+            {[40, 80, 120, 170, 210, 250].map((x, idx) => (
+              <g key={idx}>
+                <rect x={x} y={55} width="3" height="3" fill="rgba(255,255,255,0.35)" />
+                <rect x={x+8} y={55} width="3" height="3" fill="rgba(255,255,255,0.2)" />
+                <rect x={x} y={65} width="3" height="3" fill="rgba(255,255,255,0.3)" />
+                <rect x={x+8} y={65} width="3" height="3" fill="rgba(255,255,255,0.35)" />
+              </g>
+            ))}
+          </svg>
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 0%, transparent 40%, rgba(13,13,20,0.95) 100%)" }} />
+          <div style={{ position: "absolute", bottom: 14, left: 20, right: 70 }}>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>{c.type}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", lineHeight: 1.15 }}>{c.name}</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>{c.city} · {c.submarket}</div>
+          </div>
+        </div>
+
+        {/* Score + verdict strip */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 14, padding: "16px 20px",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          background: "rgba(0,0,0,0.2)",
+        }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: "50%",
+            border: `3px solid ${vc.ring}`,
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+            background: "rgba(0,0,0,0.4)", flexShrink: 0,
+          }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{c.score}</div>
+            <div style={{ fontSize: 8, fontWeight: 700, color: vc.fg, letterSpacing: 0.5, marginTop: 2 }}>{c.verdict}</div>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>DealSignal verdict</div>
+            <div style={{ fontSize: 14, color: "#fff", fontWeight: 600, lineHeight: 1.3, marginTop: 2 }}>
+              {c.verdict === "BUY" && "Worth pursuing. Clean fundamentals, manageable risks."}
+              {c.verdict === "NEUTRAL" && "Not a clear winner. Proceed only if thesis fits."}
+              {c.verdict === "PASS" && "Skip. Risk profile doesn't justify the price."}
+            </div>
+          </div>
+        </div>
+
+        {/* Metrics grid */}
+        <div style={{ padding: "20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 20 }}>
+            {[
+              ["Asking Price", c.price],
+              ["Cap Rate", c.cap],
+              ["NOI", c.noi],
+              ["Size", c.sf],
+              ["Tenant Mix", c.tenantMix || "--"],
+              ["WALT", c.walt || "--"],
+              ["Submarket", c.submarket || "--"],
+              ["Asset Type", c.type],
+            ].map(([label, val]) => (
+              <div key={label} style={{ background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "10px 12px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 4 }}>{label}</div>
+                <div style={{ fontSize: 12, color: "#fff", fontWeight: 700, lineHeight: 1.2 }}>{val}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Flags */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }} className="hero-flags-grid">
+            {[
+              { label: "Green flags", items: c.greenFlags, color: "#84CC16", bg: "rgba(132,204,22,0.08)", border: "rgba(132,204,22,0.25)" },
+              { label: "Yellow flags", items: c.yellowFlags, color: "#F59E0B", bg: "rgba(245,158,11,0.08)", border: "rgba(245,158,11,0.25)" },
+              { label: "Red flags", items: c.redFlags, color: "#F87171", bg: "rgba(248,113,113,0.08)", border: "rgba(248,113,113,0.25)" },
+            ].map(section => (
+              <div key={section.label} style={{
+                background: section.bg, border: `1px solid ${section.border}`, borderRadius: 10, padding: "12px",
+              }}>
+                <div style={{ fontSize: 10, color: section.color, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>
+                  {section.label}
+                </div>
+                {section.items.length === 0 ? (
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontStyle: "italic" }}>None</div>
+                ) : (
+                  <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
+                    {section.items.map((it, idx) => (
+                      <li key={idx} style={{ fontSize: 11, color: "rgba(255,255,255,0.85)", lineHeight: 1.4, paddingLeft: 10, position: "relative" }}>
+                        <span style={{ position: "absolute", left: 0, top: 6, width: 4, height: 4, borderRadius: "50%", background: section.color }} />
+                        {it}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* CTA footer */}
+          <div style={{
+            marginTop: 22, paddingTop: 18, borderTop: "1px solid rgba(255,255,255,0.06)",
+            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+            flexWrap: "wrap",
+          }}>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)" }}>
+              This is a sample deal. <span style={{ color: "#fff", fontWeight: 600 }}>Analyze your own OM above.</span>
+            </div>
+            <button onClick={onClose} style={{
+              background: "#84CC16", color: "#0d0d14", border: "none", borderRadius: 8,
+              padding: "10px 18px", fontSize: 12, fontWeight: 700, cursor: "pointer",
+              letterSpacing: 0.3,
+            }}>
+              Try with your deal
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes heroModalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes heroModalSlideIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @media (max-width: 640px) {
+          :global(.hero-flags-grid) { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </div>
