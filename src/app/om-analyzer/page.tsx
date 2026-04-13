@@ -658,6 +658,9 @@ export default function OmAnalyzerPage() {
           .ds-pricing-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
           /* Secondary features — stack vertically */
           .ds-secondary-features { grid-template-columns: 1fr !important; gap: 16px !important; }
+          /* Compare visual — swap table for stacked cards */
+          .ds-compare-table { display: none !important; }
+          .ds-compare-cards { display: flex !important; }
           /* Section dividers — reduce negative margins */
           .ds-section-divider { margin: -40px auto 32px !important; }
           /* Footer tighter on mobile */
@@ -1496,7 +1499,9 @@ export default function OmAnalyzerPage() {
                         <span style={{ fontSize: 10, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 0.8 }}>Retail NNN Comparison</span>
                         <span style={{ fontSize: 9, color: "#6b7280" }}>3 deals</span>
                       </div>
-                      <div style={{ padding: "12px 18px" }}>
+
+                      {/* ── Desktop: 4-column comparison table ── */}
+                      <div className="ds-compare-table" style={{ padding: "12px 18px" }}>
                         <div style={{ display: "grid", gridTemplateColumns: "80px 1fr 1fr 1fr", gap: 0, fontSize: 10 }}>
                           <div style={{ padding: "8px 0", fontWeight: 600, color: "#6b7280" }}>Metric</div>
                           <div style={{ padding: "8px 4px", fontWeight: 700, color: "#fff", textAlign: "center" }}>Walgreens</div>
@@ -1519,6 +1524,49 @@ export default function OmAnalyzerPage() {
                           ))}
                         </div>
                       </div>
+
+                      {/* ── Mobile: stacked deal cards ── */}
+                      <div className="ds-compare-cards" style={{ display: "none", flexDirection: "column", gap: 8, padding: "12px 14px" }}>
+                        {[
+                          { name: "Walgreens NNN", score: 74, signal: "BUY", signalColor: "#84CC16", price: "$7.05M", cap: "5.85%", noi: "$412K", dscr: "1.42x", dscrColor: "#84CC16", winner: true, delay: "0.1s" },
+                          { name: "CVS Pharmacy", score: 71, signal: "BUY", signalColor: "#84CC16", price: "$5.2M", cap: "5.40%", noi: "$281K", dscr: "1.38x", dscrColor: "#84CC16", winner: false, delay: "0.25s" },
+                          { name: "Dollar General", score: 61, signal: "HOLD", signalColor: "#eab308", price: "$2.8M", cap: "6.50%", noi: "$182K", dscr: "1.08x", dscrColor: "#ef4444", winner: false, delay: "0.4s" },
+                        ].map(deal => (
+                          <div key={deal.name} style={{
+                            background: deal.winner ? "rgba(132,204,22,0.06)" : "rgba(255,255,255,0.02)",
+                            border: deal.winner ? "1px solid rgba(132,204,22,0.25)" : "1px solid rgba(255,255,255,0.04)",
+                            borderRadius: 10, padding: "10px 12px",
+                            animation: `fadeInUp 0.3s ease-out ${deal.delay} both`,
+                          }}>
+                            {/* Deal header — name + score + signal */}
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                {deal.winner && <span style={{ fontSize: 12 }}>👑</span>}
+                                <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{deal.name}</span>
+                              </div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                <span style={{ fontSize: 16, fontWeight: 800, color: deal.signalColor }}>{deal.score}</span>
+                                <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 50, background: `${deal.signalColor}18`, color: deal.signalColor, border: `1px solid ${deal.signalColor}30` }}>{deal.signal}</span>
+                              </div>
+                            </div>
+                            {/* Metrics row */}
+                            <div style={{ display: "flex", gap: 0, justifyContent: "space-between" }}>
+                              {[
+                                { label: "Price", value: deal.price, color: "#fff" },
+                                { label: "Cap", value: deal.cap, color: "#fff" },
+                                { label: "NOI", value: deal.noi, color: "#fff" },
+                                { label: "DSCR", value: deal.dscr, color: deal.dscrColor },
+                              ].map(m => (
+                                <div key={m.label} style={{ textAlign: "center", flex: 1 }}>
+                                  <div style={{ fontSize: 8, fontWeight: 600, color: "#6b7280", textTransform: "uppercase" as const, letterSpacing: 0.3 }}>{m.label}</div>
+                                  <div style={{ fontSize: 11, fontWeight: 700, color: m.color }}>{m.value}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
                       {/* Winner callout */}
                       <div style={{ padding: "10px 18px", borderTop: "1px solid rgba(255,255,255,0.04)", background: "rgba(132,204,22,0.03)", display: "flex", alignItems: "center", gap: 8, animation: "fadeInUp 0.3s ease-out 0.7s both" }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
