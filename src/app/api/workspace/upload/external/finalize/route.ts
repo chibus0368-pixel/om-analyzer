@@ -2,7 +2,7 @@ import { NextRequest, NextResponse, after } from "next/server";
 import { runExtensionUploadPipeline } from "@/lib/workspace/extension-pipeline";
 
 /**
- * External Upload — step 3 of 3: FINALIZE.
+ * External Upload - step 3 of 3: FINALIZE.
  *
  * The extension has already created the property row via /init and
  * PUT the PDF bytes directly to Firebase Storage. This endpoint just
@@ -11,7 +11,7 @@ import { runExtensionUploadPipeline } from "@/lib/workspace/extension-pipeline";
  *
  * The pipeline itself lives in `lib/workspace/extension-pipeline.ts`
  * and mirrors /api/workspace/process exactly (direct function imports,
- * no HTTP self-fetch — per ARCHITECTURE LOCK).
+ * no HTTP self-fetch - per ARCHITECTURE LOCK).
  */
 
 export const maxDuration = 180;
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Kick off the whole pipeline AFTER the response flushes so the
-  // extension shows "Saved — analysis running" in well under a second.
+  // extension shows "Saved - analysis running" in well under a second.
   after(async () => {
     await runExtensionUploadPipeline({
       propertyId,

@@ -56,7 +56,7 @@ function cleanAddress(raw: string): string[] {
 }
 
 /**
- * Try Photon geocoder (Komoot) — free, reliable, based on OSM, no rate limit.
+ * Try Photon geocoder (Komoot) - free, reliable, based on OSM, no rate limit.
  */
 async function tryPhoton(query: string): Promise<{ lat: number; lng: number } | null> {
   try {

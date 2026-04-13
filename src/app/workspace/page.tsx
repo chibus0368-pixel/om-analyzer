@@ -170,7 +170,7 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 30px rgba(0,0,0,0.1)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
     >
-      {/* Hero Image — compact */}
+      {/* Hero Image - compact */}
       <div className="db-card-hero" style={{
         height: 160, background: "linear-gradient(135deg, #F3F4F6, #E5E7EB)",
         overflow: "hidden", position: "relative",
@@ -185,7 +185,7 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
           </div>
         )}
 
-        {/* Status badge — top-left */}
+        {/* Status badge - top-left */}
         <span style={{
           position: "absolute", top: 10, left: 10,
           padding: "3px 8px", borderRadius: 4, fontSize: 9, fontWeight: 700,
@@ -209,7 +209,7 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
           ) : isAnalyzed ? "Analyzed" : "Pending"}
         </span>
 
-        {/* Score circle — top-right, prominent */}
+        {/* Score circle - top-right, prominent */}
         {score != null && (
           <div style={{
             position: "absolute", top: 10, right: 10,
@@ -261,7 +261,7 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
           </span>
         </div>
 
-        {/* Metrics — horizontal pills */}
+        {/* Metrics - horizontal pills */}
         {cardMetrics.length > 0 && (
           <div className="db-card-metrics" style={{
             display: "flex", flexWrap: "wrap", gap: 6, marginTop: 2,
@@ -457,14 +457,14 @@ export default function WorkspaceDashboard() {
       setProperties(props);
 
       // Document counts now come inline from /api/workspace/properties
-      // in a single batched admin-side query — no more N+1 round-trips.
+      // in a single batched admin-side query - no more N+1 round-trips.
       const counts: Record<string, number> = {};
       for (const p of props as any[]) {
         counts[p.id] = typeof p.documentCount === "number" ? p.documentCount : 0;
       }
       setDocCounts(counts);
 
-      // Unblock the UI immediately — everything below is background cleanup.
+      // Unblock the UI immediately - everything below is background cleanup.
       setLoading(false);
 
       // Auto-repair (fire-and-forget): if any properties came back via
@@ -482,7 +482,7 @@ export default function WorkspaceDashboard() {
         );
       }
     }).catch(() => setLoading(false));
-    // Depend on the stable workspace id, not the object reference — otherwise
+    // Depend on the stable workspace id, not the object reference - otherwise
     // any parent re-render that produces a new activeWorkspace object would
     // re-trigger the loading state and re-fetch properties unnecessarily.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -507,7 +507,7 @@ export default function WorkspaceDashboard() {
           .db-count { font-size: 12px !important; }
           .db-actions { flex-direction: row !important; gap: 8px !important; }
           .db-actions a, .db-actions button { font-size: 10px !important; padding: 10px 10px !important; flex: 1 !important; text-align: center !important; justify-content: center !important; box-sizing: border-box !important; }
-          /* Cards — full width, no border-radius, edge-to-edge */
+          /* Cards - full width, no border-radius, edge-to-edge */
           .db-grid { grid-template-columns: 1fr !important; gap: 10px !important; padding: 0 !important; }
           .db-card { border-radius: 14px !important; margin: 0 12px !important; }
           .db-card-hero { height: 180px !important; }
@@ -725,7 +725,7 @@ export default function WorkspaceDashboard() {
         </div>
       )}
 
-      {/* Danger Zone — collapsed */}
+      {/* Danger Zone - collapsed */}
       {properties.length > 0 && (
         <div className="db-clear-bar" style={{
           background: "#FFFFFF", borderRadius: 10, border: "1px solid rgba(0,0,0,0.06)",

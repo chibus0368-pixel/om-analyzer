@@ -181,7 +181,7 @@ export default function ContactPage() {
                 Message sent.
               </h2>
               <p style={{ color: "#cbd2e0", marginTop: 12, fontSize: 15 }}>
-                Thanks — we&apos;ll get back to you within one business day.
+                Thanks - we&apos;ll get back to you within one business day.
                 A confirmation is on its way to your inbox.
               </p>
               <button

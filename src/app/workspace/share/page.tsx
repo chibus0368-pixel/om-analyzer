@@ -316,7 +316,7 @@ export default function ShareLinksPage() {
           {/* Custom display name */}
           <div style={{ marginBottom: 14 }}>
             <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.onSurface, marginBottom: 6 }}>
-              Display Name <span style={{ color: C.secondary, fontWeight: 400 }}>(optional — overrides DealBoard name)</span>
+              Display Name <span style={{ color: C.secondary, fontWeight: 400 }}>(optional - overrides DealBoard name)</span>
             </label>
             <input
               value={displayName}

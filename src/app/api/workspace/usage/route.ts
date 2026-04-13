@@ -19,7 +19,7 @@ function shouldResetPeriod(userData: any): boolean {
     ? (userData.periodStart.toDate ? userData.periodStart.toDate() : new Date(userData.periodStart))
     : null;
 
-  if (!periodStart) return false; // First time — will be set on first increment
+  if (!periodStart) return false; // First time - will be set on first increment
 
   // Check if we're in a new calendar month relative to periodStart
   const periodMonth = periodStart.getUTCFullYear() * 12 + periodStart.getUTCMonth();

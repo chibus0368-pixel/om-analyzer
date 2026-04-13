@@ -83,7 +83,7 @@ export async function sendEmail(
     // Check if email service is configured
     const apiKey = process.env.EMAIL_SERVICE_API_KEY || process.env.RESEND_API_KEY || '';
     if (!apiKey) {
-      console.error('[email] RESEND_API_KEY not configured — email NOT sent to:', to, 'subject:', subject);
+      console.error('[email] RESEND_API_KEY not configured - email NOT sent to:', to, 'subject:', subject);
       return {
         success: false,
         error: 'Email service not configured (RESEND_API_KEY missing)',
@@ -158,7 +158,7 @@ function isValidEmail(email: string): boolean {
 /**
  * Add transactional email footer (company name + physical address).
  * DealSignals only sends transactional emails (account, billing, password)
- * — no marketing lists, so no unsubscribe link is required.
+ * - no marketing lists, so no unsubscribe link is required.
  */
 function addCamCanSpamFooter(html: string, _email: string, _manageToken?: string): string {
   const footer = `

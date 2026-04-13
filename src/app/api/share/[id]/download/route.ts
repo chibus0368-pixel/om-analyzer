@@ -8,7 +8,7 @@ import { getAdminDb, getAdminStorage } from "@/lib/firebase-admin";
  * then generates a short-lived signed URL for the requested file.
  *
  * Query params:
- *   ?doc=<documentId>  — the workspace_documents doc ID
+ *   ?doc=<documentId>  - the workspace_documents doc ID
  */
 export async function GET(
   req: NextRequest,

@@ -130,7 +130,7 @@ export default function UploadPage() {
   useEffect(() => {
     if (!user || !activeWorkspace) return;
     getWorkspaceProperties(user.uid, activeWorkspace.id).then(setProperties).catch(() => {});
-    // Use stable primitives — object refs change every render and cause infinite loops
+    // Use stable primitives - object refs change every render and cause infinite loops
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid, activeWorkspace?.id]);
 
@@ -336,7 +336,7 @@ export default function UploadPage() {
 
     // ── Fire server-side processing (parse → generate → score) ──
     if (extractedText) {
-      setStatusMsg("Analyzing your document — this takes 30-90 seconds...");
+      setStatusMsg("Analyzing your document - this takes 30-90 seconds...");
       setParseResult("Running full analysis pipeline (parse → generate → score)...");
 
       try {
@@ -353,7 +353,7 @@ export default function UploadPage() {
 
         if (processRes.ok) {
           const processData = await processRes.json();
-          setParseResult(`Analysis complete — ${processData.fieldsExtracted || 0} fields extracted and scored.`);
+          setParseResult(`Analysis complete - ${processData.fieldsExtracted || 0} fields extracted and scored.`);
         } else {
           const errData = await processRes.json().catch(() => ({}));
           console.error("[upload] Process failed:", errData);
@@ -490,7 +490,7 @@ export default function UploadPage() {
         </div>
       </div>
       <p className="ul-subtitle" style={{ fontSize: 14, color: C.secondary, marginBottom: 20, lineHeight: 1.5, fontFamily: "'Inter', sans-serif" }}>
-        One property at a time. A single OM is enough to get started — you can always add more files later.
+        One property at a time. A single OM is enough to get started - you can always add more files later.
       </p>
 
       {/* ===== STEP 1: Upload Files ===== */}
@@ -502,7 +502,7 @@ export default function UploadPage() {
             </div>
           )}
 
-          {/* Drop zone — matches landing page upload card */}
+          {/* Drop zone - matches landing page upload card */}
           <div
             className="ul-dropzone"
             onDragOver={e => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
@@ -529,7 +529,7 @@ export default function UploadPage() {
                 .ul-dropzone { padding: ${hasFiles ? "16px 12px" : "32px 12px"} !important; }
               }
             `}</style>
-            {/* Building icon — same as landing page */}
+            {/* Building icon - same as landing page */}
             <div className="ul-icon-circle" style={{
               width: 56, height: 56, borderRadius: "50%", background: "rgba(132, 204, 22, 0.08)",
               display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
@@ -648,7 +648,7 @@ export default function UploadPage() {
               }
             `}</style>
             <div className="ul-info-text" style={{ fontSize: 13, color: C.secondary, lineHeight: 1.7, fontFamily: "'Inter', sans-serif" }}>
-              <strong style={{ color: C.onSurface }}>One property at a time.</strong> Upload all files for a single property, then come back for the next one. One complete OM is enough to get started — add rent rolls, T-12s, or leases later.
+              <strong style={{ color: C.onSurface }}>One property at a time.</strong> Upload all files for a single property, then come back for the next one. One complete OM is enough to get started - add rent rolls, T-12s, or leases later.
             </div>
 
             <div className="ul-badge-row" style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -707,7 +707,7 @@ export default function UploadPage() {
                   Bulk Upload: upload up to 10 properties at once
                 </div>
                 <div className="ul-bulk-text" style={{ fontSize: 13, color: C.secondary }}>
-                  Drop up to 10 OMs in one go and each file becomes its own fully-scored deal on your board. Use this when you have a portfolio of separate properties. (The multi-file upload above is different — it merges several documents into a <em>single</em> property.)
+                  Drop up to 10 OMs in one go and each file becomes its own fully-scored deal on your board. Use this when you have a portfolio of separate properties. (The multi-file upload above is different - it merges several documents into a <em>single</em> property.)
                 </div>
               </div>
               <svg className="ul-bulk-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
@@ -1087,7 +1087,7 @@ export default function UploadPage() {
                 <option value="">Select existing property...</option>
                 {properties.map(p => (
                   <option key={p.id} value={p.id}>
-                    {cleanDisplayName(p.propertyName, p.address1, p.city, p.state)}{p.city ? ` — ${p.city}, ${p.state}` : ""}
+                    {cleanDisplayName(p.propertyName, p.address1, p.city, p.state)}{p.city ? ` - ${p.city}, ${p.state}` : ""}
                   </option>
                 ))}
               </select>

@@ -14,7 +14,7 @@ import {
  * runParseEngine → save brief note → runScoreEngine. Lives in lib so
  * both the /init+/finalize HTTP routes and any future retry flow can
  * invoke the same code path via `after()`. All calls are direct
- * function imports — no HTTP self-fetch (per CLAUDE.md architecture
+ * function imports - no HTTP self-fetch (per CLAUDE.md architecture
  * lock).
  */
 
@@ -36,7 +36,7 @@ async function extractPdfTextFast(buffer: Buffer): Promise<string> {
 async function extractPdfTextViaVision(buffer: Buffer, fileName: string): Promise<string> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    console.warn("[ext-pipeline] OPENAI_API_KEY missing — Vision fallback skipped");
+    console.warn("[ext-pipeline] OPENAI_API_KEY missing - Vision fallback skipped");
     return "";
   }
   if (buffer.length > 28 * 1024 * 1024) {
@@ -97,7 +97,7 @@ async function extractPdfText(buffer: Buffer, fileName: string): Promise<string>
     console.log(`[ext-pipeline] pdf-parse extracted ${fast.length} chars`);
     return fast;
   }
-  console.warn(`[ext-pipeline] pdf-parse returned ${fast.length} chars — falling back to Vision OCR`);
+  console.warn(`[ext-pipeline] pdf-parse returned ${fast.length} chars - falling back to Vision OCR`);
   const vision = await extractPdfTextViaVision(buffer, fileName);
   if (vision.length > 50) {
     console.log(`[ext-pipeline] Vision OCR extracted ${vision.length} chars`);

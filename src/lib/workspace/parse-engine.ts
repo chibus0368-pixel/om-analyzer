@@ -32,28 +32,28 @@ const STAGE1_PROMPT = `You are a CRE document parser. Extract ALL facts from thi
 
 Extract these sections:
 
-"property" - name, address, city, state, zip, county, asset_type, year_built, renovated, gla_sf (integer), land_acres (total site acreage — look for "acres", "land area", "lot size", "site size"), lot_dimensions, occupancy_pct (0-100), tenant_count, wale_years, parking, traffic (use HIGHEST count for the property's road — format "XX,XXX AADT on [road name]"), broker, vacancy_status (one of: "vacant", "owner_occupied", "partially_occupied", "fully_leased", null — infer from context: no tenants listed + for sale usually means vacant or owner-occupied), building_count (number of buildings on site if stated), lease_rate (monthly or annual lease rate if listed for lease)
+"property" - name, address, city, state, zip, county, asset_type, year_built, renovated, gla_sf (integer), land_acres (total site acreage - look for "acres", "land area", "lot size", "site size"), lot_dimensions, occupancy_pct (0-100), tenant_count, wale_years, parking, traffic (use HIGHEST count for the property's road - format "XX,XXX AADT on [road name]"), broker, vacancy_status (one of: "vacant", "owner_occupied", "partially_occupied", "fully_leased", null - infer from context: no tenants listed + for sale usually means vacant or owner-occupied), building_count (number of buildings on site if stated), lease_rate (monthly or annual lease rate if listed for lease)
 
 "pricing" - asking_price (integer), price_per_sf, lease_rate_monthly (if for lease)
 
-"income" - base_rent, nnn_reimbursements, other_income, total_income (use null for ALL if property is vacant/owner-occupied with no income data — this is normal for flyers)
+"income" - base_rent, nnn_reimbursements, other_income, total_income (use null for ALL if property is vacant/owner-occupied with no income data - this is normal for flyers)
 
-"expenses" - cam, real_estate_taxes, insurance, management_fee_stated, other_expenses, total_expenses_stated, noi_stated (CRITICAL: if the document states a specific NOI figure, extract it exactly as-is — do NOT adjust for pending tenants, vacancy projections, or pro-forma assumptions. The stated NOI is the OM's number. Use null for ALL expense fields if not provided — do NOT fabricate)
+"expenses" - cam, real_estate_taxes, insurance, management_fee_stated, other_expenses, total_expenses_stated, noi_stated (CRITICAL: if the document states a specific NOI figure, extract it exactly as-is - do NOT adjust for pending tenants, vacancy projections, or pro-forma assumptions. The stated NOI is the OM's number. Use null for ALL expense fields if not provided - do NOT fabricate)
 
-"tenants" - Include EVERY tenant. Each needs: name, sf, annual_rent, monthly_rent, rent_per_sf, reimb, lease_type, lease_start, lease_end, extension, status, notes (under 20 words). For pending/proposed tenants, set status to "pending" and INCLUDE their rent in income totals — the OM's stated NOI includes pending tenant income. Use empty array [] if property is vacant or no tenants listed.
+"tenants" - Include EVERY tenant. Each needs: name, sf, annual_rent, monthly_rent, rent_per_sf, reimb, lease_type, lease_start, lease_end, extension, status, notes (under 20 words). For pending/proposed tenants, set status to "pending" and INCLUDE their rent in income totals - the OM's stated NOI includes pending tenant income. Use empty array [] if property is vacant or no tenants listed.
 
 "brief" - Return a JSON object with three keys:
   "overview": A single dense paragraph (3-5 sentences) summarizing the deal in direct acquisitions tone. Include property type, unit count or GLA, location, asking price, price/SF or price/unit, cap rate, NOI, occupancy, key tenant(s), WALE, and any standout features. For vacant/owner-user properties focus on building specs, lot size, location, and potential uses.
-  "strengths": Array of exactly 3 strings. Each is one specific, data-backed strength (1-2 sentences). Reference actual numbers from the document. Tailor to asset type — for retail: cap rate, tenant credit, WALE, NNN structure, traffic; for industrial: clear height, dock count, price/SF, location; for office: occupancy, TI/LC, parking ratio; for multifamily: unit count, avg rent, occupancy, value-add potential, rent growth.
+  "strengths": Array of exactly 3 strings. Each is one specific, data-backed strength (1-2 sentences). Reference actual numbers from the document. Tailor to asset type - for retail: cap rate, tenant credit, WALE, NNN structure, traffic; for industrial: clear height, dock count, price/SF, location; for office: occupancy, TI/LC, parking ratio; for multifamily: unit count, avg rent, occupancy, value-add potential, rent growth.
   "concerns": Array of exactly 3 strings. Each is one specific risk or concern (1-2 sentences). Reference actual data gaps, unfavorable terms, or market risks. Include things like short remaining lease term, deferred maintenance, below-market rents, missing financials, variable rate debt, tenant concentration, etc.
 
 RULES:
 - "name" is the PROPERTY name or address, NOT the broker/agent/company name. If in doubt, use the street address as the name.
-- "broker" is the listing agent, brokerage firm, or contact person — keep it separate from the property name.
+- "broker" is the listing agent, brokerage firm, or contact person - keep it separate from the property name.
 - Extract ONLY what the document states. Do not calculate or assume.
 - Numbers as plain numbers (8900000 not "$8,900,000")
 - Use null for missing data
-- Include EVERY tenant — do not skip or truncate
+- Include EVERY tenant - do not skip or truncate
 - For land_acres: look for total site/lot acreage even on improved properties. Industrial and office properties often list lot size.`;
 
 // ===== STAGE 1 LAND: Extract land-specific facts =====
@@ -61,7 +61,7 @@ const STAGE1_LAND_PROMPT = `You are a CRE land document parser. Extract ALL fact
 
 Extract these sections:
 
-"property" - name, address, city, state, zip, county, asset_type (should be "land"), total_acres, usable_acres, lot_dimensions, frontage_ft, topography, flood_zone, broker, traffic (use HIGHEST count — format "XX,XXX AADT on [road name]")
+"property" - name, address, city, state, zip, county, asset_type (should be "land"), total_acres, usable_acres, lot_dimensions, frontage_ft, topography, flood_zone, broker, traffic (use HIGHEST count - format "XX,XXX AADT on [road name]")
 
 "pricing" - asking_price (integer), price_per_acre, price_per_sf (if stated)
 
@@ -81,12 +81,12 @@ Extract these sections:
   "concerns": Array of exactly 3 strings. Each is one specific risk or concern (1-2 sentences). Include things like: missing environmental reports, utility gaps, zoning restrictions, access limitations, flood zone, topography challenges, entitlement timeline, unclear pricing.
 
 RULES:
-- "name" is the PROPERTY name, site name, or street address — NOT the broker/agent/company name.
-- "broker" is the listing agent or brokerage company — keep it separate from the property name.
+- "name" is the PROPERTY name, site name, or street address - NOT the broker/agent/company name.
+- "broker" is the listing agent or brokerage company - keep it separate from the property name.
 - Extract ONLY what the document states. Do not calculate or assume.
 - Numbers as plain numbers (3930000 not "$3,930,000")
 - Use null for missing/unknown data
-- For boolean fields, use true/false/null — never guess`;
+- For boolean fields, use true/false/null - never guess`;
 
 // ===== STAGE 2: Calculate underwriting (Retail / Industrial / Office) =====
 const STAGE2_PROMPT = `You are a CRE underwriting calculator. Given extracted property facts, calculate a complete first-pass underwriting.
@@ -104,13 +104,13 @@ Use these assumptions unless the data states otherwise:
 
 Calculate and return JSON with:
 
-"pricing" - price_per_sf (price/gla), entry_cap_om (noi_stated/price*100 — null if no NOI), entry_cap_adjusted (null if no data), basis_signal (Green <$120/SF, Yellow $120-170, Red >$170)
+"pricing" - price_per_sf (price/gla), entry_cap_om (noi_stated/price*100 - null if no NOI), entry_cap_adjusted (null if no data), basis_signal (Green <$120/SF, Yellow $120-170, Red >$170)
 
 "income" - potential_gross_income, vacancy_allowance, effective_gross_income, rent_per_sf. If no income data: estimate market rent/SF for the asset type and location, flag as estimated.
 
 "expenses" - management_fee, reserves, total_expenses, noi_om, noi_adjusted, noi_per_sf.
   CRITICAL NOI RULES:
-  - noi_om MUST equal the document's stated NOI (noi_stated from Stage 1) without any recalculation. If the OM says NOI is $221,000, noi_om = 221000 — period.
+  - noi_om MUST equal the document's stated NOI (noi_stated from Stage 1) without any recalculation. If the OM says NOI is $221,000, noi_om = 221000 - period.
   - noi_adjusted = your conservative recalculation using ONLY in-place, signed tenants. If a tenant is listed as "pending", "proposed", or "LOI", EXCLUDE their rent from noi_adjusted. Apply your vacancy/management/reserve assumptions to the remaining in-place income.
   - These two numbers SHOULD differ when there are pending tenants or pro-forma assumptions in the OM. That gap is valuable information.
   If no expense data: estimate using standard assumptions.
@@ -121,23 +121,23 @@ Calculate and return JSON with:
 
 "exit" - exit_value, exit_cap_rate (8.5), hold_years (5), selling_costs_pct (4)
 
-"signals" - For each: text description + emoji (🟢🟡🔴). NEVER say "insufficient data" — always provide a useful signal:
+"signals" - For each: text description + emoji (🟢🟡🔴). NEVER say "insufficient data" - always provide a useful signal:
   overall - assess the deal holistically. For vacant properties: evaluate price/SF, lot value, building condition, location.
   cap_rate - if calculable: >8%=🟢, 7-8%=🟡, <7%=🔴. If vacant: estimate potential cap rate at market rents.
   dscr - if calculable: >1.35x=🟢, 1.2-1.35x=🟡, <1.2x=🔴. If vacant: estimate at market rents.
-  occupancy - if data exists: >90%=🟢, 80-90%=🟡, <80%=🔴. If vacant: 🔴 "Currently vacant — owner-user or lease-up opportunity"
+  occupancy - if data exists: >90%=🟢, 80-90%=🟡, <80%=🔴. If vacant: 🔴 "Currently vacant - owner-user or lease-up opportunity"
   basis - price/SF: <$120=🟢, $120-170=🟡, >$170=🔴. Always calculable if price + GLA exist.
-  tenant_quality - describe tenants, or "Vacant — no tenant risk, but no income" for empty buildings.
-  rollover_risk - describe risk, or "N/A — vacant property" for empty buildings.
+  tenant_quality - describe tenants, or "Vacant - no tenant risk, but no income" for empty buildings.
+  rollover_risk - describe risk, or "N/A - vacant property" for empty buildings.
   recommendation - always give a clear buy/hold/pass with reasoning, even for vacant properties.
 
 "validation" - array of strings, each a check:
-  - "GLA check: [tenant SF sum] vs [stated GLA] — [PASS/MISMATCH/N/A if vacant]"
-  - "NOI check: noi_om=[stated from OM] vs noi_adjusted=[your calculation] — [MATCH/DIFFERS BY X%/N/A]. If they differ by >3%, explain why (vacancy deduction, management fee, pending tenant exclusion, etc.)"
-  - "Cap rate check: NOI/price = [calculated]% vs stated [stated]% — [PASS/MISMATCH/N/A]"
-  - "DSCR check: NOI/DS = [calculated] — [PASS/BELOW TARGET/N/A]"
-  - "Rent/SF check: base_rent/GLA = [calculated] — [REASONABLE/LOW/HIGH/N/A]"
-  - "Price/SF check: $[price_per_sf] for [asset_type] in [city] — [COMPETITIVE/MARKET/ABOVE MARKET]"
+  - "GLA check: [tenant SF sum] vs [stated GLA] - [PASS/MISMATCH/N/A if vacant]"
+  - "NOI check: noi_om=[stated from OM] vs noi_adjusted=[your calculation] - [MATCH/DIFFERS BY X%/N/A]. If they differ by >3%, explain why (vacancy deduction, management fee, pending tenant exclusion, etc.)"
+  - "Cap rate check: NOI/price = [calculated]% vs stated [stated]% - [PASS/MISMATCH/N/A]"
+  - "DSCR check: NOI/DS = [calculated] - [PASS/BELOW TARGET/N/A]"
+  - "Rent/SF check: base_rent/GLA = [calculated] - [REASONABLE/LOW/HIGH/N/A]"
+  - "Price/SF check: $[price_per_sf] for [asset_type] in [city] - [COMPETITIVE/MARKET/ABOVE MARKET]"
 
 Return valid JSON only. All numbers as plain numbers.`;
 
@@ -146,7 +146,7 @@ const STAGE2_LAND_PROMPT = `You are a CRE land deal analyst. Given extracted lan
 
 Calculate and return JSON with:
 
-"pricing" - price_per_acre (if not already stated), price_per_sf (if calculable from acres), asking_price, pricing_signal (Green = competitive for area, Yellow = market rate, Red = above market — use your knowledge of similar land pricing in the stated area)
+"pricing" - price_per_acre (if not already stated), price_per_sf (if calculable from acres), asking_price, pricing_signal (Green = competitive for area, Yellow = market rate, Red = above market - use your knowledge of similar land pricing in the stated area)
 
 "site_assessment" - development_readiness (score 1-10 with brief explanation), highest_and_best_use (brief text), entitlement_risk (Low/Medium/High with explanation)
 
@@ -160,11 +160,11 @@ Calculate and return JSON with:
   recommendation - clear buy/hold/pass recommendation with reasoning
 
 "validation" - array of strings, each a check:
-  - "Price/acre check: $[price_per_acre] for [zoning] in [city] — [COMPETITIVE/MARKET/ABOVE MARKET]"
-  - "Zoning check: [current_zoning] for [planned_use] — [ALIGNED/NEEDS CHANGE/UNKNOWN]"
-  - "Utilities check: water=[Y/N/Unknown] sewer=[Y/N/Unknown] electric=[Y/N/Unknown] — [READY/PARTIAL/NOT READY]"
-  - "Access check: [road_access] — [GOOD/ADEQUATE/POOR]"
-  - "Environmental check: Phase I=[complete/needed/unknown] — [CLEAR/NEEDS REVIEW]"
+  - "Price/acre check: $[price_per_acre] for [zoning] in [city] - [COMPETITIVE/MARKET/ABOVE MARKET]"
+  - "Zoning check: [current_zoning] for [planned_use] - [ALIGNED/NEEDS CHANGE/UNKNOWN]"
+  - "Utilities check: water=[Y/N/Unknown] sewer=[Y/N/Unknown] electric=[Y/N/Unknown] - [READY/PARTIAL/NOT READY]"
+  - "Access check: [road_access] - [GOOD/ADEQUATE/POOR]"
+  - "Environmental check: Phase I=[complete/needed/unknown] - [CLEAR/NEEDS REVIEW]"
 
 Return valid JSON only. All numbers as plain numbers.`;
 
@@ -179,12 +179,12 @@ Fields to consider:
 - loading_count (number of dock doors / drive-in doors)
 - trailer_parking (number of trailer spots)
 - office_finish_pct (percentage of space that is office vs warehouse)
-- lot_acres (total site/lot acreage — look for "acres", "land area", "lot size", "site size", "total site")
+- lot_acres (total site/lot acreage - look for "acres", "land area", "lot size", "site size", "total site")
 - lot_dimensions (if stated)
 - building_coverage_pct (building footprint / lot size)
 - yard_space (fenced yard, outside storage area description)
 - power_amps (electrical service capacity)
-- sprinklered (true/false/null — fire suppression)
+- sprinklered (true/false/null - fire suppression)
 - rail_served (true/false/null)
 - industrial_tenant_type (logistics, manufacturing, flex, cold storage, etc.)
 - industrial_notes
@@ -192,7 +192,7 @@ Fields to consider:
 Rules:
 - Only include fields that are reasonably supported by the OM
 - Use null for unknown values
-- lot_acres is critical — search thoroughly for any mention of site size, land area, lot size, or acreage
+- lot_acres is critical - search thoroughly for any mention of site size, land area, lot size, or acreage
 - Keep industrial_notes to 1 or 2 concise sentences`;
 
 const OFFICE_ADDON_PROMPT = `You are extracting office-specific first-pass deal facts.
@@ -201,13 +201,13 @@ Return only the asset_addons object as valid JSON.
 Fields to consider:
 - rent_per_sf
 - suite_count (number of individual suites/units)
-- medical_flag (true/false/null — only true if clearly medical office or clinical tenancy)
+- medical_flag (true/false/null - only true if clearly medical office or clinical tenancy)
 - major_tenant_mix (brief description of key tenants and industries)
-- lease_expirations_near_term (any leases expiring within 24 months — brief summary)
-- parking_ratio (spaces per 1,000 SF — e.g. "4.0/1,000 SF")
-- lot_acres (total site/lot acreage — look for "acres", "land area", "lot size", "site size", "total site")
+- lease_expirations_near_term (any leases expiring within 24 months - brief summary)
+- parking_ratio (spaces per 1,000 SF - e.g. "4.0/1,000 SF")
+- lot_acres (total site/lot acreage - look for "acres", "land area", "lot size", "site size", "total site")
 - lot_dimensions (if stated)
-- building_class (Class A, B, C — if stated or inferable from quality/age)
+- building_class (Class A, B, C - if stated or inferable from quality/age)
 - floor_count (number of stories)
 - elevator_count (if stated)
 - ti_lc_signal (brief text: "Low" / "Moderate" / "High" TI/LC exposure)
@@ -216,7 +216,7 @@ Fields to consider:
 Rules:
 - Only include fields that are reasonably supported by the OM
 - Use null for unknown values
-- lot_acres is important — search thoroughly for any mention of site size, land area, lot size, or acreage
+- lot_acres is important - search thoroughly for any mention of site size, land area, lot size, or acreage
 - medical_flag should be true only if clearly medical office or clinical tenancy is stated
 - ti_lc_signal should be a short text signal, not a numeric forecast
 - Keep office_notes concise`;
@@ -228,8 +228,8 @@ Fields to consider:
 - zoning (current zoning designation)
 - planned_use (intended development type)
 - usable_acres (net developable acres after setbacks/easements/wetlands)
-- total_acres (gross site acres — cross-check with Stage 1 if available)
-- entitled (true/false/null — are entitlements in place?)
+- total_acres (gross site acres - cross-check with Stage 1 if available)
+- entitled (true/false/null - are entitlements in place?)
 - density_allowed (units/acre or FAR if stated)
 - utilities_signal (brief: "All available on-site" / "Partial" / "None nearby")
 - power_proximity_signal (brief distance to nearest power)
@@ -253,7 +253,7 @@ Return only the asset_addons object as valid JSON.
 
 Fields to consider:
 - unit_count (total number of residential units)
-- unit_mix (brief summary — e.g. "48 1BR, 32 2BR, 20 3BR")
+- unit_mix (brief summary - e.g. "48 1BR, 32 2BR, 20 3BR")
 - avg_rent_per_unit (average monthly rent across all units)
 - avg_sf_per_unit (average square feet per unit)
 - rent_per_sf (monthly rent per square foot if calculable)
@@ -262,10 +262,10 @@ Fields to consider:
 - year_renovated (most recent renovation year, if any)
 - stories (number of floors/stories)
 - construction_type (wood frame, concrete, steel, etc.)
-- parking_type (surface, garage, covered — and ratio if stated)
+- parking_type (surface, garage, covered - and ratio if stated)
 - parking_spaces (total number of parking spots)
-- amenities (brief list — pool, gym, laundry, dog park, etc.)
-- in_unit_washer_dryer (true/false/null — in-unit W/D or hookups)
+- amenities (brief list - pool, gym, laundry, dog park, etc.)
+- in_unit_washer_dryer (true/false/null - in-unit W/D or hookups)
 - vacancy_rate (current physical vacancy percentage)
 - economic_occupancy (economic occupancy if different from physical)
 - expense_ratio (operating expense ratio if stated)
@@ -275,16 +275,16 @@ Fields to consider:
 - rent_growth_trailing (recent rent growth rate or trend description)
 - market_rent_comparison (brief: are rents above/at/below market?)
 - value_add_signal (brief: renovation potential, rent bump opportunity, or "stabilized")
-- section_8_flag (true/false/null — any Section 8 / HUD involvement)
-- student_housing_flag (true/false/null — purpose-built student housing)
-- senior_housing_flag (true/false/null — senior/assisted living)
+- section_8_flag (true/false/null - any Section 8 / HUD involvement)
+- student_housing_flag (true/false/null - purpose-built student housing)
+- senior_housing_flag (true/false/null - senior/assisted living)
 - lot_acres (total site acreage)
 - multifamily_notes
 
 Rules:
 - Only include fields that are reasonably supported by the OM
 - Use null for unknown values
-- unit_count and unit_mix are critical — search thoroughly
+- unit_count and unit_mix are critical - search thoroughly
 - avg_rent_per_unit should be monthly, not annual
 - value_add_signal should be concise: "Heavy value-add", "Light renovation", or "Stabilized"
 - Keep multifamily_notes to 1 or 2 concise sentences`;
@@ -360,14 +360,14 @@ export async function runParseEngine(params: {
     const stage1UserMsg = isLand
       ? `Extract ALL facts from this land property document.
 IMPORTANT:
-- "name" = the PROPERTY name, site name, or street address — NOT the broker/agent/firm name.
-- "broker" = the listing agent or brokerage company — separate field.
+- "name" = the PROPERTY name, site name, or street address - NOT the broker/agent/firm name.
+- "broker" = the listing agent or brokerage company - separate field.
 Return JSON only.\n\n${documentText.substring(0, 40000)}`
       : `Extract ALL facts from this CRE property document.
 IMPORTANT:
 - "name" = the PROPERTY name or street address, NOT the broker/agent/firm name.
-- "broker" = the listing agent or brokerage company — separate field.
-- "land_acres" = total site/lot acreage — look for "acres", "site size", "lot size", even on improved buildings.
+- "broker" = the listing agent or brokerage company - separate field.
+- "land_acres" = total site/lot acreage - look for "acres", "site size", "lot size", even on improved buildings.
 - Include EVERY tenant.
 Return JSON only.\n\n${documentText.substring(0, 40000)}`;
 
@@ -475,7 +475,7 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
         );
       }
 
-      // Check 6: land-specific — missing acreage
+      // Check 6: land-specific - missing acreage
       if (isLand && !prop.total_acres && !prop.usable_acres) {
         xcheckWarnings.push(
           `CROSS-CHECK: No acreage found for land property. Critical data missing.`
@@ -492,7 +492,7 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
         );
       }
 
-      // Check 8: address sanity — should contain a number or known road word
+      // Check 8: address sanity - should contain a number or known road word
       if (
         prop.address &&
         !/\d/.test(prop.address) &&
@@ -706,7 +706,7 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
             `[parser] ${analysisType} addon extraction failed:`,
             addonErr
           );
-          // Non-blocking — addon failure should not fail the main parse
+          // Non-blocking - addon failure should not fail the main parse
         }
       }
     }
@@ -961,7 +961,7 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
       // Merge stage1 + stage2 expenses, but PROTECT noi_stated from Stage 1.
       // The OM's stated NOI may include pending/proposed tenants that aren't yet
       // in place. GPT-4o in Stage 2 may calculate a lower noi_adjusted based on
-      // actual in-place tenants only — that's actually more conservative/accurate.
+      // actual in-place tenants only - that's actually more conservative/accurate.
       //
       // Strategy: preserve BOTH numbers for the investor to see.
       // - noi_stated (from Stage 1) = the OM's marketed NOI (may include pending tenants)
@@ -980,7 +980,7 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
         const statedNoi = Number(stage1NoiStated);
         if (adjustedNoi > 0 && statedNoi > 0 && Math.abs(adjustedNoi - statedNoi) / statedNoi > 0.03) {
           const gapPct = Math.round(((statedNoi - adjustedNoi) / statedNoi) * 100);
-          console.warn(`[parser] NOI gap: OM states $${statedNoi.toLocaleString()} but in-place NOI is $${adjustedNoi.toLocaleString()} (${gapPct}% gap — likely pending tenant or pro-forma assumption)`);
+          console.warn(`[parser] NOI gap: OM states $${statedNoi.toLocaleString()} but in-place NOI is $${adjustedNoi.toLocaleString()} (${gapPct}% gap - likely pending tenant or pro-forma assumption)`);
           mergedExpenses._noi_gap_pct = gapPct;
           mergedExpenses._noi_gap_reason = "OM NOI may include pending/proposed tenants not yet in place";
         }
@@ -1140,7 +1140,7 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
           0.85,
           "calculated"
         );
-        // noi_om: the OM's stated NOI — preserved exactly from the document.
+        // noi_om: the OM's stated NOI - preserved exactly from the document.
         saveField(
           "expenses",
           "noi_om",
@@ -1480,11 +1480,11 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
 
     // ===== VALUE-ADD SIGNAL COMPUTATION (deterministic, post-extraction) =====
     // Computes 5 core value-add indicators from extracted data:
-    // 1. Rent Gap — in-place rent vs estimated market
-    // 2. Expense Inefficiency — expense ratio vs benchmarks
-    // 3. Physical/Cosmetic Opportunity — age, renovation status
-    // 4. Vacancy/Lease-Up — current vacancy and upside NOI
-    // 5. Lease Rollover Opportunity — near-term expirations, under-market leases
+    // 1. Rent Gap - in-place rent vs estimated market
+    // 2. Expense Inefficiency - expense ratio vs benchmarks
+    // 3. Physical/Cosmetic Opportunity - age, renovation status
+    // 4. Vacancy/Lease-Up - current vacancy and upside NOI
+    // 5. Lease Rollover Opportunity - near-term expirations, under-market leases
     if (!isLand) {
       const prop = stage1.property || {};
       const inc = { ...(stage1.income || {}), ...(stage2.income || {}) };
@@ -1628,7 +1628,7 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
           valueAddFlags.push({
             type: "vacancy_leaseup",
             strength: "weak",
-            summary: `${vacancyPct.toFixed(0)}% vacancy — minor lease-up potential`,
+            summary: `${vacancyPct.toFixed(0)}% vacancy - minor lease-up potential`,
           });
           valueAddScore += 0.5;
           saveField("value_add", "vacancy_pct", vacancyPct, 0.85, "calculated");
@@ -1717,7 +1717,7 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
       await batch.commit();
     }
 
-    // Save brief as pinned note — brief can be a string (legacy) or structured object {overview, strengths, concerns}
+    // Save brief as pinned note - brief can be a string (legacy) or structured object {overview, strengths, concerns}
     const rawBrief = stage1.brief || "";
     const brief = typeof rawBrief === "object" ? JSON.stringify(rawBrief) : rawBrief;
     if (brief && propertyId) {
@@ -1811,7 +1811,7 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
         }
 
         // Prefer a short street-address label ("136 Commercial Ave") as the
-        // property name — that's what investors recognize. Falls back to the
+        // property name - that's what investors recognize. Falls back to the
         // extracted propName if the address can't be cleanly shortened.
         const shortStreet = extractShortStreetAddress(propAddress);
         if (shortStreet) {

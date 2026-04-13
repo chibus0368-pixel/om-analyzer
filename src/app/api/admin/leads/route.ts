@@ -17,7 +17,7 @@ async function verifyAdmin(req: NextRequest): Promise<string | null> {
 }
 
 /**
- * GET /api/admin/leads — list all captured leads
+ * GET /api/admin/leads - list all captured leads
  */
 export async function GET(req: NextRequest) {
   const adminUid = await verifyAdmin(req);

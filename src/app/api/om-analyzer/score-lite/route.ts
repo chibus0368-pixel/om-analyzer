@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     // Convert parse-lite flat result into normalized field map for scoring models
     const fields = convertToFieldMap(data, analysisType);
 
-    // All analysis types now route through shared scoring-models.ts — Pro and Try Me
+    // All analysis types now route through shared scoring-models.ts - Pro and Try Me
     // produce identical scores because they share the same pure scoring function.
     const result: ScoringResult = scoreByType(analysisType as any, fields);
 

@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     const stripe = getStripe();
 
-    // Cancel at period end — user keeps access until billing period ends
+    // Cancel at period end - user keeps access until billing period ends
     const subscription = await stripe.subscriptions.update(subscriptionId, {
       cancel_at_period_end: true,
     });

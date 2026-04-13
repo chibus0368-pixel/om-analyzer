@@ -55,7 +55,7 @@ function CreateProjectModal({ onClose, onCreate }: { onClose: () => void; onCrea
         </div>
 
         <p style={{ fontSize: 13, color: "#5A7091", margin: "0 0 20px", lineHeight: 1.5 }}>
-          A project is a group for organizing deals — like &quot;Strip Malls&quot;, &quot;Dollar General Portfolio&quot;, or &quot;Austin Retail Q1&quot;.
+          A project is a group for organizing deals - like &quot;Strip Malls&quot;, &quot;Dollar General Portfolio&quot;, or &quot;Austin Retail Q1&quot;.
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -171,7 +171,7 @@ export default function ProjectsListPage() {
           .pj-filters input, .pj-filters select { width: 100% !important; }
         }
         @media (max-width: 480px) {
-          /* Also hide Deal Score (4th) — show only Project + Status */
+          /* Also hide Deal Score (4th) - show only Project + Status */
           .pj-table thead th:nth-child(4),
           .pj-table tbody td:nth-child(4) { display: none !important; }
         }

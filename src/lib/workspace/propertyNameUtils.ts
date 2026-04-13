@@ -2,7 +2,7 @@
  * Smart property name utilities.
  *
  * Solves:
- * - Double names: "Walgreens NNN — 1234 Main St" when address is already shown below
+ * - Double names: "Walgreens NNN - 1234 Main St" when address is already shown below
  * - Redundant address repetition in titles
  * - Overly long names that are just address + address
  * - Generic names that could be made shorter/cleaner
@@ -15,14 +15,14 @@ const ADDRESS_RE =
 const CITY_STATE_ZIP_RE =
   /,?\s*[A-Z][a-z]+(?:\s[A-Z][a-z]+)*,?\s*[A-Z]{2}\s*\d{0,5}/;
 
-const EM_DASH_SEP = /\s*[—–-]\s*/;
+const EM_DASH_SEP = /\s*[-–-]\s*/;
 
 /**
  * Build a smart, short property name from parsed data.
  *
  * Strategy:
  * 1. If parsedName already contains the address, strip it out
- * 2. Never append address/city to the name — those go in separate fields
+ * 2. Never append address/city to the name - those go in separate fields
  * 3. If the parsed name IS just an address, try to make it a short label
  * 4. Deduplicate repeated segments
  */
@@ -60,8 +60,8 @@ export function buildSmartPropertyName(
 
   // 5. Clean up separators and whitespace
   name = name
-    .replace(/[,\-–—|/]+\s*$/, "")   // trailing separators
-    .replace(/^\s*[,\-–—|/]+/, "")   // leading separators
+    .replace(/[,\-–-|/]+\s*$/, "")   // trailing separators
+    .replace(/^\s*[,\-–-|/]+/, "")   // leading separators
     .replace(/\s+/g, " ")
     .trim();
 
@@ -85,7 +85,7 @@ export function buildSmartPropertyName(
  * Clean an existing (already-stored) property name for display.
  *
  * Use this on the UI side to shorten names that were stored in the old
- * "Name — Address" format without needing to re-save to Firestore.
+ * "Name - Address" format without needing to re-save to Firestore.
  */
 export function cleanDisplayName(
   propertyName: string | null | undefined,
@@ -104,7 +104,7 @@ export function cleanDisplayName(
 
   let name = String(propertyName).trim();
 
-  // 1. Split on em-dash — take the first meaningful part
+  // 1. Split on em-dash - take the first meaningful part
   if (EM_DASH_SEP.test(name)) {
     const parts = name.split(EM_DASH_SEP);
     const firstPart = parts[0].trim();
@@ -146,12 +146,12 @@ export function cleanDisplayName(
 
   // 6. Final cleanup
   name = name
-    .replace(/[,\-–—|/]+\s*$/, "")
-    .replace(/^\s*[,\-–—|/]+/, "")
+    .replace(/[,\-–-|/]+\s*$/, "")
+    .replace(/^\s*[,\-–-|/]+/, "")
     .replace(/\s+/g, " ")
     .trim();
 
-  // 7. Fallback — if we stripped too much, return original first segment
+  // 7. Fallback - if we stripped too much, return original first segment
   if (name.length < 3) {
     const firstSegment = propertyName.split(EM_DASH_SEP)[0].trim();
     return firstSegment || propertyName;
@@ -184,7 +184,7 @@ function stripTrailingCityState(
   // Remove trailing "City, ST" or "City, ST 12345"
   if (city && city !== "Unknown City") {
     const cityPattern = new RegExp(
-      `[,\\s\\-–—]*${escapeRegex(city)}[,\\s]*(?:${state || "[A-Z]{2}"})?[\\s]*\\d{0,5}\\s*$`,
+      `[,\\s\\-–-]*${escapeRegex(city)}[,\\s]*(?:${state || "[A-Z]{2}"})?[\\s]*\\d{0,5}\\s*$`,
       "i",
     );
     const stripped = name.replace(cityPattern, "").trim();

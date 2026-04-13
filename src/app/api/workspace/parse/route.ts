@@ -5,7 +5,7 @@ import { runParseEngine } from "@/lib/workspace/parse-engine";
 export const maxDuration = 120;
 
 /**
- * Parse API Route — thin wrapper around the parse engine.
+ * Parse API Route - thin wrapper around the parse engine.
  * The actual logic lives in @/lib/workspace/parse-engine so it can
  * be called directly from the process pipeline without HTTP self-fetch.
  */

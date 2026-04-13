@@ -55,7 +55,7 @@ export default function SettingsPage() {
           setRescoreStatus(`Re-scored ${scored} / ${properties.length} properties...`);
         } catch { /* continue */ }
       }
-      setRescoreStatus(`Done — ${scored} ${scored === 1 ? "property" : "properties"} re-scored.`);
+      setRescoreStatus(`Done - ${scored} ${scored === 1 ? "property" : "properties"} re-scored.`);
     } catch (err) {
       setRescoreStatus("Could not re-score. Scores will update on next analysis.");
     }

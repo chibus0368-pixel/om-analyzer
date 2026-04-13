@@ -27,13 +27,13 @@ export async function loginWithEmail(email: string, password: string): Promise<U
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Google Identity Services (GIS) — direct sign-in
+   Google Identity Services (GIS) - direct sign-in
 
    This bypasses Firebase's auth handler entirely.  Instead of
    opening a popup to firebaseapp.com/__/auth/handler, we open
    Google's own OAuth consent screen directly.  The consent
    screen shows the app name ("Deal Signals") and origin domain
-   ("dealsignals.app") — no Firebase domain visible anywhere.
+   ("dealsignals.app") - no Firebase domain visible anywhere.
 
    Flow:
    1. Load the GIS client script
@@ -98,19 +98,19 @@ export async function loginWithGoogle(): Promise<UserCredential> {
 
   // If no GIS client ID configured, fall back to legacy Firebase popup flow
   if (!clientId) {
-    console.warn('[auth] NEXT_PUBLIC_GOOGLE_CLIENT_ID not set — falling back to Firebase popup');
+    console.warn('[auth] NEXT_PUBLIC_GOOGLE_CLIENT_ID not set - falling back to Firebase popup');
     return loginWithGoogleLegacy();
   }
 
   try {
     await loadGisScript();
   } catch {
-    console.warn('[auth] GIS script load failed — falling back to Firebase popup');
+    console.warn('[auth] GIS script load failed - falling back to Firebase popup');
     return loginWithGoogleLegacy();
   }
 
   if (!window.google?.accounts?.oauth2) {
-    console.warn('[auth] GIS not available — falling back to Firebase popup');
+    console.warn('[auth] GIS not available - falling back to Firebase popup');
     return loginWithGoogleLegacy();
   }
 

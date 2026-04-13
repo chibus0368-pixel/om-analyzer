@@ -56,7 +56,7 @@ ${previousResponses.map(r => `[${r.action}] ${r.title}: ${r.bullets?.join("; ") 
 Answer questions using ONLY this context.
 Be specific and actionable.
 If data is missing, say so clearly.
-Do not guess numbers — only reference data that is provided.
+Do not guess numbers - only reference data that is provided.
 Keep responses concise (3-5 bullet points or 2-3 short paragraphs).`;
 }
 

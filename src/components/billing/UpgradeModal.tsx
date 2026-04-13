@@ -108,7 +108,7 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
   const subtitle = isAnon
     ? "Create a free account to save deals and get 5 total analyses, or start a Pro trial for unlimited access."
     : isFreeLimit
-    ? "Start a 7-day free Pro trial to keep analyzing — 100 deals/month, full workspace, and more."
+    ? "Start a 7-day free Pro trial to keep analyzing - 100 deals/month, full workspace, and more."
     : reason === "save_required"
     ? "Sign up free to save this deal, or start a Pro trial for the full experience."
     : `Get full access with a 7-day free Pro trial.`;

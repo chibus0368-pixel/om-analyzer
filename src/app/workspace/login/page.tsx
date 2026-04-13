@@ -1,6 +1,6 @@
 "use client";
 
-// Force dynamic rendering — this page uses useSearchParams() and Firebase
+// Force dynamic rendering - this page uses useSearchParams() and Firebase
 // auth state, neither of which work with static prerender. Without this,
 // Next.js tries to prerender at build time and fails with "useSearchParams
 // should be wrapped in a suspense boundary".
@@ -18,14 +18,14 @@ function friendlyError(code: string, fallback: string): string {
   const map: Record<string, string> = {
     "auth/email-already-in-use": "An account with this email already exists. Try signing in instead.",
     "auth/invalid-email": "Please enter a valid email address.",
-    "auth/weak-password": "Password is too weak — use at least 8 characters.",
+    "auth/weak-password": "Password is too weak - use at least 8 characters.",
     "auth/user-not-found": "No account found with this email.",
     "auth/wrong-password": "Incorrect password. Try again or reset it below.",
     "auth/invalid-credential": "Invalid email or password. Please try again.",
     "auth/too-many-requests": "Too many attempts. Please wait a moment and try again.",
     "auth/popup-blocked": "Your browser blocked the sign-in popup. Trying redirect instead…",
     "auth/unauthorized-domain": "This domain isn't authorized for sign-in yet. Contact support.",
-    "auth/network-request-failed": "Network error — check your connection and try again.",
+    "auth/network-request-failed": "Network error - check your connection and try again.",
     "auth/operation-not-allowed": "Google sign-in is not enabled. Contact the administrator.",
     "auth/internal-error": "Something went wrong on our end. Please try again.",
   };
@@ -159,7 +159,7 @@ function WorkspaceLoginPageInner() {
         (() => { try { return !!sessionStorage.getItem("firebase:pendingRedirect"); } catch { return false; } })());
 
     if (!looksLikeRedirect) {
-      // Nothing to do — render the form immediately.
+      // Nothing to do - render the form immediately.
       return;
     }
 
@@ -365,7 +365,7 @@ function WorkspaceLoginPageInner() {
             )}
           </button>
 
-          {/* Microsoft (visual — extensible) */}
+          {/* Microsoft (visual - extensible) */}
           <button
             type="button"
             disabled
@@ -386,7 +386,7 @@ function WorkspaceLoginPageInner() {
               <rect x="1" y="11" width="9" height="9" fill="#00A4EF"/>
               <rect x="11" y="11" width="9" height="9" fill="#FFB900"/>
             </svg>
-            Microsoft — Coming Soon
+            Microsoft - Coming Soon
           </button>
         </div>
 
@@ -505,7 +505,7 @@ function WorkspaceLoginPageInner() {
           textAlign: "center", marginTop: 8, fontSize: 10, color: "#B4C1D1",
           fontFamily: "'Inter', sans-serif", lineHeight: 1.5,
         }}>
-          Deal Signals — CRE intelligence &amp; analytics
+          Deal Signals - CRE intelligence &amp; analytics
         </p>
       </div>
 

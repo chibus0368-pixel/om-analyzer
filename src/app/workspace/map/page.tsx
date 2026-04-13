@@ -159,7 +159,7 @@ export default function MapPage() {
     const map = mapInstanceRef.current;
     const L = leafletRef.current;
 
-    // Increment run counter — only the latest run's markers survive
+    // Increment run counter - only the latest run's markers survive
     const thisRun = ++runIdRef.current;
 
     // Clear ALL markers from the map (catches stragglers from async race conditions)
@@ -243,7 +243,7 @@ export default function MapPage() {
           continue;
         }
 
-        // Re-check after async ops — if a newer run started, bail out
+        // Re-check after async ops - if a newer run started, bail out
         if (runIdRef.current !== thisRun) return;
 
         try {
@@ -364,7 +364,7 @@ export default function MapPage() {
           </span>
         </div>
       </div>
-      {/* Map container — isolation creates a new stacking context so
+      {/* Map container - isolation creates a new stacking context so
           Leaflet's internal z-indexes (panes up to 700, controls up to
           1000) can't cover sidebar/header dropdowns that sit above it. */}
       <div

@@ -68,15 +68,15 @@ function getRecommendation(band: string, score: number, analysisType: AnalysisTy
   const typeLabel = analysisType.charAt(0).toUpperCase() + analysisType.slice(1);
   switch (band) {
     case "strong_buy":
-      return `Score ${score}/100 — Strong acquisition candidate. ${typeLabel} fundamentals indicate compelling investment opportunity with favorable risk/return profile.`;
+      return `Score ${score}/100 - Strong acquisition candidate. ${typeLabel} fundamentals indicate compelling investment opportunity with favorable risk/return profile.`;
     case "buy":
-      return `Score ${score}/100 — Solid opportunity worth pursuing. Fundamentals are sound with manageable risk factors.`;
+      return `Score ${score}/100 - Solid opportunity worth pursuing. Fundamentals are sound with manageable risk factors.`;
     case "hold":
-      return `Score ${score}/100 — Mixed signals. Further due diligence recommended before committing capital.`;
+      return `Score ${score}/100 - Mixed signals. Further due diligence recommended before committing capital.`;
     case "pass":
-      return `Score ${score}/100 — Significant risk factors identified. Pricing or fundamentals do not support acquisition at current terms.`;
+      return `Score ${score}/100 - Significant risk factors identified. Pricing or fundamentals do not support acquisition at current terms.`;
     case "strong_reject":
-      return `Score ${score}/100 — Does not meet investment criteria. Multiple red flags in pricing, property condition, or strategic fit.`;
+      return `Score ${score}/100 - Does not meet investment criteria. Multiple red flags in pricing, property condition, or strategic fit.`;
     default:
       return `Score ${score}/100.`;
   }
@@ -241,7 +241,7 @@ export function scoreIndustrial(fields: Record<string, any>): ScoringResult {
   hasDataMap.pricing = pricingConditions > 0;
   if (pricingConditions > 0) {
     let rawScore = Math.round((pricingPoints / (pricingConditions * 35)) * 100);
-    // Cap score when insufficient metrics — need all 3 (cap rate, price/SF, rent/SF) for full confidence
+    // Cap score when insufficient metrics - need all 3 (cap rate, price/SF, rent/SF) for full confidence
     if (pricingConditions < 3) {
       rawScore = Math.min(rawScore, 75);
       pricingData.explanation += `(Capped: only ${pricingConditions}/3 pricing metrics available.) `;
@@ -676,7 +676,7 @@ export function scoreOffice(fields: Record<string, any>): ScoringResult {
     hasDataMap.occupancy_stability = true;
   } else {
     occData.score = 25;
-    occData.explanation = "INSUFFICIENT DATA: Occupancy unknown — treat as high risk.";
+    occData.explanation = "INSUFFICIENT DATA: Occupancy unknown - treat as high risk.";
     hasDataMap.occupancy_stability = false;
   }
   categories.occupancy_stability = occData.score;
@@ -946,7 +946,7 @@ export function scoreLand(fields: Record<string, any>): ScoringResult {
 
   const pricePerAcre = getField(fields, "pricing_deal_terms.price_per_acre");
   const askingPrice = getField(fields, "pricing_deal_terms.asking_price");
-  // Parser saves as lot_acres (property_basics) — check both paths
+  // Parser saves as lot_acres (property_basics) - check both paths
   const acres = getField(fields, "property_basics.lot_acres") ||
     getField(fields, "property_basics.land_acres") ||
     getField(fields, "property_basics.usable_acres");
@@ -1720,7 +1720,7 @@ export function scoreMultifamily(fields: Record<string, any>): ScoringResult {
     }
   }
 
-  // Niche flags — inform but don't penalize heavily
+  // Niche flags - inform but don't penalize heavily
   if (studentHousing) {
     const sh = String(studentHousing).toLowerCase();
     if (sh.includes("yes") || sh === "true") {
@@ -1834,7 +1834,7 @@ export function scoreByType(
 }
 
 // ==============================================================================
-// RETAIL SCORING — Pure function (shared by Pro score-engine and Try Me score-lite)
+// RETAIL SCORING - Pure function (shared by Pro score-engine and Try Me score-lite)
 // Lifted from /lib/workspace/score-engine.ts so Pro + Try Me always produce
 // identical retail scores. Operates on a { "group.name": { value, confidence } }
 // field map plus an optional field-count hint for confidence scoring.
@@ -1910,19 +1910,19 @@ function retailRecommendation(band: string, score: number, fields: Record<string
 
   if (parts.length === 0) {
     switch (band) {
-      case "strong_buy": return `${label} (${score}) — Compelling fundamentals across pricing, cash flow, and tenancy.`;
-      case "buy": return `${label} (${score}) — Sound fundamentals with manageable risk.`;
-      case "hold": return `${label} (${score}) — Mixed signals. Further diligence recommended.`;
-      case "pass": return `${label} (${score}) — Risk factors outweigh current pricing.`;
-      case "strong_reject": return `${label} (${score}) — Does not meet investment criteria.`;
+      case "strong_buy": return `${label} (${score}) - Compelling fundamentals across pricing, cash flow, and tenancy.`;
+      case "buy": return `${label} (${score}) - Sound fundamentals with manageable risk.`;
+      case "hold": return `${label} (${score}) - Mixed signals. Further diligence recommended.`;
+      case "pass": return `${label} (${score}) - Risk factors outweigh current pricing.`;
+      case "strong_reject": return `${label} (${score}) - Does not meet investment criteria.`;
       default: return `${label} (${score})`;
     }
   }
-  return `${label} (${score}) — ${parts.join("; ")}.`;
+  return `${label} (${score}) - ${parts.join("; ")}.`;
 }
 
 /**
- * Pure retail scoring — identical logic to Pro's runScoreEngine retail branch.
+ * Pure retail scoring - identical logic to Pro's runScoreEngine retail branch.
  * Operates on a field map of the form { "group.name": { value, confidence, confirmed } }.
  * This is the single source of truth for retail scores across Pro and Try Me.
  */

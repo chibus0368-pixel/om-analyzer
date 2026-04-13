@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 /**
- * OCR Endpoint — GPT-4o Vision for scanned/image-based PDFs
+ * OCR Endpoint - GPT-4o Vision for scanned/image-based PDFs
  *
  * Accepts an array of OpenAI-format messages containing base64 images
  * and returns extracted text. Used as a fallback when pdfjs text

@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
       return (a.createdAt || "").localeCompare(b.createdAt || "");
     });
 
-    // Fetch property counts per workspace — lightweight: only reads the
+    // Fetch property counts per workspace - lightweight: only reads the
     // workspaceId field. Raced against a 1.5s timeout so the boards list
     // is never blocked by a slow property scan.
     const propertyCounts: Record<string, number> = {};

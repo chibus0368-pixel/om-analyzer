@@ -336,7 +336,7 @@ function LeaderboardRow({ pd, rank, totalCount, maxScore, expanded, onToggle }: 
                 thColor={va >= 7 ? "#059669" : va >= 4 ? "#D97706" : "#6B7280"} />;
             })()}
           </div>
-          {/* Recommendation blurb — from Score API, stripped of emojis */}
+          {/* Recommendation blurb - from Score API, stripped of emojis */}
           {recommendation && (
             <div style={{
               fontSize: 12, color: "#585e70", marginTop: 4, lineHeight: 1.4,
@@ -733,7 +733,7 @@ export default function ScoreboardPage() {
     const runId = ++enrichRunId.current;
     setLoading(true);
     getWorkspaceProperties(user.uid, activeWorkspace.id).then(async (props) => {
-      if (runId !== enrichRunId.current) return; // stale — newer run superseded us
+      if (runId !== enrichRunId.current) return; // stale - newer run superseded us
       if (props.length === 0) { setPropertyData([]); setLoading(false); return; }
       // Phase 1: Build initial data from property-level fields (instant, no extra queries)
       const data: PropertyData[] = props.map((prop) => {
@@ -756,7 +756,7 @@ export default function ScoreboardPage() {
       // Full extracted fields are fetched on-demand (e.g. rescoreAll, CSV export)
       // to avoid 14+ individual API calls that add 5-10s of latency.
     }).catch(() => { if (runId === enrichRunId.current) setLoading(false); });
-    // Use stable primitives — object refs change every render and cause infinite loops
+    // Use stable primitives - object refs change every render and cause infinite loops
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid, activeWorkspace?.id]);
 
@@ -1009,7 +1009,7 @@ export default function ScoreboardPage() {
             border-radius: 6px !important;
             margin-bottom: 12px !important;
           }
-          /* Hide Price (3rd), Cap (4th), NOI (5th) too — show only Property + Score */
+          /* Hide Price (3rd), Cap (4th), NOI (5th) too - show only Property + Score */
           .sb-comparison-table thead tr th:nth-child(n+3),
           .sb-comparison-table tbody tr td:nth-child(n+3) {
             display: none !important;

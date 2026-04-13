@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb, getAdminStorage } from "@/lib/firebase-admin";
 
 /**
- * External Upload — step 1 of 3: INIT.
+ * External Upload - step 1 of 3: INIT.
  *
  * Why three steps? Vercel serverless has a hard 4.5 MB request body
  * limit (FUNCTION_PAYLOAD_TOO_LARGE) and Crexi PDFs routinely exceed
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
   //    save click. We use it as the Firestore document ID. If /init is
   //    called twice with the same nonce (service-worker retry, Vercel
   //    cold-start replay, etc.), the second write is an idempotent merge
-  //    onto the same doc — no duplicate created.
+  //    onto the same doc - no duplicate created.
   //
   // 2. SOURCE URL dedup: if the user intentionally re-saves the same
   //    Crexi listing later (different nonce), we find the existing

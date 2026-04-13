@@ -415,7 +415,7 @@ export default function AdminPage() {
                         {/* Actions */}
                         <td style={{ padding: "12px 16px", textAlign: "center" }}>
                           {isMe ? (
-                            <span style={{ fontSize: 11, color: "#9CA3AF" }}>—</span>
+                            <span style={{ fontSize: 11, color: "#9CA3AF" }}>-</span>
                           ) : (
                             <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
                               {u.disabled ? (
@@ -514,23 +514,23 @@ export default function AdminPage() {
                               fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4,
                               background: "#F3F4F6", color: "#6B7280", textTransform: "uppercase",
                             }}>
-                              {lead.source || lead.lastSource || "—"}
+                              {lead.source || lead.lastSource || "-"}
                             </span>
                           </td>
                           <td style={{ padding: "10px 14px", fontSize: 12, color: "#374151" }}>
-                            {(lead.propertiesAnalyzed || []).join(", ") || "—"}
+                            {(lead.propertiesAnalyzed || []).join(", ") || "-"}
                           </td>
                           <td style={{ padding: "10px 14px", fontSize: 13, fontWeight: 700, color: "#111827", textAlign: "center" }}>
                             {lead.touches || 1}
                           </td>
                           <td style={{ padding: "10px 14px", fontSize: 13, fontWeight: 600, color: lead.lastDealScore >= 70 ? "#059669" : lead.lastDealScore >= 50 ? "#D97706" : "#6B7280" }}>
-                            {lead.lastDealScore ?? "—"}
+                            {lead.lastDealScore ?? "-"}
                           </td>
                           <td style={{ padding: "10px 14px", fontSize: 12, color: "#6B7280" }}>
-                            {lead.createdAt ? formatDate(lead.createdAt) : "—"}
+                            {lead.createdAt ? formatDate(lead.createdAt) : "-"}
                           </td>
                           <td style={{ padding: "10px 14px", fontSize: 12, color: "#6B7280" }}>
-                            {lead.lastActiveAt ? timeAgo(lead.lastActiveAt) : "—"}
+                            {lead.lastActiveAt ? timeAgo(lead.lastActiveAt) : "-"}
                           </td>
                           <td style={{ padding: "10px 14px" }}>
                             <span style={{
@@ -606,10 +606,10 @@ export default function AdminPage() {
                           </span>
                         </td>
                         <td style={{ padding: "12px 16px", fontSize: 11, color: "#6B7280", fontFamily: "monospace" }}>
-                          {u.subscription.stripeCustomerId || "—"}
+                          {u.subscription.stripeCustomerId || "-"}
                         </td>
                         <td style={{ padding: "12px 16px", fontSize: 12, color: "#6B7280" }}>
-                          {u.subscription.currentPeriodEnd ? formatDate(u.subscription.currentPeriodEnd) : "—"}
+                          {u.subscription.currentPeriodEnd ? formatDate(u.subscription.currentPeriodEnd) : "-"}
                         </td>
                         <td style={{ padding: "12px 16px", fontSize: 13, fontWeight: 600, color: "#111827" }}>
                           {u.deals}

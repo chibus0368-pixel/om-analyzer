@@ -32,13 +32,13 @@ export function useWorkspaceAuth(): WorkspaceAuthState {
     const auth = getAuthInstance();
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
-        // User is authenticated — update both state and cache
+        // User is authenticated - update both state and cache
         lastKnownUser.current = firebaseUser;
         hasInitialized.current = true;
         setUser(firebaseUser);
         setLoading(false);
       } else if (lastKnownUser.current && hasInitialized.current) {
-        // Brief null during token refresh — keep last known user for 3s grace period
+        // Brief null during token refresh - keep last known user for 3s grace period
         // to avoid flashing blank/spinner. If auth truly expired, we'll clear after timeout.
         const timeout = setTimeout(() => {
           const currentUser = auth.currentUser;
@@ -49,7 +49,7 @@ export function useWorkspaceAuth(): WorkspaceAuthState {
         }, 3000);
         return () => clearTimeout(timeout);
       } else {
-        // Initial load with no user — genuinely not authenticated
+        // Initial load with no user - genuinely not authenticated
         hasInitialized.current = true;
         lastKnownUser.current = null;
         setUser(null);

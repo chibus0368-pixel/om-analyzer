@@ -108,7 +108,7 @@ export default function DealSignalNav() {
 
         {/* Center nav links */}
         <div className="ds-nav-links" style={{ display: "flex", alignItems: "center", gap: 32, height: 64 }}>
-          {/* "Try It" link — always visible on landing page */}
+          {/* "Try It" link - always visible on landing page */}
           {isOnLanding && (
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -171,7 +171,7 @@ export default function DealSignalNav() {
           })}
         </div>
 
-        {/* Right side CTA — desktop */}
+        {/* Right side CTA - desktop */}
         <div className="ds-nav-cta" style={{ display: "flex", alignItems: "center", gap: 16 }}>
           {authedUser ? (
             <Link href="/workspace" style={{
@@ -215,7 +215,7 @@ export default function DealSignalNav() {
           )}
         </div>
 
-        {/* Hamburger button — mobile only */}
+        {/* Hamburger button - mobile only */}
         <button
           className="ds-hamburger"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

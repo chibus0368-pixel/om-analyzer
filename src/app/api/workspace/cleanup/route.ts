@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
 
-// DELETE /api/workspace/cleanup — removes all workspace test data
+// DELETE /api/workspace/cleanup - removes all workspace test data
 export async function DELETE(request: NextRequest) {
   const secret = request.headers.get("x-admin-secret");
   if (secret !== process.env.ADMIN_SECRET) {
@@ -42,7 +42,7 @@ export async function DELETE(request: NextRequest) {
   return NextResponse.json({ success: true, totalDeleted, collections: collections.length });
 }
 
-// GET /api/workspace/cleanup — shows counts of all workspace data
+// GET /api/workspace/cleanup - shows counts of all workspace data
 export async function GET(request: NextRequest) {
   const secret = request.headers.get("x-admin-secret");
   if (secret !== process.env.ADMIN_SECRET) {

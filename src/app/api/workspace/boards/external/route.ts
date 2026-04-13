@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
 
 /**
- * External Boards List — Chrome extension / bookmarklet helper.
+ * External Boards List - Chrome extension / bookmarklet helper.
  *
  * Returns the REAL DealBoards for the user that the extension is
  * attributed to (EXTENSION_USER_ID). Source of truth is the
@@ -10,7 +10,7 @@ import { getAdminDb } from "@/lib/firebase-admin";
  *
  * Counts are enriched from `workspace_properties`. Property rows
  * tagged with a stale/orphaned workspaceId that has no matching row
- * in `workspaces` are intentionally NOT surfaced here — those are
+ * in `workspaces` are intentionally NOT surfaced here - those are
  * exactly the "boards i don't recognize" the user was seeing.
  *
  * Auth: same X-API-Key pattern as /api/workspace/upload/external.
@@ -101,7 +101,7 @@ export async function GET(req: NextRequest) {
       const existing = realBoards.get(wsId);
       if (existing) existing.count += 1;
       // Orphaned workspaceIds (no matching real board) are intentionally
-      // dropped — they're the stale ghost boards the extension was showing.
+      // dropped - they're the stale ghost boards the extension was showing.
     });
 
     const boards = Array.from(realBoards.values()).sort((a, b) => {

@@ -26,20 +26,20 @@ async function callOpenAI(messages: { role: string; content: string }[], maxToke
 }
 
 // ==============================================================================
-// STAGE 1 PROMPTS — identical to Pro (/api/workspace/parse)
+// STAGE 1 PROMPTS - identical to Pro (/api/workspace/parse)
 // ==============================================================================
 
 const STAGE1_PROMPT = `You are a CRE document parser. Extract ALL facts from this property document. Return JSON only.
 
 Extract these sections:
 
-"property" - name, address, city, state, zip, county, asset_type, year_built, renovated, gla_sf (integer), land_acres (total site acreage — look for "acres", "land area", "lot size", "site size"), lot_dimensions, occupancy_pct (0-100), tenant_count, wale_years, parking, traffic (use HIGHEST count for the property's road — format "XX,XXX AADT on [road name]"), broker, vacancy_status (one of: "vacant", "owner_occupied", "partially_occupied", "fully_leased", null — infer from context), building_count, lease_rate
+"property" - name, address, city, state, zip, county, asset_type, year_built, renovated, gla_sf (integer), land_acres (total site acreage - look for "acres", "land area", "lot size", "site size"), lot_dimensions, occupancy_pct (0-100), tenant_count, wale_years, parking, traffic (use HIGHEST count for the property's road - format "XX,XXX AADT on [road name]"), broker, vacancy_status (one of: "vacant", "owner_occupied", "partially_occupied", "fully_leased", null - infer from context), building_count, lease_rate
 
 "pricing" - asking_price (integer), price_per_sf, lease_rate_monthly (if for lease)
 
 "income" - base_rent, nnn_reimbursements, other_income, total_income (use null for ALL if property is vacant/owner-occupied with no income data)
 
-"expenses" - cam, real_estate_taxes, insurance, management_fee_stated, other_expenses, total_expenses_stated, noi_stated (use null for ALL if not provided — do NOT fabricate)
+"expenses" - cam, real_estate_taxes, insurance, management_fee_stated, other_expenses, total_expenses_stated, noi_stated (use null for ALL if not provided - do NOT fabricate)
 
 "tenants" - Include EVERY tenant. Each needs: name, sf, annual_rent, monthly_rent, rent_per_sf, reimb, lease_type, lease_start, lease_end, extension, status, notes (under 20 words). Use empty array [] if property is vacant or no tenants listed.
 
@@ -51,14 +51,14 @@ RULES:
 - Extract ONLY what the document states. Do not calculate or assume.
 - Numbers as plain numbers (8900000 not "$8,900,000")
 - Use null for missing data
-- Include EVERY tenant — do not skip or truncate
+- Include EVERY tenant - do not skip or truncate
 - For land_acres: look for total site/lot acreage even on improved properties.`;
 
 const STAGE1_LAND_PROMPT = `You are a CRE land document parser. Extract ALL facts from this land/development property document. Return JSON only.
 
 Extract these sections:
 
-"property" - name, address, city, state, zip, county, asset_type (should be "land"), total_acres, usable_acres, lot_dimensions, frontage_ft, topography, flood_zone, broker, traffic (use HIGHEST count — format "XX,XXX AADT on [road name]")
+"property" - name, address, city, state, zip, county, asset_type (should be "land"), total_acres, usable_acres, lot_dimensions, frontage_ft, topography, flood_zone, broker, traffic (use HIGHEST count - format "XX,XXX AADT on [road name]")
 
 "pricing" - asking_price (integer), price_per_acre, price_per_sf (if stated)
 
@@ -75,15 +75,15 @@ Extract these sections:
 "brief" - Write 2 concise paragraphs about THIS land opportunity. Direct acquisitions tone.
 
 RULES:
-- "name" is the PROPERTY name or street address — NOT the broker/agent/company name.
+- "name" is the PROPERTY name or street address - NOT the broker/agent/company name.
 - "broker" is the listing agent or brokerage company.
 - Extract ONLY what the document states. Do not calculate or assume.
 - Numbers as plain numbers (3930000 not "$3,930,000")
 - Use null for missing/unknown data
-- For boolean fields, use true/false/null — never guess`;
+- For boolean fields, use true/false/null - never guess`;
 
 // ==============================================================================
-// STAGE 2 PROMPTS — identical to Pro
+// STAGE 2 PROMPTS - identical to Pro
 // ==============================================================================
 
 const STAGE2_PROMPT = `You are a CRE underwriting calculator. Given extracted property facts, calculate a complete first-pass underwriting.
@@ -101,7 +101,7 @@ Use these assumptions unless the data states otherwise:
 
 Calculate and return JSON with:
 
-"pricing" - price_per_sf (price/gla), entry_cap_om (noi_stated/price*100 — null if no NOI), entry_cap_adjusted (null if no data), basis_signal (Green <$120/SF, Yellow $120-170, Red >$170)
+"pricing" - price_per_sf (price/gla), entry_cap_om (noi_stated/price*100 - null if no NOI), entry_cap_adjusted (null if no data), basis_signal (Green <$120/SF, Yellow $120-170, Red >$170)
 
 "income" - potential_gross_income, vacancy_allowance, effective_gross_income, rent_per_sf. If no income data: estimate market rent/SF for the asset type and location, flag as estimated.
 
@@ -117,12 +117,12 @@ Calculate and return JSON with:
   overall, cap_rate (>8%=🟢, 7-8%=🟡, <7%=🔴), dscr (>1.35x=🟢, 1.2-1.35x=🟡, <1.2x=🔴), occupancy (>90%=🟢, 80-90%=🟡, <80%=🔴), basis (<$120=🟢, $120-170=🟡, >$170=🔴), tenant_quality, rollover_risk, recommendation
 
 "validation" - array of strings, each a check:
-  - "GLA check: [tenant SF sum] vs [stated GLA] — [PASS/MISMATCH/N/A if vacant]"
-  - "NOI check: EGI - expenses = [calculated] vs stated [stated] — [PASS/MISMATCH/N/A]"
-  - "Cap rate check: NOI/price = [calculated]% vs stated [stated]% — [PASS/MISMATCH/N/A]"
-  - "DSCR check: NOI/DS = [calculated] — [PASS/BELOW TARGET/N/A]"
-  - "Rent/SF check: base_rent/GLA = [calculated] — [REASONABLE/LOW/HIGH/N/A]"
-  - "Price/SF check: $[price_per_sf] for [asset_type] in [city] — [COMPETITIVE/MARKET/ABOVE MARKET]"
+  - "GLA check: [tenant SF sum] vs [stated GLA] - [PASS/MISMATCH/N/A if vacant]"
+  - "NOI check: EGI - expenses = [calculated] vs stated [stated] - [PASS/MISMATCH/N/A]"
+  - "Cap rate check: NOI/price = [calculated]% vs stated [stated]% - [PASS/MISMATCH/N/A]"
+  - "DSCR check: NOI/DS = [calculated] - [PASS/BELOW TARGET/N/A]"
+  - "Rent/SF check: base_rent/GLA = [calculated] - [REASONABLE/LOW/HIGH/N/A]"
+  - "Price/SF check: $[price_per_sf] for [asset_type] in [city] - [COMPETITIVE/MARKET/ABOVE MARKET]"
 
 Return valid JSON only. All numbers as plain numbers.`;
 
@@ -144,16 +144,16 @@ Calculate and return JSON with:
   recommendation - clear buy/hold/pass recommendation with reasoning
 
 "validation" - array of strings, each a check:
-  - "Price/acre check: $[price_per_acre] for [zoning] in [city] — [COMPETITIVE/MARKET/ABOVE MARKET]"
-  - "Zoning check: [current_zoning] for [planned_use] — [ALIGNED/NEEDS CHANGE/UNKNOWN]"
-  - "Utilities check: water=[Y/N/Unknown] sewer=[Y/N/Unknown] electric=[Y/N/Unknown] — [READY/PARTIAL/NOT READY]"
-  - "Access check: [road_access] — [GOOD/ADEQUATE/POOR]"
-  - "Environmental check: Phase I=[complete/needed/unknown] — [CLEAR/NEEDS REVIEW]"
+  - "Price/acre check: $[price_per_acre] for [zoning] in [city] - [COMPETITIVE/MARKET/ABOVE MARKET]"
+  - "Zoning check: [current_zoning] for [planned_use] - [ALIGNED/NEEDS CHANGE/UNKNOWN]"
+  - "Utilities check: water=[Y/N/Unknown] sewer=[Y/N/Unknown] electric=[Y/N/Unknown] - [READY/PARTIAL/NOT READY]"
+  - "Access check: [road_access] - [GOOD/ADEQUATE/POOR]"
+  - "Environmental check: Phase I=[complete/needed/unknown] - [CLEAR/NEEDS REVIEW]"
 
 Return valid JSON only. All numbers as plain numbers.`;
 
 // ==============================================================================
-// STAGE 3: Asset-type addon prompts — from Pro pipeline
+// STAGE 3: Asset-type addon prompts - from Pro pipeline
 // ==============================================================================
 
 const INDUSTRIAL_ADDON_PROMPT = `You are extracting industrial-specific first-pass deal facts.
@@ -171,7 +171,7 @@ Fields to consider:
 - building_coverage_pct (building footprint / lot size)
 - yard_space (fenced yard, outside storage area description)
 - power_amps (electrical service capacity)
-- sprinklered (true/false/null — fire suppression)
+- sprinklered (true/false/null - fire suppression)
 - rail_served (true/false/null)
 - industrial_tenant_type (logistics, manufacturing, flex, cold storage, etc.)
 - industrial_notes
@@ -179,7 +179,7 @@ Fields to consider:
 Rules:
 - Only include fields that are reasonably supported by the OM
 - Use null for unknown values
-- lot_acres is critical — search thoroughly
+- lot_acres is critical - search thoroughly
 - Keep industrial_notes to 1 or 2 concise sentences`;
 
 const OFFICE_ADDON_PROMPT = `You are extracting office-specific first-pass deal facts.
@@ -188,7 +188,7 @@ Return only the asset_addons object as valid JSON.
 Fields to consider:
 - rent_per_sf
 - suite_count (number of individual suites/units)
-- medical_flag (true/false/null — only true if clearly medical office)
+- medical_flag (true/false/null - only true if clearly medical office)
 - major_tenant_mix (brief description of key tenants and industries)
 - lease_expirations_near_term (any leases expiring within 24 months)
 - parking_ratio (spaces per 1,000 SF)
@@ -218,7 +218,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Document text too short or missing" }, { status: 400 });
     }
 
-    // Determine analysis type — use requested type or auto-classify
+    // Determine analysis type - use requested type or auto-classify
     let analysisType: string = requestedType || "";
     const validTypes = ["retail", "industrial", "office", "land"];
 
@@ -298,7 +298,7 @@ Rules:
       stage2 = {};
     }
 
-    // ===== STAGE 3: Asset-type addon extraction (NEW — matches Pro) =====
+    // ===== STAGE 3: Asset-type addon extraction (NEW - matches Pro) =====
     let addons: any = {};
     if (analysisType === "industrial" || analysisType === "office") {
       console.log(`[parse-lite] Stage 3: Extracting ${analysisType} addons...`);
@@ -356,7 +356,7 @@ Rules:
     const exit = stage2.exit || {};
 
     const result: Record<string, any> = {
-      // Analysis type — critical for scoring
+      // Analysis type - critical for scoring
       analysisType,
 
       // Property basics
@@ -427,13 +427,13 @@ Rules:
       exitCapRate: exit.exit_cap_rate,
       holdYears: exit.hold_years,
 
-      // Signals — raw strings with emoji
+      // Signals - raw strings with emoji
       signals: formattedSignals,
 
       // Validation checks
       validation,
 
-      // Tenants — full detail
+      // Tenants - full detail
       tenants,
 
       // Asset-type addons (for scoring)
@@ -449,7 +449,7 @@ Rules:
       result.siteAssessment = stage2.site_assessment || {};
     }
 
-    console.log(`[parse-lite] Complete (${analysisType}):`, prop.name, "—", tenants.length, "tenants");
+    console.log(`[parse-lite] Complete (${analysisType}):`, prop.name, "-", tenants.length, "tenants");
 
     return NextResponse.json(result);
   } catch (error: any) {

@@ -11,7 +11,7 @@ import { buildSmartPropertyName, extractShortStreetAddress } from "@/lib/workspa
  * so the client can safely navigate away after file upload.
  *
  * ARCHITECTURE: Calls parse and score engines DIRECTLY as imported
- * functions — no HTTP self-fetch. This is required for Vercel
+ * functions - no HTTP self-fetch. This is required for Vercel
  * serverless where functions cannot reliably call other functions
  * on the same deployment via HTTP.
  */
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     let parsedData: any = null;
     let parseError = "";
 
-    // ── Step 1: Parse (direct function call — no HTTP) ──
+    // ── Step 1: Parse (direct function call - no HTTP) ──
     try {
       console.log("[process] Step 1: Running parse engine directly...");
       const parseResult = await runParseEngine({
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
           const parsedState = p.state;
 
           // Prefer a short street-address label ("136 Commercial Ave") over the
-          // raw parsed name — that's what brokers/owners recognize and keeps
+          // raw parsed name - that's what brokers/owners recognize and keeps
           // card titles compact. Falls back to buildSmartPropertyName if we
           // couldn't extract a usable street address from parsed content.
           const shortStreet = extractShortStreetAddress(parsedAddress);
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
           updatedAt: new Date().toISOString(),
         }, { merge: true }).catch(() => {});
 
-        // Generate is lightweight — just creates Firestore records
+        // Generate is lightweight - just creates Firestore records
         // We can call the generate route via internal fetch since it's simple,
         // or inline it. For now, inline the essential logic.
         const now = new Date().toISOString();
@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
         console.error("[process] Generate error (non-blocking):", err?.message);
       }
     } else {
-      console.log("[process] Skipping generate — no parsed data or 0 fields");
+      console.log("[process] Skipping generate - no parsed data or 0 fields");
     }
 
     // ── Step 3: Score (ALWAYS runs, even if parse returned few fields) ──

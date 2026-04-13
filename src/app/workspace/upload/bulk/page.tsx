@@ -192,7 +192,7 @@ export default function BulkUploadPage() {
               if (updatedProp?.propertyName) {
                 setItems(prev => prev.map(i => i.id === item.id ? { ...i, propertyName: updatedProp.propertyName } : i));
               }
-            } catch { /* non-blocking — name will update on next page load */ }
+            } catch { /* non-blocking - name will update on next page load */ }
           }
         } catch { /* non-blocking */ }
 
@@ -238,7 +238,7 @@ export default function BulkUploadPage() {
         )}
       </div>
       <p style={{ fontSize: 13, color: "#5A7091", marginBottom: 20, lineHeight: 1.5 }}>
-        Upload up to {MAX_PROPERTIES} OMs at once — one file per property. Each OM becomes its own property with full analysis.
+        Upload up to {MAX_PROPERTIES} OMs at once - one file per property. Each OM becomes its own property with full analysis.
       </p>
 
       {/* Instructions */}
@@ -251,7 +251,7 @@ export default function BulkUploadPage() {
           <div style={{ fontSize: 12, color: "#5A7091", lineHeight: 1.7 }}>
             <div style={{ display: "flex", gap: 8, marginBottom: 4 }}>
               <span style={{ fontWeight: 700, color: "#C49A3C", flexShrink: 0 }}>1.</span>
-              <span>Drop up to {MAX_PROPERTIES} files — each file is treated as a separate property (one OM per property).</span>
+              <span>Drop up to {MAX_PROPERTIES} files - each file is treated as a separate property (one OM per property).</span>
             </div>
             <div style={{ display: "flex", gap: 8, marginBottom: 4 }}>
               <span style={{ fontWeight: 700, color: "#C49A3C", flexShrink: 0 }}>2.</span>
@@ -259,13 +259,13 @@ export default function BulkUploadPage() {
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <span style={{ fontWeight: 700, color: "#C49A3C", flexShrink: 0 }}>3.</span>
-              <span>Hit "Upload All" and we'll process each property one by one — extracting data, running analysis, and generating reports.</span>
+              <span>Hit "Upload All" and we'll process each property one by one - extracting data, running analysis, and generating reports.</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* Drop zone — only show when not processing */}
+      {/* Drop zone - only show when not processing */}
       {!processing && !allDone && (
         <>
           <div
@@ -300,7 +300,7 @@ export default function BulkUploadPage() {
             />
           </div>
 
-          {/* Property list — editable names */}
+          {/* Property list - editable names */}
           {hasItems && (
             <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EDF0F5", overflow: "hidden", marginBottom: 16 }}>
               <div style={{ padding: "10px 16px", borderBottom: "1px solid #EDF0F5", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -451,7 +451,7 @@ export default function BulkUploadPage() {
           </p>
           {items.some(i => i.status === "error") && (
             <p style={{ fontSize: 12, color: "#DC3545", margin: "0 0 8px" }}>
-              {items.filter(i => i.status === "error").length} failed — you can retry from the upload page.
+              {items.filter(i => i.status === "error").length} failed - you can retry from the upload page.
             </p>
           )}
           <p style={{ fontSize: 12, color: "#8899B0", margin: "0 0 20px" }}>

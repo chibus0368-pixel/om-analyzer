@@ -205,19 +205,19 @@ const HELP_TOPICS: HelpTopic[] = [
         <div style={{ padding: "0 0 0 16px" }}>
           <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
             <span style={{ width: 24, height: 24, borderRadius: "50%", background: C.primary, color: "#fff", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>1</span>
-            <div><strong style={{ color: C.onSurface }}>Create a DealBoard</strong> — Click "DealBoards" in the bottom nav, then create a new dealboard. Choose your asset type (Retail, Industrial, Office, or Land) so scoring uses the right model.</div>
+            <div><strong style={{ color: C.onSurface }}>Create a DealBoard</strong> - Click "DealBoards" in the bottom nav, then create a new dealboard. Choose your asset type (Retail, Industrial, Office, or Land) so scoring uses the right model.</div>
           </div>
           <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
             <span style={{ width: 24, height: 24, borderRadius: "50%", background: C.primary, color: "#fff", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>2</span>
-            <div><strong style={{ color: C.onSurface }}>Upload a Document</strong> — Go to "+ Add Property" and upload an Offering Memorandum (OM), property flyer, rent roll, or any CRE document. PDFs and Excel files give the best results.</div>
+            <div><strong style={{ color: C.onSurface }}>Upload a Document</strong> - Go to "+ Add Property" and upload an Offering Memorandum (OM), property flyer, rent roll, or any CRE document. PDFs and Excel files give the best results.</div>
           </div>
           <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
             <span style={{ width: 24, height: 24, borderRadius: "50%", background: C.primary, color: "#fff", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>3</span>
-            <div><strong style={{ color: C.onSurface }}>Review Results</strong> — The AI automatically extracts property data, calculates financial metrics, generates an investment score, and creates output files. This takes about 30–60 seconds.</div>
+            <div><strong style={{ color: C.onSurface }}>Review Results</strong> - The AI automatically extracts property data, calculates financial metrics, generates an investment score, and creates output files. This takes about 30–60 seconds.</div>
           </div>
           <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
             <span style={{ width: 24, height: 24, borderRadius: "50%", background: C.primary, color: "#fff", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>4</span>
-            <div><strong style={{ color: C.onSurface }}>Compare & Decide</strong> — Use the Scoreboard to rank deals, the Map to visualize locations, and the Compare tool to put deals side by side.</div>
+            <div><strong style={{ color: C.onSurface }}>Compare & Decide</strong> - Use the Scoreboard to rank deals, the Map to visualize locations, and the Compare tool to put deals side by side.</div>
           </div>
         </div>
 
@@ -236,7 +236,7 @@ const HELP_TOPICS: HelpTopic[] = [
     content: (
       <div>
         <p style={{ fontSize: 14, color: C.secondary, lineHeight: 1.7 }}>
-          Upload one property at a time for the best results. A single Offering Memorandum (OM) is enough for a full analysis — you can always add more documents later (rent rolls, T-12s, leases).
+          Upload one property at a time for the best results. A single Offering Memorandum (OM) is enough for a full analysis - you can always add more documents later (rent rolls, T-12s, leases).
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Supported File Types</h4>
@@ -245,7 +245,7 @@ const HELP_TOPICS: HelpTopic[] = [
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Single Upload</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          Navigate to <strong>+ Add Property</strong> in the sidebar. Drag and drop your file or click "Select File from Local" to browse. The system automatically detects the document type (OM, flyer, rent roll, etc.) and assigns a category. After upload, AI analysis begins immediately — you'll see a progress indicator showing each stage.
+          Navigate to <strong>+ Add Property</strong> in the sidebar. Drag and drop your file or click "Select File from Local" to browse. The system automatically detects the document type (OM, flyer, rent roll, etc.) and assigns a category. After upload, AI analysis begins immediately - you'll see a progress indicator showing each stage.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Bulk Upload</h4>
@@ -267,7 +267,7 @@ const HELP_TOPICS: HelpTopic[] = [
         <div style={{ background: C.surfLow, borderRadius: C.radius, padding: 16, fontSize: 13, color: C.secondary, lineHeight: 1.7 }}>
           <strong style={{ color: C.onSurface }}>Do:</strong> Upload complete OMs with financials, rent rolls with tenant data, and T-12 operating statements.
           <br /><br />
-          <strong style={{ color: C.onSurface }}>Avoid:</strong> Partial screenshots, low-resolution scans, or heavily redacted documents — the AI needs readable text to extract data.
+          <strong style={{ color: C.onSurface }}>Avoid:</strong> Partial screenshots, low-resolution scans, or heavily redacted documents - the AI needs readable text to extract data.
           <br /><br />
           <strong style={{ color: C.onSurface }}>Max file size:</strong> 50MB per file. For best performance, keep PDFs under 20MB.
         </div>
@@ -281,7 +281,7 @@ const HELP_TOPICS: HelpTopic[] = [
     content: (
       <div>
         <p style={{ fontSize: 14, color: C.secondary, lineHeight: 1.7 }}>
-          The Dashboard is your home screen — it shows all properties in your active DealBoard at a glance.
+          The Dashboard is your home screen - it shows all properties in your active DealBoard at a glance.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Property Cards</h4>
@@ -296,7 +296,7 @@ const HELP_TOPICS: HelpTopic[] = [
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Parse Status</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          Each property shows its current analysis state: <strong>Uploaded</strong> (files received), <strong>Parsing</strong> (AI is extracting data), <strong>Parsed</strong> (analysis complete), <strong>Needs Review</strong> (some fields need verification), or <strong>Failed</strong> (extraction error — try re-uploading).
+          Each property shows its current analysis state: <strong>Uploaded</strong> (files received), <strong>Parsing</strong> (AI is extracting data), <strong>Parsed</strong> (analysis complete), <strong>Needs Review</strong> (some fields need verification), or <strong>Failed</strong> (extraction error - try re-uploading).
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>+ Add Property Button</h4>
@@ -313,7 +313,7 @@ const HELP_TOPICS: HelpTopic[] = [
     content: (
       <div>
         <p style={{ fontSize: 14, color: C.secondary, lineHeight: 1.7 }}>
-          Every property receives an AI-generated investment score from 0 to 100. The score evaluates pricing, cash flow, tenant quality, lease risk, location, physical condition, and more — weighted by importance.
+          Every property receives an AI-generated investment score from 0 to 100. The score evaluates pricing, cash flow, tenant quality, lease risk, location, physical condition, and more - weighted by importance.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Score Bands</h4>
@@ -325,7 +325,7 @@ const HELP_TOPICS: HelpTopic[] = [
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Scoring Categories (Retail)</h4>
         <ScoringWeightsDiagram />
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          For retail properties, the score is a weighted composite of 10 categories. The weights are designed to reflect how institutional investors evaluate NNN deals — pricing and cash flow carry the most weight, followed by tenant quality and lease rollover risk.
+          For retail properties, the score is a weighted composite of 10 categories. The weights are designed to reflect how institutional investors evaluate NNN deals - pricing and cash flow carry the most weight, followed by tenant quality and lease rollover risk.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>How Each Category is Scored</h4>
@@ -358,7 +358,7 @@ const HELP_TOPICS: HelpTopic[] = [
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Missing Data Handling</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          If a document doesn't contain certain data points (e.g., no debt assumptions), the scoring system automatically redistributes weight to categories that do have data. This ensures properties aren't unfairly penalized for missing information — but having more complete data always leads to a more reliable score.
+          If a document doesn't contain certain data points (e.g., no debt assumptions), the scoring system automatically redistributes weight to categories that do have data. This ensures properties aren't unfairly penalized for missing information - but having more complete data always leads to a more reliable score.
         </p>
       </div>
     ),
@@ -388,7 +388,7 @@ const HELP_TOPICS: HelpTopic[] = [
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Reading the Scoreboard</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          Each metric is formatted automatically: dollar amounts show $ signs, percentages show %, and ratios display as decimals. Fields that couldn't be extracted appear as blank — this usually means the source document didn't contain that data point.
+          Each metric is formatted automatically: dollar amounts show $ signs, percentages show %, and ratios display as decimals. Fields that couldn't be extracted appear as blank - this usually means the source document didn't contain that data point.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Threshold Coloring</h4>
@@ -405,17 +405,17 @@ const HELP_TOPICS: HelpTopic[] = [
     content: (
       <div>
         <p style={{ fontSize: 14, color: C.secondary, lineHeight: 1.7 }}>
-          The property detail page is where you see everything about a single deal — documents, extracted data, outputs, notes, and scoring.
+          The property detail page is where you see everything about a single deal - documents, extracted data, outputs, notes, and scoring.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Documents Section</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          View all uploaded documents for this property. Each document shows its category (OM, Flyer, Rent Roll, T-12, Lease, etc.), file type, and upload date. You can upload additional documents directly from this page — click the upload area and the new file will be attached to this property.
+          View all uploaded documents for this property. Each document shows its category (OM, Flyer, Rent Roll, T-12, Lease, etc.), file type, and upload date. You can upload additional documents directly from this page - click the upload area and the new file will be attached to this property.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Extracted Fields</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          After AI analysis, all extracted data appears in organized field groups (Property Basics, Pricing, Income, Expenses, Tenant Info, Debt Assumptions, Returns, Rent Roll, Lease Data, Signals). Each field shows the extracted value and a confidence indicator. You can override any field by clicking on it — your overrides are saved and used for scoring instead of the AI-extracted value.
+          After AI analysis, all extracted data appears in organized field groups (Property Basics, Pricing, Income, Expenses, Tenant Info, Debt Assumptions, Returns, Rent Roll, Lease Data, Signals). Each field shows the extracted value and a confidence indicator. You can override any field by clicking on it - your overrides are saved and used for scoring instead of the AI-extracted value.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Outputs</h4>
@@ -425,7 +425,7 @@ const HELP_TOPICS: HelpTopic[] = [
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Notes</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          Add private notes to any property — useful for recording your own observations, questions for the broker, or due diligence action items. Notes are timestamped and tied to the property.
+          Add private notes to any property - useful for recording your own observations, questions for the broker, or due diligence action items. Notes are timestamped and tied to the property.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Re-Analyze</h4>
@@ -473,7 +473,7 @@ const HELP_TOPICS: HelpTopic[] = [
     content: (
       <div>
         <p style={{ fontSize: 14, color: C.secondary, lineHeight: 1.7 }}>
-          DealBoards let you organize properties into separate collections — by deal pipeline, client, asset type, or any grouping that makes sense for your workflow.
+          DealBoards let you organize properties into separate collections - by deal pipeline, client, asset type, or any grouping that makes sense for your workflow.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Asset Types</h4>
@@ -489,13 +489,13 @@ const HELP_TOPICS: HelpTopic[] = [
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>DealBoard Examples</h4>
         <div style={{ background: C.surfLow, borderRadius: C.radius, padding: 16, fontSize: 13, color: C.secondary, lineHeight: 1.7 }}>
-          <strong style={{ color: C.onSurface }}>"Q2 Pipeline"</strong> — All deals you're evaluating this quarter.
+          <strong style={{ color: C.onSurface }}>"Q2 Pipeline"</strong> - All deals you're evaluating this quarter.
           <br /><br />
-          <strong style={{ color: C.onSurface }}>"Client: ABC Investors"</strong> — Properties screened for a specific client.
+          <strong style={{ color: C.onSurface }}>"Client: ABC Investors"</strong> - Properties screened for a specific client.
           <br /><br />
-          <strong style={{ color: C.onSurface }}>"Industrial Acquisitions"</strong> — Industrial-only DealBoard with warehouse-specific scoring.
+          <strong style={{ color: C.onSurface }}>"Industrial Acquisitions"</strong> - Industrial-only DealBoard with warehouse-specific scoring.
           <br /><br />
-          <strong style={{ color: C.onSurface }}>"Comparison Set"</strong> — A curated set of deals for side-by-side analysis.
+          <strong style={{ color: C.onSurface }}>"Comparison Set"</strong> - A curated set of deals for side-by-side analysis.
         </div>
       </div>
     ),
@@ -507,23 +507,23 @@ const HELP_TOPICS: HelpTopic[] = [
     content: (
       <div>
         <p style={{ fontSize: 14, color: C.secondary, lineHeight: 1.7 }}>
-          Sharing lets you generate a read-only link to your DealBoard that anyone can view — no account required. It's designed for quickly getting deal analysis in front of decision-makers.
+          Sharing lets you generate a read-only link to your DealBoard that anyone can view - no account required. It's designed for quickly getting deal analysis in front of decision-makers.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>How It Works</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          Click <strong>Share DealBoard</strong> in the navigation bar to open the sharing panel. From there you can generate a unique shareable link for the active DealBoard. Anyone with the link can view property scores, financial metrics, AI analysis, and the scoreboard — but they cannot edit data, upload files, or change scores.
+          Click <strong>Share DealBoard</strong> in the navigation bar to open the sharing panel. From there you can generate a unique shareable link for the active DealBoard. Anyone with the link can view property scores, financial metrics, AI analysis, and the scoreboard - but they cannot edit data, upload files, or change scores.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>What Recipients See</h4>
         <div style={{ background: C.surfLow, borderRadius: C.radius, padding: 16, fontSize: 13, color: C.secondary, lineHeight: 1.7 }}>
-          <strong style={{ color: C.onSurface }}>Property cards</strong> — Name, location, score ring, and analysis status for each deal.
+          <strong style={{ color: C.onSurface }}>Property cards</strong> - Name, location, score ring, and analysis status for each deal.
           <br /><br />
-          <strong style={{ color: C.onSurface }}>Scoreboard</strong> — The full comparative table with scores, pricing, cap rates, NOI, and signal ratings.
+          <strong style={{ color: C.onSurface }}>Scoreboard</strong> - The full comparative table with scores, pricing, cap rates, NOI, and signal ratings.
           <br /><br />
-          <strong style={{ color: C.onSurface }}>Deal detail</strong> — Financial metrics, AI-generated deal summary, strengths and risks, and the investment recommendation.
+          <strong style={{ color: C.onSurface }}>Deal detail</strong> - Financial metrics, AI-generated deal summary, strengths and risks, and the investment recommendation.
           <br /><br />
-          <strong style={{ color: C.onSurface }}>Map view</strong> — Property locations plotted on an interactive map.
+          <strong style={{ color: C.onSurface }}>Map view</strong> - Property locations plotted on an interactive map.
         </div>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Use Cases</h4>
@@ -609,7 +609,7 @@ const HELP_TOPICS: HelpTopic[] = [
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Underwriting Brief</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          An AI-generated narrative summary of the deal, including property overview, financial highlights, risk factors, value-add opportunities, and the investment recommendation. Formatted for quick review — useful for sharing with investment committees or clients.
+          An AI-generated narrative summary of the deal, including property overview, financial highlights, risk factors, value-add opportunities, and the investment recommendation. Formatted for quick review - useful for sharing with investment committees or clients.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Re-generating Outputs</h4>
@@ -651,7 +651,7 @@ const HELP_TOPICS: HelpTopic[] = [
           ))}
         </div>
         <p style={{ fontSize: 12, color: C.secondary, fontStyle: "italic" }}>
-          These are the system defaults. You can change them in Settings — your changes apply to all new underwriting models in this DealBoard.
+          These are the system defaults. You can change them in Settings - your changes apply to all new underwriting models in this DealBoard.
         </p>
       </div>
     ),
@@ -673,9 +673,9 @@ const HELP_TOPICS: HelpTopic[] = [
         <div style={{ background: C.surfLow, borderRadius: C.radius, padding: 16, fontSize: 13, color: C.secondary, lineHeight: 1.8 }}>
           <strong style={{ color: C.onSurface }}>Upload the OM first.</strong> It usually contains the most complete data. Add rent rolls and T-12s later for additional accuracy.
           <br /><br />
-          <strong style={{ color: C.onSurface }}>Check the Signals section.</strong> The AI generates buy/hold/pass recommendations with reasoning — this is often the most valuable output.
+          <strong style={{ color: C.onSurface }}>Check the Signals section.</strong> The AI generates buy/hold/pass recommendations with reasoning - this is often the most valuable output.
           <br /><br />
-          <strong style={{ color: C.onSurface }}>Override fields you know are wrong.</strong> The AI isn't perfect. If you spot an incorrect extraction, click to override it — the score will recalculate.
+          <strong style={{ color: C.onSurface }}>Override fields you know are wrong.</strong> The AI isn't perfect. If you spot an incorrect extraction, click to override it - the score will recalculate.
           <br /><br />
           <strong style={{ color: C.onSurface }}>Use Bulk Upload for deal flow.</strong> If a broker sends you 10 OMs, bulk upload them all at once instead of one by one.
           <br /><br />
@@ -701,14 +701,14 @@ const HELP_TOPICS: HelpTopic[] = [
             { term: "Cap Rate", def: "Net Operating Income divided by property value. A higher cap rate generally indicates higher yield but potentially higher risk." },
             { term: "NOI (Net Operating Income)", def: "Total income minus operating expenses, before debt service. The core measure of a property's income-producing ability." },
             { term: "DSCR (Debt Service Coverage Ratio)", def: "NOI divided by annual debt service. A DSCR above 1.25x is typically required by lenders. Below 1.0x means the property doesn't cover its debt." },
-            { term: "WALE", def: "Weighted Average Lease Expiration — the average remaining lease term, weighted by rent or square footage. Longer WALE = more predictable income." },
+            { term: "WALE", def: "Weighted Average Lease Expiration - the average remaining lease term, weighted by rent or square footage. Longer WALE = more predictable income." },
             { term: "Cash-on-Cash Return", def: "Annual before-tax cash flow divided by total cash invested. Shows the yield on your actual equity investment." },
-            { term: "Debt Yield", def: "NOI divided by loan amount. A lender's measure of risk — higher debt yield = more comfortable lending position." },
+            { term: "Debt Yield", def: "NOI divided by loan amount. A lender's measure of risk - higher debt yield = more comfortable lending position." },
             { term: "Price per SF", def: "Asking price divided by total square footage. Used to compare relative pricing across properties of different sizes." },
-            { term: "GLA", def: "Gross Leasable Area — the total floor area available for tenant use, measured in square feet." },
+            { term: "GLA", def: "Gross Leasable Area - the total floor area available for tenant use, measured in square feet." },
             { term: "T-12", def: "Trailing 12-month operating statement. Shows actual income and expenses for the most recent 12-month period." },
             { term: "OM (Offering Memorandum)", def: "A marketing document prepared by brokers that summarizes a property for sale, including financials, tenant info, photos, and market data." },
-            { term: "Breakeven Occupancy", def: "The minimum occupancy needed to cover all operating expenses and debt service. Lower is better — more cushion for vacancies." },
+            { term: "Breakeven Occupancy", def: "The minimum occupancy needed to cover all operating expenses and debt service. Lower is better - more cushion for vacancies." },
             { term: "IRR (Internal Rate of Return)", def: "The annualized rate of return on an investment over the hold period, accounting for all cash flows and the exit sale." },
             { term: "Equity Multiple", def: "Total distributions divided by total equity invested. A 2.0x equity multiple means you doubled your money." },
             { term: "LTV (Loan-to-Value)", def: "The loan amount as a percentage of the property value. A 65% LTV means 35% equity and 65% debt." },
@@ -734,7 +734,7 @@ const HELP_TOPICS: HelpTopic[] = [
       <div>
         {[
           { q: "What AI model powers the analysis?", a: "GPT-4o from OpenAI. Documents go through a 3-stage pipeline: (1) text extraction and property classification, (2) structured field extraction across 10+ field groups, (3) signal generation with investment recommendations." },
-          { q: "How long does analysis take?", a: "Typically 30–60 seconds for a single OM. The progress bar shows each stage. You can leave the page while analysis is running — it continues in the background." },
+          { q: "How long does analysis take?", a: "Typically 30–60 seconds for a single OM. The progress bar shows each stage. You can leave the page while analysis is running - it continues in the background." },
           { q: "Can I re-analyze a property?", a: "Yes. Go to the property detail page and click 'Re-analyze.' This re-runs the entire pipeline with all attached documents and recalculates the score." },
           { q: "What if the AI extracts the wrong data?", a: "Click any field value to override it with the correct number. Your override takes precedence in all calculations and scoring. The more fields you confirm, the higher your Data Confidence score." },
           { q: "Can I upload multiple files for one property?", a: "Yes. Upload the OM first, then go to the property detail page and add rent rolls, T-12s, leases, or any additional documents. The AI incorporates all documents into the analysis." },
@@ -792,7 +792,7 @@ export default function HelpPage() {
         }
       `}</style>
       <div className="hp-container" style={{ display: "flex", gap: 0, minHeight: "calc(100vh - 120px)" }}>
-      {/* Left sidebar — topic list */}
+      {/* Left sidebar - topic list */}
       <div className="hp-sidebar" style={{
         width: 240, flexShrink: 0, padding: "20px 0",
         borderRight: `1px solid ${C.ghost}`,

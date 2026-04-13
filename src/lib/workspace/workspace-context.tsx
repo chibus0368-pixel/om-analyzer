@@ -150,7 +150,7 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // SSR-safe initialization — start with empty defaults to avoid hydration mismatch,
+  // SSR-safe initialization - start with empty defaults to avoid hydration mismatch,
   // then hydrate from localStorage in useEffect below.
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -184,7 +184,7 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
     setLoading(false);
     setMounted(true);
 
-    // Background reconcile with server — server is authoritative. This is
+    // Background reconcile with server - server is authoritative. This is
     // the critical step that makes boards survive a cache wipe.
     (async () => {
       const token = await getAuthToken();
@@ -258,7 +258,7 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
 
   useEffect(() => {
     if (!activeWorkspace?.slug) return;
-    // Skip ws param sync on login page — login doesn't need workspace context in URL
+    // Skip ws param sync on login page - login doesn't need workspace context in URL
     if (pathname === "/workspace/login") return;
     const currentSlug = searchParams.get("ws");
     if (currentSlug !== activeWorkspace.slug) {

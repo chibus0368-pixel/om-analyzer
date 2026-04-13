@@ -39,7 +39,7 @@ function fmtPct(val: any): string {
 }
 
 // ============================================================
-// XLSX GENERATION — Scenario Model Workbook
+// XLSX GENERATION - Scenario Model Workbook
 // ============================================================
 
 // Style constants
@@ -105,7 +105,7 @@ export async function generateUnderwritingXLSX(
   const loc = [g("property_basics", "address"), g("property_basics", "city"), g("property_basics", "state")].filter(Boolean).join(", ");
 
   // ================================================================
-  // SHEET 1: SCENARIO MODEL — the main interactive sheet
+  // SHEET 1: SCENARIO MODEL - the main interactive sheet
   // ================================================================
   if (analysisType !== "land") {
     const ws = wb.addWorksheet("Scenario Model");
@@ -114,7 +114,7 @@ export async function generateUnderwritingXLSX(
 
     // Title
     ws.getCell(r, 1).value = `${propertyName}`; ws.getCell(r, 1).font = titleFont; r++;
-    ws.getCell(r, 1).value = `${typeLabel} Underwriting — Scenario Model`; ws.getCell(r, 1).font = { ...noteFont, size: 10 }; r++;
+    ws.getCell(r, 1).value = `${typeLabel} Underwriting - Scenario Model`; ws.getCell(r, 1).font = { ...noteFont, size: 10 }; r++;
     ws.getCell(r, 1).value = loc; ws.getCell(r, 1).font = noteFont; r++;
     ws.getCell(r, 1).value = "Yellow cells = your inputs. Green cells = formulas (auto-update)."; ws.getCell(r, 1).font = { ...noteFont, bold: true, color: { argb: "FF0000CC" } }; r += 2;
 
@@ -153,11 +153,11 @@ export async function generateUnderwritingXLSX(
     ws.getCell(r, 1).value = "EXPENSES"; ws.getCell(r, 1).font = secFont; r++;
     hdrRow(ws, r, ["Item", "Value", "Notes"]); r++;
 
-    const refCam = inputRow(ws, r++, "CAM / Common Area", camExp, camExp > 0 ? "From OM" : "Not in OM — enter if known", "$#,##0");
-    const refTax = inputRow(ws, r++, "Real Estate Taxes", propTax, propTax > 0 ? "From OM" : "Not in OM — verify with county", "$#,##0");
-    const refIns = inputRow(ws, r++, "Insurance", insurance, insurance > 0 ? "From OM" : "Not in OM — get quote", "$#,##0");
-    const refMgmt = inputRow(ws, r++, "Management Fee", mgmtFee, mgmtFee > 0 ? "From OM" : "Not in OM — typically 3-6% EGI", "$#,##0");
-    const refReserves = inputRow(ws, r++, "Reserves / CapEx", 0, "Annual reserves — enter your estimate", "$#,##0");
+    const refCam = inputRow(ws, r++, "CAM / Common Area", camExp, camExp > 0 ? "From OM" : "Not in OM - enter if known", "$#,##0");
+    const refTax = inputRow(ws, r++, "Real Estate Taxes", propTax, propTax > 0 ? "From OM" : "Not in OM - verify with county", "$#,##0");
+    const refIns = inputRow(ws, r++, "Insurance", insurance, insurance > 0 ? "From OM" : "Not in OM - get quote", "$#,##0");
+    const refMgmt = inputRow(ws, r++, "Management Fee", mgmtFee, mgmtFee > 0 ? "From OM" : "Not in OM - typically 3-6% EGI", "$#,##0");
+    const refReserves = inputRow(ws, r++, "Reserves / CapEx", 0, "Annual reserves - enter your estimate", "$#,##0");
     const refOtherExp = inputRow(ws, r++, "Other Expenses", Number(g("expenses", "other_expenses")) || 0, "", "$#,##0");
     const refTotalExp = formulaRow(ws, r++, "Total Expenses", `${refCam}+${refTax}+${refIns}+${refMgmt}+${refReserves}+${refOtherExp}`, "$#,##0", "", { bold: true });
     r++;
@@ -188,20 +188,20 @@ export async function generateUnderwritingXLSX(
     r++;
 
     // ── SECTION: RETURNS (all formulas) ──
-    ws.getCell(r, 1).value = "RETURNS — ALL CALCULATED"; ws.getCell(r, 1).font = secFont; r++;
+    ws.getCell(r, 1).value = "RETURNS - ALL CALCULATED"; ws.getCell(r, 1).font = secFont; r++;
     hdrRow(ws, r, ["Metric", "Value", "Notes"]); r++;
 
     formulaRow(ws, r++, "Cap Rate", `${refNOI}/${refPrice}`, "0.00%", "NOI ÷ Price", { bold: true });
     formulaRow(ws, r++, "Price / SF", `${refPrice}/${refSf}`, "$#,##0");
     const refCashFlow = formulaRow(ws, r++, "Annual Cash Flow", `${refNOI}-${refDS}`, "$#,##0", "NOI − Debt Service");
-    formulaRow(ws, r++, "DSCR", `${refNOI}/${refDS}`, "0.00\"x\"", "NOI ÷ Debt Service — target >1.25x", { bold: true });
+    formulaRow(ws, r++, "DSCR", `${refNOI}/${refDS}`, "0.00\"x\"", "NOI ÷ Debt Service - target >1.25x", { bold: true });
     formulaRow(ws, r++, "Cash-on-Cash", `${refCashFlow}/${refEquity}`, "0.00%", "Cash Flow ÷ Equity", { bold: true });
-    formulaRow(ws, r++, "Debt Yield", `${refNOI}/${refLoan}`, "0.00%", "NOI ÷ Loan — lender metric");
+    formulaRow(ws, r++, "Debt Yield", `${refNOI}/${refLoan}`, "0.00%", "NOI ÷ Loan - lender metric");
     formulaRow(ws, r++, "Monthly Cash Flow", `${refCashFlow}/12`, "$#,##0");
     r++;
 
     // ── SECTION: QUICK SCENARIOS ──
-    ws.getCell(r, 1).value = "QUICK SCENARIOS — Change price above to see these update"; ws.getCell(r, 1).font = secFont; r++;
+    ws.getCell(r, 1).value = "QUICK SCENARIOS - Change price above to see these update"; ws.getCell(r, 1).font = secFont; r++;
     ws.getCell(r, 1).value = "Or reference the discount table below for a quick comparison."; ws.getCell(r, 1).font = noteFont; r++;
     hdrRow(ws, r, ["Discount", "Price", "Cap Rate", "DSCR", "Cash-on-Cash"], [14, 18, 14, 14, 16]); r++;
     ws.getColumn(3).width = Math.max(ws.getColumn(3).width || 0, 14);
@@ -258,7 +258,7 @@ export async function generateUnderwritingXLSX(
 
     const ws2 = wb.addWorksheet("Rent Roll");
     let r = 2;
-    ws2.getCell(r, 1).value = `RENT ROLL — ${propertyName}`; ws2.getCell(r, 1).font = titleFont; r += 2;
+    ws2.getCell(r, 1).value = `RENT ROLL - ${propertyName}`; ws2.getCell(r, 1).font = titleFont; r += 2;
     hdrRow(ws2, r, ["Tenant", "SF", "Annual Rent", "Rent/SF", "Lease Type", "Lease End", "Status"], [24, 10, 14, 10, 13, 12, 12]); r++;
 
     for (const t of tenantList) {
@@ -283,12 +283,12 @@ export async function generateUnderwritingXLSX(
   }
 
   // ================================================================
-  // SHEET 3: OM DATA — raw reference from the document
+  // SHEET 3: OM DATA - raw reference from the document
   // ================================================================
   const wsRef = wb.addWorksheet(analysisType === "land" ? "Site Data" : "OM Data");
   let r = 2;
   wsRef.getColumn(1).width = 28; wsRef.getColumn(2).width = 28; wsRef.getColumn(3).width = 30;
-  wsRef.getCell(r, 1).value = `${propertyName} — ${analysisType === "land" ? "SITE" : "OM"} REFERENCE DATA`; wsRef.getCell(r, 1).font = titleFont; r++;
+  wsRef.getCell(r, 1).value = `${propertyName} - ${analysisType === "land" ? "SITE" : "OM"} REFERENCE DATA`; wsRef.getCell(r, 1).font = titleFont; r++;
   wsRef.getCell(r, 1).value = "This is what was extracted from the OM/flyer. For reference only."; wsRef.getCell(r, 1).font = noteFont; r += 2;
 
   // Property info
@@ -374,7 +374,7 @@ export async function generateUnderwritingXLSX(
     const wsLand = wb.addWorksheet("Pricing Analysis");
     let lr = 2;
     wsLand.getColumn(1).width = 28; wsLand.getColumn(2).width = 28;
-    wsLand.getCell(lr, 1).value = `LAND PRICING — ${propertyName}`; wsLand.getCell(lr, 1).font = titleFont; lr += 2;
+    wsLand.getCell(lr, 1).value = `LAND PRICING - ${propertyName}`; wsLand.getCell(lr, 1).font = titleFont; lr += 2;
     hdrRow(wsLand, lr, ["Field", "Value"]); lr++;
     dataRow(wsLand, lr++, "Asking Price", fmt$(g("pricing_deal_terms", "asking_price")));
     dataRow(wsLand, lr++, "Acreage", g("property_basics", "lot_acres") || g("property_basics", "usable_acres") || "");
@@ -498,7 +498,7 @@ const STRATEGIES: Record<string, StrategyProfile> = {
     verdictFn: (m) => {
       const reasons: string[] = [];
       let pass = true;
-      if (m.dscr !== null && m.dscr < 1.00) { reasons.push(`DSCR ${m.dscr.toFixed(2)}x below 1.00x — negative leverage`); pass = false; }
+      if (m.dscr !== null && m.dscr < 1.00) { reasons.push(`DSCR ${m.dscr.toFixed(2)}x below 1.00x - negative leverage`); pass = false; }
       if (m.capRate !== null && m.capRate >= 7.0) reasons.push("High entry cap supports value-add returns");
       if (m.occupancy !== null && m.occupancy < 85) reasons.push("Significant lease-up / renovation upside");
       if (m.expenseRatio !== null && m.expenseRatio > 50) reasons.push("Expense reduction opportunity");
@@ -519,7 +519,7 @@ const STRATEGIES: Record<string, StrategyProfile> = {
     verdictFn: (m) => {
       const reasons: string[] = [];
       if (m.capRate !== null && m.capRate >= 8.0) reasons.push("Distressed entry cap offers high upside");
-      if (m.occupancy !== null && m.occupancy < 70) reasons.push("Significant vacancy — full repositioning play");
+      if (m.occupancy !== null && m.occupancy < 70) reasons.push("Significant vacancy - full repositioning play");
       if (m.yearBuilt !== null && (2026 - m.yearBuilt) > 40) reasons.push("Aging asset may warrant redevelopment");
       return { verdict: reasons.length > 0 ? "POTENTIAL FIT" : "EVALUATE FURTHER", reasons };
     },
@@ -565,7 +565,7 @@ export async function generateStrategyLensXLSX(
   wsSummary.getColumn(2).width = 22;
   wsSummary.getColumn(3).width = 32;
   let r = 2;
-  wsSummary.getCell(r, 1).value = `${propertyName} — Strategy Analysis`;
+  wsSummary.getCell(r, 1).value = `${propertyName} - Strategy Analysis`;
   wsSummary.getCell(r, 1).font = { bold: true, size: 14, color: { argb: "FF0F172A" } };
   r++;
   wsSummary.getCell(r, 1).value = loc; wsSummary.getCell(r, 1).font = { size: 10, color: { argb: "FF6B7280" } };
@@ -575,17 +575,17 @@ export async function generateStrategyLensXLSX(
 
   hdrRow(wsSummary, r, ["Metric", "Value", "Notes"]); r++;
   const summaryRows: [string, string, string][] = [
-    ["Asking Price", metrics.askingPrice ? `$${metrics.askingPrice.toLocaleString()}` : "—", ""],
-    ["Cap Rate", metrics.capRate ? `${metrics.capRate.toFixed(2)}%` : "—", "Entry cap rate"],
-    ["NOI", metrics.noi ? `$${metrics.noi.toLocaleString()}` : "—", "In-place / adjusted"],
-    ["DSCR", metrics.dscr ? `${metrics.dscr.toFixed(2)}x` : "—", "Debt service coverage"],
-    ["Occupancy", metrics.occupancy ? `${metrics.occupancy.toFixed(1)}%` : "—", ""],
-    ["WALE", metrics.wale ? `${metrics.wale.toFixed(1)} yrs` : "—", "Weighted avg lease term"],
-    ["Expense Ratio", metrics.expenseRatio ? `${metrics.expenseRatio.toFixed(1)}%` : "—", ""],
-    ["Price / SF", metrics.pricePerSF ? `$${metrics.pricePerSF.toFixed(0)}` : "—", ""],
-    ["NOI / SF", metrics.noiPerSF ? `$${metrics.noiPerSF.toFixed(2)}` : "—", ""],
-    ["Year Built", metrics.yearBuilt ? `${metrics.yearBuilt}` : "—", ""],
-    ["Building SF", metrics.buildingSF ? `${metrics.buildingSF.toLocaleString()}` : "—", ""],
+    ["Asking Price", metrics.askingPrice ? `$${metrics.askingPrice.toLocaleString()}` : "-", ""],
+    ["Cap Rate", metrics.capRate ? `${metrics.capRate.toFixed(2)}%` : "-", "Entry cap rate"],
+    ["NOI", metrics.noi ? `$${metrics.noi.toLocaleString()}` : "-", "In-place / adjusted"],
+    ["DSCR", metrics.dscr ? `${metrics.dscr.toFixed(2)}x` : "-", "Debt service coverage"],
+    ["Occupancy", metrics.occupancy ? `${metrics.occupancy.toFixed(1)}%` : "-", ""],
+    ["WALE", metrics.wale ? `${metrics.wale.toFixed(1)} yrs` : "-", "Weighted avg lease term"],
+    ["Expense Ratio", metrics.expenseRatio ? `${metrics.expenseRatio.toFixed(1)}%` : "-", ""],
+    ["Price / SF", metrics.pricePerSF ? `$${metrics.pricePerSF.toFixed(0)}` : "-", ""],
+    ["NOI / SF", metrics.noiPerSF ? `$${metrics.noiPerSF.toFixed(2)}` : "-", ""],
+    ["Year Built", metrics.yearBuilt ? `${metrics.yearBuilt}` : "-", ""],
+    ["Building SF", metrics.buildingSF ? `${metrics.buildingSF.toLocaleString()}` : "-", ""],
   ];
   if (metrics.unitCount) summaryRows.push(["Units", `${metrics.unitCount}`, ""]);
   if (metrics.pricePerUnit) summaryRows.push(["Price / Unit", `$${metrics.pricePerUnit.toLocaleString()}`, ""]);
@@ -618,7 +618,7 @@ export async function generateStrategyLensXLSX(
     const checkMetric = (label: string, threshold: string, value: string | null, passFn: () => boolean | null): void => {
       const lc = ws.getCell(sr, 1); lc.value = label; lc.font = labelFont; lc.border = borders; lc.fill = white;
       const tc = ws.getCell(sr, 2); tc.value = threshold; tc.font = valFont; tc.border = borders; tc.fill = white;
-      const vc = ws.getCell(sr, 3); vc.value = value || "—"; vc.font = valFont; vc.border = borders;
+      const vc = ws.getCell(sr, 3); vc.value = value || "-"; vc.font = valFont; vc.border = borders;
       const result = value ? passFn() : null;
       if (result === true) {
         vc.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD1FAE5" } };
@@ -628,7 +628,7 @@ export async function generateStrategyLensXLSX(
         ws.getCell(sr, 4).value = "✗ Below threshold"; ws.getCell(sr, 4).font = { size: 10, color: { argb: "FFDC2626" } };
       } else {
         vc.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFEF3C7" } };
-        ws.getCell(sr, 4).value = "— No data"; ws.getCell(sr, 4).font = { size: 10, color: { argb: "FF92400E" } };
+        ws.getCell(sr, 4).value = "- No data"; ws.getCell(sr, 4).font = { size: 10, color: { argb: "FF92400E" } };
       }
       ws.getCell(sr, 4).border = borders;
       sr++;
@@ -962,8 +962,8 @@ ${addonRows.map(([label, val]) => `<tr><td>${label}</td><td class="metric-val">$
     : `First-Pass ${typeLabel} Underwriting Brief`;
 
   const disclaimer = analysisType === "land"
-    ? "This is a first-pass land analysis based on the provided documents and clearly labeled assumptions. Directional assessment only — not a final acquisition model."
-    : "This is a first-pass underwriting screen based on the provided documents and clearly labeled assumptions. Directional assessment only — not a final investment model.";
+    ? "This is a first-pass land analysis based on the provided documents and clearly labeled assumptions. Directional assessment only - not a final acquisition model."
+    : "This is a first-pass underwriting screen based on the provided documents and clearly labeled assumptions. Directional assessment only - not a final investment model.";
 
   // Build brief section HTML (supports structured JSON or legacy plain text)
   let briefSectionHtml = "";
@@ -1039,7 +1039,7 @@ ${signals.map(([label, val]) => {
   }).join("\n")}
 </table>
 
-<p class="subtitle" style="margin-top: 24px;">Generated by Deal Signals — ${typeLabel} Model</p>
+<p class="subtitle" style="margin-top: 24px;">Generated by Deal Signals - ${typeLabel} Model</p>
 </body></html>`;
 
   // Download as .doc (HTML format that Word opens natively)

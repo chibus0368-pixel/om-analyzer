@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
 import { Timestamp } from "firebase-admin/firestore";
 
-// GET — fetch user profile + preferences
+// GET - fetch user profile + preferences
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PATCH — update user profile fields and/or preferences
+// PATCH - update user profile fields and/or preferences
 export async function PATCH(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization");

@@ -85,16 +85,16 @@ function getRecommendation(band: string, score: number, fields: Record<string, a
   if (parts.length === 0) {
     // Fallback if we couldn't extract specific metrics
     switch (band) {
-      case "strong_buy": return `${label} (${score}) — Compelling fundamentals across pricing, cash flow, and tenancy.`;
-      case "buy": return `${label} (${score}) — Sound fundamentals with manageable risk.`;
-      case "hold": return `${label} (${score}) — Mixed signals. Further diligence recommended.`;
-      case "pass": return `${label} (${score}) — Risk factors outweigh current pricing.`;
-      case "strong_reject": return `${label} (${score}) — Does not meet investment criteria.`;
+      case "strong_buy": return `${label} (${score}) - Compelling fundamentals across pricing, cash flow, and tenancy.`;
+      case "buy": return `${label} (${score}) - Sound fundamentals with manageable risk.`;
+      case "hold": return `${label} (${score}) - Mixed signals. Further diligence recommended.`;
+      case "pass": return `${label} (${score}) - Risk factors outweigh current pricing.`;
+      case "strong_reject": return `${label} (${score}) - Does not meet investment criteria.`;
       default: return `${label} (${score})`;
     }
   }
 
-  return `${label} (${score}) — ${parts.join("; ")}.`;
+  return `${label} (${score}) - ${parts.join("; ")}.`;
 }
 
 export async function runScoreEngine(params: {
@@ -144,7 +144,7 @@ export async function runScoreEngine(params: {
     const db = getAdminDb();
     const now = new Date().toISOString();
 
-    // Get extracted fields — prefer propertyId query (more specific), fall back to projectId
+    // Get extracted fields - prefer propertyId query (more specific), fall back to projectId
     let fieldsSnap;
     if (propertyId) {
       fieldsSnap = await db.collection("workspace_extracted_fields")
@@ -255,7 +255,7 @@ export async function runScoreEngine(params: {
 
       await batch.commit();
 
-      // Update property record with score — separate from batch so a missing doc doesn't kill scoring
+      // Update property record with score - separate from batch so a missing doc doesn't kill scoring
       if (propertyId) {
         try {
           await db.collection("workspace_properties").doc(propertyId).set({
@@ -267,7 +267,7 @@ export async function runScoreEngine(params: {
         } catch (e) { console.warn("[score-engine] Property update failed (non-retail):", e); }
       }
 
-      // Update project record separately (legacy) — don't let this break the main flow
+      // Update project record separately (legacy) - don't let this break the main flow
       if (projectId && projectId !== "workspace-default") {
         try {
           const projRef = db.collection("workspace_projects").doc(projectId);
@@ -312,7 +312,7 @@ export async function runScoreEngine(params: {
     // rigid tenant checks, low confidence baseline
 
     // Helper: check multiple field name variants (fields are stored with
-    // different suffixes depending on extraction — _om, _actual, _asking)
+    // different suffixes depending on extraction - _om, _actual, _asking)
     const hasField = (key: string) => fields[key]?.value !== undefined && fields[key]?.value !== null;
     const getVal = (key: string) => fields[key]?.value;
     const getFirst = (...keys: string[]) => {
@@ -429,7 +429,7 @@ export async function runScoreEngine(params: {
     })();
 
     // ── 4. TENANT (weight: 12) ──
-    // More flexible — checks for any tenant info, not just exact credit strings
+    // More flexible - checks for any tenant info, not just exact credit strings
     const hasTenantInfo = hasField("tenant_info.primary_tenant") ||
       hasField("tenant_info.tenant_name") ||
       hasField("tenant_info.tenant_1_name");
@@ -563,7 +563,7 @@ export async function runScoreEngine(params: {
 
     await batch.commit();
 
-    // Update property record with score — separate from batch so a missing doc doesn't kill scoring
+    // Update property record with score - separate from batch so a missing doc doesn't kill scoring
     if (propertyId) {
       try {
         const propScoreUpdate: Record<string, any> = {
@@ -578,7 +578,7 @@ export async function runScoreEngine(params: {
       } catch (e) { console.warn("[score-engine] Property update failed (retail):", e); }
     }
 
-    // Update project record separately (legacy) — don't let this break the main flow
+    // Update project record separately (legacy) - don't let this break the main flow
     if (projectId && projectId !== "workspace-default") {
       try {
         const projRef = db.collection("workspace_projects").doc(projectId);

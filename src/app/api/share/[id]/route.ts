@@ -4,7 +4,7 @@ import { getAdminDb } from "@/lib/firebase-admin";
 const db = () => getAdminDb();
 
 /**
- * Public Share API — no auth required
+ * Public Share API - no auth required
  * Fetches share link config + all properties & extracted fields for the shared workspace.
  */
 export async function GET(

@@ -196,7 +196,7 @@ export async function extractTextFromFile(file: File): Promise<string> {
       return `--- ${name} ---\n${text}`;
     }
 
-    // PDF files — try text extraction first, fall back to Vision OCR for scanned docs
+    // PDF files - try text extraction first, fall back to Vision OCR for scanned docs
     if (ext === "pdf") {
       console.log(`[file-reader] Starting PDF extraction for: ${name}`);
       const text = await extractPdfText(file);
@@ -204,7 +204,7 @@ export async function extractTextFromFile(file: File): Promise<string> {
         console.log(`[file-reader] PDF text extraction success: ${text.length} chars from ${name}`);
         return `--- ${name} ---\n${text}`;
       }
-      // Text extraction returned little/nothing — likely a scanned PDF
+      // Text extraction returned little/nothing - likely a scanned PDF
       console.warn(`[file-reader] PDF text extraction got only ${text.trim().length} chars for: ${name}. Trying Vision OCR...`);
       try {
         const visionText = await extractPdfViaVision(file);
@@ -219,10 +219,10 @@ export async function extractTextFromFile(file: File): Promise<string> {
       if (text.trim()) {
         return `--- ${name} ---\n${text}`;
       }
-      return `--- ${name} (PDF file, ${(file.size / 1024).toFixed(0)}KB — text extraction returned empty. This may be a scanned or image-heavy PDF. Property name may be in filename: ${name}) ---`;
+      return `--- ${name} (PDF file, ${(file.size / 1024).toFixed(0)}KB - text extraction returned empty. This may be a scanned or image-heavy PDF. Property name may be in filename: ${name}) ---`;
     }
 
-    // DOCX — basic metadata
+    // DOCX - basic metadata
     if (ext === "docx") {
       return `--- ${name} (Word document, ${(file.size / 1024).toFixed(0)}KB) ---`;
     }

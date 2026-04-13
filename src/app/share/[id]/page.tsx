@@ -325,7 +325,7 @@ export default function SharedViewPage() {
         @keyframes slideIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
       `}</style>
 
-      {/* Header — dark branded bar matching workspace */}
+      {/* Header - dark branded bar matching workspace */}
       <header style={{
         background: "#0b1326", padding: "0 24px", height: 56, display: "flex",
         alignItems: "center", justifyContent: "space-between",
@@ -381,7 +381,7 @@ export default function SharedViewPage() {
         <div style={{ flex: 1, position: "relative" }}>
           <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
 
-          {/* Map Controls — top-right overlay */}
+          {/* Map Controls - top-right overlay */}
           <div style={{
             position: "absolute", top: 12, right: 12, zIndex: 1000,
             display: "flex", flexDirection: "column", gap: 6,
@@ -400,7 +400,7 @@ export default function SharedViewPage() {
             </MapBtn>
           </div>
 
-          {/* Property count pill — bottom-left */}
+          {/* Property count pill - bottom-left */}
           <div style={{
             position: "absolute", bottom: 28, left: 12, zIndex: 1000,
             background: "#fff", borderRadius: 20, padding: "6px 14px",
@@ -414,7 +414,7 @@ export default function SharedViewPage() {
           </div>
         </div>
 
-        {/* Sidebar — list or detail view */}
+        {/* Sidebar - list or detail view */}
         <div style={{
           width: 420, minWidth: 420, background: "#fff", overflow: "auto",
           borderLeft: "1px solid #e5e7eb",
@@ -470,7 +470,7 @@ export default function SharedViewPage() {
                             <h3 style={{ fontSize: 14, fontWeight: 700, color: "#151b2b", margin: "0 0 2px" }}>
                               {prop.propertyName}
                             </h3>
-                            <p style={{ fontSize: 11, color: "#585e70", margin: "0 0 8px" }}>{addr || "—"}</p>
+                            <p style={{ fontSize: 11, color: "#585e70", margin: "0 0 8px" }}>{addr || "-"}</p>
                           </div>
                           {/* Arrow indicator */}
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
@@ -554,7 +554,7 @@ export default function SharedViewPage() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Property Detail Component — full metrics view
+   Property Detail Component - full metrics view
    ═══════════════════════════════════════════════════════════════ */
 function PropertyDetail({
   prop, config, onBack, onLocate, properties, onNavigate,
@@ -719,7 +719,7 @@ function PropertyDetail({
           {prop.propertyName}
         </h2>
         <p style={{ fontSize: 12, color: "#585e70", margin: "0 0 20px", lineHeight: 1.4 }}>
-          {addr || "—"}
+          {addr || "-"}
         </p>
 
         {/* ── Pricing & Deal Terms ── */}

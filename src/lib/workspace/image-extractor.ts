@@ -48,7 +48,7 @@ interface PageScore {
 }
 
 function scorePageImage(ctx: CanvasRenderingContext2D, width: number, height: number): Omit<PageScore, "pageNum"> {
-  // Sample pixels (don't need every pixel — sample on a grid for speed)
+  // Sample pixels (don't need every pixel - sample on a grid for speed)
   const sampleStep = 4; // every 4th pixel
   const imageData = ctx.getImageData(0, 0, width, height);
   const data = imageData.data;
@@ -148,7 +148,7 @@ function scorePageImage(ctx: CanvasRenderingContext2D, width: number, height: nu
    ═══════════════════════════════════════════════════════ */
 
 const PHOTO_THRESHOLD = 35; // minimum score to consider a page as a photo
-const MAX_PAGES_TO_SCAN = 5; // don't scan the whole doc — first 5 pages covers most OMs
+const MAX_PAGES_TO_SCAN = 5; // don't scan the whole doc - first 5 pages covers most OMs
 
 export async function extractHeroImageFromPDF(file: File): Promise<Blob | null> {
   try {
@@ -202,7 +202,7 @@ export async function extractHeroImageFromPDF(file: File): Promise<Blob | null> 
       return bestPage.blob;
     }
 
-    console.log(`[image-extractor] No page scored above threshold (${PHOTO_THRESHOLD}). Skipping PDF image — will use map/street view fallback.`);
+    console.log(`[image-extractor] No page scored above threshold (${PHOTO_THRESHOLD}). Skipping PDF image - will use map/street view fallback.`);
     return null;
   } catch (err) {
     console.warn("[image-extractor] Failed to extract hero image:", err);

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { runScoreEngine } from "@/lib/workspace/score-engine";
 
 /**
- * Score API Route — thin wrapper around the score engine.
+ * Score API Route - thin wrapper around the score engine.
  * The actual logic lives in @/lib/workspace/score-engine so it can
  * be called directly from the process pipeline without HTTP self-fetch.
  */

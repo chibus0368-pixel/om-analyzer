@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (existingUser.exists) {
-      // Update — preserve important fields
+      // Update - preserve important fields
       const existing = existingUser.data()!;
       const updates: Record<string, any> = {
         emailVerified: firebaseUser.emailVerified,
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       if (body.company && !existing.company) updates.company = body.company;
       if (body.role && !existing.role) updates.role = body.role;
 
-      // Merge anonymous usage — only increase, never decrease
+      // Merge anonymous usage - only increase, never decrease
       if (anonUploadsUsed > 0 && (!existing.uploadsUsed || existing.uploadsUsed < anonUploadsUsed)) {
         updates.uploadsUsed = Math.max(existing.uploadsUsed || 0, anonUploadsUsed);
       }
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
         if (welcomeHtml) {
           const emailResult = await sendEmail(
             email,
-            'Welcome to Deal Signals — Your Workspace Is Ready',
+            'Welcome to Deal Signals - Your Workspace Is Ready',
             welcomeHtml
           );
           if (!emailResult.success) {
@@ -250,7 +250,7 @@ export async function POST(request: NextRequest) {
           .get();
 
         if (!propsSnap.empty) {
-          // Chunked batch writer — Firestore caps each batch at 500 ops
+          // Chunked batch writer - Firestore caps each batch at 500 ops
           // and a single Try Me property can generate 200+ extracted fields.
           const BATCH_LIMIT = 400;
           let batch = db.batch();
@@ -339,7 +339,7 @@ export async function POST(request: NextRequest) {
           );
         }
       } catch (claimErr) {
-        // Don't fail signup if claim fails — user still gets their account.
+        // Don't fail signup if claim fails - user still gets their account.
         console.warn("[bootstrap] Try Me claim failed:", claimErr);
       }
     }

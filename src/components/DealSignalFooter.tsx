@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 /**
- * Deal Signals shared site footer — used on /pricing, /terms, /privacy,
+ * Deal Signals shared site footer - used on /pricing, /terms, /privacy,
  * /contact, /not-found, and any other marketing-style page.
  *
  * Mirrors the main footer used inline on /om-analyzer so every public

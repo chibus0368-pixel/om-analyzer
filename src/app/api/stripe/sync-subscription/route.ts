@@ -16,7 +16,7 @@ export const runtime = "nodejs";
  * Called by the workspace layout on mount when the UI detects a possible
  * mismatch (e.g. stripeSubscriptionId exists but tier is "free").
  *
- * No body required — reads stripeSubscriptionId from the user doc.
+ * No body required - reads stripeSubscriptionId from the user doc.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     try {
       sub = await stripe.subscriptions.retrieve(subId);
     } catch (err: any) {
-      // Subscription deleted or invalid — revert to free
+      // Subscription deleted or invalid - revert to free
       if (err?.statusCode === 404 || err?.code === "resource_missing") {
         await userRef.update({
           tier: "free",

@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json(
     {
       error:
-        "This endpoint is deprecated. Reload the DealSignals Crexi extension — " +
+        "This endpoint is deprecated. Reload the DealSignals Crexi extension - " +
         "uploads now go through /init → signed PUT → /finalize to handle large PDFs.",
       upgrade: true,
     },

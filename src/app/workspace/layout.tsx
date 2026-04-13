@@ -14,7 +14,7 @@ import TrialStatusBar from "@/components/billing/TrialStatusBar";
 
 import UpgradeModal from "@/components/billing/UpgradeModal";
 
-/* Sidebar nav — matches Deal Signals design — NO "DealBoard" link */
+/* Sidebar nav - matches Deal Signals design - NO "DealBoard" link */
 const SIDEBAR_NAV = [
   { href: "/workspace/scoreboard", label: "Scoreboard", icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
   { href: "/workspace/upload", label: "Upload Deal", icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" },
@@ -22,7 +22,7 @@ const SIDEBAR_NAV = [
   { href: "/workspace/share", label: "Shareable Links", icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" },
 ];
 
-/* BOTTOM_NAV removed — no longer used in new layout */
+/* BOTTOM_NAV removed - no longer used in new layout */
 
 function SidebarIcon({ d, size = 18 }: { d: string; size?: number }) {
   return (
@@ -67,8 +67,8 @@ function NavLink({ href, label, icon, active, collapsed, compact = false }: { hr
   );
 }
 
-/** Sidebar user account card — shows avatar, name, email, plan & usage */
-// NOTE: This component is currently unused — kept for future reuse.
+/** Sidebar user account card - shows avatar, name, email, plan & usage */
+// NOTE: This component is currently unused - kept for future reuse.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function _SidebarUserCard({ user, collapsed, userTier, usage, onUpgradeClick }: {
   user: import("firebase/auth").User | null;
@@ -192,7 +192,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   useEffect(() => setMounted(true), []);
 
-  // The login page is the auth entry point — it should NEVER wait for
+  // The login page is the auth entry point - it should NEVER wait for
   // Firebase auth to initialize before rendering. Blocking here was adding
   // 1-3s to every cold load of /workspace/login. Render immediately and
   // bypass the workspace chrome entirely.
@@ -292,7 +292,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
 
         /* ─── Mobile responsive ─── */
         @media (max-width: 768px) {
-          /* === HEADER — Logo + three-dot menu only === */
+          /* === HEADER - Logo + three-dot menu only === */
           .ws-header { padding: 0 16px !important; height: 52px !important; min-height: 52px !important; justify-content: space-between !important; }
           .ws-header-inner { gap: 0 !important; flex: 0 0 auto !important; }
           .ws-header-logo img { height: 30px !important; }
@@ -302,7 +302,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
           .ws-hamburger { display: flex !important; align-items: center; justify-content: center; width: 36px; height: 36px; border: none; background: none; cursor: pointer; color: rgba(255,255,255,0.7); border-radius: 8px; flex-shrink: 0; }
           .ws-hamburger:active { background: rgba(255,255,255,0.1); }
 
-          /* === NAV BAR — hidden on mobile (replaced by bottom tabs) === */
+          /* === NAV BAR - hidden on mobile (replaced by bottom tabs) === */
           .ws-nav-bar { display: none !important; }
 
           /* === MOBILE DRAWER === */
@@ -345,7 +345,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
           }
           .ws-bottom-tab-upload span { font-size: 9px; color: #6B7280; font-weight: 700; margin-top: 2px; }
 
-          /* === MAIN CONTENT — pad bottom for tab bar === */
+          /* === MAIN CONTENT - pad bottom for tab bar === */
           .ws-main-content { padding: 10px !important; padding-bottom: 80px !important; }
           .ws-footer { flex-direction: column !important; gap: 10px !important; padding: 12px 10px 80px !important; }
 
@@ -366,7 +366,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
   );
 }
 
-/** Workspace dropdown — used in sidebar (dark theme) */
+/** Workspace dropdown - used in sidebar (dark theme) */
 function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean; onAddNew: () => void }) {
   const { workspaces, activeWorkspace, switchWorkspace } = useWorkspace();
   const router = useRouter();
@@ -493,7 +493,7 @@ function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean;
   );
 }
 
-/** Workspace dropdown — used in top header bar */
+/** Workspace dropdown - used in top header bar */
 function HeaderWorkspaceSwitcher({ onAddNew }: { onAddNew: () => void }) {
   const { workspaces, activeWorkspace, switchWorkspace } = useWorkspace();
   const router = useRouter();
@@ -678,7 +678,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         const names = Array.from(e.dataTransfer.files).map(f => f.name);
         sessionStorage.setItem("globalDropFiles", JSON.stringify(names));
         // We can't pass File objects through sessionStorage, so redirect to upload
-        // The upload page already has its own drop zone — user just needs to re-drop or select
+        // The upload page already has its own drop zone - user just needs to re-drop or select
         const ws = activeWorkspace?.slug || activeWorkspace?.id || "";
         router.push(`/workspace/upload${ws ? `?ws=${ws}` : ""}`);
       }
@@ -905,7 +905,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", background: "#F7F8FA" }}>
-      {/* ===== TOP HEADER BAR — Deal Signals ===== */}
+      {/* ===== TOP HEADER BAR - Deal Signals ===== */}
       <header className="ws-header" style={{
         display: "flex", alignItems: "center",
         height: 64, minHeight: 64,
@@ -919,7 +919,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 36 }} />
           </Link>
 
-          {/* DealBoard selector — separated by border */}
+          {/* DealBoard selector - separated by border */}
           <div ref={wsDropdownRef} style={{ position: "relative" }}>
             <button
               onClick={() => setShowWsDropdown(v => !v)}
@@ -1061,7 +1061,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             </Link>
           )}
 
-          {/* User section — border-left divider */}
+          {/* User section - border-left divider */}
           {user && (
             <Link
               href="/workspace/profile"
@@ -1290,7 +1290,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
             {/* Plan + User info + Logout */}
             <div style={{ padding: "12px 16px", marginTop: "auto", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-              {/* Plan pill — visible in mobile drawer */}
+              {/* Plan pill - visible in mobile drawer */}
               <div style={{ marginBottom: 12 }}>
                 {userTier === "free" ? (
                   <button
@@ -1362,7 +1362,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         </div>
       )}
 
-      {/* ===== NAV BAR — Horizontal Tabs ===== */}
+      {/* ===== NAV BAR - Horizontal Tabs ===== */}
       <nav className="ws-nav-bar" style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         height: 56, minHeight: 56,
@@ -1418,7 +1418,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
             Share DealBoard
           </Link>
-          {/* Info tooltip for sharing — click to toggle so user can click Learn more */}
+          {/* Info tooltip for sharing - click to toggle so user can click Learn more */}
           <div className="ws-info-icon" style={{ position: "relative" }}>
             <div
               onClick={() => {
@@ -1464,7 +1464,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         </div>
       </nav>
 
-      {/* Main Content — full width */}
+      {/* Main Content - full width */}
       <main style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
         <div className="ws-main-content" style={{ flex: 1, overflow: "auto", padding: 32, display: "flex", flexDirection: "column" }}>
           {showUpgradeSuccess && (

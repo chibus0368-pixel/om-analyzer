@@ -1,5 +1,5 @@
 /**
- * AuthBrand — canonical DealSignals wordmark for auth screens.
+ * AuthBrand - canonical DealSignals wordmark for auth screens.
  *
  * Renders "Deal" (#0B1120) + "Signals" (#84CC16) in Plus Jakarta Sans
  * 800 weight, followed by a small tagline. Used on login, register,

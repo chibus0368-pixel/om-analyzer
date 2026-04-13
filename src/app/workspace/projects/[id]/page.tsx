@@ -325,7 +325,7 @@ function PropertyCard({ property, projectId, userId, onRefresh }: {
                 )}
               </div>
 
-              {/* Parse status — auto-parsed on upload */}
+              {/* Parse status - auto-parsed on upload */}
               {docs.length > 0 && parseStatus === "parsed" && fields.length > 0 && (
                 <div style={{ padding: "8px 14px", background: "#D1FAE5", borderRadius: 8, marginBottom: 12, fontSize: 12, color: "#0A7E5A", fontWeight: 500 }}>
                   {fields.length} fields extracted from {docs.length} file{docs.length !== 1 ? "s" : ""}
@@ -417,12 +417,12 @@ export default function ProjectDetailPage() {
     if (!projectId) return;
     setLoading(true);
 
-    // Load project first — this is the critical one
+    // Load project first - this is the critical one
     const p = await getProject(projectId);
     setProject(p);
 
     if (p) {
-      // Load everything else in parallel — failures won't break the page
+      // Load everything else in parallel - failures won't break the page
       const [props, docs, sc, nts, tsks] = await Promise.all([
         getProjectProperties(projectId),
         getProjectDocuments(projectId),

@@ -426,7 +426,7 @@ function EditablePropertyName({ name, propertyId, onSave }: { name: string; prop
 }
 
 /* ══════════════════════════════════════════════════════════ */
-/*  PURCHASE PRICE OVERRIDE — recalculate price-sensitive    */
+/*  PURCHASE PRICE OVERRIDE - recalculate price-sensitive    */
 /*  metrics live when user adjusts the purchase price        */
 /* ══════════════════════════════════════════════════════════ */
 function usePurchasePriceOverride(omPrice: number | null) {
@@ -566,7 +566,7 @@ export default function PropertyDetailClient() {
     getWorkspaceProperties(user.uid, wsId).then(props => {
       setSiblingProps(props);
     }).catch(() => {});
-    // Use stable primitives — object refs change every render and cause infinite loops
+    // Use stable primitives - object refs change every render and cause infinite loops
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid, activeWorkspace?.id, (property as any)?.workspaceId]);
 
@@ -743,7 +743,7 @@ export default function PropertyDetailClient() {
         try { await fetch("/api/workspace/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ propertyId, userId: user.uid, parsedData: parseData.fields }) }); } catch { /* non-blocking */ }
         setReparseStatus("Calculating Deal Signals...");
         try { await fetch("/api/workspace/score", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ propertyId, userId: user.uid, analysisType }) }); } catch { /* non-blocking */ }
-        setReparseStatus(`Complete — ${parseData.fieldsExtracted} fields extracted.`);
+        setReparseStatus(`Complete - ${parseData.fieldsExtracted} fields extracted.`);
       } else {
         setReparseStatus("Scan returned limited data.");
       }
@@ -911,7 +911,7 @@ export default function PropertyDetailClient() {
 }
 
 /* ══════════════════════════════════════════════════════════ */
-/*  INNER RENDER — split so usePurchasePriceOverride works   */
+/*  INNER RENDER - split so usePurchasePriceOverride works   */
 /* ══════════════════════════════════════════════════════════ */
 function PropertyDetailInner({
   property, setProperty, propertyId, fields, notes, documents, outputs,
@@ -1012,19 +1012,19 @@ function PropertyDetailInner({
     const wale = g("rent_roll", "wale") || g("rent_roll", "weighted_avg_lease_term");
     const capStated = g("pricing_deal_terms", "cap_rate_om");
 
-    if (!mgmt || Number(mgmt) === 0) items.push("No management fee in OM — typically 3–6% of EGI");
-    if (!reserves || Number(reserves) === 0) items.push("No capital reserves listed — typically $0.15–0.25/SF");
-    if (!vacancy || Number(vacancy) === 0) items.push("No vacancy allowance — typical underwriting uses 3–5%");
-    if (!totalExp || Number(totalExp) === 0) items.push("No operating expenses listed — verify NNN reimbursements");
+    if (!mgmt || Number(mgmt) === 0) items.push("No management fee in OM - typically 3–6% of EGI");
+    if (!reserves || Number(reserves) === 0) items.push("No capital reserves listed - typically $0.15–0.25/SF");
+    if (!vacancy || Number(vacancy) === 0) items.push("No vacancy allowance - typical underwriting uses 3–5%");
+    if (!totalExp || Number(totalExp) === 0) items.push("No operating expenses listed - verify NNN reimbursements");
     if (noiOmVal && noiAdj && Math.abs(Number(noiAdj) - Number(noiOmVal)) > 1000) {
-      items.push("NOI appears in more than one form — verify which is correct");
+      items.push("NOI appears in more than one form - verify which is correct");
     }
-    if (wale && Number(wale) < 5) items.push(`Short WALE (${Number(wale).toFixed(1)} yrs) — lease rollover risk ahead`);
+    if (wale && Number(wale) < 5) items.push(`Short WALE (${Number(wale).toFixed(1)} yrs) - lease rollover risk ahead`);
     if (capStated && calc?.capRate) {
       const stated = Number(capStated);
       const calculated = calc.capRate;
       if (Math.abs(stated - calculated) > 0.3) {
-        items.push(`Stated cap rate (${stated.toFixed(2)}%) differs from calculated (${calculated.toFixed(2)}%) — reconcile`);
+        items.push(`Stated cap rate (${stated.toFixed(2)}%) differs from calculated (${calculated.toFixed(2)}%) - reconcile`);
       }
     }
 
@@ -1126,13 +1126,13 @@ function PropertyDetailInner({
           .pd-mobile-hero { margin: 0 -10px !important; }
           .pd-mobile-hero img { width: 100%; height: 200px; object-fit: cover; display: block; }
 
-          /* Property header — compact */
+          /* Property header - compact */
           .pd-prop-header { padding: 14px 16px 0 !important; margin-bottom: 0 !important; }
           .pd-prop-name { font-size: 22px !important; }
           .pd-prop-location { font-size: 13px !important; }
           .pd-dl-buttons { display: none !important; }
 
-          /* Mobile score card — the signature look */
+          /* Mobile score card - the signature look */
           .pd-mobile-score-card {
             margin: 12px 16px !important; padding: 0 !important;
             background: #FFFFFF !important; border-radius: 14px !important;
@@ -1141,25 +1141,25 @@ function PropertyDetailInner({
             overflow: hidden !important;
           }
 
-          /* Summary card — hide the image panel on mobile (hero is separate) */
+          /* Summary card - hide the image panel on mobile (hero is separate) */
           .pd-summary-card { flex-direction: column !important; margin: 0 16px 16px !important; border-radius: 14px !important; }
           .pd-summary-image { display: none !important; }
           .pd-summary-text { padding: 16px !important; }
           .pd-summary-text > div:first-child { font-size: 17px !important; }
           .pd-summary-text p { font-size: 13px !important; line-height: 1.65 !important; }
 
-          /* Metrics strip — 2×2 grid */
+          /* Metrics strip - 2×2 grid */
           .pd-metrics-strip { flex-wrap: wrap !important; gap: 0 !important; margin: 0 16px 16px !important; border-radius: 14px !important; }
           .pd-metrics-strip > div { flex: 1 1 48% !important; min-width: 0 !important; padding: 12px 14px !important; }
 
-          /* Signals — stack */
+          /* Signals - stack */
           .pd-signal-cards { flex-direction: column !important; gap: 8px !important; padding: 0 16px !important; }
           .pd-signal-cards > div { min-width: 0 !important; }
 
           /* Section headers */
           .pd-section-header { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; padding: 0 16px !important; }
 
-          /* Tables — prevent horizontal scroll, hide less-critical columns */
+          /* Tables - prevent horizontal scroll, hide less-critical columns */
           .pd-table-wrap { overflow-x: hidden !important; margin: 0 16px !important; }
           /* Tenant Summary: hide Type (4th) & Lease End (5th) cols */
           .pd-table-wrap table thead th:nth-child(n+4),
@@ -1274,7 +1274,7 @@ function PropertyDetailInner({
                 Brief
                 <span style={{ padding: "1px 5px", background: "#DBEAFE", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#2563EB" }}>DOC</span>
               </button>
-              {/* Strategy Analysis — Pro+ only */}
+              {/* Strategy Analysis - Pro+ only */}
               {userTier === "pro_plus" ? (
                 <button
                   onClick={async () => { try { await generateStrategyLensXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("Strategy XLS failed: " + (e?.message || "unknown")); } }}
@@ -1357,7 +1357,7 @@ function PropertyDetailInner({
                   letterSpacing: "0.08em", color: sColor,
                 }}>{scoreBand.replace(/_/g, " ")}</span>
               </div>
-              {/* Right: Key metrics — stacked */}
+              {/* Right: Key metrics - stacked */}
               <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
                 {mobileCapRate && (
                   <div style={{ padding: "12px 14px", borderBottom: "1px solid rgba(0,0,0,0.04)", borderRight: "1px solid rgba(0,0,0,0.04)" }}>
@@ -2015,7 +2015,7 @@ function PropertyDetailInner({
           <div style={{ padding: "12px 16px", background: "#F9FAFB", borderRadius: 8, marginBottom: 10, border: `1px solid rgba(0,0,0,0.04)` }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: C.onSurface, marginBottom: 6 }}>What to upload</div>
             <div style={{ fontSize: 11, color: C.secondary, lineHeight: 1.6 }}>
-              <strong>Best:</strong> Offering Memorandum (PDF) — one complete OM is enough for a full analysis.
+              <strong>Best:</strong> Offering Memorandum (PDF) - one complete OM is enough for a full analysis.
             </div>
             <div style={{ fontSize: 11, color: C.secondary, lineHeight: 1.6 }}>
               <strong>Also accepted:</strong> Flyers, Rent Rolls (XLS), T-12 operating statements, Lease abstracts, Site plans, Property images.
@@ -2086,7 +2086,7 @@ function PropertyDetailInner({
               <path d="M5 17l.5 1.5L7 19l-1.5.5L5 21l-.5-1.5L3 19l1.5-.5L5 17z" />
             </svg>
             <span style={{ fontSize: 11.5, color: "#4338CA", fontWeight: 500, fontFamily: "'Inter', sans-serif", lineHeight: 1.4 }}>
-              AI-powered analysis — sourced from publicly available data including government records, census data, and news outlets.
+              AI-powered analysis - sourced from publicly available data including government records, census data, and news outlets.
             </span>
           </div>
 
@@ -2099,7 +2099,7 @@ function PropertyDetailInner({
             {!deepResearch ? (
               <>
                 <p style={{ fontSize: 13, color: C.secondary, margin: "0 0 16px", lineHeight: 1.5 }}>
-                  Live research on what{"'"}s happening around this property — nearby developments, civic activity, area demographics, and recent news.
+                  Live research on what{"'"}s happening around this property - nearby developments, civic activity, area demographics, and recent news.
                 </p>
                 {userTier === "pro_plus" || userTier === "pro" ? (
                   <button

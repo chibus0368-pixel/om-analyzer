@@ -1,5 +1,5 @@
 "use client";
-/* OM Analyzer Lite — v3 with smart hero image extraction (skips tables) */
+/* OM Analyzer Lite - v3 with smart hero image extraction (skips tables) */
 
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -11,7 +11,7 @@ import DealSignalNav from "@/components/DealSignalNav";
 import { trackLiteUpload, trackLiteResult, trackLeadCapture, trackProCTAClick, trackDownload } from "@/lib/analytics";
 
 /* ===========================================================================
-   INTERSECTION OBSERVER HOOK — SCROLL TRIGGER
+   INTERSECTION OBSERVER HOOK - SCROLL TRIGGER
    =========================================================================== */
 function useInView(threshold = 0.2): [React.RefObject<HTMLDivElement>, boolean] {
   const ref = useRef<HTMLDivElement>(null);
@@ -30,7 +30,7 @@ function useInView(threshold = 0.2): [React.RefObject<HTMLDivElement>, boolean] 
 }
 
 /* ===========================================================================
-   FORMAT HELPERS — IDENTICAL to pro property page
+   FORMAT HELPERS - IDENTICAL to pro property page
    =========================================================================== */
 function fmt$(val: any): string {
   if (!val) return "--";
@@ -52,7 +52,7 @@ function signalColor(val: string): string {
 }
 
 /* ===========================================================================
-   METRIC TOOLTIP — IDENTICAL to pro property page
+   METRIC TOOLTIP - IDENTICAL to pro property page
    =========================================================================== */
 function MetricTooltip({ text }: { text: string }) {
   const [show, setShow] = useState(false);
@@ -100,7 +100,7 @@ function MetricTooltip({ text }: { text: string }) {
 }
 
 /* ===========================================================================
-   FEATURE BLOCK WRAPPER — ANIMATES ON SCROLL
+   FEATURE BLOCK WRAPPER - ANIMATES ON SCROLL
    =========================================================================== */
 function FeatureBlock({ children, idx }: { children: React.ReactNode; idx: number }) {
   const [ref, inView] = useInView(0.15);
@@ -114,7 +114,7 @@ function FeatureBlock({ children, idx }: { children: React.ReactNode; idx: numbe
 }
 
 /* ===========================================================================
-   SCROLL REVEAL WRAPPER — GENERIC SCROLL-TRIGGER ANIMATION
+   SCROLL REVEAL WRAPPER - GENERIC SCROLL-TRIGGER ANIMATION
    =========================================================================== */
 function ScrollReveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const [ref, inView] = useInView(0.15);
@@ -130,14 +130,14 @@ function ScrollReveal({ children, delay = 0 }: { children: React.ReactNode; dela
 }
 
 /* ===========================================================================
-   PROPERTY IMAGE — IDENTICAL to pro (minus heroImageUrl from Firestore)
+   PROPERTY IMAGE - IDENTICAL to pro (minus heroImageUrl from Firestore)
    =========================================================================== */
 function PropertyImage({ heroImageUrl, location, encodedAddress, propertyName }: {
   heroImageUrl?: string; location: string; encodedAddress: string; propertyName: string;
 }) {
   const [imgError, setImgError] = useState(false);
 
-  // Google Maps satellite embed — free, no API key needed
+  // Google Maps satellite embed - free, no API key needed
   const mapEmbed = location ? (
     <div style={{ position: "relative", width: "100%", height: "100%", minHeight: 200 }}>
       <iframe
@@ -312,7 +312,7 @@ export default function OmAnalyzerPage() {
     if (fileRef.current) fileRef.current.value = "";
   }, []);
 
-  // ===== ANALYSIS — client-side PDF extraction + parse-lite API =====
+  // ===== ANALYSIS - client-side PDF extraction + parse-lite API =====
   const startAnalysis = useCallback(async () => {
     if (!selectedFile) return;
 
@@ -330,7 +330,7 @@ export default function OmAnalyzerPage() {
       let documentText = "";
       const ext = selectedFile.name.split(".").pop()?.toLowerCase() || "";
 
-      // Hero image extraction (PDF only) — Try-Me-specific, runs in parallel with text extraction
+      // Hero image extraction (PDF only) - Try-Me-specific, runs in parallel with text extraction
       if (ext === "pdf") {
         setStatusMsg("Extracting property image...");
         try {
@@ -367,7 +367,7 @@ export default function OmAnalyzerPage() {
               }
             })();
           } else {
-            console.log("[om-analyzer] No good property image found in PDF — will use map fallback");
+            console.log("[om-analyzer] No good property image found in PDF - will use map fallback");
           }
         } catch (imgErr) {
           console.warn("[om-analyzer] Hero image extraction failed:", imgErr);
@@ -387,10 +387,10 @@ export default function OmAnalyzerPage() {
         console.log(`[om-analyzer] Extracted ${documentText.length} chars from ${selectedFile.name}`);
       } catch (extractErr: any) {
         console.error("[om-analyzer] Text extraction failed:", extractErr);
-        documentText = `[${ext.toUpperCase()} file: ${selectedFile.name}]\n(Extraction failed — property name may be in filename)`;
+        documentText = `[${ext.toUpperCase()} file: ${selectedFile.name}]\n(Extraction failed - property name may be in filename)`;
       }
 
-      // Call unified tryme-analyze route — runs the EXACT SAME Pro pipeline
+      // Call unified tryme-analyze route - runs the EXACT SAME Pro pipeline
       // (runParseEngine + runScoreEngine) against an ephemeral Firestore
       // record. Guarantees Try Me scores match Pro scores byte-for-byte.
       setStatusMsg("Analyzing property data...");
@@ -431,7 +431,7 @@ export default function OmAnalyzerPage() {
   }, [selectedFile, usageData, incrementUsage]);
 
   const resetAnalyzer = useCallback(() => {
-    // Hard reset via full navigation — bulletproof, clears every piece of
+    // Hard reset via full navigation - bulletproof, clears every piece of
     // state including any lingering blob URLs, hero images, usage caches,
     // and the file input. State-based reset was occasionally not flushing
     // the result view cleanly.
@@ -565,7 +565,7 @@ export default function OmAnalyzerPage() {
         }
         .om-insight-card { opacity: 0; animation: omCardFadeIn 0.5s ease-out forwards; transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .om-insight-card:hover { transform: translateY(-3px) !important; box-shadow: 0 12px 32px rgba(0,0,0,0.08) !important; }
-        /* Grid overlay removed — building background only */
+        /* Grid overlay removed - building background only */
         @media (max-width: 900px) {
           .om-insight-grid { grid-template-columns: 1fr !important; }
           .om-insight-circle { width: 160px !important; height: 160px !important; }
@@ -645,14 +645,14 @@ export default function OmAnalyzerPage() {
           /* Reduce section header margins */
           .ds-section-pad h2 { font-size: 26px !important; margin-bottom: 10px !important; }
           .ds-section-pad p { max-width: 100% !important; }
-          /* Pricing grid — single column on mobile */
+          /* Pricing grid - single column on mobile */
           .ds-pricing-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
-          /* Secondary features — stack vertically */
+          /* Secondary features - stack vertically */
           .ds-secondary-features { grid-template-columns: 1fr !important; gap: 16px !important; }
-          /* Compare visual — swap table for stacked cards */
+          /* Compare visual - swap table for stacked cards */
           .ds-compare-table { display: none !important; }
           .ds-compare-cards { display: flex !important; }
-          /* Section dividers — reduce negative margins */
+          /* Section dividers - reduce negative margins */
           .ds-section-divider { margin: -40px auto 32px !important; }
           /* Footer tighter on mobile */
           .ds-footer-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
@@ -964,7 +964,7 @@ export default function OmAnalyzerPage() {
                 </p>
               </div>
 
-              {/* Right — upload column */}
+              {/* Right - upload column */}
               <div style={{ animation: "fadeInUp 0.5s ease-out 0.1s both", marginTop: -40 }}>
                 {/* "Try now" label */}
                 <div style={{ textAlign: "center", marginBottom: 14 }}>
@@ -1088,17 +1088,27 @@ export default function OmAnalyzerPage() {
             </div>
           </div>
 
-          {/* ── Hero showcase image ── */}
-          <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 32px 80px", position: "relative" }}>
-            <img
-              src="/home-hero1.png"
-              alt="DealSignals — 11 deals analyzed, 3 worth pursuing"
-              style={{
-                width: "100%", borderRadius: 16,
-                boxShadow: "0 20px 60px rgba(0,0,0,0.5), 0 0 80px rgba(132,204,22,0.08)",
-                border: "1px solid rgba(255,255,255,0.06)",
-              }}
-            />
+          {/* ── Hero showcase image (blended into page) ── */}
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 80px", position: "relative" }}>
+            <div style={{ position: "relative" }}>
+              {/* Soft lime glow underneath */}
+              <div style={{
+                position: "absolute", inset: "10% 15%", borderRadius: "50%",
+                background: "rgba(132,204,22,0.12)", filter: "blur(120px)", pointerEvents: "none", zIndex: 0,
+              }} />
+              <img
+                src="/home-hero1.png"
+                alt="DealSignals - 11 deals analyzed, 3 worth pursuing"
+                style={{
+                  position: "relative", zIndex: 1, width: "100%", display: "block",
+                  filter: "saturate(0.75) contrast(1.08) brightness(0.95)",
+                  WebkitMaskImage:
+                    "radial-gradient(ellipse 85% 75% at 50% 50%, #000 45%, rgba(0,0,0,0.85) 65%, rgba(0,0,0,0.35) 85%, transparent 100%)",
+                  maskImage:
+                    "radial-gradient(ellipse 85% 75% at 50% 50%, #000 45%, rgba(0,0,0,0.85) 65%, rgba(0,0,0,0.35) 85%, transparent 100%)",
+                }}
+              />
+            </div>
           </div>
 
           {/* ── 2. WHY DEALSIGNALS ── */}
@@ -1194,7 +1204,7 @@ export default function OmAnalyzerPage() {
 
           {/* testimonials section removed */}
 
-          {/* ── 6. FEATURES — PRODUCT STORY ── */}
+          {/* ── 6. FEATURES - PRODUCT STORY ── */}
           <div id="features" className="ds-section-pad" style={{ padding: "120px 32px 80px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
             {/* Background depth */}
             <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "rgba(132,204,22,0.05)", filter: "blur(160px)", pointerEvents: "none" }} />
@@ -1281,7 +1291,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "02", title: "Get a Buy/Pass Signal", desc: "An instant verdict, not just a score — green flags, yellow flags, and red flags called out so you know exactly what's driving the call.",
+                  num: "02", title: "Get a Buy/Pass Signal", desc: "An instant verdict, not just a score - green flags, yellow flags, and red flags called out so you know exactly what's driving the call.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
                       {/* Subtle glow behind score */}
@@ -1330,7 +1340,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "03", title: "Rank and Decide", desc: "One leaderboard for your whole pipeline — deals ranked 0–100 so you always know which ones deserve your next hour.",
+                  num: "03", title: "Rank and Decide", desc: "One leaderboard for your whole pipeline - deals ranked 0–100 so you always know which ones deserve your next hour.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Scoreboard header */}
@@ -1378,7 +1388,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "04", title: "Export to Excel", desc: "A ready-to-edit underwriting model, not a static PDF — six sheets covering inputs, rent roll, operating statement, debt, breakeven, and cap scenarios.",
+                  num: "04", title: "Export to Excel", desc: "A ready-to-edit underwriting model, not a static PDF - six sheets covering inputs, rent roll, operating statement, debt, breakeven, and cap scenarios.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Excel tab bar */}
@@ -1435,7 +1445,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "05", title: "Organize Your Pipeline", desc: "One home for your entire book — group by asset class, client, or strategy instead of digging through email threads and Downloads folders.",
+                  num: "05", title: "Organize Your Pipeline", desc: "One home for your entire book - group by asset class, client, or strategy instead of digging through email threads and Downloads folders.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Asset type tabs */}
@@ -1495,7 +1505,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "06", title: "Compare Side-by-Side", desc: "Two or three deals, one head-to-head table — the gaps on DSCR, NOI, and downside risk jump out in seconds.",
+                  num: "06", title: "Compare Side-by-Side", desc: "Two or three deals, one head-to-head table - the gaps on DSCR, NOI, and downside risk jump out in seconds.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Header with asset type */}
@@ -1542,7 +1552,7 @@ export default function OmAnalyzerPage() {
                             borderRadius: 10, padding: "10px 12px",
                             animation: `fadeInUp 0.3s ease-out ${deal.delay} both`,
                           }}>
-                            {/* Deal header — name + score + signal */}
+                            {/* Deal header - name + score + signal */}
                             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                                 {deal.winner && <span style={{ fontSize: 12 }}>👑</span>}
@@ -1580,7 +1590,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "07", title: "Map Your Deals", desc: "See your pipeline on a map — click any pin for the full scorecard and spot submarket concentration or geographic gaps at a glance.",
+                  num: "07", title: "Map Your Deals", desc: "See your pipeline on a map - click any pin for the full scorecard and spot submarket concentration or geographic gaps at a glance.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Map area - dark themed street map */}
@@ -1658,7 +1668,7 @@ export default function OmAnalyzerPage() {
                   ),
                 },
                 {
-                  num: "08", title: "Share with Clients", desc: "A branded, password-protected link you can send to anyone — read-only, with optional expiration and no account required on their end.",
+                  num: "08", title: "Share with Clients", desc: "A branded, password-protected link you can send to anyone - read-only, with optional expiration and no account required on their end.",
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Share link generation */}
@@ -1759,7 +1769,7 @@ export default function OmAnalyzerPage() {
                         </p>
                       </div>
 
-                      {/* Visual side — wrapped in mockup frame so buttons look illustrative */}
+                      {/* Visual side - wrapped in mockup frame so buttons look illustrative */}
                       <div style={{ flex: 1, maxWidth: 480, pointerEvents: "none", userSelect: "none", cursor: "default" }}>
                         {/* Mock browser chrome */}
                         <div style={{
@@ -2185,15 +2195,15 @@ export default function OmAnalyzerPage() {
 
           {/* Animated cityscape silhouette */}
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 220, zIndex: 1, overflow: "hidden" }}>
-            {/* Layer 1 — far buildings, slow pan */}
+            {/* Layer 1 - far buildings, slow pan */}
             <svg style={{ position: "absolute", bottom: 0, left: 0, width: "200%", height: 180, opacity: 0.04, animation: "panCity1 60s linear infinite" }} viewBox="0 0 2400 180" preserveAspectRatio="none">
               <path d="M0,140 h30 v-60 h20 v60 h40 v-90 h15 v-20 h15 v110 h50 v-70 h20 v70 h30 v-50 h25 v50 h35 v-100 h10 v-30 h10 v130 h45 v-80 h20 v80 h30 v-45 h20 v45 h50 v-110 h15 v-15 h15 v125 h40 v-60 h25 v60 h30 v-85 h20 v85 h45 v-70 h15 v70 h35 v-95 h10 v-25 h15 v120 h40 v-55 h20 v55 h50 v-75 h20 v75 h30 v-40 h25 v40 h35 v-100 h15 v100 h40 v-65 h20 v65 h45 v-110 h10 v-20 h10 v130 h30 v-50 h20 v50 h40 v-80 h15 v80 h50 v-70 h25 v70 h30 v-90 h20 v90 h0 V180 H0 Z" fill="#84CC16"/>
             </svg>
-            {/* Layer 2 — mid buildings, medium pan */}
+            {/* Layer 2 - mid buildings, medium pan */}
             <svg style={{ position: "absolute", bottom: 0, left: 0, width: "200%", height: 160, opacity: 0.06, animation: "panCity2 45s linear infinite" }} viewBox="0 0 2400 160" preserveAspectRatio="none">
               <path d="M0,120 h25 v-80 h18 v80 h35 v-50 h22 v50 h28 v-100 h12 v-25 h12 v125 h45 v-65 h18 v65 h38 v-90 h15 v90 h30 v-40 h25 v40 h42 v-110 h10 v-15 h14 v125 h35 v-55 h20 v55 h50 v-75 h18 v75 h28 v-95 h15 v95 h40 v-60 h22 v60 h32 v-85 h12 v85 h48 v-70 h15 v70 h30 v-105 h10 v-20 h12 v125 h42 v-50 h20 v50 h35 v-80 h18 v80 h28 v-45 h22 v45 h45 v-90 h15 v90 h38 v-65 h20 v65 h30 v-100 h12 v100 V160 H0 Z" fill="#84CC16"/>
             </svg>
-            {/* Layer 3 — near buildings, faster pan */}
+            {/* Layer 3 - near buildings, faster pan */}
             <svg style={{ position: "absolute", bottom: 0, left: 0, width: "200%", height: 120, opacity: 0.08, animation: "panCity3 30s linear infinite" }} viewBox="0 0 2400 120" preserveAspectRatio="none">
               <path d="M0,80 h40 v-40 h30 v40 h20 v-60 h25 v60 h35 v-30 h30 v30 h25 v-50 h20 v50 h40 v-70 h15 v70 h30 v-35 h25 v35 h45 v-55 h20 v55 h30 v-45 h30 v45 h20 v-65 h25 v65 h35 v-40 h20 v40 h40 v-50 h30 v50 h25 v-70 h20 v70 h45 v-35 h25 v35 h30 v-55 h20 v55 h35 v-45 h25 v45 h40 v-60 h30 v60 h20 v-30 h25 v30 h45 v-50 h20 v50 h30 v-40 h30 v40 V120 H0 Z" fill="#84CC16"/>
             </svg>
@@ -2489,13 +2499,13 @@ export default function OmAnalyzerPage() {
 
 
 /* ===========================================================================
-   PROPERTY OUTPUT — IDENTICAL to pro workspace/properties/[id]/page.tsx
+   PROPERTY OUTPUT - IDENTICAL to pro workspace/properties/[id]/page.tsx
    Uses flat API data (d.fieldName) instead of gf(fields, group, name)
    Same rendering, same sections, same order.
    =========================================================================== */
 
 /* ===========================================================================
-   DEAL SCORE RING — SVG circular score gauge
+   DEAL SCORE RING - SVG circular score gauge
    =========================================================================== */
 function DealScoreRing({ score, label }: { score: number; label: string }) {
   const radius = 54;
@@ -2588,10 +2598,10 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
     ["NOI (Adjusted)", fmt$(d.noiAdjusted), "NOI recalculated using standard expense assumptions (insurance, mgmt %, reserves) instead of OM figures"],
     ["Entry Cap (OM)", fmtPct(d.capRateOm), "NOI (OM) ÷ Asking Price"],
     ["Debt Service", fmt$(d.annualDebtService), "Annual mortgage payment based on loan amount, interest rate, and amortization period"],
-    ["DSCR (OM)", fmtX(d.dscrOm), "NOI (OM) ÷ Annual Debt Service — measures ability to cover debt payments"],
+    ["DSCR (OM)", fmtX(d.dscrOm), "NOI (OM) ÷ Annual Debt Service - measures ability to cover debt payments"],
     ["DSCR (Adjusted)", fmtX(d.dscrAdjusted), "NOI (Adjusted) ÷ Annual Debt Service"],
     ["Cash-on-Cash", fmtPct(d.cashOnCashOm), "Pre-tax cash flow ÷ Total cash invested (down payment + closing costs)"],
-    ["Debt Yield", fmtPct(d.debtYield), "NOI ÷ Loan Amount — lender risk metric independent of interest rate"],
+    ["Debt Yield", fmtPct(d.debtYield), "NOI ÷ Loan Amount - lender risk metric independent of interest rate"],
     ["Breakeven Occupancy", fmtPct(d.breakevenOccupancy), "Minimum occupancy needed to cover all expenses and debt service"],
   ] as [string, string, string?][]).filter(([, v]) => v !== "--");
 
@@ -2668,7 +2678,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-      {/* ===== HERO CARD — Combined Deal Summary + Image + Score (like pro) ===== */}
+      {/* ===== HERO CARD - Combined Deal Summary + Image + Score (like pro) ===== */}
       <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", marginBottom: 20, overflow: "hidden" }}>
         {/* Top bar: property name + asset badge + location */}
         <div style={{ padding: "24px 28px 0" }}>
@@ -2783,7 +2793,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
         </div>
       </div>
 
-      {/* ===== METRICS STRIP — Horizontal single-row key metrics ===== */}
+      {/* ===== METRICS STRIP - Horizontal single-row key metrics ===== */}
       {metricsStripItems.length > 0 && (
         <div className="tm-metrics-strip" style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", padding: "14px 0", marginBottom: 20, display: "grid", gridTemplateColumns: `repeat(${metricsStripItems.length}, 1fr)` }}>
           {metricsStripItems.map((item, idx) => (
@@ -2813,7 +2823,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
         </div>
       )}
 
-      {/* Score Breakdown removed from Try Me — Pro-only feature */}
+      {/* Score Breakdown removed from Try Me - Pro-only feature */}
 
       {/* ===== PRICE SENSITIVITY TABLE ===== */}
       {(d.askingPrice && d.noiOm) && (
@@ -2865,7 +2875,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
         </div>
       )}
 
-      {/* ===== STRENGTHS & RISKS — pro-style separate cards with tinted headers ===== */}
+      {/* ===== STRENGTHS & RISKS - pro-style separate cards with tinted headers ===== */}
       {(strengths.length > 0 || risks.length > 0) && (
         <div className="tm-signal-cards" style={{ display: "flex", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
           {/* Strengths Card */}
@@ -2909,18 +2919,18 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
         </div>
       )}
 
-      {/* ===== WHAT TO DOUBLE CHECK — pro-style review panel ===== */}
+      {/* ===== WHAT TO DOUBLE CHECK - pro-style review panel ===== */}
       {(() => {
         const checks: string[] = [];
-        if (!d.askingPrice) checks.push("Asking price was not found in the document — verify with broker or listing.");
-        if (!d.noiOm) checks.push("NOI could not be extracted — confirm net operating income from the OM or financials.");
-        if (!d.buildingSf) checks.push("Building square footage was not detected — verify GLA from the property listing.");
-        if (!d.occupancyPct) checks.push("Occupancy percentage was not found — check current occupancy with the seller.");
-        if (d.noiOm && d.noiAdjusted && Math.abs(Number(d.noiAdjusted) - Number(d.noiOm)) > Number(d.noiOm) * 0.1) checks.push("Adjusted NOI differs significantly from OM NOI — review expense assumptions.");
-        if (!d.wale) checks.push("WALE (weighted average lease expiration) could not be calculated — verify lease terms.");
-        if (d.tenants && d.tenants.length === 0) checks.push("No tenant data was extracted — confirm tenant roster from the rent roll.");
-        if (d.capRateOm && Number(d.capRateOm) > 9) checks.push("Cap rate appears unusually high — verify NOI and asking price are correct.");
-        if (d.capRateOm && Number(d.capRateOm) < 3) checks.push("Cap rate appears unusually low — verify this is not a development or value-add play.");
+        if (!d.askingPrice) checks.push("Asking price was not found in the document - verify with broker or listing.");
+        if (!d.noiOm) checks.push("NOI could not be extracted - confirm net operating income from the OM or financials.");
+        if (!d.buildingSf) checks.push("Building square footage was not detected - verify GLA from the property listing.");
+        if (!d.occupancyPct) checks.push("Occupancy percentage was not found - check current occupancy with the seller.");
+        if (d.noiOm && d.noiAdjusted && Math.abs(Number(d.noiAdjusted) - Number(d.noiOm)) > Number(d.noiOm) * 0.1) checks.push("Adjusted NOI differs significantly from OM NOI - review expense assumptions.");
+        if (!d.wale) checks.push("WALE (weighted average lease expiration) could not be calculated - verify lease terms.");
+        if (d.tenants && d.tenants.length === 0) checks.push("No tenant data was extracted - confirm tenant roster from the rent roll.");
+        if (d.capRateOm && Number(d.capRateOm) > 9) checks.push("Cap rate appears unusually high - verify NOI and asking price are correct.");
+        if (d.capRateOm && Number(d.capRateOm) < 3) checks.push("Cap rate appears unusually low - verify this is not a development or value-add play.");
         if (checks.length === 0) return null;
         return (
           <div style={{ background: "#FFFBF0", borderRadius: 12, border: "1px solid #F3E8C8", overflow: "hidden", marginBottom: 20 }}>
@@ -3148,7 +3158,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
             With DealSignals Pro, every analysis is saved to your DealBoard. Score side-by-side, export full workbooks, pin deals to a map, and send branded briefs to clients.
           </p>
           <p style={{ fontSize: 14, color: "#84CC16", fontWeight: 600, marginBottom: 28 }}>
-            Try Pro free for 7 days. 100 deals/month for $40 — less than 50¢ per deal.
+            Try Pro free for 7 days. 100 deals/month for $40 - less than 50¢ per deal.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <button
@@ -3201,13 +3211,13 @@ function generateDemoResult(filename: string): AnalysisData {
     baseRent: 248625, noiOm: 248625, noiAdjusted: 241200, annualDebtService: 153400,
     dscrOm: 1.62, dscrAdjusted: 1.57, cashOnCashOm: 8.45, debtYield: 9.0, breakevenOccupancy: 62.5,
     brief: "This single-tenant net lease property presents a solid acquisition opportunity with an investment-grade tenant on a long-term absolute NNN lease. The property was built in 2019, suggesting minimal near-term capital expenditure requirements.\n\nThe in-place cap rate of 5.85% is in line with current market benchmarks for credit-tenant NNN retail. The DSCR of 1.62x provides comfortable debt service coverage, and the 8.5-year remaining lease term offers meaningful cash flow visibility.",
-    signals: { overall: "🟢 Buy — Solid fundamentals with strong tenant credit", cap_rate: "🟢 In-line with market for credit NNN retail (5.50–6.25%)", dscr: "🟢 Comfortable coverage at 1.62x (threshold: 1.25x)", occupancy: "🟢 100% occupied — single-tenant, no vacancy risk during lease term", basis: "🟢 Below replacement cost at $283/SF", tenant_quality: "🟢 Investment-grade credit, national brand", rollover_risk: "🟢 8.5-year WALE — low near-term rollover risk", recommendation: "🟢 Buy — Move quickly. Strong credit tenant, long lease term, and solid basis." },
+    signals: { overall: "🟢 Buy - Solid fundamentals with strong tenant credit", cap_rate: "🟢 In-line with market for credit NNN retail (5.50–6.25%)", dscr: "🟢 Comfortable coverage at 1.62x (threshold: 1.25x)", occupancy: "🟢 100% occupied - single-tenant, no vacancy risk during lease term", basis: "🟢 Below replacement cost at $283/SF", tenant_quality: "🟢 Investment-grade credit, national brand", rollover_risk: "🟢 8.5-year WALE - low near-term rollover risk", recommendation: "🟢 Buy - Move quickly. Strong credit tenant, long lease term, and solid basis." },
     tenants: [{ name: name.split(" ")[0] || "National Tenant", sf: 15000, rent: 248625, type: "Absolute NNN", end: "Dec 2034", status: "Active" }],
   };
 }
 
 /* ===========================================================================
-   LITE DOWNLOAD — XLSX (6-sheet workbook via ExcelJS)
+   LITE DOWNLOAD - XLSX (6-sheet workbook via ExcelJS)
    =========================================================================== */
 async function downloadLiteXLSX(d: any) {
   let EJ: any;
@@ -3249,7 +3259,7 @@ async function downloadLiteXLSX(d: any) {
   const ws1 = wb.addWorksheet("Inputs");
   ws1.getColumn(1).width = 28; ws1.getColumn(2).width = 32; ws1.getColumn(3).width = 30;
   let r = 2;
-  const tc = ws1.getCell(r, 1); tc.value = `${pName} — INPUTS`; tc.font = titleFont; r++;
+  const tc = ws1.getCell(r, 1); tc.value = `${pName} - INPUTS`; tc.font = titleFont; r++;
   const lc = ws1.getCell(r, 1); lc.value = loc; lc.font = { color: { argb: "FF666666" }, size: 10, name: "Arial" }; r += 2;
   const s1 = ws1.getCell(r, 1); s1.value = "PROPERTY INFORMATION"; s1.font = secFont; r++;
   hdrRow(ws1, r, ["Field", "Value", "Notes"]); r++;
@@ -3280,7 +3290,7 @@ async function downloadLiteXLSX(d: any) {
   const ws2 = wb.addWorksheet("Rent Roll");
   const tenants = d.tenants || [];
   r = 2;
-  ws2.getCell(r, 1).value = `RENT ROLL — ${pName}`; ws2.getCell(r, 1).font = titleFont; r += 2;
+  ws2.getCell(r, 1).value = `RENT ROLL - ${pName}`; ws2.getCell(r, 1).font = titleFont; r += 2;
   hdrRow(ws2, r, ["Tenant", "SF", "Annual Rent", "Type", "Lease End", "Status"], [24, 10, 16, 16, 14, 12]); r++;
   for (const t of tenants) {
     const isExpired = String(t.status||"").toLowerCase().includes("expir") || String(t.status||"").toLowerCase().includes("mtm") || String(t.status||"").toLowerCase().includes("vacant");
@@ -3294,7 +3304,7 @@ async function downloadLiteXLSX(d: any) {
   // ── SHEET 3: Operating Statement ──
   const ws3 = wb.addWorksheet("Operating Statement");
   r = 2;
-  ws3.getCell(r, 1).value = `OPERATING STATEMENT — ${pName}`; ws3.getCell(r, 1).font = titleFont; r += 2;
+  ws3.getCell(r, 1).value = `OPERATING STATEMENT - ${pName}`; ws3.getCell(r, 1).font = titleFont; r += 2;
   hdrRow(ws3, r, ["Line Item", "Amount", "Notes"], [34, 22, 34]); r++;
   const s4 = ws3.getCell(r, 1); s4.value = "REVENUE"; s4.font = secFont; r++;
   dataRow(ws3, r++, "Base Rent", fmt$(d.baseRent), "In-place rent from OM");
@@ -3318,7 +3328,7 @@ async function downloadLiteXLSX(d: any) {
   // ── SHEET 4: Debt & Returns ──
   const ws4 = wb.addWorksheet("Debt & Returns");
   r = 2;
-  ws4.getCell(r, 1).value = `DEBT SERVICE & RETURNS — ${pName}`; ws4.getCell(r, 1).font = titleFont; r += 2;
+  ws4.getCell(r, 1).value = `DEBT SERVICE & RETURNS - ${pName}`; ws4.getCell(r, 1).font = titleFont; r += 2;
   hdrRow(ws4, r, ["Metric", "Value", "Notes"], [34, 22, 34]); r++;
   ws4.getCell(r, 1).value = "DEBT SERVICE"; ws4.getCell(r, 1).font = secFont; r++;
   dataRow(ws4, r++, "Loan Amount", fmt$(d.loanAmount), "");
@@ -3344,7 +3354,7 @@ async function downloadLiteXLSX(d: any) {
   // ── SHEET 5: Breakeven ──
   const ws5 = wb.addWorksheet("Breakeven");
   r = 2;
-  ws5.getCell(r, 1).value = `BREAKEVEN ANALYSIS — ${pName}`; ws5.getCell(r, 1).font = titleFont; r += 2;
+  ws5.getCell(r, 1).value = `BREAKEVEN ANALYSIS - ${pName}`; ws5.getCell(r, 1).font = titleFont; r += 2;
   hdrRow(ws5, r, ["Metric", "Value", "Notes"], [40, 22, 34]); r++;
   dataRow(ws5, r++, "Breakeven Occupancy", d.breakevenOccupancy ? `${Number(d.breakevenOccupancy).toFixed(1)}%` : "--", "(Adj OpEx + DS) / Rent");
   dataRow(ws5, r++, "Breakeven Rent / SF", d.breakevenRentPerSf ? `$${Number(d.breakevenRentPerSf).toFixed(2)}` : "--", "");
@@ -3355,7 +3365,7 @@ async function downloadLiteXLSX(d: any) {
   const sf = Number(d.buildingSf) || 1;
   const loan65 = Number(d.loanAmount) || 0;
   r = 2;
-  ws6.getCell(r, 1).value = `CAP RATE SCENARIO TABLE — ${pName}`; ws6.getCell(r, 1).font = titleFont; r++;
+  ws6.getCell(r, 1).value = `CAP RATE SCENARIO TABLE - ${pName}`; ws6.getCell(r, 1).font = titleFont; r++;
   ws6.getCell(r, 1).value = `Based on ${d.noiAdjusted ? "adjusted" : "in-place"} NOI of ${fmt$(noi)}`; ws6.getCell(r, 1).font = noteFont; r++;
   hdrRow(ws6, r, ["Cap Rate", "Implied Value", "Price/SF", "Loan Amount (65%)", "Annual DS", "DSCR"], [12, 18, 12, 18, 16, 10]); r++;
   for (let cr = 6.5; cr <= 10; cr += 0.5) {
@@ -3376,7 +3386,7 @@ async function downloadLiteXLSX(d: any) {
 }
 
 /* ===========================================================================
-   LITE DOWNLOAD — Brief (.doc) — pro-grade multi-section format
+   LITE DOWNLOAD - Brief (.doc) - pro-grade multi-section format
    =========================================================================== */
 function downloadLiteBrief(d: any) {
   const pName = d.propertyName || "Property";
@@ -3391,7 +3401,7 @@ function downloadLiteBrief(d: any) {
   // Deal snapshot bullets
   const snap: string[] = [];
   if (d.assetType) snap.push(`${d.assetType}${d.buildingSf ? `, ${Math.round(Number(d.buildingSf)).toLocaleString()} SF GLA` : ""}${d.yearBuilt ? `, Year Built ${d.yearBuilt}` : ""}`);
-  if (d.occupancyPct) snap.push(`${d.occupancyPct}% occupied${d.tenantCount ? ` — ${d.tenantCount} tenant${Number(d.tenantCount) > 1 ? "s" : ""}` : ""}`);
+  if (d.occupancyPct) snap.push(`${d.occupancyPct}% occupied${d.tenantCount ? ` - ${d.tenantCount} tenant${Number(d.tenantCount) > 1 ? "s" : ""}` : ""}`);
   if (d.noiOm) snap.push(`In-place NOI ${fmt$(d.noiOm)}${d.noiAdjusted && d.noiAdjusted !== d.noiOm ? ` (adjusted: ${fmt$(d.noiAdjusted)})` : ""}`);
   if (d.askingPrice) snap.push(`Asking price ${fmt$(d.askingPrice)}${d.pricePerSf ? ` ($${Number(d.pricePerSf).toFixed(0)}/SF)` : ""}`);
   if (d.capRateOm) snap.push(`Entry cap rate ${Number(d.capRateOm).toFixed(2)}%`);

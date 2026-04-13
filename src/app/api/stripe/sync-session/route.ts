@@ -15,7 +15,7 @@ export const runtime = "nodejs";
  * immediately, so we don't have to wait for the async `checkout.session.completed`
  * webhook to race in before the UI refreshes the tier pill.
  *
- * Idempotent — the webhook may also write the same fields, but the final
+ * Idempotent - the webhook may also write the same fields, but the final
  * state is identical.
  */
 export async function POST(req: NextRequest) {

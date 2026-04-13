@@ -11,7 +11,7 @@ const db = () => getAdminDb();
  * Document schema:
  *   id: string (auto)
  *   shareId: string (short nanoid for URL)
- *   userId: string (owner — real Firebase UID)
+ *   userId: string (owner - real Firebase UID)
  *   workspaceId: string
  *   workspaceName: string
  *   displayName: string (custom override name, or empty)
@@ -39,12 +39,12 @@ async function getUserIdFromToken(req: NextRequest): Promise<string | null> {
   }
 }
 
-// GET — list share links for current user
+// GET - list share links for current user
 export async function GET(req: NextRequest) {
   try {
     const userId = await getUserIdFromToken(req);
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized — valid Firebase token required" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized - valid Firebase token required" }, { status: 401 });
     }
     const workspaceId = req.nextUrl.searchParams.get("workspaceId");
 
@@ -63,12 +63,12 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST — create a new share link
+// POST - create a new share link
 export async function POST(req: NextRequest) {
   try {
     const userId = await getUserIdFromToken(req);
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized — valid Firebase token required" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized - valid Firebase token required" }, { status: 401 });
     }
     const body = await req.json();
     const { workspaceId, workspaceName, displayName, whiteLabel, hideDocuments, contactName, contactAgency, contactPhone } = body;
@@ -110,12 +110,12 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// PATCH — update a share link
+// PATCH - update a share link
 export async function PATCH(req: NextRequest) {
   try {
     const userId = await getUserIdFromToken(req);
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized — valid Firebase token required" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized - valid Firebase token required" }, { status: 401 });
     }
     const body = await req.json();
     const { id, ...updates } = body;
@@ -158,12 +158,12 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
-// DELETE — remove a share link
+// DELETE - remove a share link
 export async function DELETE(req: NextRequest) {
   try {
     const userId = await getUserIdFromToken(req);
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized — valid Firebase token required" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized - valid Firebase token required" }, { status: 401 });
     }
     const id = req.nextUrl.searchParams.get("id");
 

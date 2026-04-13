@@ -7,7 +7,7 @@ import { purchaseConfirmationTemplate } from "@/lib/email-templates";
 
 export const dynamic = "force-dynamic";
 
-// Disable body parsing — Stripe needs raw body for signature verification
+// Disable body parsing - Stripe needs raw body for signature verification
 export const runtime = "nodejs";
 
 /**
@@ -233,7 +233,7 @@ export async function POST(req: NextRequest) {
 
           if (!userSnap.empty) {
             const uid = userSnap.docs[0].id;
-            console.log(`[stripe/webhook] invoice.paid (renewal) uid=${uid} — resetting monthly usage`);
+            console.log(`[stripe/webhook] invoice.paid (renewal) uid=${uid} - resetting monthly usage`);
 
             await db.collection("users").doc(uid).update({
               uploadsUsed: 0,

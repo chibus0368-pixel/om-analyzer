@@ -151,7 +151,7 @@ export default function ProfilePage() {
   // Notification prefs
   const [notifPrefs, setNotifPrefs] = useState(DEFAULT_PREFS.emailNotifications);
 
-  // Active section for mobile-friendly tabs — read from ?tab= query param
+  // Active section for mobile-friendly tabs - read from ?tab= query param
   const tabParam = searchParams.get("tab");
   const initialTab = (tabParam === "account" || tabParam === "security" || tabParam === "notifications") ? tabParam : "profile";
   const [activeSection, setActiveSection] = useState<"profile" | "security" | "notifications" | "account">(initialTab);
@@ -796,7 +796,7 @@ export default function ProfilePage() {
                 fontSize: 13, fontWeight: 500,
                 color: profile?.emailVerified ? "#059669" : "#D97706",
               }}>
-                {profile?.emailVerified ? "Email verified" : "Email not verified — check your inbox"}
+                {profile?.emailVerified ? "Email verified" : "Email not verified - check your inbox"}
               </span>
             </div>
           </div>
@@ -888,10 +888,10 @@ export default function ProfilePage() {
                   </div>
                   <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>
                     {(usageData?.tier || profile?.tier || "free") === "free"
-                      ? "Basic access — 5 deal analyses"
+                      ? "Basic access - 5 deal analyses"
                       : (usageData?.tier || profile?.tier) === "pro"
-                      ? "$40/month — up to 100 deals"
-                      : "$100/month — up to 500 deals"}
+                      ? "$40/month - up to 100 deals"
+                      : "$100/month - up to 500 deals"}
                   </div>
                 </div>
               </div>
@@ -947,7 +947,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* Upgrade options — only show for non-pro_plus users */}
+            {/* Upgrade options - only show for non-pro_plus users */}
             {(usageData?.tier || profile?.tier || "free") !== "pro_plus" && (
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: SURFACE, marginBottom: 12 }}>
@@ -988,7 +988,7 @@ export default function ProfilePage() {
                     </div>
                   )}
 
-                  {/* Pro+ card — show for free and pro users */}
+                  {/* Pro+ card - show for free and pro users */}
                   <div style={{
                     padding: "20px", borderRadius: 8,
                     border: `1.5px solid ${PRIMARY}`, position: "relative",

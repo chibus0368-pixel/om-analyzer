@@ -182,7 +182,7 @@ export function registrationWelcomeTemplate(data: { name: string; email: string 
       <tr>
         <td style="padding: 20px 24px; text-align: center;">
           <p style="margin: 0 0 6px 0; color: ${COLORS.gold}; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px;">Your Plan</p>
-          <p style="margin: 0 0 8px 0; color: ${COLORS.white}; font-size: 16px; font-weight: bold;">Free Tier — 2 Deal Analyses / Month</p>
+          <p style="margin: 0 0 8px 0; color: ${COLORS.white}; font-size: 16px; font-weight: bold;">Free Tier - 2 Deal Analyses / Month</p>
           <p style="margin: 0; color: rgba(255,255,255,0.7); font-size: 13px;">
             Upgrade to Pro for 40 analyses, Excel exports, and full workspace features.
           </p>
@@ -198,7 +198,7 @@ export function registrationWelcomeTemplate(data: { name: string; email: string 
     </table>
 
     <p style="margin: 20px 0 0 0; color: ${COLORS.darkGray}; font-size: 12px;">
-      Questions? Just reply to this email — we're happy to help.
+      Questions? Just reply to this email - we're happy to help.
     </p>
 
     <!-- Footer -->
@@ -235,7 +235,7 @@ export function purchaseConfirmationTemplate(data: { name: string; email: string
     </h2>
 
     <p style="margin: 0 0 15px 0; color: ${COLORS.textGray}; font-size: 14px; line-height: 1.6;">
-      Thanks for starting your ${planDisplay} trial, ${displayName}! You have 7 days of full access — your card won't be charged until the trial ends.
+      Thanks for starting your ${planDisplay} trial, ${displayName}! You have 7 days of full access - your card won't be charged until the trial ends.
     </p>
 
     <!-- Order Summary -->
@@ -307,7 +307,7 @@ export function purchaseConfirmationTemplate(data: { name: string; email: string
       You can manage your subscription anytime from your <a href="${appUrl}/workspace/profile" style="color: ${COLORS.red};">account profile</a>.
     </p>
     <p style="margin: 0; color: ${COLORS.darkGray}; font-size: 12px;">
-      Questions? Just reply to this email — we're happy to help.
+      Questions? Just reply to this email - we're happy to help.
     </p>
 
     <!-- Footer -->

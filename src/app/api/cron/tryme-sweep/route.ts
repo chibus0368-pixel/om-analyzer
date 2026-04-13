@@ -9,7 +9,7 @@ import { getAdminDb } from "@/lib/firebase-admin";
  * ADMIN_SECRET header for testing.
  *
  * A "tryme" record is one where userId starts with "tryme-" and isTryMe
- * is still true — claimed records have isTryMe flipped to false and
+ * is still true - claimed records have isTryMe flipped to false and
  * expiresAt cleared, so they're immune.
  */
 export async function GET(request: NextRequest) {

@@ -19,7 +19,7 @@ async function verifyAdmin(req: NextRequest): Promise<string | null> {
 }
 
 /**
- * GET /api/admin/users — list all users with dealboard counts and billing info
+ * GET /api/admin/users - list all users with dealboard counts and billing info
  */
 export async function GET(req: NextRequest) {
   const adminUid = await verifyAdmin(req);
@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
 }
 
 /**
- * PATCH /api/admin/users — disable/enable or delete a user
+ * PATCH /api/admin/users - disable/enable or delete a user
  * Body: { uid, action: "disable" | "enable" | "delete" }
  */
 export async function PATCH(req: NextRequest) {

@@ -81,7 +81,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ success: false, error: 'Service temporarily unavailable.' }, { status: 503 });
     }
 
-    // Check if lead already exists — simple equality query (no composite index needed)
+    // Check if lead already exists - simple equality query (no composite index needed)
     let existing;
     try {
       existing = await db.collection('leads').where('email', '==', normalizedEmail).limit(1).get();

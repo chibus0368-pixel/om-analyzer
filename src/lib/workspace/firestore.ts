@@ -11,7 +11,7 @@ import type { Project, Property, ProjectDocument, ExtractedField, UnderwritingMo
 
 const now = () => new Date().toISOString();
 
-// Strip undefined values — Firestore rejects them
+// Strip undefined values - Firestore rejects them
 function clean(obj: Record<string, any>): Record<string, any> {
   const result: Record<string, any> = {};
   for (const [k, v] of Object.entries(obj)) {
@@ -20,7 +20,7 @@ function clean(obj: Record<string, any>): Record<string, any> {
   return result;
 }
 
-// Safe query wrapper — catches index errors and returns empty
+// Safe query wrapper - catches index errors and returns empty
 async function safeQuery<T>(fn: () => Promise<T[]>): Promise<T[]> {
   try {
     return await fn();
@@ -109,7 +109,7 @@ export async function getProject(projectId: string): Promise<Project | null> {
 
 export async function getUserProjects(userId: string): Promise<Project[]> {
   return safeQuery(async () => {
-    // Simple single-field query — no composite index needed
+    // Simple single-field query - no composite index needed
     const q = query(collection(db, "workspace_projects"), where("userId", "==", userId));
     const snap = await getDocs(q);
     const projects = snap.docs.map(d => ({ id: d.id, ...d.data() } as Project));

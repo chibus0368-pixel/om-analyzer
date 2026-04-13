@@ -108,7 +108,7 @@ export default function ComparePage() {
               ))}
             </tbody>
           </table>
-          {/* Mobile stacked cards — one card per project with all metrics */}
+          {/* Mobile stacked cards - one card per project with all metrics */}
           <div className="cmp-cards" style={{ display: "none", flexDirection: "column", gap: 16, padding: 12 }}>
             {compared.map(p => (
               <div key={p.id} style={{ background: "#F9FAFB", borderRadius: 10, padding: 14, border: "1px solid rgba(0,0,0,0.06)" }}>

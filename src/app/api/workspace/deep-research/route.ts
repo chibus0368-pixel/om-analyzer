@@ -29,14 +29,14 @@ async function callOpenAI(
   return data.choices?.[0]?.message?.content || "";
 }
 
-// ── Google Places Nearby Search — multiple typed queries ────
+// ── Google Places Nearby Search - multiple typed queries ────
 async function searchNearbyPlaces(lat: number, lng: number, radius = 1600) {
   const key = process.env.GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   if (!key) return [];
 
   // Run multiple type-specific searches to get comprehensive coverage
   const typeGroups = [
-    "", // General (no type filter) — returns most prominent nearby
+    "", // General (no type filter) - returns most prominent nearby
     "restaurant",
     "store",
     "shopping_mall",
@@ -384,15 +384,15 @@ function buildLocationPrompt(
 
   const formatPlaces = (arr: any[], max = 8) =>
     arr.slice(0, max).map((p: any) =>
-      `${p.name}${p.rating ? ` (${p.rating}★, ${p.userRatingsTotal || "?"} reviews)` : ""}${p.vicinity ? ` — ${p.vicinity}` : ""}`
+      `${p.name}${p.rating ? ` (${p.rating}★, ${p.userRatingsTotal || "?"} reviews)` : ""}${p.vicinity ? ` - ${p.vicinity}` : ""}`
     ).join("\n    ") || "none found";
 
   const newsSection = news.length > 0
-    ? `RECENT NEWS ARTICLES ABOUT ${geo.city.toUpperCase()}, ${geo.state.toUpperCase()}:\n${news.map((n, i) => `${i + 1}. "${n.title}" — ${n.source} (${n.snippet})`).join("\n")}`
+    ? `RECENT NEWS ARTICLES ABOUT ${geo.city.toUpperCase()}, ${geo.state.toUpperCase()}:\n${news.map((n, i) => `${i + 1}. "${n.title}" - ${n.source} (${n.snippet})`).join("\n")}`
     : `No recent news articles found for ${geo.city}, ${geo.state}.`;
 
   const developmentSection = developments.length > 0
-    ? `NEARBY DEVELOPMENTS/CONSTRUCTION (from Google Places search):\n${developments.map((d: any) => `- ${d.name} — ${d.address || "nearby"}`).join("\n")}`
+    ? `NEARBY DEVELOPMENTS/CONSTRUCTION (from Google Places search):\n${developments.map((d: any) => `- ${d.name} - ${d.address || "nearby"}`).join("\n")}`
     : "No specific new developments found in Google Places search.";
 
   const censusSection = census
@@ -415,7 +415,7 @@ function buildLocationPrompt(
     ? `This is a LAND deal. Focus on: zoning and entitlements, utility access, road frontage and traffic counts, surrounding development pattern, highest-and-best-use analysis, growth direction of the city.`
     : `This is a RETAIL property. Focus on: foot traffic generators, consumer spending power, retail competition and co-tenancy, drive-by traffic, anchor tenants within 1 mile, retail vacancy trends in the trade area.`;
 
-  return `You are a senior CRE location intelligence analyst. Produce a CONCISE visual-style location report. No lengthy paragraphs — think dashboard, not essay.
+  return `You are a senior CRE location intelligence analyst. Produce a CONCISE visual-style location report. No lengthy paragraphs - think dashboard, not essay.
 
 PROPERTY:
 - Name: ${propertyName}
@@ -437,7 +437,7 @@ ${censusSection}
 
 CITY BACKGROUND: ${wiki ? `${wiki.title}: ${wiki.extract}` : "N/A"}
 
-NEARBY BUSINESSES (1mi radius — ${nearbyPlaces.length} total):
+NEARBY BUSINESSES (1mi radius - ${nearbyPlaces.length} total):
   Anchors (${cats.anchors.length}): ${formatPlaces(cats.anchors, 6)}
   Restaurants (${cats.restaurants.length}): ${formatPlaces(cats.restaurants, 5)}
   Retail (${cats.retail.length}): ${formatPlaces(cats.retail, 5)}
@@ -453,7 +453,7 @@ ${newsSection}
 
 ─── OUTPUT (JSON only) ───
 
-Return EXACTLY this structure. Keep text SHORT — 1 sentence per finding, max 15 words per label.
+Return EXACTLY this structure. Keep text SHORT - 1 sentence per finding, max 15 words per label.
 
 {
   "locationGrade": "A|A-|B+|B|B-|C+|C|C-|D",
@@ -462,13 +462,13 @@ Return EXACTLY this structure. Keep text SHORT — 1 sentence per finding, max 1
   "signals": [
     {
       "label": "Short label (max 5 words)",
-      "detail": "1 sentence with specific data — name a business, cite a number, reference an article",
+      "detail": "1 sentence with specific data - name a business, cite a number, reference an article",
       "signal": "green|yellow|red",
       "icon": "traffic|demographics|development|news|civic|investment|comps"
     }
   ],
   "topAnchors": ["Name1", "Name2", "Name3"],
-  "bottomLine": "1 sentence — bullish, neutral, or cautious on this location and why"
+  "bottomLine": "1 sentence - bullish, neutral, or cautious on this location and why"
 }
 
 RULES:
@@ -502,7 +502,7 @@ export async function POST(req: NextRequest) {
 
     const searchAddress = address || propertyName;
 
-    // Step 1: Geocode the address — try multiple fallbacks
+    // Step 1: Geocode the address - try multiple fallbacks
     console.log(`[location-intel] Geocoding address="${address}" propertyName="${propertyName}" searchAddress="${searchAddress}"`);
 
     let geo = await geocodeAddress(searchAddress);
@@ -515,7 +515,7 @@ export async function POST(req: NextRequest) {
 
     // Fallback 2: try just the property name without special chars
     if (!geo && propertyName) {
-      const cleaned = propertyName.replace(/[—–\-]/g, " ").replace(/\s+/g, " ").trim();
+      const cleaned = propertyName.replace(/[-–\-]/g, " ").replace(/\s+/g, " ").trim();
       if (cleaned !== propertyName) {
         console.log(`[location-intel] Fallback: trying cleaned name "${cleaned}"`);
         geo = await geocodeAddress(cleaned);
@@ -577,7 +577,7 @@ export async function POST(req: NextRequest) {
       };
     }
 
-    // Step 5: Persist to Firestore — include map data for UI
+    // Step 5: Persist to Firestore - include map data for UI
     const db = getAdminDb();
     const cats = categorizePlaces(nearbyPlaces);
     await db.collection("workspace_deep_research").doc(propertyId).set({
@@ -673,7 +673,7 @@ function getPlaceCategory(place: any, cats: Record<string, any[]>): string {
   return "other";
 }
 
-// ── GET handler — return cached research ────────────────────
+// ── GET handler - return cached research ────────────────────
 export async function GET(req: NextRequest) {
   const propertyId = req.nextUrl.searchParams.get("propertyId");
   if (!propertyId) {

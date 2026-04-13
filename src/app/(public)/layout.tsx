@@ -18,7 +18,7 @@ export default function PublicLayout({
         justifyContent: "center",
         minHeight: "100vh",
         padding: "24px",
-        // Standardized auth background — same treatment across login,
+        // Standardized auth background - same treatment across login,
         // register, forgot-password, verify-email, etc.
         background:
           "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(132, 204, 22, 0.08), transparent 70%), " +

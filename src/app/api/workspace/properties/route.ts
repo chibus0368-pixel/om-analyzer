@@ -51,13 +51,13 @@ export async function GET(req: NextRequest) {
       return v;
     };
 
-    // Fetch properties — filter at the Firestore query level to avoid
+    // Fetch properties - filter at the Firestore query level to avoid
     // reading the entire user's collection when only one board is needed.
     let propsQuery = db.collection("workspace_properties")
       .where("userId", "==", userId);
 
     if (!all && workspaceId !== "default") {
-      // Direct Firestore filter — reads only the properties for this board
+      // Direct Firestore filter - reads only the properties for this board
       propsQuery = propsQuery.where("workspaceId", "==", workspaceId);
     }
 
@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
 
     // Enrich with document counts, but DO NOT let this block the response.
     // We race the docs query against a 1.5s timeout; if it hasn't finished
-    // in time (or errors), we serve with 0 counts — the dashboard still
+    // in time (or errors), we serve with 0 counts - the dashboard still
     // works. We use .select() to only read two small fields.
     //
     // Optimization: when we have ≤30 property IDs we use Firestore's
@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
     try {
       let docsPromise;
       if (propIds.length > 0 && propIds.length <= 30) {
-        // Firestore `in` supports up to 30 values — targeted query
+        // Firestore `in` supports up to 30 values - targeted query
         docsPromise = db
           .collection("workspace_documents")
           .where("propertyId", "in", propIds)

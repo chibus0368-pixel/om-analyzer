@@ -843,7 +843,7 @@ export default function UploadHistoryPage() {
                     color: "#6B7280",
                   }}
                 >
-                  {uploadedLabel || "—"}
+                  {uploadedLabel || "-"}
                 </div>
                 <div style={{ textAlign: "center" }}>
                   {score > 0 ? (
@@ -875,7 +875,7 @@ export default function UploadHistoryPage() {
                       {Math.round(score)}
                     </span>
                   ) : (
-                    <span style={{ color: "#D1D5DB", fontSize: 12 }}>—</span>
+                    <span style={{ color: "#D1D5DB", fontSize: 12 }}>-</span>
                   )}
                 </div>
                 <div style={{ textAlign: "right" }}>

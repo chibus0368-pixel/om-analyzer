@@ -10,7 +10,7 @@ export const maxDuration = 120;
 /**
  * POST /api/om-analyzer/tryme-analyze
  *
- * Runs the EXACT SAME pipeline Pro runs — runParseEngine() + runScoreEngine() —
+ * Runs the EXACT SAME pipeline Pro runs - runParseEngine() + runScoreEngine() -
  * against an ephemeral Firestore property record. This guarantees Try Me and
  * Pro produce identical scores for the same document.
  *
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
       analysisType = await classifyAssetType(documentText);
     }
 
-    // 1. Seed ephemeral property doc. We no longer delete this immediately —
+    // 1. Seed ephemeral property doc. We no longer delete this immediately -
     // records stick around so they can be claimed on signup. A TTL field
     // (expiresAt) lets a scheduled cleanup sweep unclaimed records after 7 days.
     const now = new Date().toISOString();
@@ -294,7 +294,7 @@ export async function POST(request: NextRequest) {
       // Tenants
       tenants,
 
-      // Value-add (Pro feature — shown for parity)
+      // Value-add (Pro feature - shown for parity)
       valueAdd: {
         score: get("value_add.score"),
         flagsCount: get("value_add.flags_count"),
@@ -306,7 +306,7 @@ export async function POST(request: NextRequest) {
       // Addons (industrial/office)
       addons: buildAddons(fields, analysisType),
 
-      // Pro score result — same shape the frontend already consumes
+      // Pro score result - same shape the frontend already consumes
       proScore,
     };
 

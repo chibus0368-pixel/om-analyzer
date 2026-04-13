@@ -3,7 +3,7 @@
  *
  * Extracted from /api/workspace/classify so both the web upload route
  * and the Chrome-extension upload route can call it as a direct function
- * import. Never self-fetch — per ARCHITECTURE LOCK in CLAUDE.md, Vercel
+ * import. Never self-fetch - per ARCHITECTURE LOCK in CLAUDE.md, Vercel
  * serverless cannot reliably call its own routes over HTTP.
  */
 
@@ -34,7 +34,7 @@ const VALID_TYPES: AnalysisType[] = ["retail", "industrial", "office", "land", "
 /**
  * Classify a document's analysis type using GPT-4o. Returns a safe
  * default ("retail" with confidence 0) on any failure so callers never
- * have to branch on errors — the pipeline keeps flowing.
+ * have to branch on errors - the pipeline keeps flowing.
  */
 export async function classifyDocument(documentText: string): Promise<ClassifyResult> {
   const fallback: ClassifyResult = {

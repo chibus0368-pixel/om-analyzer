@@ -3,7 +3,7 @@ import { getAdminDb } from "@/lib/firebase-admin";
 
 export const maxDuration = 30;
 
-// Generate output records — actual file generation happens client-side
+// Generate output records - actual file generation happens client-side
 // This just creates the Firestore records for the outputs
 export async function POST(request: NextRequest) {
   try {
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
         projectId: "workspace-default",
         propertyId,
         outputType: "brief_txt",
-        title: `${propertyName} — First-Pass Brief`,
+        title: `${propertyName} - First-Pass Brief`,
         storagePath: "",
         fileExt: "txt",
         versionNumber: 1,
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
         generationStatus: "completed",
         createdAt: now,
       });
-      outputs.push({ type: "brief", title: `${propertyName} — First-Pass Brief` });
+      outputs.push({ type: "brief", title: `${propertyName} - First-Pass Brief` });
     }
 
     if (parsedData?.property || parsedData?.pricing || parsedData?.expenses) {
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
         projectId: "workspace-default",
         propertyId,
         outputType: "underwriting_csv",
-        title: `${propertyName} — Underwriting`,
+        title: `${propertyName} - Underwriting`,
         storagePath: "",
         fileExt: "csv",
         versionNumber: 1,
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
         generationStatus: "completed",
         createdAt: now,
       });
-      outputs.push({ type: "underwriting", title: `${propertyName} — Underwriting` });
+      outputs.push({ type: "underwriting", title: `${propertyName} - Underwriting` });
     }
 
     return NextResponse.json({ success: true, outputs });
