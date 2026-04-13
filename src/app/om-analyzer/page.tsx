@@ -443,7 +443,7 @@ function HeroShowcase() {
       name: "Outback Steakhouse", city: "Fredericksburg, VA", type: "Single-Tenant NNN",
       score: 45, verdict: "PASS",
       price: "$4.8M", cap: "5.6%", noi: "$269K", sf: "6.2K SF",
-      photoUrl: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1000&q=85&auto=format&fit=crop",
+      photoUrl: "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=1000&q=85&auto=format&fit=crop",
       hero: "linear-gradient(135deg, #4a1f1f 0%, #6b2d2d 40%, #F87171 180%)",
       pricePerSf: "$774/SF", dscr: "1.08x", coc: "3.1%", debtYield: "7.9%",
       occupancy: "100%", yearBuilt: "2001", tenantCount: "1", walt: "5.0 yrs", submarket: "I-95 Corridor",
