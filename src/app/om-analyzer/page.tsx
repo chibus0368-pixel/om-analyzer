@@ -185,19 +185,48 @@ function PropertyImage({ heroImageUrl, location, encodedAddress, propertyName }:
 
 /* ===========================================================================
    HERO SHOWCASE - Interactive native mockup with clickable property cards
+   Uses REAL CRE property images + metrics mirror the actual app's detail page
    =========================================================================== */
+type HeroTenant = { name: string; sf: string; rent: string; term: string };
 type HeroCard = {
   name: string; city: string; type: string;
   score: number; verdict: "BUY" | "NEUTRAL" | "PASS";
+  // Headline metrics (card)
   price: string; cap: string; noi: string; sf: string;
-  hero: string;   // CSS gradient for the thumbnail
+  // Real image (Unsplash) + gradient fallback
+  photoUrl: string;
+  hero: string;
+  // Detail-page metrics (modal)
+  pricePerSf: string;
+  dscr: string;
+  coc: string;    // Cash-on-Cash
+  debtYield: string;
+  occupancy: string;
+  yearBuilt: string;
+  tenantCount: string;
+  walt: string;
+  submarket: string;
+  // Narrative
+  executive: string;
+  strengths: string[];
+  concerns: string[];
   signal: string | null;
+  aiSignals: { title: string; detail: string; impact: "pos" | "neg" | "neu" }[];
+  tenants: HeroTenant[];
+  reviewItems: string[];
   greenFlags: string[];
   yellowFlags: string[];
   redFlags: string[];
-  tenantMix?: string;
-  walt?: string;
-  submarket?: string;
+};
+
+// Real CRE exterior photos on Unsplash CDN
+const PHOTO = {
+  shoppingCenter:  "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=800&q=80&auto=format&fit=crop",
+  grocery:         "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=800&q=80&auto=format&fit=crop",
+  neighborhood:    "https://images.unsplash.com/photo-1604754742629-3e5728249d73?w=800&q=80&auto=format&fit=crop",
+  restaurant:      "https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?w=800&q=80&auto=format&fit=crop",
+  mixedUse:        "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?w=800&q=80&auto=format&fit=crop",
+  stripMall:       "https://images.unsplash.com/photo-1567449303078-57ad995bd323?w=800&q=80&auto=format&fit=crop",
 };
 
 function HeroShowcase() {
@@ -208,67 +237,231 @@ function HeroShowcase() {
       name: "Greenfield Shopping Center", city: "Greenfield, WI", type: "Multi-Tenant Retail",
       score: 78, verdict: "BUY",
       price: "$14.2M", cap: "7.80%", noi: "$1.11M", sf: "94.2K SF",
+      photoUrl: PHOTO.shoppingCenter,
       hero: "linear-gradient(135deg, #1e3a5f 0%, #2d4a6b 40%, #84CC16 180%)",
+      pricePerSf: "$151/SF", dscr: "1.42x", coc: "9.8%", debtYield: "11.7%",
+      occupancy: "94%", yearBuilt: "1998", tenantCount: "12", walt: "6.2 yrs", submarket: "Milwaukee MSA",
+      executive: "Stabilized multi-tenant center with an anchor holding 12 years of remaining term and shop rents 18% below market comps. Traffic counts of 37K VPD support the retail thesis and embedded rent steps provide inflation protection. Rollover risk is moderate with 3 shop leases expiring in the next 24 months.",
+      strengths: [
+        "Anchor credit tenant with 12 yrs WALT drives durable cash flow",
+        "In-place rents 18% below market - mark-to-market upside on renewals",
+        "Strong retail corridor at 37,400 VPD on primary frontage",
+      ],
+      concerns: [
+        "3 shop tenants rolling in next 24 months - re-lease exposure",
+        "Roof nearing end of useful life, TI / cap-ex reserves needed",
+      ],
       signal: "Below-market rents with strong traffic. Watch rollover risk.",
+      aiSignals: [
+        { title: "NOI upside", detail: "Shop rents 18% below market comps - $165K NOI lift on rollover at market", impact: "pos" },
+        { title: "Anchor strength", detail: "Credit-rated anchor with 12 yrs base term + 2x5 yr options", impact: "pos" },
+        { title: "Roof age", detail: "Original 1998 roof; budget $180K-$220K in years 1-3", impact: "neg" },
+      ],
+      tenants: [
+        { name: "Pick 'n Save (Anchor)", sf: "54,200", rent: "$486K", term: "Mar 2038" },
+        { name: "Dollar Tree",            sf: "10,800", rent: "$140K", term: "Jul 2029" },
+        { name: "Great Clips",            sf: "1,800",  rent: "$48K",  term: "Dec 2026" },
+        { name: "Sport Clips",            sf: "1,500",  rent: "$42K",  term: "Aug 2027" },
+        { name: "Jimmy John's",           sf: "1,650",  rent: "$52K",  term: "Jun 2028" },
+        { name: "Verizon Wireless",       sf: "2,100",  rent: "$68K",  term: "Feb 2029" },
+      ],
+      reviewItems: [
+        "No vacancy allowance in OM - typical underwriting uses 3-5%",
+        "Management fee understated at 2% of EGI - industry norm 3-4%",
+        "No capital reserves budgeted - should be $0.15-0.25/SF",
+      ],
       greenFlags: ["Anchor tenant 12 yrs remaining", "Rents 18% below market comps", "37K VPD on primary frontage"],
       yellowFlags: ["3 tenants rolling in next 24 months", "Roof nearing end of useful life"],
       redFlags: [],
-      tenantMix: "Anchor + 11 shop tenants", walt: "6.2 yrs", submarket: "Milwaukee MSA",
     },
     {
       name: "Hales Corners Plaza", city: "Hales Corners, WI", type: "Grocery-Anchored Retail",
       score: 72, verdict: "BUY",
       price: "$9.4M", cap: "8.34%", noi: "$784K", sf: "62.5K SF",
+      photoUrl: PHOTO.grocery,
       hero: "linear-gradient(135deg, #2d1f4e 0%, #4a2d5f 40%, #84CC16 180%)",
+      pricePerSf: "$150/SF", dscr: "1.51x", coc: "10.4%", debtYield: "12.4%",
+      occupancy: "97%", yearBuilt: "2003", tenantCount: "9", walt: "5.4 yrs", submarket: "Milwaukee South",
+      executive: "Grocery-anchored neighborhood center priced at a meaningful discount to replacement cost. Anchor has 8 years base term remaining with 2x5 year options and the shops are 97% occupied. The asset benefits from recession-resistant tenancy and stable, predictable cash flow.",
+      strengths: [
+        "Grocery-anchored, recession-resistant demand driver",
+        "Priced at $150/SF - below estimated $185/SF replacement cost",
+        "97% occupancy with limited exposure in near-term rollover",
+      ],
+      concerns: [
+        "Limited historical rent growth in this submarket",
+        "Anchor lease has co-tenancy clause that could reduce rent if shops decline",
+      ],
       signal: "Below-replacement cost, anchor 8 yrs remaining.",
+      aiSignals: [
+        { title: "Replacement cost", detail: "Trade at $150/SF vs. $185/SF new construction - downside protection", impact: "pos" },
+        { title: "Anchor WALT", detail: "8 years base + options keeps income stable through next cycle", impact: "pos" },
+        { title: "Co-tenancy", detail: "Anchor has rent reduction clause if 2+ junior shops go dark", impact: "neu" },
+      ],
+      tenants: [
+        { name: "Sendik's Food Market",   sf: "42,000", rent: "$378K", term: "Oct 2034" },
+        { name: "UPS Store",              sf: "1,800",  rent: "$50K",  term: "Apr 2028" },
+        { name: "Starbucks",              sf: "2,200",  rent: "$82K",  term: "Sep 2030" },
+        { name: "Chipotle",               sf: "2,400",  rent: "$95K",  term: "May 2029" },
+        { name: "GNC",                    sf: "1,500",  rent: "$42K",  term: "Mar 2027" },
+      ],
+      reviewItems: [
+        "CAM reconciliation history needed - verify NNN recoveries",
+        "Anchor sales figures not disclosed - request health ratio",
+      ],
       greenFlags: ["Grocery-anchored, recession-resistant", "Below replacement cost at $150/SF", "8 yrs anchor term"],
       yellowFlags: ["Limited rent growth history"],
       redFlags: [],
-      tenantMix: "Grocery anchor + 8 shops", walt: "5.4 yrs", submarket: "Milwaukee South",
     },
     {
       name: "Harwood Retail Center", city: "Wauwatosa, WI", type: "Neighborhood Center",
       score: 69, verdict: "BUY",
       price: "$7.0M", cap: "8.39%", noi: "$587K", sf: "48.1K SF",
+      photoUrl: PHOTO.neighborhood,
       hero: "linear-gradient(135deg, #1f3a3a 0%, #2d5555 40%, #84CC16 180%)",
+      pricePerSf: "$146/SF", dscr: "1.38x", coc: "9.2%", debtYield: "11.8%",
+      occupancy: "91%", yearBuilt: "1995", tenantCount: "7", walt: "4.1 yrs", submarket: "Milwaukee West",
+      executive: "Neighborhood retail center in a stable Wauwatosa submarket with strong surrounding demographics. In-place cap rate is attractive relative to submarket comps, though the single non-credit anchor and a modest CapEx backlog are considerations.",
+      strengths: [
+        "In-place cap rate ~40 bps above submarket averages",
+        "Strong $92K median HH income within 3-mile radius",
+      ],
+      concerns: [
+        "Single non-credit anchor - concentration risk",
+        "Deferred CapEx backlog estimated at ~$240K (paving, HVAC)",
+      ],
       signal: null,
+      aiSignals: [
+        { title: "Price vs market", detail: "8.39% going-in cap vs. 7.85% submarket median for similar assets", impact: "pos" },
+        { title: "Anchor risk", detail: "Non-credit anchor, 4.1 yr remaining term - re-trade if renewal falters", impact: "neg" },
+        { title: "CapEx", detail: "Parking lot re-seal + 2 HVAC units at end of life - ~$240K", impact: "neg" },
+      ],
+      tenants: [
+        { name: "Local Anchor (Fitness)", sf: "18,500", rent: "$185K", term: "Jun 2030" },
+        { name: "State Farm",             sf: "1,600",  rent: "$44K",  term: "Dec 2027" },
+        { name: "H&R Block",              sf: "1,400",  rent: "$38K",  term: "Nov 2026" },
+        { name: "Panera Bread",           sf: "3,200",  rent: "$98K",  term: "Aug 2030" },
+        { name: "AT&T",                   sf: "1,800",  rent: "$55K",  term: "Jul 2028" },
+      ],
+      reviewItems: [
+        "CapEx reserves not included - allocate $240K for deferred items",
+        "Anchor health ratio not available - requires verification",
+      ],
       greenFlags: ["In-place cap rate above market", "Strong submarket demographics"],
       yellowFlags: ["Single non-credit anchor", "CapEx backlog ~$240K"],
       redFlags: [],
-      tenantMix: "1 anchor + 6 shops", walt: "4.1 yrs", submarket: "Milwaukee West",
     },
     {
       name: "Outback Steakhouse", city: "Fredericksburg, VA", type: "Single-Tenant NNN",
       score: 45, verdict: "PASS",
       price: "$4.8M", cap: "5.6%", noi: "$269K", sf: "6.2K SF",
+      photoUrl: PHOTO.restaurant,
       hero: "linear-gradient(135deg, #4a1f1f 0%, #6b2d2d 40%, #F87171 180%)",
+      pricePerSf: "$774/SF", dscr: "1.08x", coc: "3.1%", debtYield: "7.9%",
+      occupancy: "100%", yearBuilt: "2001", tenantCount: "1", walt: "5.0 yrs", submarket: "I-95 Corridor",
+      executive: "Single-tenant QSR asset with corporate guarantee on an aging building. Cap rate compressed ~80 bps below market for comparable single-tenant restaurant NNN assets, and with only 5 years of base term remaining, TI burden at lease end is a material risk.",
+      strengths: [
+        "Corporate guarantee from Bloomin' Brands",
+        "Interstate visibility with strong retail node",
+      ],
+      concerns: [
+        "Cap rate 80 bps below market for QSR NNN",
+        "5 yrs remaining, no options exercised - re-lease risk",
+        "Building 24 yrs old - material TI likely at lease end",
+      ],
       signal: "Single-tenant risk, cap rate below market.",
+      aiSignals: [
+        { title: "Cap rate mispricing", detail: "5.6% vs. ~6.4% market for QSR NNN with 5 yr term - overpaying ~12%", impact: "neg" },
+        { title: "TI exposure", detail: "At lease end, expect $150-$250K TI to re-tenant or extend", impact: "neg" },
+        { title: "Credit", detail: "Corporate guarantee mitigates in-term risk", impact: "pos" },
+      ],
+      tenants: [
+        { name: "Outback Steakhouse (Corp)", sf: "6,200", rent: "$269K", term: "Mar 2031" },
+      ],
+      reviewItems: [
+        "Options not exercised - re-lease probability materially uncertain",
+        "No reserve for TI / re-tenanting at lease end",
+      ],
       greenFlags: ["Corporate guarantee", "Interstate visibility"],
       yellowFlags: ["5 yrs remaining, no options exercised"],
       redFlags: ["Cap rate 80 bps below market for QSR NNN", "Aging building, TI burden at lease end"],
-      tenantMix: "Single tenant (corporate)", walt: "5.0 yrs", submarket: "I-95 Corridor",
     },
     {
       name: "Fredericksburg Center", city: "Fredericksburg, VA", type: "Mixed-Use Retail",
       score: 62, verdict: "NEUTRAL",
       price: "$11.8M", cap: "7.20%", noi: "$850K", sf: "72.4K SF",
+      photoUrl: PHOTO.mixedUse,
       hero: "linear-gradient(135deg, #3a2d1f 0%, #5f4a2d 40%, #F59E0B 180%)",
+      pricePerSf: "$163/SF", dscr: "1.22x", coc: "7.4%", debtYield: "10.1%",
+      occupancy: "86%", yearBuilt: "2006", tenantCount: "14", walt: "3.8 yrs", submarket: "Fredericksburg",
+      executive: "Diversified mixed-use retail center in a growing suburban market. The income stream is broad but WALT under 4 years and two vacant suites temper the near-term return profile. Leasing momentum needs validation before committing at this basis.",
+      strengths: [
+        "Diversified 14-tenant base reduces single-tenant risk",
+        "Submarket population growth of 2.1% annually",
+      ],
+      concerns: [
+        "WALT under 4 years - material rollover in hold period",
+        "2 vacant suites (8% of GLA) - leasing velocity uncertain",
+      ],
       signal: null,
+      aiSignals: [
+        { title: "Tenant diversification", detail: "Top 3 tenants = 34% of rent - below concentration threshold", impact: "pos" },
+        { title: "Rollover wall", detail: "9 of 14 leases expire within hold period - releasing risk", impact: "neg" },
+        { title: "Vacancy carry", detail: "2 vacant suites = ~$110K annual NOI drag until leased", impact: "neg" },
+      ],
+      tenants: [
+        { name: "Dollar General",    sf: "10,500", rent: "$142K", term: "Nov 2029" },
+        { name: "GameStop",          sf: "2,400",  rent: "$68K",  term: "Aug 2027" },
+        { name: "Jersey Mike's",     sf: "1,800",  rent: "$55K",  term: "Apr 2028" },
+        { name: "Crunch Fitness",    sf: "22,000", rent: "$220K", term: "Feb 2031" },
+        { name: "Vacant Suite A",    sf: "3,200",  rent: "--",    term: "--" },
+      ],
+      reviewItems: [
+        "Downtime / re-lease costs not budgeted for 2 vacant suites",
+        "WALT under 4 yrs - treat as value-add underwriting",
+      ],
       greenFlags: ["Diversified tenant base", "Growing suburban submarket"],
       yellowFlags: ["WALT under 4 yrs", "2 vacant suites"],
       redFlags: [],
-      tenantMix: "14 tenants, no anchor", walt: "3.8 yrs", submarket: "Fredericksburg",
     },
     {
       name: "Silvernail Commons", city: "Pewaukee, WI", type: "Neighborhood Strip",
       score: 51, verdict: "PASS",
       price: "$2.9M", cap: "6.80%", noi: "$197K", sf: "10.3K SF",
+      photoUrl: PHOTO.stripMall,
       hero: "linear-gradient(135deg, #2d2d3a 0%, #3a3a4e 40%, #F87171 180%)",
+      pricePerSf: "$282/SF", dscr: "0.94x", coc: "-1.4%", debtYield: "7.1%",
+      occupancy: "83%", yearBuilt: "1989", tenantCount: "6", walt: "2.1 yrs", submarket: "Lake Country",
+      executive: "Small neighborhood strip with sub-stabilized fundamentals. DSCR falls below 1.00x at requested debt terms and half of the tenants are month-to-month. Pricing does not reflect the operational risk embedded in the roll and underperforming credit profile.",
+      strengths: [
+        "Good daytime traffic count for small shops (18K VPD)",
+      ],
+      concerns: [
+        "DSCR below 1.00x at current debt terms",
+        "3 of 6 tenants on month-to-month leases",
+        "Near-term rollover wall (WALT 2.1 yrs)",
+      ],
       signal: null,
+      aiSignals: [
+        { title: "Debt stress", detail: "0.94x DSCR at asking - 25% cash-in to hit 1.25x required", impact: "neg" },
+        { title: "MTM risk", detail: "50% of roster could vacate on 30 days notice", impact: "neg" },
+        { title: "Exit cap", detail: "Exit cap expansion likely at sale given size and submarket", impact: "neg" },
+      ],
+      tenants: [
+        { name: "Nail Salon",      sf: "1,800", rent: "$32K", term: "MTM" },
+        { name: "Local Cafe",      sf: "1,500", rent: "$28K", term: "Aug 2026" },
+        { name: "Dry Cleaner",     sf: "1,200", rent: "$22K", term: "MTM" },
+        { name: "Subway",          sf: "1,800", rent: "$54K", term: "Jun 2027" },
+        { name: "Local Retailer",  sf: "2,400", rent: "$38K", term: "MTM" },
+        { name: "Smoke Shop",      sf: "1,600", rent: "$30K", term: "Dec 2026" },
+      ],
+      reviewItems: [
+        "DSCR fails debt service coverage - restructure at ~55% LTV",
+        "3 MTM tenants = no lease security for underwriting",
+      ],
       greenFlags: ["Good daytime traffic"],
       yellowFlags: ["Near-term rollover exposure"],
       redFlags: ["Below-threshold DSCR at current debt", "3 of 6 tenants month-to-month"],
-      tenantMix: "6 small-shop tenants", walt: "2.1 yrs", submarket: "Lake Country",
     },
   ];
 
@@ -332,31 +525,32 @@ function HeroShowcase() {
                     width: "100%",
                   }}
                 >
-                  {/* Property hero image (CSS gradient silhouette) */}
+                  {/* Property hero image (real photo + gradient fallback) */}
                   <div style={{
-                    position: "relative", height: 90, background: c.hero, overflow: "hidden",
+                    position: "relative", height: 110, background: c.hero, overflow: "hidden",
                     borderBottom: "1px solid rgba(255,255,255,0.06)",
                   }}>
-                    {/* Building silhouette overlay */}
-                    <svg viewBox="0 0 300 90" preserveAspectRatio="xMidYMax slice" style={{
-                      position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.5,
-                    }}>
-                      <path d="M0,90 L0,55 L30,55 L30,40 L70,40 L70,50 L110,50 L110,30 L160,30 L160,45 L200,45 L200,35 L240,35 L240,50 L300,50 L300,90 Z"
-                            fill="rgba(0,0,0,0.5)" />
-                      {/* Window dots */}
-                      {[40, 80, 120, 170, 210, 250].map((x, idx) => (
-                        <g key={idx}>
-                          <rect x={x} y={55} width="3" height="3" fill="rgba(255,255,255,0.35)" />
-                          <rect x={x+8} y={55} width="3" height="3" fill="rgba(255,255,255,0.2)" />
-                          <rect x={x} y={65} width="3" height="3" fill="rgba(255,255,255,0.3)" />
-                          <rect x={x+8} y={65} width="3" height="3" fill="rgba(255,255,255,0.35)" />
-                        </g>
-                      ))}
-                    </svg>
-                    {/* Gradient fade at bottom */}
+                    {/* Real property image */}
+                    <img
+                      src={c.photoUrl}
+                      alt={c.name}
+                      loading="lazy"
+                      style={{
+                        position: "absolute", inset: 0, width: "100%", height: "100%",
+                        objectFit: "cover",
+                        filter: c.verdict === "PASS" ? "saturate(0.6) brightness(0.85)" : "saturate(1.1) brightness(0.95)",
+                      }}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                    />
+                    {/* Dark gradient overlay for readability */}
                     <div style={{
                       position: "absolute", inset: 0,
-                      background: "linear-gradient(180deg, transparent 0%, transparent 50%, rgba(14,14,22,0.85) 100%)",
+                      background: "linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.1) 40%, rgba(14,14,22,0.92) 100%)",
+                    }} />
+                    {/* Verdict tint */}
+                    <div style={{
+                      position: "absolute", inset: 0, background: `linear-gradient(180deg, transparent 0%, transparent 60%, ${vc.bg} 140%)`,
+                      mixBlendMode: "overlay", opacity: 0.7,
                     }} />
                     {/* ANALYZED badge */}
                     <span style={{
@@ -369,14 +563,22 @@ function HeroShowcase() {
                     {/* Score ring */}
                     <div style={{
                       position: "absolute", top: 8, right: 8,
-                      width: 42, height: 42, borderRadius: "50%",
+                      width: 44, height: 44, borderRadius: "50%",
                       border: `2px solid ${vc.ring}`,
                       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                      background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)",
+                      background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)",
                     }}>
                       <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{c.score}</div>
                       <div style={{ fontSize: 6.5, fontWeight: 700, color: vc.fg, letterSpacing: 0.3, marginTop: 1 }}>{c.verdict}</div>
                     </div>
+                    {/* Asset type badge in corner */}
+                    <div style={{
+                      position: "absolute", bottom: 8, left: 8,
+                      fontSize: 9, color: "rgba(255,255,255,0.85)", fontWeight: 600,
+                      background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)",
+                      padding: "3px 7px", borderRadius: 3,
+                      border: "1px solid rgba(255,255,255,0.1)",
+                    }}>{c.type}</div>
                   </div>
 
                   {/* Card body */}
@@ -488,85 +690,169 @@ function HeroShowcase() {
   );
 }
 
-/* Property quick-view modal */
+/* Property quick-view modal - mirrors real PropertyDetailClient structure with auto-scroll */
 function HeroCardModal({ card: c, verdictColor, onClose }: {
   card: HeroCard;
   verdictColor: Record<string, { bg: string; fg: string; ring: string }>;
   onClose: () => void;
 }) {
   const vc = verdictColor[c.verdict];
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [autoPaused, setAutoPaused] = React.useState(false);
+
+  // Cinematic auto-scroll on open - gentle reveal down the page so user sees all the depth
+  React.useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    let rafId: number;
+    let startTs: number | null = null;
+    const DURATION = 8500;      // 8.5s total glide
+    const START_DELAY = 700;    // let user read the hero first
+
+    // Pause auto-scroll on user interaction
+    const pause = () => setAutoPaused(true);
+    el.addEventListener("wheel", pause, { passive: true });
+    el.addEventListener("touchstart", pause, { passive: true });
+    el.addEventListener("mousedown", pause);
+
+    const tick = (ts: number) => {
+      if (autoPaused || !scrollRef.current) return;
+      if (startTs === null) startTs = ts;
+      const elapsed = ts - startTs;
+      if (elapsed < START_DELAY) {
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+      const t = Math.min(1, (elapsed - START_DELAY) / DURATION);
+      // easeInOutCubic
+      const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      const max = scrollRef.current.scrollHeight - scrollRef.current.clientHeight;
+      scrollRef.current.scrollTop = eased * max * 0.78;  // leave some at the bottom for user to explore
+      if (t < 1) rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      el.removeEventListener("wheel", pause);
+      el.removeEventListener("touchstart", pause);
+      el.removeEventListener("mousedown", pause);
+    };
+  }, [autoPaused]);
+
+  // Key metrics strip that mirrors PropertyDetailClient
+  const metricsStrip = [
+    { label: "Price",        value: c.price,        editable: true },
+    { label: "Cap Rate",     value: c.cap },
+    { label: "NOI",          value: c.noi },
+    { label: "DSCR",         value: c.dscr },
+    { label: "Price / SF",   value: c.pricePerSf },
+    { label: "Cash-on-Cash", value: c.coc },
+  ];
+
   return (
     <div
       onClick={onClose}
       style={{
         position: "fixed", inset: 0, zIndex: 1000,
-        background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)",
+        background: "rgba(0,0,0,0.78)", backdropFilter: "blur(8px)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "24px 16px",
+        padding: "20px 14px",
         animation: "heroModalFadeIn 0.2s ease",
       }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        ref={scrollRef}
         style={{
-          position: "relative", maxWidth: 680, width: "100%", maxHeight: "90vh", overflow: "auto",
+          position: "relative", maxWidth: 860, width: "100%", maxHeight: "92vh", overflow: "auto",
           background: "linear-gradient(180deg, #16161e 0%, #0d0d14 100%)",
           border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16,
           boxShadow: "0 30px 80px rgba(0,0,0,0.7), 0 0 80px rgba(132,204,22,0.08)",
           animation: "heroModalSlideIn 0.25s ease",
+          scrollBehavior: "smooth",
         }}
       >
-        {/* Close button */}
-        <button onClick={onClose} style={{
-          position: "absolute", top: 14, right: 14, zIndex: 2,
-          width: 32, height: 32, borderRadius: "50%",
-          background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.15)",
-          color: "#fff", cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center",
+        {/* Sample banner */}
+        <div style={{
+          position: "sticky", top: 0, zIndex: 5,
+          background: "linear-gradient(180deg, rgba(132,204,22,0.15) 0%, rgba(132,204,22,0.06) 100%)",
+          borderBottom: "1px solid rgba(132,204,22,0.2)",
+          padding: "8px 20px",
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
           backdropFilter: "blur(8px)",
-        }} aria-label="Close">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-        </button>
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{
+              fontSize: 9, fontWeight: 800, color: "#84CC16",
+              background: "rgba(132,204,22,0.15)", padding: "3px 8px", borderRadius: 4,
+              border: "1px solid rgba(132,204,22,0.35)", letterSpacing: 0.5,
+            }}>SAMPLE</span>
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)" }}>
+              This is how every OM you upload is analyzed
+            </span>
+          </div>
+          <button onClick={onClose} style={{
+            width: 28, height: 28, borderRadius: "50%",
+            background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.15)",
+            color: "#fff", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            backdropFilter: "blur(8px)",
+          }} aria-label="Close">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+          </button>
+        </div>
 
-        {/* Hero banner */}
-        <div style={{ position: "relative", height: 160, background: c.hero, overflow: "hidden", borderRadius: "16px 16px 0 0" }}>
-          <svg viewBox="0 0 300 90" preserveAspectRatio="xMidYMax slice" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.5 }}>
-            <path d="M0,90 L0,55 L30,55 L30,40 L70,40 L70,50 L110,50 L110,30 L160,30 L160,45 L200,45 L200,35 L240,35 L240,50 L300,50 L300,90 Z" fill="rgba(0,0,0,0.5)" />
-            {[40, 80, 120, 170, 210, 250].map((x, idx) => (
-              <g key={idx}>
-                <rect x={x} y={55} width="3" height="3" fill="rgba(255,255,255,0.35)" />
-                <rect x={x+8} y={55} width="3" height="3" fill="rgba(255,255,255,0.2)" />
-                <rect x={x} y={65} width="3" height="3" fill="rgba(255,255,255,0.3)" />
-                <rect x={x+8} y={65} width="3" height="3" fill="rgba(255,255,255,0.35)" />
-              </g>
-            ))}
-          </svg>
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 0%, transparent 40%, rgba(13,13,20,0.95) 100%)" }} />
-          <div style={{ position: "absolute", bottom: 14, left: 20, right: 70 }}>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>{c.type}</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", lineHeight: 1.15 }}>{c.name}</div>
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>{c.city} · {c.submarket}</div>
+        {/* Hero banner with real photo */}
+        <div style={{ position: "relative", height: 220, overflow: "hidden" }}>
+          <img
+            src={c.photoUrl}
+            alt={c.name}
+            style={{
+              position: "absolute", inset: 0, width: "100%", height: "100%",
+              objectFit: "cover",
+              filter: c.verdict === "PASS" ? "saturate(0.6) brightness(0.8)" : "saturate(1.05)",
+            }}
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+          />
+          {/* Gradient overlay */}
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(13,13,20,0.55) 60%, rgba(13,13,20,0.96) 100%)" }} />
+          {/* Asset type + name */}
+          <div style={{ position: "absolute", bottom: 18, left: 22, right: 22 }}>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", fontWeight: 600, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.8 }}>{c.type}</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: 4 }}>{c.name}</div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", display: "flex", alignItems: "center", gap: 6 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2a8 8 0 0 0-8 8c0 6 8 12 8 12s8-6 8-12a8 8 0 0 0-8-8z" /><circle cx="12" cy="10" r="3" /></svg>
+              {c.city} · {c.submarket}
+            </div>
           </div>
         </div>
 
-        {/* Score + verdict strip */}
+        {/* DealSignal Score + verdict strip */}
         <div style={{
-          display: "flex", alignItems: "center", gap: 14, padding: "16px 20px",
+          display: "flex", alignItems: "center", gap: 18, padding: "20px 22px",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
-          background: "rgba(0,0,0,0.2)",
+          background: "linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 100%)",
         }}>
           <div style={{
-            width: 64, height: 64, borderRadius: "50%",
-            border: `3px solid ${vc.ring}`,
-            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-            background: "rgba(0,0,0,0.4)", flexShrink: 0,
+            width: 80, height: 80, borderRadius: "50%",
+            background: `conic-gradient(${vc.ring} ${(c.score / 100) * 360}deg, rgba(255,255,255,0.08) 0deg)`,
+            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+            boxShadow: `0 0 40px ${vc.ring}33`,
           }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{c.score}</div>
-            <div style={{ fontSize: 8, fontWeight: 700, color: vc.fg, letterSpacing: 0.5, marginTop: 2 }}>{c.verdict}</div>
+            <div style={{
+              width: 66, height: 66, borderRadius: "50%",
+              background: "#16161e",
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+            }}>
+              <div style={{ fontSize: 26, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{c.score}</div>
+              <div style={{ fontSize: 8, fontWeight: 700, color: vc.fg, letterSpacing: 0.6, marginTop: 3 }}>{c.verdict}</div>
+            </div>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>DealSignal verdict</div>
-            <div style={{ fontSize: 14, color: "#fff", fontWeight: 600, lineHeight: 1.3, marginTop: 2 }}>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>DealSignal Score</div>
+            <div style={{ fontSize: 15, color: "#fff", fontWeight: 600, lineHeight: 1.35, marginTop: 4 }}>
               {c.verdict === "BUY" && "Worth pursuing. Clean fundamentals, manageable risks."}
               {c.verdict === "NEUTRAL" && "Not a clear winner. Proceed only if thesis fits."}
               {c.verdict === "PASS" && "Skip. Risk profile doesn't justify the price."}
@@ -574,32 +860,179 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
           </div>
         </div>
 
-        {/* Metrics grid */}
-        <div style={{ padding: "20px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 20 }}>
+        {/* Metrics strip (mirrors PropertyDetailClient metrics strip) */}
+        <div style={{
+          display: "flex", gap: 0, margin: "0 22px", marginTop: 18,
+          background: "rgba(255,255,255,0.03)", borderRadius: 10, border: "1px solid rgba(255,255,255,0.06)",
+          overflow: "hidden",
+        }} className="hero-modal-metrics">
+          {metricsStrip.map((m, i) => (
+            <div key={m.label} style={{
+              flex: 1, padding: "12px 14px",
+              borderRight: i < metricsStrip.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
+              position: "relative",
+            }}>
+              <div style={{
+                fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8,
+                color: "rgba(255,255,255,0.45)", marginBottom: 4,
+                display: "flex", alignItems: "center", gap: 4,
+              }}>
+                {m.label}
+                {m.editable && (
+                  <span style={{ fontSize: 8, fontWeight: 700, background: "rgba(132,204,22,0.18)", color: "#84CC16", padding: "1px 5px", borderRadius: 3, letterSpacing: 0.3 }}>EDIT</span>
+                )}
+              </div>
+              <div style={{
+                fontSize: 15, fontWeight: 800, color: "#fff",
+                fontVariantNumeric: "tabular-nums",
+              }}>{m.value}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Executive summary (mirrors real deal summary card) */}
+        <div style={{ padding: "22px", paddingBottom: 8 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Executive Summary</div>
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.88)", lineHeight: 1.7, margin: "0 0 16px" }}>{c.executive}</p>
+
+          {/* Strengths + concerns */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }} className="hero-modal-strengths-grid">
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Key Strengths</div>
+              {c.strengths.map((s, i) => (
+                <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 8 }}>
+                  <span style={{ color: "#84CC16", fontSize: 13, lineHeight: "18px", flexShrink: 0, fontWeight: 800 }}>✓</span>
+                  <span style={{ fontSize: 12.5, color: "rgba(255,255,255,0.85)", lineHeight: 1.55 }}>{s}</span>
+                </div>
+              ))}
+            </div>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#F59E0B", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Primary Concerns</div>
+              {c.concerns.map((s, i) => (
+                <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 8 }}>
+                  <span style={{ color: "#F59E0B", fontSize: 13, lineHeight: "18px", flexShrink: 0, fontWeight: 800 }}>△</span>
+                  <span style={{ fontSize: 12.5, color: "rgba(255,255,255,0.85)", lineHeight: 1.55 }}>{s}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Property basics grid */}
+        <div style={{ padding: "14px 22px" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>From the OM</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }} className="hero-modal-basics">
             {[
-              ["Asking Price", c.price],
-              ["Cap Rate", c.cap],
-              ["NOI", c.noi],
-              ["Size", c.sf],
-              ["Tenant Mix", c.tenantMix || "--"],
-              ["WALT", c.walt || "--"],
-              ["Submarket", c.submarket || "--"],
+              ["GLA", c.sf],
+              ["Occupancy", c.occupancy],
+              ["Year Built", c.yearBuilt],
+              ["Tenants", c.tenantCount],
+              ["WALT", c.walt],
+              ["Debt Yield", c.debtYield],
+              ["Submarket", c.submarket],
               ["Asset Type", c.type],
             ].map(([label, val]) => (
-              <div key={label} style={{ background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "10px 12px", border: "1px solid rgba(255,255,255,0.05)" }}>
-                <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 4 }}>{label}</div>
+              <div key={label} style={{ background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "9px 11px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 3 }}>{label}</div>
                 <div style={{ fontSize: 12, color: "#fff", fontWeight: 700, lineHeight: 1.2 }}>{val}</div>
               </div>
             ))}
           </div>
+        </div>
 
-          {/* Flags */}
+        {/* AI Signals section (mirrors the actionable signals section) */}
+        <div style={{ padding: "14px 22px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>AI Signals</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>Actionable insights extracted from the OM</div>
+            </div>
+            <span style={{ fontSize: 9, fontWeight: 700, background: "rgba(132,204,22,0.15)", color: "#84CC16", padding: "3px 8px", borderRadius: 4, border: "1px solid rgba(132,204,22,0.25)", letterSpacing: 0.5 }}>GPT-4o</span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {c.aiSignals.map((s, i) => {
+              const colors = s.impact === "pos" ? { bg: "rgba(132,204,22,0.06)", border: "rgba(132,204,22,0.22)", ring: "#84CC16" }
+                : s.impact === "neg" ? { bg: "rgba(248,113,113,0.06)", border: "rgba(248,113,113,0.22)", ring: "#F87171" }
+                : { bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.22)", ring: "#F59E0B" };
+              return (
+                <div key={i} style={{
+                  background: colors.bg, border: `1px solid ${colors.border}`, borderRadius: 9, padding: "10px 14px",
+                  display: "flex", alignItems: "flex-start", gap: 10,
+                }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: colors.ring, marginTop: 8, flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, color: "#fff", fontWeight: 700, marginBottom: 2 }}>{s.title}</div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", lineHeight: 1.45 }}>{s.detail}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Rent Roll table (mirrors real tenant rent roll) */}
+        <div style={{ padding: "14px 22px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>Rent Roll</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>{c.tenants.length} tenants · {c.walt} WALT</div>
+          </div>
+          <div style={{
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.06)",
+            borderRadius: 10, overflow: "hidden",
+          }}>
+            <div style={{
+              display: "grid", gridTemplateColumns: "2fr 0.9fr 0.9fr 0.9fr", gap: 0,
+              padding: "8px 14px", fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.45)",
+              textTransform: "uppercase", letterSpacing: 0.6,
+              borderBottom: "1px solid rgba(255,255,255,0.06)",
+              background: "rgba(0,0,0,0.2)",
+            }}>
+              <div>Tenant</div><div>SF</div><div>Rent</div><div>Lease End</div>
+            </div>
+            {c.tenants.map((t, i) => (
+              <div key={i} style={{
+                display: "grid", gridTemplateColumns: "2fr 0.9fr 0.9fr 0.9fr", gap: 0,
+                padding: "10px 14px",
+                borderBottom: i < c.tenants.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                fontSize: 12, color: "rgba(255,255,255,0.88)",
+              }}>
+                <div style={{ fontWeight: 600 }}>{t.name}</div>
+                <div style={{ fontVariantNumeric: "tabular-nums" }}>{t.sf}</div>
+                <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 600 }}>{t.rent}</div>
+                <div style={{ fontVariantNumeric: "tabular-nums", color: t.term === "MTM" ? "#F87171" : "rgba(255,255,255,0.75)" }}>{t.term}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Review items (mirrors the "review items" section) */}
+        {c.reviewItems.length > 0 && (
+          <div style={{ padding: "14px 22px" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 8 }}>Needs Review</div>
+            <div style={{
+              background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.22)",
+              borderRadius: 9, padding: "12px 14px",
+            }}>
+              <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
+                {c.reviewItems.map((it, i) => (
+                  <li key={i} style={{ fontSize: 12, color: "rgba(255,255,255,0.82)", lineHeight: 1.5, paddingLeft: 18, position: "relative" }}>
+                    <span style={{ position: "absolute", left: 0, top: 1, color: "#F59E0B", fontWeight: 800 }}>!</span>
+                    {it}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* Flags grid (compact) */}
+        <div style={{ padding: "14px 22px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }} className="hero-flags-grid">
             {[
-              { label: "Green flags", items: c.greenFlags, color: "#84CC16", bg: "rgba(132,204,22,0.08)", border: "rgba(132,204,22,0.25)" },
-              { label: "Yellow flags", items: c.yellowFlags, color: "#F59E0B", bg: "rgba(245,158,11,0.08)", border: "rgba(245,158,11,0.25)" },
-              { label: "Red flags", items: c.redFlags, color: "#F87171", bg: "rgba(248,113,113,0.08)", border: "rgba(248,113,113,0.25)" },
+              { label: "Green flags", items: c.greenFlags, color: "#84CC16", bg: "rgba(132,204,22,0.06)", border: "rgba(132,204,22,0.22)" },
+              { label: "Yellow flags", items: c.yellowFlags, color: "#F59E0B", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.22)" },
+              { label: "Red flags", items: c.redFlags, color: "#F87171", bg: "rgba(248,113,113,0.06)", border: "rgba(248,113,113,0.22)" },
             ].map(section => (
               <div key={section.label} style={{
                 background: section.bg, border: `1px solid ${section.border}`, borderRadius: 10, padding: "12px",
@@ -622,30 +1055,47 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
               </div>
             ))}
           </div>
+        </div>
 
-          {/* CTA footer */}
-          <div style={{
-            marginTop: 22, paddingTop: 18, borderTop: "1px solid rgba(255,255,255,0.06)",
-            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
-            flexWrap: "wrap",
-          }}>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)" }}>
-              This is a sample deal. <span style={{ color: "#fff", fontWeight: 600 }}>Analyze your own OM above.</span>
+        {/* CTA footer - sticky hook */}
+        <div style={{
+          position: "sticky", bottom: 0, zIndex: 5,
+          marginTop: 16, padding: "16px 22px",
+          background: "linear-gradient(180deg, rgba(13,13,20,0.6) 0%, rgba(13,13,20,0.96) 30%, #0d0d14 100%)",
+          borderTop: "1px solid rgba(132,204,22,0.25)",
+          backdropFilter: "blur(10px)",
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14,
+          flexWrap: "wrap",
+        }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 13, color: "#fff", fontWeight: 700, marginBottom: 2 }}>
+              Get this for your next deal
             </div>
-            <button onClick={onClose} style={{
-              background: "#84CC16", color: "#0d0d14", border: "none", borderRadius: 8,
-              padding: "10px 18px", fontSize: 12, fontWeight: 700, cursor: "pointer",
-              letterSpacing: 0.3,
-            }}>
-              Try with your deal
-            </button>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>
+              Upload an OM and get the same scored brief in under 60 seconds.
+            </div>
           </div>
+          <button onClick={onClose} style={{
+            background: "#84CC16", color: "#0d0d14", border: "none", borderRadius: 10,
+            padding: "12px 22px", fontSize: 13, fontWeight: 800, cursor: "pointer",
+            letterSpacing: 0.3, display: "flex", alignItems: "center", gap: 8,
+            boxShadow: "0 6px 20px rgba(132,204,22,0.35)",
+          }}>
+            Analyze my OM
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="9 18 15 12 9 6" /></svg>
+          </button>
         </div>
       </div>
 
       <style jsx>{`
         @keyframes heroModalFadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes heroModalSlideIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes heroModalSlideIn { from { opacity: 0; transform: translateY(14px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @media (max-width: 720px) {
+          :global(.hero-modal-metrics) { flex-wrap: wrap !important; }
+          :global(.hero-modal-metrics) > div { flex: 1 1 33% !important; border-bottom: 1px solid rgba(255,255,255,0.06); }
+          :global(.hero-modal-strengths-grid) { grid-template-columns: 1fr !important; }
+          :global(.hero-modal-basics) { grid-template-columns: repeat(2, 1fr) !important; }
+        }
         @media (max-width: 640px) {
           :global(.hero-flags-grid) { grid-template-columns: 1fr !important; }
         }
