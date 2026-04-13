@@ -565,16 +565,7 @@ export default function OmAnalyzerPage() {
         }
         .om-insight-card { opacity: 0; animation: omCardFadeIn 0.5s ease-out forwards; transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .om-insight-card:hover { transform: translateY(-3px) !important; box-shadow: 0 12px 32px rgba(0,0,0,0.08) !important; }
-        /* Global grid overlay */
-        .ds-page-wrapper::before {
-          content: '';
-          position: fixed;
-          inset: 0;
-          background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-          background-size: 60px 60px;
-          pointer-events: none;
-          z-index: 1;
-        }
+        /* Grid overlay removed — building background only */
         @media (max-width: 900px) {
           .om-insight-grid { grid-template-columns: 1fr !important; }
           .om-insight-circle { width: 160px !important; height: 160px !important; }

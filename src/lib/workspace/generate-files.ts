@@ -400,6 +400,365 @@ export async function generateUnderwritingXLSX(
 
 
 // ============================================================
+// STRATEGY-LENS XLSX (Pro+ only)
+// Core / Core+ / Value-Add / Opportunistic analysis tabs
+// ============================================================
+
+interface StrategyProfile {
+  name: string;
+  description: string;
+  minCap: number;
+  targetCap: number;
+  maxCap: number;
+  minDSCR: number;
+  targetDSCR: number;
+  minOccupancy: number;
+  minWALE: number;
+  maxExpenseRatio: number;
+  riskLabel: string;
+  holdPeriod: string;
+  targetIRR: string;
+  exitCapSpread: number; // bps above entry
+  verdictFn: (metrics: DealMetrics) => { verdict: string; reasons: string[] };
+}
+
+interface DealMetrics {
+  capRate: number | null;
+  noi: number | null;
+  askingPrice: number | null;
+  occupancy: number | null;
+  wale: number | null;
+  dscr: number | null;
+  expenseRatio: number | null;
+  pricePerSF: number | null;
+  pricePerUnit: number | null;
+  yearBuilt: number | null;
+  buildingSF: number | null;
+  unitCount: number | null;
+  tenantCount: number | null;
+  noiPerSF: number | null;
+}
+
+const STRATEGIES: Record<string, StrategyProfile> = {
+  core: {
+    name: "Core",
+    description: "Stabilized, institutional-quality assets with predictable income. Low risk, lowest return.",
+    minCap: 4.5, targetCap: 5.5, maxCap: 7.0,
+    minDSCR: 1.30, targetDSCR: 1.50,
+    minOccupancy: 93, minWALE: 5,
+    maxExpenseRatio: 45,
+    riskLabel: "Low",
+    holdPeriod: "7-10 years",
+    targetIRR: "6-9%",
+    exitCapSpread: 25,
+    verdictFn: (m) => {
+      const reasons: string[] = [];
+      let pass = true;
+      if (m.capRate !== null && m.capRate < 4.5) { reasons.push(`Cap rate ${m.capRate.toFixed(1)}% below 4.5% floor`); pass = false; }
+      if (m.occupancy !== null && m.occupancy < 93) { reasons.push(`Occupancy ${m.occupancy.toFixed(0)}% below 93% threshold`); pass = false; }
+      if (m.dscr !== null && m.dscr < 1.30) { reasons.push(`DSCR ${m.dscr.toFixed(2)}x below 1.30x minimum`); pass = false; }
+      if (m.wale !== null && m.wale < 5) { reasons.push(`WALE ${m.wale.toFixed(1)}yr below 5yr minimum`); pass = false; }
+      if (m.capRate !== null && m.capRate >= 5.0 && m.occupancy !== null && m.occupancy >= 95) reasons.push("Strong stabilized yield with high occupancy");
+      if (m.dscr !== null && m.dscr >= 1.50) reasons.push("Excellent debt coverage");
+      return { verdict: pass ? (reasons.length > 2 ? "STRONG FIT" : "QUALIFIES") : "DOES NOT FIT", reasons };
+    },
+  },
+  core_plus: {
+    name: "Core+",
+    description: "Near-stabilized with minor lease-up or light value-add. Moderate risk, moderate return.",
+    minCap: 5.0, targetCap: 6.5, maxCap: 8.0,
+    minDSCR: 1.20, targetDSCR: 1.35,
+    minOccupancy: 85, minWALE: 3,
+    maxExpenseRatio: 50,
+    riskLabel: "Low-Moderate",
+    holdPeriod: "5-7 years",
+    targetIRR: "9-13%",
+    exitCapSpread: 25,
+    verdictFn: (m) => {
+      const reasons: string[] = [];
+      let pass = true;
+      if (m.occupancy !== null && m.occupancy < 85) { reasons.push(`Occupancy ${m.occupancy.toFixed(0)}% below 85% threshold`); pass = false; }
+      if (m.dscr !== null && m.dscr < 1.20) { reasons.push(`DSCR ${m.dscr.toFixed(2)}x below 1.20x minimum`); pass = false; }
+      if (m.capRate !== null && m.capRate >= 6.0) reasons.push("Attractive entry cap for Core+");
+      if (m.occupancy !== null && m.occupancy >= 85 && m.occupancy < 93) reasons.push("Lease-up upside potential");
+      return { verdict: pass ? "QUALIFIES" : "DOES NOT FIT", reasons };
+    },
+  },
+  value_add: {
+    name: "Value-Add",
+    description: "Below-market rents, renovation potential, lease-up opportunity. Higher risk, higher return.",
+    minCap: 6.0, targetCap: 7.5, maxCap: 10.0,
+    minDSCR: 1.00, targetDSCR: 1.25,
+    minOccupancy: 70, minWALE: 1,
+    maxExpenseRatio: 60,
+    riskLabel: "Moderate-High",
+    holdPeriod: "3-5 years",
+    targetIRR: "13-18%",
+    exitCapSpread: 50,
+    verdictFn: (m) => {
+      const reasons: string[] = [];
+      let pass = true;
+      if (m.dscr !== null && m.dscr < 1.00) { reasons.push(`DSCR ${m.dscr.toFixed(2)}x below 1.00x — negative leverage`); pass = false; }
+      if (m.capRate !== null && m.capRate >= 7.0) reasons.push("High entry cap supports value-add returns");
+      if (m.occupancy !== null && m.occupancy < 85) reasons.push("Significant lease-up / renovation upside");
+      if (m.expenseRatio !== null && m.expenseRatio > 50) reasons.push("Expense reduction opportunity");
+      return { verdict: pass ? "QUALIFIES" : "RISKY", reasons };
+    },
+  },
+  opportunistic: {
+    name: "Opportunistic",
+    description: "Distressed, vacant, redevelopment, or ground-up. Highest risk, highest return potential.",
+    minCap: 7.0, targetCap: 9.0, maxCap: 15.0,
+    minDSCR: 0, targetDSCR: 1.00,
+    minOccupancy: 0, minWALE: 0,
+    maxExpenseRatio: 75,
+    riskLabel: "High",
+    holdPeriod: "2-4 years",
+    targetIRR: "18%+",
+    exitCapSpread: 75,
+    verdictFn: (m) => {
+      const reasons: string[] = [];
+      if (m.capRate !== null && m.capRate >= 8.0) reasons.push("Distressed entry cap offers high upside");
+      if (m.occupancy !== null && m.occupancy < 70) reasons.push("Significant vacancy — full repositioning play");
+      if (m.yearBuilt !== null && (2026 - m.yearBuilt) > 40) reasons.push("Aging asset may warrant redevelopment");
+      return { verdict: reasons.length > 0 ? "POTENTIAL FIT" : "EVALUATE FURTHER", reasons };
+    },
+  },
+};
+
+export async function generateStrategyLensXLSX(
+  propertyName: string,
+  fields: ExtractedField[],
+  analysisType: AnalysisType = "retail"
+): Promise<void> {
+  const exceljs = await loadExcelJS();
+  const wb = new exceljs.Workbook();
+  const g = (group: string, name: string) => getField(fields, group, name);
+
+  // ── Extract deal metrics ──
+  const metrics: DealMetrics = {
+    capRate: Number(g("pricing_deal_terms", "cap_rate_actual") || g("pricing_deal_terms", "cap_rate_asking") || g("pricing_deal_terms", "cap_rate_om")) || null,
+    noi: Number(g("expenses", "noi") || g("expenses", "noi_om") || g("expenses", "noi_adjusted") || g("expenses", "net_operating_income")) || null,
+    askingPrice: Number(g("pricing_deal_terms", "asking_price") || g("pricing_deal_terms", "purchase_price")) || null,
+    occupancy: Number(g("property_basics", "occupancy_pct") || g("property_basics", "occupancy")) || null,
+    wale: Number(g("rent_roll", "weighted_avg_lease_term") || g("property_basics", "wale_years") || g("rent_roll", "wale") || g("lease_data", "wale_years")) || null,
+    dscr: Number(g("debt_assumptions", "dscr") || g("debt_assumptions", "dscr_om") || g("debt_assumptions", "dscr_adjusted")) || null,
+    expenseRatio: Number(g("expenses", "expense_ratio") || g("multifamily", "expense_ratio")) || null,
+    pricePerSF: Number(g("pricing_deal_terms", "price_per_sf") || g("pricing_deal_terms", "price_per_sqft")) || null,
+    pricePerUnit: Number(g("pricing_deal_terms", "price_per_unit")) || null,
+    yearBuilt: Number(g("property_basics", "year_built")) || null,
+    buildingSF: Number(g("property_basics", "building_sf") || g("property_basics", "rentable_area")) || null,
+    unitCount: Number(g("property_basics", "unit_count") || g("multifamily", "unit_count")) || null,
+    tenantCount: Number(g("rent_roll", "tenant_count") || g("property_basics", "suite_count")) || null,
+    noiPerSF: null,
+  };
+  if (metrics.noi && metrics.buildingSF && metrics.buildingSF > 0) {
+    metrics.noiPerSF = metrics.noi / metrics.buildingSF;
+  }
+
+  const loc = [g("property_basics", "address"), g("property_basics", "city"), g("property_basics", "state")].filter(Boolean).join(", ");
+  const typeLabel = { retail: "Retail", industrial: "Industrial", office: "Office", land: "Land", multifamily: "Multifamily" }[analysisType] || analysisType;
+
+  // ── Sheet 1: Deal Summary (common reference) ──
+  const wsSummary = wb.addWorksheet("Deal Summary");
+  wsSummary.getColumn(1).width = 26;
+  wsSummary.getColumn(2).width = 22;
+  wsSummary.getColumn(3).width = 32;
+  let r = 2;
+  wsSummary.getCell(r, 1).value = `${propertyName} — Strategy Analysis`;
+  wsSummary.getCell(r, 1).font = { bold: true, size: 14, color: { argb: "FF0F172A" } };
+  r++;
+  wsSummary.getCell(r, 1).value = loc; wsSummary.getCell(r, 1).font = { size: 10, color: { argb: "FF6B7280" } };
+  r++;
+  wsSummary.getCell(r, 1).value = `Asset Type: ${typeLabel}`; wsSummary.getCell(r, 1).font = { size: 10, color: { argb: "FF6B7280" } };
+  r += 2;
+
+  hdrRow(wsSummary, r, ["Metric", "Value", "Notes"]); r++;
+  const summaryRows: [string, string, string][] = [
+    ["Asking Price", metrics.askingPrice ? `$${metrics.askingPrice.toLocaleString()}` : "—", ""],
+    ["Cap Rate", metrics.capRate ? `${metrics.capRate.toFixed(2)}%` : "—", "Entry cap rate"],
+    ["NOI", metrics.noi ? `$${metrics.noi.toLocaleString()}` : "—", "In-place / adjusted"],
+    ["DSCR", metrics.dscr ? `${metrics.dscr.toFixed(2)}x` : "—", "Debt service coverage"],
+    ["Occupancy", metrics.occupancy ? `${metrics.occupancy.toFixed(1)}%` : "—", ""],
+    ["WALE", metrics.wale ? `${metrics.wale.toFixed(1)} yrs` : "—", "Weighted avg lease term"],
+    ["Expense Ratio", metrics.expenseRatio ? `${metrics.expenseRatio.toFixed(1)}%` : "—", ""],
+    ["Price / SF", metrics.pricePerSF ? `$${metrics.pricePerSF.toFixed(0)}` : "—", ""],
+    ["NOI / SF", metrics.noiPerSF ? `$${metrics.noiPerSF.toFixed(2)}` : "—", ""],
+    ["Year Built", metrics.yearBuilt ? `${metrics.yearBuilt}` : "—", ""],
+    ["Building SF", metrics.buildingSF ? `${metrics.buildingSF.toLocaleString()}` : "—", ""],
+  ];
+  if (metrics.unitCount) summaryRows.push(["Units", `${metrics.unitCount}`, ""]);
+  if (metrics.pricePerUnit) summaryRows.push(["Price / Unit", `$${metrics.pricePerUnit.toLocaleString()}`, ""]);
+  for (const [label, val, note] of summaryRows) {
+    dataRow(wsSummary, r, label, val);
+    if (note) { wsSummary.getCell(r, 3).value = note; wsSummary.getCell(r, 3).font = noteFont; wsSummary.getCell(r, 3).border = borders; }
+    r++;
+  }
+
+  // ── One sheet per strategy ──
+  for (const [key, strat] of Object.entries(STRATEGIES)) {
+    const ws = wb.addWorksheet(strat.name);
+    ws.getColumn(1).width = 30;
+    ws.getColumn(2).width = 20;
+    ws.getColumn(3).width = 16;
+    ws.getColumn(4).width = 36;
+    let sr = 2;
+
+    // Title
+    ws.getCell(sr, 1).value = `${strat.name} Strategy Analysis`;
+    ws.getCell(sr, 1).font = { bold: true, size: 13, color: { argb: "FF0F172A" } };
+    sr++;
+    ws.getCell(sr, 1).value = strat.description;
+    ws.getCell(sr, 1).font = { italic: true, size: 10, color: { argb: "FF6B7280" } };
+    sr += 2;
+
+    // Strategy parameters
+    hdrRow(ws, sr, ["Strategy Parameter", "Threshold", "This Deal", "Assessment"]); sr++;
+
+    const checkMetric = (label: string, threshold: string, value: string | null, passFn: () => boolean | null): void => {
+      const lc = ws.getCell(sr, 1); lc.value = label; lc.font = labelFont; lc.border = borders; lc.fill = white;
+      const tc = ws.getCell(sr, 2); tc.value = threshold; tc.font = valFont; tc.border = borders; tc.fill = white;
+      const vc = ws.getCell(sr, 3); vc.value = value || "—"; vc.font = valFont; vc.border = borders;
+      const result = value ? passFn() : null;
+      if (result === true) {
+        vc.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD1FAE5" } };
+        ws.getCell(sr, 4).value = "✓ Meets threshold"; ws.getCell(sr, 4).font = { size: 10, color: { argb: "FF059669" } };
+      } else if (result === false) {
+        vc.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFEE2E2" } };
+        ws.getCell(sr, 4).value = "✗ Below threshold"; ws.getCell(sr, 4).font = { size: 10, color: { argb: "FFDC2626" } };
+      } else {
+        vc.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFEF3C7" } };
+        ws.getCell(sr, 4).value = "— No data"; ws.getCell(sr, 4).font = { size: 10, color: { argb: "FF92400E" } };
+      }
+      ws.getCell(sr, 4).border = borders;
+      sr++;
+    };
+
+    checkMetric("Min Cap Rate", `≥ ${strat.minCap}%`, metrics.capRate ? `${metrics.capRate.toFixed(2)}%` : null,
+      () => metrics.capRate !== null ? metrics.capRate >= strat.minCap : null);
+    checkMetric("Target Cap Rate", `${strat.targetCap}%`, metrics.capRate ? `${metrics.capRate.toFixed(2)}%` : null,
+      () => metrics.capRate !== null ? metrics.capRate >= strat.targetCap : null);
+    checkMetric("Min DSCR", `≥ ${strat.minDSCR}x`, metrics.dscr ? `${metrics.dscr.toFixed(2)}x` : null,
+      () => metrics.dscr !== null ? metrics.dscr >= strat.minDSCR : null);
+    checkMetric("Min Occupancy", `≥ ${strat.minOccupancy}%`, metrics.occupancy ? `${metrics.occupancy.toFixed(1)}%` : null,
+      () => metrics.occupancy !== null ? metrics.occupancy >= strat.minOccupancy : null);
+    checkMetric("Min WALE", `≥ ${strat.minWALE} yrs`, metrics.wale ? `${metrics.wale.toFixed(1)} yrs` : null,
+      () => metrics.wale !== null ? metrics.wale >= strat.minWALE : null);
+    checkMetric("Max Expense Ratio", `≤ ${strat.maxExpenseRatio}%`, metrics.expenseRatio ? `${metrics.expenseRatio.toFixed(1)}%` : null,
+      () => metrics.expenseRatio !== null ? metrics.expenseRatio <= strat.maxExpenseRatio : null);
+
+    sr++;
+
+    // Return profile
+    hdrRow(ws, sr, ["Return Profile", "Value", "", ""]); sr++;
+    dataRow(ws, sr++, "Risk Level", strat.riskLabel);
+    dataRow(ws, sr++, "Target Hold Period", strat.holdPeriod);
+    dataRow(ws, sr++, "Target IRR", strat.targetIRR);
+    dataRow(ws, sr++, "Exit Cap Spread", `+${strat.exitCapSpread} bps above entry`);
+
+    // Exit cap scenario
+    if (metrics.noi && metrics.capRate) {
+      sr++;
+      hdrRow(ws, sr, ["Exit Scenario", "Exit Cap", "Implied Value", ""]); sr++;
+      const exitCaps = [strat.minCap, strat.targetCap, strat.maxCap];
+      for (const ec of exitCaps) {
+        const impliedValue = metrics.noi / (ec / 100);
+        dataRow(ws, sr, `Exit at ${ec.toFixed(1)}%`, `$${Math.round(impliedValue).toLocaleString()}`);
+        if (metrics.askingPrice) {
+          const delta = ((impliedValue - metrics.askingPrice) / metrics.askingPrice * 100);
+          ws.getCell(sr, 3).value = `${delta >= 0 ? "+" : ""}${delta.toFixed(1)}% vs purchase`;
+          ws.getCell(sr, 3).font = { size: 10, color: { argb: delta >= 0 ? "FF059669" : "FFDC2626" } };
+          ws.getCell(sr, 3).border = borders;
+        }
+        sr++;
+      }
+    }
+
+    // Verdict
+    sr++;
+    const verdict = strat.verdictFn(metrics);
+    const verdictColor = verdict.verdict.includes("FIT") || verdict.verdict === "QUALIFIES" || verdict.verdict === "STRONG FIT" ? "FF059669" :
+      verdict.verdict === "DOES NOT FIT" ? "FFDC2626" : "FF92400E";
+    ws.getCell(sr, 1).value = "VERDICT";
+    ws.getCell(sr, 1).font = { bold: true, size: 12, color: { argb: "FF0F172A" } };
+    ws.getCell(sr, 2).value = verdict.verdict;
+    ws.getCell(sr, 2).font = { bold: true, size: 12, color: { argb: verdictColor } };
+    sr++;
+    for (const reason of verdict.reasons) {
+      ws.getCell(sr, 1).value = `  • ${reason}`;
+      ws.getCell(sr, 1).font = { size: 10, color: { argb: "FF374151" } };
+      sr++;
+    }
+  }
+
+  // ── Comparison matrix sheet ──
+  const wsComp = wb.addWorksheet("Strategy Comparison");
+  wsComp.getColumn(1).width = 24;
+  wsComp.getColumn(2).width = 18;
+  wsComp.getColumn(3).width = 18;
+  wsComp.getColumn(4).width = 18;
+  wsComp.getColumn(5).width = 18;
+  let cr = 2;
+  wsComp.getCell(cr, 1).value = "Strategy Comparison Matrix";
+  wsComp.getCell(cr, 1).font = { bold: true, size: 13, color: { argb: "FF0F172A" } };
+  cr += 2;
+
+  hdrRow(wsComp, cr, ["Metric", "Core", "Core+", "Value-Add", "Opportunistic"]); cr++;
+
+  const compRows: [string, ...string[]][] = [
+    ["Min Cap Rate", ...Object.values(STRATEGIES).map(s => `${s.minCap}%`)],
+    ["Target Cap Rate", ...Object.values(STRATEGIES).map(s => `${s.targetCap}%`)],
+    ["Min DSCR", ...Object.values(STRATEGIES).map(s => `${s.minDSCR}x`)],
+    ["Min Occupancy", ...Object.values(STRATEGIES).map(s => `${s.minOccupancy}%`)],
+    ["Min WALE", ...Object.values(STRATEGIES).map(s => `${s.minWALE} yrs`)],
+    ["Risk Level", ...Object.values(STRATEGIES).map(s => s.riskLabel)],
+    ["Hold Period", ...Object.values(STRATEGIES).map(s => s.holdPeriod)],
+    ["Target IRR", ...Object.values(STRATEGIES).map(s => s.targetIRR)],
+    ["This Deal", ...Object.values(STRATEGIES).map(s => s.verdictFn(metrics).verdict)],
+  ];
+
+  for (const row of compRows) {
+    for (let c = 0; c < row.length; c++) {
+      const cell = wsComp.getCell(cr, c + 1);
+      cell.value = row[c];
+      cell.font = c === 0 ? labelFont : valFont;
+      cell.border = borders;
+      cell.fill = white;
+      // Color the verdict row
+      if (row[0] === "This Deal" && c > 0) {
+        const v = row[c];
+        if (v.includes("FIT") || v === "QUALIFIES" || v === "STRONG FIT") {
+          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD1FAE5" } };
+          cell.font = { size: 10, bold: true, color: { argb: "FF059669" } };
+        } else if (v === "DOES NOT FIT") {
+          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFEE2E2" } };
+          cell.font = { size: 10, bold: true, color: { argb: "FFDC2626" } };
+        } else {
+          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFEF3C7" } };
+          cell.font = { size: 10, bold: true, color: { argb: "FF92400E" } };
+        }
+      }
+    }
+    cr++;
+  }
+
+  // Download
+  const safeName = propertyName.replace(/[^a-zA-Z0-9 -]/g, "").replace(/\s+/g, "-");
+  const filename = `${safeName}-Strategy-Analysis.xlsx`;
+  const buf = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+
+// ============================================================
 // DOCX (Word Brief) GENERATION
 // ============================================================
 

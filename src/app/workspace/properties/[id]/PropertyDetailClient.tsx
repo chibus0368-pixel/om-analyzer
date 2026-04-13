@@ -12,7 +12,7 @@ import {
 } from "@/lib/workspace/firestore";
 import type { Property, ProjectDocument, ExtractedField, ProjectOutput, Note, DocCategory } from "@/lib/workspace/types";
 import { DOC_CATEGORY_LABELS, ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
-import { generateUnderwritingXLSX, generateBriefDownload } from "@/lib/workspace/generate-files";
+import { generateUnderwritingXLSX, generateBriefDownload, generateStrategyLensXLSX } from "@/lib/workspace/generate-files";
 import { extractTextFromFiles } from "@/lib/workspace/file-reader";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import Link from "next/link";
@@ -270,6 +270,116 @@ function DealSignalBadge({ score, band }: { score: number | null; band: string }
 }
 
 /* ── Editable property name (inline click-to-edit) ──── */
+/* ── Location Intel Map (Leaflet) ─────────────────────── */
+function LocationIntelMap({ mapData }: { mapData: any }) {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!mapRef.current || !mapData?.center || mapInstanceRef.current) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const L = (await import("leaflet")).default || await import("leaflet");
+        await import("leaflet/dist/leaflet.css");
+        if (cancelled || !mapRef.current) return;
+
+        const map = L.map(mapRef.current, {
+          center: [mapData.center.lat, mapData.center.lng],
+          zoom: 14,
+          zoomControl: true,
+          scrollWheelZoom: false,
+        });
+        mapInstanceRef.current = map;
+
+        L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+          attribution: "&copy; OSM &amp; CARTO",
+          maxZoom: 19,
+        }).addTo(map);
+
+        // Property marker (large, centered)
+        const propIcon = L.divIcon({
+          className: "",
+          html: `<div style="width:24px;height:24px;background:#4338CA;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>`,
+          iconSize: [24, 24],
+          iconAnchor: [12, 12],
+        });
+        L.marker([mapData.center.lat, mapData.center.lng], { icon: propIcon })
+          .addTo(map)
+          .bindPopup(`<b>Subject Property</b>`);
+
+        // Category colors
+        const catColors: Record<string, string> = {
+          anchors: "#DC2626",
+          restaurants: "#EA580C",
+          retail: "#2563EB",
+          services: "#059669",
+          fitness_rec: "#7C3AED",
+          education: "#CA8A04",
+          automotive: "#6B7280",
+          other: "#9CA3AF",
+        };
+
+        // Nearby places markers
+        for (const p of (mapData.nearbyPlaces || [])) {
+          if (!p.lat || !p.lng) continue;
+          const color = catColors[p.category] || "#9CA3AF";
+          const icon = L.divIcon({
+            className: "",
+            html: `<div style="width:10px;height:10px;background:${color};border:1.5px solid #fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></div>`,
+            iconSize: [10, 10],
+            iconAnchor: [5, 5],
+          });
+          L.marker([p.lat, p.lng], { icon })
+            .addTo(map)
+            .bindPopup(`<b>${p.name}</b>${p.rating ? `<br>${p.rating}★` : ""}`);
+        }
+
+        // Development markers (orange diamonds)
+        for (const d of (mapData.developments || [])) {
+          if (!d.lat || !d.lng) continue;
+          const icon = L.divIcon({
+            className: "",
+            html: `<div style="width:12px;height:12px;background:#F59E0B;border:2px solid #fff;border-radius:2px;transform:rotate(45deg);box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>`,
+            iconSize: [12, 12],
+            iconAnchor: [6, 6],
+          });
+          L.marker([d.lat, d.lng], { icon })
+            .addTo(map)
+            .bindPopup(`<b>${d.name}</b>${d.address ? `<br>${d.address}` : ""}<br><i>Development</i>`);
+        }
+
+        // Draw 1-mile radius circle
+        L.circle([mapData.center.lat, mapData.center.lng], {
+          radius: 1609, // 1 mile in meters
+          color: "#6366F1",
+          weight: 1.5,
+          opacity: 0.5,
+          fillColor: "#6366F1",
+          fillOpacity: 0.04,
+          dashArray: "6 4",
+        }).addTo(map);
+
+        // Fit to 1-mile radius bounds
+        setTimeout(() => map.invalidateSize(), 100);
+      } catch (err) {
+        console.error("[LocationIntelMap] Failed to load:", err);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [mapData]);
+
+  return <div ref={mapRef} style={{ width: "100%", height: "100%" }} />;
+}
+
 function EditablePropertyName({ name, propertyId, onSave }: { name: string; propertyId: string; onSave: (n: string) => void }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(name);
@@ -1164,6 +1274,41 @@ function PropertyDetailInner({
                 Brief
                 <span style={{ padding: "1px 5px", background: "#DBEAFE", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#2563EB" }}>DOC</span>
               </button>
+              {/* Strategy Analysis — Pro+ only */}
+              {userTier === "pro_plus" ? (
+                <button
+                  onClick={async () => { try { await generateStrategyLensXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("Strategy XLS failed: " + (e?.message || "unknown")); } }}
+                  className="dl-btn"
+                  style={{
+                    padding: "6px 14px", borderRadius: 8,
+                    border: `1px solid ${C.ghostBorder}`, background: "linear-gradient(135deg, #FEF3C7, #FDE68A)",
+                    color: "#92400E", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                  }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+                  Strategy
+                  <span style={{ padding: "1px 5px", background: "#FCD34D", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#78350F" }}>PRO+</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (confirm("Strategy Analysis is a Pro+ feature. Upgrade to unlock detailed Core / Value-Add / Opportunistic analysis for every deal.\n\nGo to upgrade page?")) {
+                      window.location.href = "/workspace?upgrade=true";
+                    }
+                  }}
+                  className="dl-btn"
+                  title="Upgrade to Pro+ to unlock Strategy Analysis"
+                  style={{
+                    padding: "6px 14px", borderRadius: 8,
+                    border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
+                    color: C.secondary, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                    display: "inline-flex", alignItems: "center", gap: 6, opacity: 0.6,
+                  }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5"><path d="M12 15V3M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><path d="M16 6l-4 4-4-4" /></svg>
+                  Strategy
+                  <span style={{ padding: "1px 5px", background: "#E5E7EB", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#6B7280" }}>PRO+</span>
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -1964,7 +2109,7 @@ function PropertyDetailInner({
                         console.log("[LocationIntel] Sending:", { propertyId, propertyName: property.propertyName, address: location, locationParts: { address1: property.address1, city: property.city, state: property.state } });
                         const res = await fetch("/api/workspace/deep-research", {
                           method: "POST", headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ propertyId, propertyName: property.propertyName, address: location || property.propertyName, tenants: tenants.map((t: any) => t.name) }),
+                          body: JSON.stringify({ propertyId, propertyName: property.propertyName, address: location || property.propertyName, tenants: tenants.map((t: any) => t.name), analysisType: wsType }),
                         });
                         if (res.ok) {
                           const data = await res.json();
@@ -2016,20 +2161,79 @@ function PropertyDetailInner({
                 {deepResearch.summary && (
                   <div style={{
                     padding: "14px 16px", background: "#EEF2FF", borderRadius: 8,
-                    fontSize: 13, color: "#312E81", lineHeight: 1.6, marginBottom: 20,
+                    fontSize: 13, color: "#312E81", lineHeight: 1.6, marginBottom: 16,
                     borderLeft: "3px solid #6366F1",
                   }}>
                     {deepResearch.summary}
                   </div>
                 )}
 
+                {/* Census Demographics Strip */}
+                {deepResearch.census && (
+                  <div style={{
+                    display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+                    gap: 8, marginBottom: 20, padding: "14px 16px",
+                    background: "#F8FAFC", borderRadius: 8, border: `1px solid ${C.ghostBorder}`,
+                  }}>
+                    {[
+                      { label: "Population", value: deepResearch.census.population?.toLocaleString(), icon: "👥" },
+                      { label: "Median Income", value: deepResearch.census.medianIncome ? `$${deepResearch.census.medianIncome.toLocaleString()}` : null, icon: "💰" },
+                      { label: "Median Age", value: deepResearch.census.medianAge, icon: "📊" },
+                      { label: "Home Value", value: deepResearch.census.medianHomeValue ? `$${deepResearch.census.medianHomeValue.toLocaleString()}` : null, icon: "🏠" },
+                      { label: "Unemployment", value: deepResearch.census.unemploymentRate !== null ? `${deepResearch.census.unemploymentRate}%` : null, icon: "📈" },
+                    ].filter(d => d.value).map((d, i) => (
+                      <div key={i} style={{ textAlign: "center" }}>
+                        <div style={{ fontSize: 10, color: C.secondary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>{d.label}</div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: C.onSurface }}>{d.value}</div>
+                      </div>
+                    ))}
+                    <div style={{ gridColumn: "1 / -1", fontSize: 9, color: C.secondary, textAlign: "right", marginTop: 4 }}>Source: U.S. Census Bureau, ACS 2022</div>
+                  </div>
+                )}
+
+                {/* Map */}
+                {deepResearch.mapData?.center && (
+                  <div style={{ marginBottom: 20 }}>
+                    <div style={{
+                      width: "100%", height: 280, borderRadius: 8, overflow: "hidden",
+                      border: `1px solid ${C.ghostBorder}`, position: "relative",
+                    }}>
+                      <LocationIntelMap mapData={deepResearch.mapData} />
+                    </div>
+                    {deepResearch.sourceCounts && (
+                      <div style={{ display: "flex", gap: 12, marginTop: 8, flexWrap: "wrap" }}>
+                        {[
+                          { label: "Nearby Places", count: deepResearch.sourceCounts.nearbyPlaces, color: "#6366F1" },
+                          ...(deepResearch.sourceCounts.categoryCounts ? [
+                            { label: "Anchors", count: deepResearch.sourceCounts.categoryCounts.anchors, color: "#DC2626" },
+                            { label: "Restaurants", count: deepResearch.sourceCounts.categoryCounts.restaurants, color: "#EA580C" },
+                            { label: "Retail", count: deepResearch.sourceCounts.categoryCounts.retail, color: "#2563EB" },
+                            { label: "Services", count: deepResearch.sourceCounts.categoryCounts.services, color: "#059669" },
+                          ] : []),
+                        ].filter(d => d.count > 0).map((d, i) => (
+                          <div key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                            <span style={{ width: 8, height: 8, borderRadius: "50%", background: d.color }} />
+                            <span style={{ fontSize: 10, color: C.secondary }}>{d.label}: {d.count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Sections */}
                 {deepResearch.sections?.map((section: any, si: number) => {
                   const sectionIcons: Record<string, string> = {
+                    demographics: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z",
+                    traffic: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6",
+                    comps: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
+                    development: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4",
+                    news: "M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z",
+                    civic: "M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7",
+                    investment: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6",
                     tenant: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z",
                     location: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z",
                     lease: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
-                    comps: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
                     risk: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z",
                     upside: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6",
                   };
@@ -2042,8 +2246,8 @@ function PropertyDetailInner({
                   return (
                     <div key={si} style={{ marginBottom: 20 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                          <path d={sectionIcons[section.icon] || sectionIcons.tenant} />
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4338CA" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                          <path d={sectionIcons[section.icon] || sectionIcons.location} />
                         </svg>
                         <h4 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: C.onSurface, textTransform: "uppercase", letterSpacing: 0.5 }}>
                           {section.title}
@@ -2083,21 +2287,23 @@ function PropertyDetailInner({
                   </div>
                 )}
 
-                {/* Re-run button */}
-                <button
-                  onClick={() => setDeepResearch(null)}
-                  style={{
-                    marginTop: 16, padding: "6px 16px", background: "transparent",
-                    border: `1px solid ${C.ghostBorder}`, borderRadius: 6,
-                    fontSize: 11, color: C.secondary, cursor: "pointer", fontFamily: "inherit",
-                  }}>
-                  Refresh Location Intel
-                </button>
-                {deepResearch.createdAt && (
-                  <span style={{ fontSize: 10, color: C.secondary, marginLeft: 12 }}>
-                    Last run: {new Date(deepResearch.createdAt).toLocaleDateString()}
-                  </span>
-                )}
+                {/* Re-run button + metadata */}
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16 }}>
+                  <button
+                    onClick={() => setDeepResearch(null)}
+                    style={{
+                      padding: "6px 16px", background: "transparent",
+                      border: `1px solid ${C.ghostBorder}`, borderRadius: 6,
+                      fontSize: 11, color: C.secondary, cursor: "pointer", fontFamily: "inherit",
+                    }}>
+                    Refresh Location Intel
+                  </button>
+                  {deepResearch.createdAt && (
+                    <span style={{ fontSize: 10, color: C.secondary }}>
+                      Last run: {new Date(deepResearch.createdAt).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
               </div>
             )}
           </div>

@@ -29,29 +29,59 @@ async function callOpenAI(
   return data.choices?.[0]?.message?.content || "";
 }
 
-// ── Google Places Nearby Search ─────────────────────────────
+// ── Google Places Nearby Search — multiple typed queries ────
 async function searchNearbyPlaces(lat: number, lng: number, radius = 1600) {
   const key = process.env.GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   if (!key) return [];
 
-  const types = ["shopping_mall", "restaurant", "school", "hospital", "supermarket", "gym"];
-  const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=${radius}&key=${key}`;
+  // Run multiple type-specific searches to get comprehensive coverage
+  const typeGroups = [
+    "", // General (no type filter) — returns most prominent nearby
+    "restaurant",
+    "store",
+    "shopping_mall",
+    "supermarket",
+    "bank",
+    "school",
+    "hospital",
+    "gas_station",
+    "pharmacy",
+  ];
 
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data.results || []).slice(0, 20).map((p: any) => ({
-      name: p.name,
-      types: p.types?.slice(0, 3),
-      rating: p.rating,
-      userRatingsTotal: p.user_ratings_total,
-      vicinity: p.vicinity,
-      businessStatus: p.business_status,
-    }));
-  } catch {
-    return [];
+  const allPlaces: Map<string, any> = new Map();
+
+  // Fire first 5 in parallel, then next 5
+  const batch1 = typeGroups.slice(0, 5);
+  const batch2 = typeGroups.slice(5);
+
+  async function fetchType(type: string) {
+    const typeParam = type ? `&type=${type}` : "";
+    const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=${radius}${typeParam}&key=${key}`;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const data = await res.json();
+      for (const p of (data.results || []).slice(0, 20)) {
+        if (!allPlaces.has(p.place_id)) {
+          allPlaces.set(p.place_id, {
+            name: p.name,
+            types: p.types || [],
+            rating: p.rating,
+            userRatingsTotal: p.user_ratings_total,
+            vicinity: p.vicinity,
+            businessStatus: p.business_status,
+            lat: p.geometry?.location?.lat,
+            lng: p.geometry?.location?.lng,
+          });
+        }
+      }
+    } catch { /* skip */ }
   }
+
+  await Promise.all(batch1.map(fetchType));
+  await Promise.all(batch2.map(fetchType));
+
+  return Array.from(allPlaces.values());
 }
 
 // ── Google Text Search for specific queries ──────────────────
@@ -70,6 +100,8 @@ async function searchPlacesText(query: string) {
       rating: p.rating,
       types: p.types?.slice(0, 3),
       businessStatus: p.business_status,
+      lat: p.geometry?.location?.lat,
+      lng: p.geometry?.location?.lng,
     }));
   } catch {
     return [];
@@ -146,6 +178,7 @@ async function fetchAreaNews(city: string, state: string) {
     `"${city}" "${state}" development construction`,
     `"${city}" "${state}" zoning planning`,
     `"${city}" "${state}" business opening`,
+    `"${city}" "${state}" commercial real estate`,
   ];
 
   const allItems: { title: string; source: string; snippet: string }[] = [];
@@ -179,6 +212,70 @@ async function fetchAreaNews(city: string, state: string) {
   }).slice(0, 15);
 }
 
+// ── Fetch Census demographics (ACS 5-year) ──────────────────
+async function fetchCensusData(state: string, city: string) {
+  try {
+    // State FIPS lookup (common ones)
+    const stateFips: Record<string, string> = {
+      "Alabama": "01", "Alaska": "02", "Arizona": "04", "Arkansas": "05",
+      "California": "06", "Colorado": "08", "Connecticut": "09", "Delaware": "10",
+      "Florida": "12", "Georgia": "13", "Hawaii": "15", "Idaho": "16",
+      "Illinois": "17", "Indiana": "18", "Iowa": "19", "Kansas": "20",
+      "Kentucky": "21", "Louisiana": "22", "Maine": "23", "Maryland": "24",
+      "Massachusetts": "25", "Michigan": "26", "Minnesota": "27", "Mississippi": "28",
+      "Missouri": "29", "Montana": "30", "Nebraska": "31", "Nevada": "32",
+      "New Hampshire": "33", "New Jersey": "34", "New Mexico": "35", "New York": "36",
+      "North Carolina": "37", "North Dakota": "38", "Ohio": "39", "Oklahoma": "40",
+      "Oregon": "41", "Pennsylvania": "42", "Rhode Island": "44", "South Carolina": "45",
+      "South Dakota": "46", "Tennessee": "47", "Texas": "48", "Utah": "49",
+      "Vermont": "50", "Virginia": "51", "Washington": "53", "West Virginia": "54",
+      "Wisconsin": "55", "Wyoming": "56", "District of Columbia": "11",
+    };
+
+    const fips = stateFips[state];
+    if (!fips) return null;
+
+    // ACS variables: population, median income, median age, median home value, total housing units
+    const vars = "B01003_001E,B19013_001E,B01002_001E,B25077_001E,B25001_001E,B23025_002E,B23025_005E";
+    const url = `https://api.census.gov/data/2022/acs/acs5?get=${vars}&for=place:*&in=state:${fips}`;
+
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+
+    // Find matching city (case-insensitive, handle "city" suffix)
+    const cityLower = city.toLowerCase().replace(/ city$/, "").replace(/ town$/, "").replace(/ village$/, "");
+    const header = data[0];
+    const match = data.slice(1).find((row: string[]) => {
+      const name = (row[header.indexOf("NAME")] || "").toLowerCase();
+      return name.includes(cityLower);
+    });
+
+    if (!match) return null;
+
+    const pop = Number(match[0]);
+    const medianIncome = Number(match[1]);
+    const medianAge = Number(match[2]);
+    const medianHomeValue = Number(match[3]);
+    const housingUnits = Number(match[4]);
+    const laborForce = Number(match[5]);
+    const unemployed = Number(match[6]);
+    const unemploymentRate = laborForce > 0 ? ((unemployed / laborForce) * 100) : null;
+
+    return {
+      population: pop > 0 ? pop : null,
+      medianIncome: medianIncome > 0 ? medianIncome : null,
+      medianAge: medianAge > 0 ? medianAge : null,
+      medianHomeValue: medianHomeValue > 0 ? medianHomeValue : null,
+      housingUnits: housingUnits > 0 ? housingUnits : null,
+      unemploymentRate: unemploymentRate !== null && unemploymentRate >= 0 ? Math.round(unemploymentRate * 10) / 10 : null,
+    };
+  } catch (err) {
+    console.log("[census] Failed to fetch:", err);
+    return null;
+  }
+}
+
 // ── Load extracted fields from Firestore ─────────────────────
 async function loadPropertyContext(propertyId: string) {
   const db = getAdminDb();
@@ -198,6 +295,71 @@ async function loadPropertyContext(propertyId: string) {
   return fields;
 }
 
+// ── Categorize nearby places into CRE-relevant groups ────────
+function categorizePlaces(places: any[]) {
+  const categories: Record<string, any[]> = {
+    anchors: [],      // Major national/regional chains, big box, grocery
+    restaurants: [],   // All food & dining
+    retail: [],        // Shops, stores
+    services: [],      // Banks, medical, professional
+    fitness_rec: [],   // Gyms, recreation, entertainment
+    education: [],     // Schools, universities, daycare
+    automotive: [],    // Gas, auto repair, car dealers
+    other: [],         // Everything else
+  };
+
+  const anchorKeywords = [
+    "walmart", "target", "costco", "kroger", "publix", "heb", "whole foods",
+    "trader joe", "aldi", "home depot", "lowe", "best buy", "walgreens",
+    "cvs", "dollar general", "dollar tree", "mcdonald", "starbucks", "chick-fil-a",
+    "chipotle", "panera", "tj maxx", "marshalls", "ross", "hobby lobby",
+    "menards", "ace hardware", "autozone", "o'reilly", "petsmart", "petco",
+  ];
+
+  for (const p of places) {
+    if (p.businessStatus === "CLOSED_PERMANENTLY") continue;
+
+    const types = (p.types || []) as string[];
+    const nameL = (p.name || "").toLowerCase();
+
+    // Check if national anchor
+    const isAnchor = anchorKeywords.some(kw => nameL.includes(kw)) ||
+      (p.userRatingsTotal && p.userRatingsTotal > 1000);
+
+    if (isAnchor) {
+      categories.anchors.push(p);
+      continue;
+    }
+
+    // Categorize by type
+    const hasType = (...ts: string[]) => types.some(t => ts.includes(t));
+
+    if (hasType("restaurant", "food", "cafe", "meal_delivery", "meal_takeaway", "bakery", "bar")) {
+      categories.restaurants.push(p);
+    } else if (hasType("store", "shopping_mall", "supermarket", "clothing_store",
+      "convenience_store", "home_goods_store", "furniture_store", "book_store",
+      "electronics_store", "jewelry_store", "shoe_store", "hardware_store",
+      "liquor_store", "florist", "pet_store")) {
+      categories.retail.push(p);
+    } else if (hasType("bank", "hospital", "doctor", "dentist", "pharmacy",
+      "insurance_agency", "lawyer", "accounting", "real_estate_agency",
+      "veterinary_care", "post_office", "local_government_office")) {
+      categories.services.push(p);
+    } else if (hasType("gym", "stadium", "movie_theater", "bowling_alley",
+      "amusement_park", "spa", "park", "tourist_attraction")) {
+      categories.fitness_rec.push(p);
+    } else if (hasType("school", "university", "secondary_school", "primary_school")) {
+      categories.education.push(p);
+    } else if (hasType("gas_station", "car_dealer", "car_repair", "car_wash", "car_rental")) {
+      categories.automotive.push(p);
+    } else {
+      categories.other.push(p);
+    }
+  }
+
+  return categories;
+}
+
 // ── Build the location intelligence prompt ───────────────────
 function buildLocationPrompt(
   propertyName: string,
@@ -209,109 +371,188 @@ function buildLocationPrompt(
   wiki: any,
   news: any[],
   fields: Record<string, any>,
+  census: any,
+  analysisType: string,
 ) {
   const price = fields["pricing_deal_terms.asking_price"];
   const gla = fields["property_basics.building_sf"];
+  const occupancy = fields["property_basics.occupancy_pct"];
+  const yearBuilt = fields["property_basics.year_built"];
+  const capRate = fields["pricing_deal_terms.cap_rate_actual"] || fields["pricing_deal_terms.cap_rate_asking"];
 
-  // Categorize nearby places
-  const restaurants = nearbyPlaces.filter((p: any) => p.types?.some((t: string) => ["restaurant", "food", "cafe", "meal_takeaway"].includes(t)));
-  const retail = nearbyPlaces.filter((p: any) => p.types?.some((t: string) => ["store", "shopping_mall", "supermarket", "clothing_store"].includes(t)));
-  const services = nearbyPlaces.filter((p: any) => p.types?.some((t: string) => ["hospital", "school", "gym", "bank", "pharmacy"].includes(t)));
+  const cats = categorizePlaces(nearbyPlaces);
+
+  const formatPlaces = (arr: any[], max = 8) =>
+    arr.slice(0, max).map((p: any) =>
+      `${p.name}${p.rating ? ` (${p.rating}★, ${p.userRatingsTotal || "?"} reviews)` : ""}${p.vicinity ? ` — ${p.vicinity}` : ""}`
+    ).join("\n    ") || "none found";
 
   const newsSection = news.length > 0
     ? `RECENT NEWS ARTICLES ABOUT ${geo.city.toUpperCase()}, ${geo.state.toUpperCase()}:\n${news.map((n, i) => `${i + 1}. "${n.title}" — ${n.source} (${n.snippet})`).join("\n")}`
     : `No recent news articles found for ${geo.city}, ${geo.state}.`;
 
   const developmentSection = developments.length > 0
-    ? `NEARBY DEVELOPMENTS/CONSTRUCTION:\n${developments.map((d: any) => `- ${d.name} (${d.address || "nearby"})`).join("\n")}`
-    : "No specific new developments found nearby.";
+    ? `NEARBY DEVELOPMENTS/CONSTRUCTION (from Google Places search):\n${developments.map((d: any) => `- ${d.name} — ${d.address || "nearby"}`).join("\n")}`
+    : "No specific new developments found in Google Places search.";
 
-  return `You are a senior CRE location intelligence analyst. Analyze this property's surroundings using the REAL DATA provided below. Focus on what's actually happening in and around this location — developments, civic activity, area dynamics, and investment implications.
+  const censusSection = census
+    ? `CENSUS DATA (ACS 2022, ${geo.city}, ${geo.state}):
+  - Population: ${census.population?.toLocaleString() || "N/A"}
+  - Median Household Income: ${census.medianIncome ? "$" + census.medianIncome.toLocaleString() : "N/A"}
+  - Median Age: ${census.medianAge || "N/A"}
+  - Median Home Value: ${census.medianHomeValue ? "$" + census.medianHomeValue.toLocaleString() : "N/A"}
+  - Housing Units: ${census.housingUnits?.toLocaleString() || "N/A"}
+  - Unemployment Rate: ${census.unemploymentRate !== null ? census.unemploymentRate + "%" : "N/A"}`
+    : `No Census data available for ${geo.city}, ${geo.state}.`;
+
+  const assetContext = analysisType === "multifamily"
+    ? `This is a MULTIFAMILY property. Focus on: renter demographics, housing supply/demand, competing apartment communities, household formation trends, employment centers that drive rental demand.`
+    : analysisType === "industrial"
+    ? `This is an INDUSTRIAL property. Focus on: highway/freight access, labor market, warehouse/distribution demand, nearby industrial parks, port/rail access, e-commerce fulfillment trends.`
+    : analysisType === "office"
+    ? `This is an OFFICE property. Focus on: white-collar employment centers, competing office stock, tech/professional services presence, transit access, live-work-play environment, remote work impact.`
+    : analysisType === "land"
+    ? `This is a LAND deal. Focus on: zoning and entitlements, utility access, road frontage and traffic counts, surrounding development pattern, highest-and-best-use analysis, growth direction of the city.`
+    : `This is a RETAIL property. Focus on: foot traffic generators, consumer spending power, retail competition and co-tenancy, drive-by traffic, anchor tenants within 1 mile, retail vacancy trends in the trade area.`;
+
+  return `You are a senior CRE location intelligence analyst preparing a trade-area report for an institutional investor. Analyze this property's surroundings using ALL the real data provided below. Be specific — name names, cite numbers, reference actual data points. This is NOT a generic report; it must be specific to THIS location.
 
 PROPERTY:
 - Name: ${propertyName}
 - Address: ${address}
 - City: ${geo.city}, ${geo.county}, ${geo.state} ${geo.zip}
+- Asset Type: ${analysisType || "retail"}
 ${price ? `- Asking Price: $${Number(price).toLocaleString()}` : ""}
 ${gla ? `- GLA: ${Number(gla).toLocaleString()} SF` : ""}
-${tenants.length > 0 ? `- Tenants: ${tenants.join(", ")}` : ""}
+${capRate ? `- Cap Rate: ${Number(capRate).toFixed(2)}%` : ""}
+${occupancy ? `- Occupancy: ${Number(occupancy).toFixed(0)}%` : ""}
+${yearBuilt ? `- Year Built: ${yearBuilt}` : ""}
+${tenants.length > 0 ? `- Known Tenants: ${tenants.join(", ")}` : ""}
 
-CITY/AREA BACKGROUND (from Wikipedia):
+${assetContext}
+
+─── REAL DATA INPUTS ───
+
+${censusSection}
+
+CITY/AREA BACKGROUND (Wikipedia):
 ${wiki ? `${wiki.title}: ${wiki.extract}` : `No Wikipedia data found for ${geo.city}.`}
 
-NEARBY BUSINESSES (within 1 mile — from Google Places):
-- Restaurants/Food: ${restaurants.length} (${restaurants.slice(0, 5).map((r: any) => `${r.name}${r.rating ? ` (${r.rating}★)` : ""}`).join(", ") || "none found"})
-- Retail/Shopping: ${retail.length} (${retail.slice(0, 5).map((r: any) => `${r.name}${r.rating ? ` (${r.rating}★)` : ""}`).join(", ") || "none found"})
-- Services (medical, schools, banks): ${services.length} (${services.slice(0, 5).map((r: any) => r.name).join(", ") || "none found"})
-- Total nearby places: ${nearbyPlaces.length}
+NEARBY BUSINESSES (within 1 mile — ${nearbyPlaces.length} total from Google Places):
+
+  ANCHOR/NATIONAL TENANTS (${cats.anchors.length}):
+    ${formatPlaces(cats.anchors)}
+
+  RESTAURANTS & DINING (${cats.restaurants.length}):
+    ${formatPlaces(cats.restaurants)}
+
+  RETAIL & SHOPPING (${cats.retail.length}):
+    ${formatPlaces(cats.retail)}
+
+  SERVICES — Banks, Medical, Professional (${cats.services.length}):
+    ${formatPlaces(cats.services)}
+
+  FITNESS & RECREATION (${cats.fitness_rec.length}):
+    ${formatPlaces(cats.fitness_rec)}
+
+  EDUCATION (${cats.education.length}):
+    ${formatPlaces(cats.education)}
+
+  AUTOMOTIVE — Gas, Auto, Dealers (${cats.automotive.length}):
+    ${formatPlaces(cats.automotive)}
+
+  OTHER BUSINESSES (${cats.other.length}):
+    ${formatPlaces(cats.other, 5)}
 
 ${developmentSection}
 
 ${newsSection}
 
-Based on this REAL data, produce a location intelligence report. Return a JSON object with EXACTLY this structure:
+─── OUTPUT FORMAT ───
+
+Return a JSON object with EXACTLY this structure. Each section MUST have 2-5 items. Be specific and reference actual data from above.
 
 {
-  "summary": "2-3 sentence overview of this location's dynamics and investment relevance based on the real data above",
+  "summary": "3-4 sentence executive overview of this trade area. Reference specific data: population, income, anchors, development activity. End with a 1-sentence investment thesis.",
   "sections": [
     {
-      "title": "Area Development & Construction",
-      "icon": "development",
-      "items": [
-        { "label": "Topic", "finding": "What's being built or planned nearby — reference specific projects from the data if found", "signal": "green|yellow|red" }
-      ]
-    },
-    {
-      "title": "Demographics & Community",
+      "title": "Trade Area Demographics",
       "icon": "demographics",
       "items": [
-        { "label": "Topic", "finding": "Population, income, growth trends for this specific city/area — use Wikipedia data", "signal": "green|yellow|red" }
+        { "label": "Population & Growth", "finding": "Use Census data + Wikipedia to describe the population, trends, and city character", "signal": "green|yellow|red" },
+        { "label": "Income & Spending Power", "finding": "Median income, home values, what this means for retail/commercial demand", "signal": "green|yellow|red" },
+        { "label": "Employment Base", "finding": "Unemployment rate, major employers, labor force characteristics", "signal": "green|yellow|red" }
       ]
     },
     {
-      "title": "Nearby Businesses & Traffic Drivers",
+      "title": "Nearby Anchors & Traffic Drivers",
       "icon": "traffic",
       "items": [
-        { "label": "Business Name or Category", "finding": "Specific businesses that drive foot traffic — reference the Google Places data. Note anchor tenants, national chains, dining clusters", "signal": "green|yellow|red" }
+        { "label": "Anchor Tenant", "finding": "Name the actual anchor stores and national chains within 1 mile. Include ratings and review counts as popularity indicators", "signal": "green|yellow|red" },
+        { "label": "Dining & Food", "finding": "Count and name specific restaurants — chains vs independents, rating quality, dining cluster strength", "signal": "green|yellow|red" },
+        { "label": "Service Density", "finding": "Banks, medical offices, schools — these indicate a mature, self-sustaining trade area", "signal": "green|yellow|red" },
+        { "label": "Overall Business Mix", "finding": "Total business count within 1 mile, what this says about commercial activity levels. Reference SPECIFIC numbers from each category", "signal": "green|yellow|red" }
       ]
     },
     {
-      "title": "Recent News & Events",
+      "title": "Competition & Market Position",
+      "icon": "comps",
+      "items": [
+        { "label": "Direct Competition", "finding": "For the asset type, what competing properties exist? Retail: other shopping centers. Office: other office parks. Industrial: other warehouse/distribution. Multifamily: other apartment communities", "signal": "green|yellow|red" },
+        { "label": "Co-Tenancy Benefit", "finding": "How do nearby businesses complement this property? Synergy analysis", "signal": "green|yellow|red" }
+      ]
+    },
+    {
+      "title": "Development & Construction Activity",
+      "icon": "development",
+      "items": [
+        { "label": "Nearby Projects", "finding": "What's being built or planned? Reference specific development projects from the data", "signal": "green|yellow|red" },
+        { "label": "Growth Direction", "finding": "Which way is the city growing? Is this property in the path of growth or behind it?", "signal": "green|yellow|red" }
+      ]
+    },
+    {
+      "title": "Recent News & Market Signals",
       "icon": "news",
       "items": [
-        { "label": "Headline or Topic", "finding": "What's been in the news about this area — reference specific articles from the data", "signal": "green|yellow|red" }
+        { "label": "Headline", "finding": "Reference specific news articles about this area. What's the narrative?", "signal": "green|yellow|red" }
       ]
     },
     {
-      "title": "Civic & Infrastructure",
+      "title": "Infrastructure & Access",
       "icon": "civic",
       "items": [
-        { "label": "Topic", "finding": "Road projects, public transit, zoning changes, tax incentives, government activity in this area", "signal": "green|yellow|red" }
+        { "label": "Road Access & Visibility", "finding": "Major roads, highway access, drive-by traffic assessment based on location", "signal": "green|yellow|red" },
+        { "label": "Public Infrastructure", "finding": "Transit, public services, municipal investment in the area", "signal": "green|yellow|red" }
       ]
     },
     {
       "title": "Investment Implications",
       "icon": "investment",
       "items": [
-        { "label": "Implication", "finding": "What does all the above mean for a CRE investor looking at this specific property?", "signal": "green|yellow|red" }
+        { "label": "Location Grade", "finding": "Rate the location A/B/C and explain why, using all the data above", "signal": "green|yellow|red" },
+        { "label": "Key Risk", "finding": "What's the primary location-based risk for this investment?", "signal": "green|yellow|red" },
+        { "label": "Key Opportunity", "finding": "What's the primary location-based upside?", "signal": "green|yellow|red" }
       ]
     }
   ],
-  "bottomLine": "1-2 sentence takeaway — is this location trending up, stable, or declining based on the evidence?"
+  "bottomLine": "2-3 sentence verdict — is this a strong, average, or weak location for this asset type? What should an investor focus on in due diligence?"
 }
 
 RULES:
-- Each section should have 2-4 items
-- Reference SPECIFIC data from the inputs above — actual business names, news headlines, Wikipedia facts
-- Do NOT make up data that isn't in the inputs — say "not enough data" if a section has limited info
+- Reference SPECIFIC data from the inputs — actual business names, Census numbers, news headlines, Wikipedia facts
+- If a category has businesses, you MUST name them. Never say "no significant businesses" when the data shows businesses exist
+- If Census data is available, you MUST use the actual numbers in your analysis
 - "signal" must be exactly "green", "yellow", or "red"
+- green = positive for investment, yellow = neutral/mixed, red = concern
+- Each section should have 2-5 items. Items should be substantive (2-3 sentences each), not one-liners
+- Do NOT make up data that isn't in the inputs — say "limited data available" if a section has sparse info
 - Return ONLY valid JSON, no markdown fences`;
 }
 
 // ── POST handler ────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   try {
-    const { propertyId, propertyName, address, tenants } = await req.json();
+    const { propertyId, propertyName, address, tenants, analysisType } = await req.json();
 
     if (!propertyId || !propertyName) {
       return NextResponse.json(
@@ -359,15 +600,16 @@ export async function POST(req: NextRequest) {
     console.log(`[location-intel] Geocoded to: ${geo.city}, ${geo.state} (${geo.lat}, ${geo.lng})`);
 
     // Step 2: Run all data fetches in parallel
-    const [nearbyPlaces, developments, wiki, news, fields] = await Promise.all([
+    const [nearbyPlaces, developments, wiki, news, fields, census] = await Promise.all([
       searchNearbyPlaces(geo.lat, geo.lng, 1600),
       searchPlacesText(`new development construction near ${searchAddress}`),
       fetchWikipediaSummary(geo.city, geo.state),
       fetchAreaNews(geo.city, geo.state),
       loadPropertyContext(propertyId),
+      fetchCensusData(geo.state, geo.city),
     ]);
 
-    console.log(`[location-intel] Data gathered: ${nearbyPlaces.length} nearby, ${developments.length} developments, wiki: ${!!wiki}, ${news.length} news, ${Object.keys(fields).length} fields`);
+    console.log(`[location-intel] Data gathered: ${nearbyPlaces.length} nearby, ${developments.length} developments, wiki: ${!!wiki}, ${news.length} news, ${Object.keys(fields).length} fields, census: ${!!census}`);
 
     // Step 3: Build prompt and call OpenAI
     const prompt = buildLocationPrompt(
@@ -380,6 +622,8 @@ export async function POST(req: NextRequest) {
       wiki,
       news,
       fields,
+      census,
+      analysisType || fields["property_basics.analysis_type"] || "retail",
     );
 
     const raw = await callOpenAI([{ role: "user", content: prompt }]);
@@ -401,25 +645,85 @@ export async function POST(req: NextRequest) {
       };
     }
 
-    // Step 5: Persist to Firestore
+    // Step 5: Persist to Firestore — include map data for UI
     const db = getAdminDb();
+    const cats = categorizePlaces(nearbyPlaces);
     await db.collection("workspace_deep_research").doc(propertyId).set({
       propertyId,
       propertyName,
       address: searchAddress,
       geo,
       result,
+      // Map data for client-side rendering
+      mapData: {
+        center: { lat: geo.lat, lng: geo.lng },
+        nearbyPlaces: nearbyPlaces.slice(0, 50).map((p: any) => ({
+          name: p.name,
+          lat: p.lat,
+          lng: p.lng,
+          types: p.types?.slice(0, 3),
+          rating: p.rating,
+          category: getPlaceCategory(p, cats),
+        })),
+        developments: developments.slice(0, 10).map((d: any) => ({
+          name: d.name,
+          lat: d.lat,
+          lng: d.lng,
+          address: d.address,
+        })),
+      },
+      census,
       sourceCounts: {
         nearbyPlaces: nearbyPlaces.length,
         developments: developments.length,
         hasWiki: !!wiki,
         newsArticles: news.length,
         extractedFields: Object.keys(fields).length,
+        hasCensus: !!census,
+        categoryCounts: {
+          anchors: cats.anchors.length,
+          restaurants: cats.restaurants.length,
+          retail: cats.retail.length,
+          services: cats.services.length,
+          fitness: cats.fitness_rec.length,
+          education: cats.education.length,
+          automotive: cats.automotive.length,
+          other: cats.other.length,
+        },
       },
       createdAt: new Date().toISOString(),
     });
 
-    return NextResponse.json(result);
+    return NextResponse.json({
+      ...result,
+      mapData: {
+        center: { lat: geo.lat, lng: geo.lng },
+        nearbyPlaces: nearbyPlaces.slice(0, 50).map((p: any) => ({
+          name: p.name,
+          lat: p.lat,
+          lng: p.lng,
+          types: p.types?.slice(0, 3),
+          rating: p.rating,
+          category: getPlaceCategory(p, cats),
+        })),
+        developments: developments.slice(0, 10).map((d: any) => ({
+          name: d.name,
+          lat: d.lat,
+          lng: d.lng,
+          address: d.address,
+        })),
+      },
+      census,
+      sourceCounts: {
+        nearbyPlaces: nearbyPlaces.length,
+        categoryCounts: {
+          anchors: cats.anchors.length,
+          restaurants: cats.restaurants.length,
+          retail: cats.retail.length,
+          services: cats.services.length,
+        },
+      },
+    });
   } catch (err: any) {
     console.error("[location-intel] Error:", err);
     return NextResponse.json(
@@ -427,6 +731,14 @@ export async function POST(req: NextRequest) {
       { status: 500 },
     );
   }
+}
+
+// Helper: determine which category a place belongs to
+function getPlaceCategory(place: any, cats: Record<string, any[]>): string {
+  for (const [cat, list] of Object.entries(cats)) {
+    if (list.some((p: any) => p.name === place.name)) return cat;
+  }
+  return "other";
 }
 
 // ── GET handler — return cached research ────────────────────
@@ -443,7 +755,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ exists: false });
     }
     const data = doc.data();
-    return NextResponse.json({ exists: true, ...data?.result, createdAt: data?.createdAt });
+    return NextResponse.json({
+      exists: true,
+      ...data?.result,
+      mapData: data?.mapData,
+      census: data?.census,
+      sourceCounts: data?.sourceCounts,
+      createdAt: data?.createdAt,
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
