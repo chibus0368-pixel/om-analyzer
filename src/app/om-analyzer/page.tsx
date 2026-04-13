@@ -219,14 +219,20 @@ type HeroCard = {
   redFlags: string[];
 };
 
-// Real CRE exterior photos on Unsplash CDN
+// Real CRE exterior photos on Unsplash CDN - curated to match each asset type
 const PHOTO = {
-  shoppingCenter:  "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=800&q=80&auto=format&fit=crop",
-  grocery:         "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=800&q=80&auto=format&fit=crop",
-  neighborhood:    "https://images.unsplash.com/photo-1604754742629-3e5728249d73?w=800&q=80&auto=format&fit=crop",
-  restaurant:      "https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?w=800&q=80&auto=format&fit=crop",
-  mixedUse:        "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?w=800&q=80&auto=format&fit=crop",
-  stripMall:       "https://images.unsplash.com/photo-1567449303078-57ad995bd323?w=800&q=80&auto=format&fit=crop",
+  // Multi-tenant retail / power center - large anchored shopping plaza
+  shoppingCenter:  "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?w=900&q=85&auto=format&fit=crop",
+  // Grocery-anchored - supermarket storefront with cars
+  grocery:         "https://images.unsplash.com/photo-1534723452862-4c874018d66d?w=900&q=85&auto=format&fit=crop",
+  // Neighborhood center - retail strip with parking
+  neighborhood:    "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=900&q=85&auto=format&fit=crop",
+  // Single-tenant QSR - restaurant exterior
+  restaurant:      "https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?w=900&q=85&auto=format&fit=crop",
+  // Mixed-use retail - urban retail with apartments above
+  mixedUse:        "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=85&auto=format&fit=crop",
+  // Strip mall - small commercial strip
+  stripMall:       "https://images.unsplash.com/photo-1604754742629-3e5728249d73?w=900&q=85&auto=format&fit=crop",
 };
 
 function HeroShowcase() {
@@ -890,6 +896,105 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
           ))}
         </div>
 
+        {/* Downloads section - mirrors the real property page download buttons */}
+        <div style={{ padding: "18px 22px 6px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>Downloadable Deliverables</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>Every analyzed deal ships with these exports</div>
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }} className="hero-modal-downloads">
+            {/* Workbook XLSX */}
+            <button type="button" onClick={(e) => e.preventDefault()} style={{
+              background: "rgba(16, 185, 129, 0.08)",
+              border: "1px solid rgba(16, 185, 129, 0.3)",
+              borderRadius: 10, padding: "14px",
+              cursor: "pointer", color: "inherit", font: "inherit",
+              textAlign: "left", display: "flex", alignItems: "center", gap: 12,
+              transition: "all 0.15s ease",
+            }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(16, 185, 129, 0.14)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(16, 185, 129, 0.08)"; e.currentTarget.style.transform = "translateY(0)"; }}
+            >
+              <div style={{
+                width: 38, height: 38, borderRadius: 8,
+                background: "rgba(16, 185, 129, 0.18)",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                border: "1px solid rgba(16, 185, 129, 0.35)",
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34D399" strokeWidth="2.2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M8 8l8 8M16 8l-8 8" /></svg>
+              </div>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff" }}>Workbook</div>
+                  <span style={{ padding: "1px 5px", background: "rgba(16, 185, 129, 0.2)", borderRadius: 3, fontSize: 8.5, fontWeight: 800, color: "#34D399", letterSpacing: 0.3 }}>XLSX</span>
+                </div>
+                <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", lineHeight: 1.35 }}>Full underwriting model, sensitivities, rent roll</div>
+              </div>
+            </button>
+
+            {/* Brief DOC */}
+            <button type="button" onClick={(e) => e.preventDefault()} style={{
+              background: "rgba(59, 130, 246, 0.08)",
+              border: "1px solid rgba(59, 130, 246, 0.3)",
+              borderRadius: 10, padding: "14px",
+              cursor: "pointer", color: "inherit", font: "inherit",
+              textAlign: "left", display: "flex", alignItems: "center", gap: 12,
+              transition: "all 0.15s ease",
+            }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(59, 130, 246, 0.14)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(59, 130, 246, 0.08)"; e.currentTarget.style.transform = "translateY(0)"; }}
+            >
+              <div style={{
+                width: 38, height: 38, borderRadius: 8,
+                background: "rgba(59, 130, 246, 0.18)",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                border: "1px solid rgba(59, 130, 246, 0.35)",
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" strokeWidth="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="8" y1="13" x2="16" y2="13" /><line x1="8" y1="17" x2="14" y2="17" /></svg>
+              </div>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff" }}>Brief</div>
+                  <span style={{ padding: "1px 5px", background: "rgba(59, 130, 246, 0.2)", borderRadius: 3, fontSize: 8.5, fontWeight: 800, color: "#60A5FA", letterSpacing: 0.3 }}>DOCX</span>
+                </div>
+                <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", lineHeight: 1.35 }}>Investment memo with summary, flags, signals</div>
+              </div>
+            </button>
+
+            {/* Strategy XLSX PRO+ */}
+            <button type="button" onClick={(e) => e.preventDefault()} style={{
+              background: "linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.08) 100%)",
+              border: "1px solid rgba(251, 191, 36, 0.35)",
+              borderRadius: 10, padding: "14px",
+              cursor: "pointer", color: "inherit", font: "inherit",
+              textAlign: "left", display: "flex", alignItems: "center", gap: 12,
+              transition: "all 0.15s ease",
+              position: "relative",
+            }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+            >
+              <div style={{
+                width: 38, height: 38, borderRadius: 8,
+                background: "rgba(251, 191, 36, 0.2)",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                border: "1px solid rgba(251, 191, 36, 0.4)",
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" strokeWidth="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+              </div>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff" }}>Strategy</div>
+                  <span style={{ padding: "1px 5px", background: "rgba(251, 191, 36, 0.25)", borderRadius: 3, fontSize: 8.5, fontWeight: 800, color: "#FBBF24", letterSpacing: 0.3 }}>PRO+</span>
+                </div>
+                <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", lineHeight: 1.35 }}>Core / Value-Add / Opportunistic lens</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
         {/* Executive summary (mirrors real deal summary card) */}
         <div style={{ padding: "22px", paddingBottom: 8 }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Executive Summary</div>
@@ -1095,6 +1200,7 @@ function HeroCardModal({ card: c, verdictColor, onClose }: {
           :global(.hero-modal-metrics) > div { flex: 1 1 33% !important; border-bottom: 1px solid rgba(255,255,255,0.06); }
           :global(.hero-modal-strengths-grid) { grid-template-columns: 1fr !important; }
           :global(.hero-modal-basics) { grid-template-columns: repeat(2, 1fr) !important; }
+          :global(.hero-modal-downloads) { grid-template-columns: 1fr !important; }
         }
         @media (max-width: 640px) {
           :global(.hero-flags-grid) { grid-template-columns: 1fr !important; }
