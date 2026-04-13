@@ -725,32 +725,52 @@ export default function ScoreboardPage() {
     setTimeout(() => setRescoreProgress(""), 4000);
   };
 
+  // Optimization: load properties first with card-level metrics (no N+1),
+  // then lazy-load full extracted fields only when a row is expanded.
   useEffect(() => {
     if (!user || !activeWorkspace) return;
     setLoading(true);
     getWorkspaceProperties(user.uid, activeWorkspace.id).then(async (props) => {
       if (props.length === 0) { setPropertyData([]); setLoading(false); return; }
-      const data: PropertyData[] = await Promise.all(
-        props.map(async (prop) => {
-          const values = new Map<string, string>();
+      // Phase 1: Build initial data from property-level fields (instant, no extra queries)
+      const data: PropertyData[] = props.map((prop) => {
+        const values = new Map<string, string>();
+        const addr = [prop.address1, prop.city, prop.state].filter(Boolean).join(", ");
+        if (addr) values.set("address", addr);
+        if ((prop as any).cardAskingPrice) values.set("asking_price", String((prop as any).cardAskingPrice));
+        if ((prop as any).cardCapRate) values.set("cap_rate", String((prop as any).cardCapRate));
+        if ((prop as any).cardNoi) values.set("noi", String((prop as any).cardNoi));
+        if ((prop as any).cardBuildingSf || prop.buildingSf) values.set("building_sf", String((prop as any).cardBuildingSf || prop.buildingSf));
+        if (prop.occupancyPct) values.set("occupancy", String(prop.occupancyPct));
+        if ((prop as any).analysisType) values.set("asset_type", String((prop as any).analysisType));
+        return { property: prop, values };
+      });
+      setPropertyData(data);
+      setLoading(false);
+
+      // Phase 2: Background-load full extracted fields to enrich data
+      // This runs after the UI is already interactive
+      const enriched: PropertyData[] = await Promise.all(
+        data.map(async (pd) => {
+          const values = new Map(pd.values);
           try {
-            const propFields = await getPropertyExtractedFields(prop.id);
+            const propFields = await getPropertyExtractedFields(pd.property.id);
             for (const [metricKey, fieldKeys] of Object.entries(FIELD_MAP)) {
               const val = getFieldValue(propFields, fieldKeys);
               if (val) values.set(metricKey, val);
             }
           } catch { /* no fields */ }
+          // Preserve fallback values if extracted fields didn't have them
           if (!values.has("address")) {
-            const addr = [prop.address1, prop.city, prop.state].filter(Boolean).join(", ");
+            const addr = [pd.property.address1, pd.property.city, pd.property.state].filter(Boolean).join(", ");
             if (addr) values.set("address", addr);
           }
-          if (!values.has("building_sf") && prop.buildingSf) values.set("building_sf", String(prop.buildingSf));
-          if (!values.has("occupancy") && prop.occupancyPct) values.set("occupancy", String(prop.occupancyPct));
-          return { property: prop, values };
+          if (!values.has("building_sf") && pd.property.buildingSf) values.set("building_sf", String(pd.property.buildingSf));
+          if (!values.has("occupancy") && pd.property.occupancyPct) values.set("occupancy", String(pd.property.occupancyPct));
+          return { property: pd.property, values };
         })
       );
-      setPropertyData(data);
-      setLoading(false);
+      setPropertyData(enriched);
     }).catch(() => setLoading(false));
   }, [user, activeWorkspace]);
 

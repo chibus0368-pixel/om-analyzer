@@ -798,16 +798,15 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
     loadProperties();
   }, [loadProperties, activeWorkspace]);
 
-  // Listen for property/workspace changes (background refresh, no loading flash)
+  // Listen for property/workspace changes (event-driven refresh, no polling)
   useEffect(() => {
     const handler = () => loadProperties();
     window.addEventListener("workspace-properties-changed", handler);
     window.addEventListener("workspace-changed", handler);
-    const interval = setInterval(loadProperties, 30000);
+    // Removed: 30-second polling was causing ~80 unnecessary API calls per session
     return () => {
       window.removeEventListener("workspace-properties-changed", handler);
       window.removeEventListener("workspace-changed", handler);
-      clearInterval(interval);
     };
   }, [loadProperties]);
 

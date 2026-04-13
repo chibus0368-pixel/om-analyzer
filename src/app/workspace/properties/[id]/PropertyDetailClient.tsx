@@ -519,12 +519,27 @@ export default function PropertyDetailClient() {
 
   // Auto-poll while property is still processing
   // NOTE: Must be before conditional early returns to satisfy React Rules of Hooks
+  // Optimization: only fetch the property doc (lightweight) to check status,
+  // then do full loadData() only when processing completes.
   const processingStatus = (property as any)?.processingStatus || "";
   useEffect(() => {
     if (!processingStatus || processingStatus === "complete") return;
-    const interval = setInterval(() => { loadData(); }, 5000);
+    let prevStatus = processingStatus;
+    const interval = setInterval(async () => {
+      try {
+        const p = await getProperty(propertyId);
+        if (!p) return;
+        const newStatus = (p as any).processingStatus || "";
+        setProperty(p); // Update status badge without full reload
+        // Only do the expensive full reload when processing finishes
+        if (newStatus === "complete" && prevStatus !== "complete") {
+          loadData();
+        }
+        prevStatus = newStatus;
+      } catch { /* ignore polling errors */ }
+    }, 5000);
     return () => clearInterval(interval);
-  }, [processingStatus, loadData]);
+  }, [processingStatus, loadData, propertyId]);
 
   /* ── File upload handler ────────────────────────────── */
   async function handleFileUpload(fileList: FileList) {
