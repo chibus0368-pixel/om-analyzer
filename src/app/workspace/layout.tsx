@@ -671,7 +671,8 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
       window.removeEventListener("dragover", handleDragOver);
       window.removeEventListener("drop", handleDrop);
     };
-  }, [globalDrag, activeWorkspace, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [globalDrag, activeWorkspace?.slug, activeWorkspace?.id, router]);
 
   // ── Auth gate: redirect to login if not authenticated ──
   // Skip redirect if already on the login page to prevent redirect loops.
@@ -797,7 +798,8 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
     prevWsIdRef.current = activeWorkspace.id;
     if (isFirstLoad) setLoadingProps(true);
     loadProperties();
-  }, [loadProperties, activeWorkspace]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadProperties, activeWorkspace?.id]);
 
   // Listen for property/workspace changes (event-driven refresh, no polling)
   useEffect(() => {

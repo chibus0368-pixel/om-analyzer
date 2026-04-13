@@ -160,7 +160,8 @@ export default function UploadHistoryPage() {
       console.warn("[upload history] sort failed", err);
     }
     return rows;
-  }, [allProps, query, hideInCurrent, activeWorkspace, sortBy, workspaceNameById]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allProps, query, hideInCurrent, activeWorkspace?.id, sortBy, workspaceNameById]);
 
   // Reset to page 1 whenever filters change
   useEffect(() => {

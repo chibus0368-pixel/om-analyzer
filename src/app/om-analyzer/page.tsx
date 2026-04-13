@@ -1628,7 +1628,7 @@ export default function OmAnalyzerPage() {
                           <div key={i} style={{ position: "absolute", left: pin.left, top: pin.top, transform: "translate(-50%, -50%)", animation: `fadeInUp 0.4s ease-out ${pin.delay} both`, zIndex: pin.active ? 3 : 1 }}>
                             {/* Pulse ring for active */}
                             {pin.active && <div style={{ position: "absolute", inset: -8, borderRadius: "50%", border: "1px solid rgba(132,204,22,0.3)", animation: "pulse 2s ease-in-out both" }} />}
-                            <div style={{ width: pin.active ? 30 : 24, height: pin.active ? 30 : 24, borderRadius: "50%", background: pin.active ? pin.color : `${pin.color}60`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: pin.active ? "#0d0d14" : "#fff", boxShadow: `0 0 ${pin.active ? 20 : 8}px ${pin.color}40`, cursor: "pointer" }}>{pin.score}</div>
+                            <div style={{ width: pin.active ? 30 : 24, height: pin.active ? 30 : 24, borderRadius: "50%", background: pin.active ? pin.color : `${pin.color}60`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: pin.active ? "#0d0d14" : "#fff", boxShadow: `0 0 ${pin.active ? 20 : 8}px ${pin.color}40` }}>{pin.score}</div>
 
                             {/* Hover tooltip for active pin */}
                             {pin.active && (
@@ -1755,9 +1755,26 @@ export default function OmAnalyzerPage() {
                         </p>
                       </div>
 
-                      {/* Visual side */}
-                      <div style={{ flex: 1, maxWidth: 480 }}>
-                        {feature.visual}
+                      {/* Visual side — wrapped in mockup frame so buttons look illustrative */}
+                      <div style={{ flex: 1, maxWidth: 480, pointerEvents: "none", userSelect: "none", cursor: "default" }}>
+                        {/* Mock browser chrome */}
+                        <div style={{
+                          display: "flex", alignItems: "center", justifyContent: "space-between",
+                          padding: "7px 14px", borderRadius: "12px 12px 0 0",
+                          background: "rgba(255,255,255,0.03)", borderTop: "1px solid rgba(255,255,255,0.06)",
+                          borderLeft: "1px solid rgba(255,255,255,0.06)", borderRight: "1px solid rgba(255,255,255,0.06)",
+                        }}>
+                          <div style={{ display: "flex", gap: 5 }}>
+                            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "rgba(255,255,255,0.10)" }} />
+                            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "rgba(255,255,255,0.10)" }} />
+                            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "rgba(255,255,255,0.10)" }} />
+                          </div>
+                          <span style={{ fontSize: 9, fontWeight: 600, color: "rgba(255,255,255,0.25)", letterSpacing: 0.5, textTransform: "uppercase" as const }}>Preview</span>
+                        </div>
+                        {/* Visual content with top-left radius removed to blend with chrome bar */}
+                        <div style={{ borderRadius: "0 0 12px 12px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)", borderTop: "none" }}>
+                          {feature.visual}
+                        </div>
                       </div>
                     </div>
                   </div>

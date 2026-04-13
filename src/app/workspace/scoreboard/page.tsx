@@ -725,12 +725,15 @@ export default function ScoreboardPage() {
     setTimeout(() => setRescoreProgress(""), 4000);
   };
 
-  // Optimization: load properties first with card-level metrics (no N+1),
-  // then lazy-load full extracted fields only when a row is expanded.
+  // Load properties with card-level metrics (Phase 1), then enrich in background (Phase 2).
+  // Phase 2 is guarded by a stale flag so duplicate fires are cancelled.
+  const enrichRunId = useRef(0);
   useEffect(() => {
     if (!user || !activeWorkspace) return;
+    const runId = ++enrichRunId.current;
     setLoading(true);
     getWorkspaceProperties(user.uid, activeWorkspace.id).then(async (props) => {
+      if (runId !== enrichRunId.current) return; // stale — newer run superseded us
       if (props.length === 0) { setPropertyData([]); setLoading(false); return; }
       // Phase 1: Build initial data from property-level fields (instant, no extra queries)
       const data: PropertyData[] = props.map((prop) => {
@@ -750,6 +753,7 @@ export default function ScoreboardPage() {
 
       // Phase 2: Background-load full extracted fields to enrich data
       // This runs after the UI is already interactive
+      if (runId !== enrichRunId.current) return; // check again before expensive N+1
       const enriched: PropertyData[] = await Promise.all(
         data.map(async (pd) => {
           const values = new Map(pd.values);
@@ -770,8 +774,9 @@ export default function ScoreboardPage() {
           return { property: pd.property, values };
         })
       );
+      if (runId !== enrichRunId.current) return; // stale — don't overwrite newer data
       setPropertyData(enriched);
-    }).catch(() => setLoading(false));
+    }).catch(() => { if (runId === enrichRunId.current) setLoading(false); });
     // Use stable primitives — object refs change every render and cause infinite loops
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid, activeWorkspace?.id]);
