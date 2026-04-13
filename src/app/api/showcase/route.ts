@@ -17,6 +17,10 @@ export const dynamic = "force-dynamic";
 
 type ShowcasePhoto = {
   heroImageUrl: string;
+  /** Normalized name (no address, no financials) used so the landing page
+   *  can match the photo to its corresponding sample card (e.g. "Hales
+   *  Corners Plaza" → photo from a Hales Corners property in Pro). */
+  nameKey?: string;
   assetType?: string;
   verdict?: "BUY" | "NEUTRAL" | "PASS";
 };
@@ -54,8 +58,19 @@ export async function GET() {
       const verdict: ShowcasePhoto["verdict"] =
         score >= 70 ? "BUY" : score >= 55 ? "NEUTRAL" : "PASS";
 
+      // Lowercased, stripped-down name key for substring matching on the
+      // landing page. We strip commas + "center/plaza/etc" boilerplate so
+      // "Hales Corners" matches "Hales Corners Plaza" and vice versa.
+      const rawName: string = d.propertyName || d.name || d.title || "";
+      const nameKey = rawName
+        .toLowerCase()
+        .replace(/[,\.]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
       const entry: ShowcasePhoto = {
         heroImageUrl: url,
+        nameKey: nameKey || undefined,
         assetType: d.assetType || d.analysisType || undefined,
         verdict: score > 0 ? verdict : undefined,
       };

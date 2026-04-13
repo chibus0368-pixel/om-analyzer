@@ -245,23 +245,47 @@ const PHOTO = {
   stripMall:       "https://images.unsplash.com/photo-1604754742629-3e5728249d73?w=900&q=85&auto=format&fit=crop",
 };
 
+type ShowcasePhoto = { heroImageUrl: string; nameKey?: string; assetType?: string };
+
 function HeroShowcase() {
   const [openCard, setOpenCard] = React.useState<number | null>(null);
   // Real property hero photos pulled from the user's workspace (live Firestore)
-  const [realPhotos, setRealPhotos] = React.useState<string[]>([]);
+  const [realPhotos, setRealPhotos] = React.useState<ShowcasePhoto[]>([]);
 
   React.useEffect(() => {
     let aborted = false;
     fetch("/api/showcase", { cache: "no-store" })
       .then(r => r.ok ? r.json() : { photos: [] })
-      .then((d: { photos?: { heroImageUrl: string }[] }) => {
+      .then((d: { photos?: ShowcasePhoto[] }) => {
         if (aborted) return;
-        const urls = (d.photos || []).map(p => p.heroImageUrl).filter(Boolean);
-        if (urls.length) setRealPhotos(urls);
+        const photos = (d.photos || []).filter(p => p.heroImageUrl);
+        if (photos.length) setRealPhotos(photos);
       })
       .catch(() => { /* fallback to curated Unsplash stays in place */ });
     return () => { aborted = true; };
   }, []);
+
+  // Try to find a real photo in the user's Pro workspace that matches this
+  // sample card by name. We split the card name into tokens and look for
+  // a photo whose nameKey contains any meaningful token (length >= 4).
+  // Returns undefined if no match - caller falls back to curated imagery.
+  const matchPhotoByName = React.useCallback((cardName: string): string | undefined => {
+    if (!realPhotos.length) return undefined;
+    const nameLower = cardName.toLowerCase();
+    // Strongest signal: full-name substring match on either side.
+    const full = realPhotos.find(p =>
+      p.nameKey && (p.nameKey.includes(nameLower) || nameLower.includes(p.nameKey))
+    );
+    if (full) return full.heroImageUrl;
+    // Token-based fallback: meaningful tokens (≥ 4 chars, not boilerplate).
+    const boilerplate = new Set(["plaza", "center", "centre", "retail", "commons", "corners", "park", "place", "shops", "the"]);
+    const tokens = nameLower.split(/[^a-z]+/).filter(t => t.length >= 4 && !boilerplate.has(t));
+    for (const t of tokens) {
+      const hit = realPhotos.find(p => p.nameKey && p.nameKey.includes(t));
+      if (hit) return hit.heroImageUrl;
+    }
+    return undefined;
+  }, [realPhotos]);
 
   const cards: HeroCard[] = [
     {
@@ -306,11 +330,11 @@ function HeroShowcase() {
       redFlags: [],
       locationIntel: {
         grade: "B+",
-        summary: "Established retail corridor in the south-Milwaukee suburbs. Stable, middle-income trade area with dense daytime traffic on 76th St and healthy household formation in a 3-mile ring. Not a trophy market — but durable, defensible retail demand.",
+        summary: "Established retail corridor in the south-Milwaukee suburbs. Stable, middle-income trade area with dense daytime traffic on 76th St and healthy household formation in a 3-mile ring. Not a trophy market - but durable, defensible retail demand.",
         census: { population: "118,400", medianIncome: "$81,200", medianAge: "39.8", homeValue: "$302K", unemployment: "3.4%" },
         anchors: ["Meijer", "Walmart Supercenter", "Home Depot", "Planet Fitness", "Starbucks"],
         signals: [
-          { label: "Traffic", detail: "76th St corridor at 37,400 VPD — top quartile for the submarket", tone: "green" },
+          { label: "Traffic", detail: "76th St corridor at 37,400 VPD - top quartile for the submarket", tone: "green" },
           { label: "Rooftops", detail: "+1.4% annual population growth in 3-mile ring over last 5 yrs", tone: "green" },
           { label: "Retail pipeline", detail: "No new competitive multi-tenant construction within 2 miles", tone: "green" },
         ],
@@ -356,13 +380,13 @@ function HeroShowcase() {
       redFlags: [],
       locationIntel: {
         grade: "B+",
-        summary: "Inner-ring suburb 15 minutes from downtown Milwaukee. Mature grocery trade area with high daytime population density and stable, owner-occupied rooftops. A classic infill grocery location — not high-growth, but sticky.",
+        summary: "Inner-ring suburb 15 minutes from downtown Milwaukee. Mature grocery trade area with high daytime population density and stable, owner-occupied rooftops. A classic infill grocery location - not high-growth, but sticky.",
         census: { population: "96,800", medianIncome: "$78,400", medianAge: "42.1", homeValue: "$284K", unemployment: "3.2%" },
         anchors: ["Sendik's Food Market", "Target", "Walgreens", "CVS", "Pick 'n Save"],
         signals: [
           { label: "Grocery moat", detail: "Sendik's = #2 regional grocer by sales/SF in MKE MSA", tone: "green" },
-          { label: "Rooftops", detail: "Mature, owner-occupied rooftops — 72% ownership in 1-mile ring", tone: "green" },
-          { label: "Submarket growth", detail: "Flat population trend — stable but not growing", tone: "yellow" },
+          { label: "Rooftops", detail: "Mature, owner-occupied rooftops - 72% ownership in 1-mile ring", tone: "green" },
+          { label: "Submarket growth", detail: "Flat population trend - stable but not growing", tone: "yellow" },
         ],
       },
     },
@@ -405,13 +429,13 @@ function HeroShowcase() {
       redFlags: [],
       locationIntel: {
         grade: "A-",
-        summary: "Wauwatosa is one of the strongest inner-ring suburbs in the Milwaukee MSA — high median incomes, dense rooftops, and a healthy mix of medical office and specialty retail. The immediate corridor benefits from hospital-related daytime employment.",
+        summary: "Wauwatosa is one of the strongest inner-ring suburbs in the Milwaukee MSA - high median incomes, dense rooftops, and a healthy mix of medical office and specialty retail. The immediate corridor benefits from hospital-related daytime employment.",
         census: { population: "134,200", medianIncome: "$94,600", medianAge: "40.5", homeValue: "$348K", unemployment: "2.9%" },
         anchors: ["Froedtert Hospital", "Mayfair Mall", "Trader Joe's", "Whole Foods", "Chick-fil-A"],
         signals: [
-          { label: "Demographics", detail: "$94.6K median HH income — top decile for Milwaukee MSA", tone: "green" },
+          { label: "Demographics", detail: "$94.6K median HH income - top decile for Milwaukee MSA", tone: "green" },
           { label: "Daytime pop", detail: "Hospital + medical campus drives 14K daytime employees within 1 mile", tone: "green" },
-          { label: "Anchor credit", detail: "Local fitness anchor is non-rated — no credit backstop", tone: "yellow" },
+          { label: "Anchor credit", detail: "Local fitness anchor is non-rated - no credit backstop", tone: "yellow" },
         ],
       },
     },
@@ -456,8 +480,8 @@ function HeroShowcase() {
         anchors: ["Central Park Mall", "Applebee's", "Red Lobster", "Olive Garden", "Walmart Supercenter"],
         signals: [
           { label: "Comp saturation", detail: "5 competing casual-dining concepts within 1/4 mile", tone: "red" },
-          { label: "Traffic", detail: "I-95 off-ramp @ 48K VPD — good visibility, but not a destination node", tone: "yellow" },
-          { label: "Demographic fit", detail: "Median income at MSA average — no premium dining tailwind", tone: "yellow" },
+          { label: "Traffic", detail: "I-95 off-ramp @ 48K VPD - good visibility, but not a destination node", tone: "yellow" },
+          { label: "Demographic fit", detail: "Median income at MSA average - no premium dining tailwind", tone: "yellow" },
         ],
       },
     },
@@ -504,9 +528,9 @@ function HeroShowcase() {
         census: { population: "142,800", medianIncome: "$72,900", medianAge: "35.4", homeValue: "$316K", unemployment: "3.8%" },
         anchors: ["Spotsylvania Mall", "Walmart Supercenter", "Home Depot", "Wegmans", "Lowe's"],
         signals: [
-          { label: "Rooftop growth", detail: "+2.1% annual population growth (3-mile) — strongest in submarket", tone: "green" },
-          { label: "Tenant mix", detail: "14-tenant roster spans value, services, and fitness — diversified", tone: "green" },
-          { label: "Leasing velocity", detail: "2 vacant suites — comparable centers averaging 9-month lease-up", tone: "yellow" },
+          { label: "Rooftop growth", detail: "+2.1% annual population growth (3-mile) - strongest in submarket", tone: "green" },
+          { label: "Tenant mix", detail: "14-tenant roster spans value, services, and fitness - diversified", tone: "green" },
+          { label: "Leasing velocity", detail: "2 vacant suites - comparable centers averaging 9-month lease-up", tone: "yellow" },
         ],
       },
     },
@@ -550,13 +574,13 @@ function HeroShowcase() {
       redFlags: ["Below-threshold DSCR at current debt", "3 of 6 tenants month-to-month"],
       locationIntel: {
         grade: "C",
-        summary: "Tertiary Lake Country strip location with adequate drive-by traffic but limited daytime employment and a weak shop-tenant draw. Node lacks a true anchor — surrounding centers pull most of the retail demand.",
+        summary: "Tertiary Lake Country strip location with adequate drive-by traffic but limited daytime employment and a weak shop-tenant draw. Node lacks a true anchor - surrounding centers pull most of the retail demand.",
         census: { population: "48,600", medianIncome: "$83,100", medianAge: "43.2", homeValue: "$334K", unemployment: "3.0%" },
         anchors: ["Woodman's Market", "Kohl's", "Target (4 mi)", "Home Depot (3 mi)"],
         signals: [
-          { label: "Anchor vacuum", detail: "No anchor within center — tenants rely on drive-by, not cross-shopping", tone: "red" },
+          { label: "Anchor vacuum", detail: "No anchor within center - tenants rely on drive-by, not cross-shopping", tone: "red" },
           { label: "Submarket pull", detail: "Woodman's + Target cluster 3-4 mi east captures most retail trips", tone: "red" },
-          { label: "Demographics", detail: "Income profile is fine — just not enough daytime retail demand here", tone: "yellow" },
+          { label: "Demographics", detail: "Income profile is fine - just not enough daytime retail demand here", tone: "yellow" },
         ],
       },
     },
@@ -621,7 +645,7 @@ function HeroShowcase() {
                   boxShadow: "0 0 0 2px rgba(245,158,11,0.25)",
                 }}>EXAMPLE DEALS</span>
                 <span style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
-                  These are sample outputs — your real OMs get the same analysis.
+                  These are sample outputs - your real OMs get the same analysis.
                 </span>
               </div>
               <span style={{ fontSize: 10, color: "rgba(245,158,11,0.9)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
@@ -636,7 +660,11 @@ function HeroShowcase() {
             {cards.map((c, i) => {
               const vc = verdictColor[c.verdict];
               // Prefer real photo from workspace over curated fallback
-              const displayPhoto = realPhotos[i] || c.photoUrl;
+              // Prefer a name-matched photo from the user's Pro workspace
+              // (e.g. "Hales Corners Plaza" matches a property with that
+              // name). Fall back to positional match, then curated Unsplash.
+              const matched = matchPhotoByName(c.name);
+              const displayPhoto = matched || realPhotos[i]?.heroImageUrl || c.photoUrl;
               return (
                 <button
                   key={i}
@@ -740,7 +768,7 @@ function HeroShowcase() {
                     </div>
                   </div>
 
-                  {/* (Removed floating AI signal callout — it overlapped
+                  {/* (Removed floating AI signal callout - it overlapped
                       neighboring cards on narrow/mobile layouts. Signals
                       are still surfaced inside the detail modal.) */}
                 </button>
@@ -804,7 +832,7 @@ function HeroShowcase() {
       {openCard !== null && (
         <HeroCardModal
           card={cards[openCard]}
-          displayPhoto={realPhotos[openCard] || cards[openCard].photoUrl}
+          displayPhoto={matchPhotoByName(cards[openCard].name) || realPhotos[openCard]?.heroImageUrl || cards[openCard].photoUrl}
           verdictColor={verdictColor}
           onClose={() => setOpenCard(null)}
         />
@@ -2451,7 +2479,9 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── Hero showcase (native HTML/CSS mockup) ── */}
-          <HeroShowcase />
+          <div id="examples" style={{ scrollMarginTop: 80 }}>
+            <HeroShowcase />
+          </div>
 
           {/* ── ASSET-SPECIFIC MODELS (highlight only, no backend detail) ── */}
           <div id="asset-models" className="ds-section-pad" style={{
@@ -2491,7 +2521,7 @@ export default function OmAnalyzerPage() {
                 </h2>
                 <p style={{ fontSize: 17, color: "#9ca3af", lineHeight: 1.7, maxWidth: 640, margin: "0 auto" }}>
                   A grocery-anchored center doesn&apos;t score the same way as a warehouse, an apartment building, or raw land.
-                  Each asset type gets its own purpose-built model — so the signal you get is the signal that matters.
+                  Each asset type gets its own purpose-built model - so the signal you get is the signal that matters.
                 </p>
               </div>
 
@@ -2506,7 +2536,7 @@ export default function OmAnalyzerPage() {
                     label: "Retail",
                     blurb: "Shopping centers, grocery-anchored, single-tenant NNN, QSR, mixed-use.",
                     weights: ["Tenant roster", "Rollover", "Anchor credit"],
-                    /* Shopping center — canopy with 4 storefronts + signage + sidewalk */
+                    /* Shopping center - canopy with 4 storefronts + signage + sidewalk */
                     draw: (
                       <>
                         <path d="M4 38 L46 38" />
@@ -2526,7 +2556,7 @@ export default function OmAnalyzerPage() {
                     label: "Industrial",
                     blurb: "Warehouse, distribution, flex, last-mile logistics.",
                     weights: ["Clear height", "Dock doors", "Tenant credit"],
-                    /* Warehouse — big box + sawtooth roof + loading docks */
+                    /* Warehouse - big box + sawtooth roof + loading docks */
                     draw: (
                       <>
                         <path d="M4 38 L46 38" />
@@ -2547,7 +2577,7 @@ export default function OmAnalyzerPage() {
                     label: "Office",
                     blurb: "Multi-tenant office, medical office, suburban & urban CBD.",
                     weights: ["WALT", "Tenant credit", "TI/LC load"],
-                    /* Office tower — tall building with window grid */
+                    /* Office tower - tall building with window grid */
                     draw: (
                       <>
                         <path d="M4 38 L46 38" />
@@ -2570,7 +2600,7 @@ export default function OmAnalyzerPage() {
                     label: "Multifamily",
                     blurb: "Garden-style, mid-rise, high-rise, build-to-rent.",
                     weights: ["Rent growth", "OpEx", "Occupancy"],
-                    /* Apartment — building with balconies + pitched roof */
+                    /* Apartment - building with balconies + pitched roof */
                     draw: (
                       <>
                         <path d="M4 38 L46 38" />
@@ -2592,7 +2622,7 @@ export default function OmAnalyzerPage() {
                     label: "Land",
                     blurb: "Raw land, entitled parcels, development sites.",
                     weights: ["Entitlements", "Topography", "Utilities"],
-                    /* Land — rolling hills + tree + survey stake */
+                    /* Land - rolling hills + tree + survey stake */
                     draw: (
                       <>
                         <path d="M4 38 L46 38" />
@@ -3506,6 +3536,7 @@ export default function OmAnalyzerPage() {
                   features: [
                     { text: "500 deal analyses/month", included: true },
                     { text: "Everything in Pro", included: true },
+                    { text: "Chrome extension: add deals right from Crexi, CoStar, and LoopNet", included: true },
                     { text: "Priority processing queue", included: true },
                     { text: "Priority support", included: true },
                     { text: "Custom branding", included: true },
