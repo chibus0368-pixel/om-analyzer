@@ -130,7 +130,9 @@ export default function UploadPage() {
   useEffect(() => {
     if (!user || !activeWorkspace) return;
     getWorkspaceProperties(user.uid, activeWorkspace.id).then(setProperties).catch(() => {});
-  }, [user, activeWorkspace]);
+    // Use stable primitives — object refs change every render and cause infinite loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, activeWorkspace?.id]);
 
   // Warn user before leaving during processing
   useEffect(() => {

@@ -456,7 +456,9 @@ export default function PropertyDetailClient() {
     getWorkspaceProperties(user.uid, wsId).then(props => {
       setSiblingProps(props);
     }).catch(() => {});
-  }, [user, activeWorkspace, property]);
+    // Use stable primitives — object refs change every render and cause infinite loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, activeWorkspace?.id, (property as any)?.workspaceId]);
 
   const loadData = useCallback(async () => {
     if (!propertyId) return;

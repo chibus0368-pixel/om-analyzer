@@ -772,7 +772,9 @@ export default function ScoreboardPage() {
       );
       setPropertyData(enriched);
     }).catch(() => setLoading(false));
-  }, [user, activeWorkspace]);
+    // Use stable primitives — object refs change every render and cause infinite loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, activeWorkspace?.id]);
 
   // Get unique asset types for filter
   const assetTypes = useMemo(() => {

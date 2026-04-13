@@ -787,7 +787,8 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
       setProperties(props.sort((a, b) => a.propertyName.localeCompare(b.propertyName)));
     } catch { /* ignore */ }
     setLoadingProps(false);
-  }, [user, activeWorkspace?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, activeWorkspace?.id]);
 
   // Only show loading flash on very first load, not workspace switches
   useEffect(() => {
