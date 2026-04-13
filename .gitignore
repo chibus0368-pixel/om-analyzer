@@ -45,3 +45,11 @@ functions/lib/
 
 # Microsoft Office temporary lock files
 ~$*
+
+# Marketing assets (too large for git)
+videos formarketing/
+githubs/
+image2.png
+*.mov
+*.prproj
+*.prin

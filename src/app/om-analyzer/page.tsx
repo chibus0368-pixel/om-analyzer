@@ -184,6 +184,174 @@ function PropertyImage({ heroImageUrl, location, encodedAddress, propertyName }:
 }
 
 /* ===========================================================================
+   HERO SHOWCASE - Native CSS mockup replacing AI-generated image
+   =========================================================================== */
+function HeroShowcase() {
+  const cards = [
+    { name: "Greenfield Shopping Center", city: "Greenfield, WI", score: 78, verdict: "BUY",  price: "$14.2M", cap: "7.8%",  noi: "$1.11M", sf: "94.2K SF",  signal: "Below-market rents with strong traffic. Watch rollover risk.", signalType: "neutral" },
+    { name: "Hales Corners Plaza",        city: "Hales Corners, WI",  score: 72, verdict: "BUY",  price: "$9.4M",  cap: "8.34%", noi: "$784K",  sf: "62.5K SF",  signal: "Below-replacement cost, anchor 8 yrs remaining.", signalType: "positive" },
+    { name: "Harwood Retail Center",      city: "Wauwatosa, WI",      score: 69, verdict: "BUY",  price: "$7.0M",  cap: "8.39%", noi: "$587K",  sf: "48.1K SF",  signal: null, signalType: null },
+    { name: "Outback Steakhouse",         city: "Fredericksburg, VA", score: 45, verdict: "PASS", price: "$4.8M",  cap: "5.6%",  noi: "$269K",  sf: "6.2K SF",   signal: "Single-tenant risk, cap rate below market.", signalType: "negative" },
+    { name: "Fredericksburg Center",      city: "Fredericksburg, VA", score: 62, verdict: "NEUTRAL", price: "$11.8M", cap: "7.2%", noi: "$850K", sf: "72.4K SF", signal: null, signalType: null },
+    { name: "Silvernail Commons",         city: "Pewaukee, WI",       score: 51, verdict: "PASS", price: "$2.9M",  cap: "6.8%",  noi: "$197K",  sf: "10.3K SF",  signal: null, signalType: null },
+  ];
+
+  const verdictColor: Record<string, { bg: string; fg: string; ring: string }> = {
+    BUY:     { bg: "rgba(132,204,22,0.15)", fg: "#84CC16", ring: "#84CC16" },
+    NEUTRAL: { bg: "rgba(217,119,6,0.15)",  fg: "#F59E0B", ring: "#F59E0B" },
+    PASS:    { bg: "rgba(239,68,68,0.12)",  fg: "#F87171", ring: "#F87171" },
+  };
+
+  return (
+    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 100px", position: "relative" }}>
+      {/* Soft lime glow backdrop */}
+      <div style={{
+        position: "absolute", inset: "5% 10%", borderRadius: "50%",
+        background: "rgba(132,204,22,0.08)", filter: "blur(140px)", pointerEvents: "none", zIndex: 0,
+      }} />
+
+      <div style={{
+        position: "relative", zIndex: 1,
+        display: "grid", gridTemplateColumns: "minmax(0, 1fr) 260px", gap: 28, alignItems: "start",
+      }} className="hero-showcase-grid">
+
+        {/* Left side: headline + cards */}
+        <div>
+          <div style={{ marginBottom: 24 }}>
+            <h3 style={{ fontSize: 42, fontWeight: 800, color: "#fff", margin: 0, letterSpacing: -0.5, lineHeight: 1.05 }}>
+              11 Deals. <span style={{ color: "#84CC16" }}>3 Worth Pursuing.</span>
+            </h3>
+            <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 15, margin: "8px 0 0", fontWeight: 500 }}>
+              Instantly scored and ranked
+            </p>
+          </div>
+
+          <div style={{
+            display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14,
+          }} className="hero-cards-grid">
+            {cards.map((c, i) => {
+              const vc = verdictColor[c.verdict];
+              return (
+                <div key={i} style={{
+                  position: "relative",
+                  background: "linear-gradient(180deg, rgba(22,22,32,0.95) 0%, rgba(16,16,24,0.95) 100%)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: 14, padding: 14,
+                  backdropFilter: "blur(8px)",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                }}>
+                  {/* Top row: ANALYZED badge + score ring */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                    <span style={{
+                      fontSize: 9, fontWeight: 800, letterSpacing: 0.5, textTransform: "uppercase",
+                      background: "rgba(132,204,22,0.15)", color: "#84CC16",
+                      padding: "4px 8px", borderRadius: 4,
+                    }}>ANALYZED</span>
+                    <div style={{
+                      width: 42, height: 42, borderRadius: "50%",
+                      border: `2px solid ${vc.ring}`,
+                      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                      background: "rgba(0,0,0,0.3)",
+                    }}>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{c.score}</div>
+                      <div style={{ fontSize: 6.5, fontWeight: 700, color: vc.fg, letterSpacing: 0.3, marginTop: 1 }}>{c.verdict}</div>
+                    </div>
+                  </div>
+
+                  {/* Property name + city */}
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", lineHeight: 1.2, marginBottom: 2 }}>{c.name}</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginBottom: 10 }}>{c.city}</div>
+
+                  {/* Metrics grid */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginTop: 8 }}>
+                    <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 6, padding: "6px 8px" }}>
+                      <div style={{ fontSize: 8.5, color: "rgba(255,255,255,0.4)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3 }}>Price</div>
+                      <div style={{ fontSize: 11, color: "#fff", fontWeight: 700 }}>{c.price}</div>
+                    </div>
+                    <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 6, padding: "6px 8px" }}>
+                      <div style={{ fontSize: 8.5, color: "rgba(255,255,255,0.4)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3 }}>Cap</div>
+                      <div style={{ fontSize: 11, color: "#fff", fontWeight: 700 }}>{c.cap}</div>
+                    </div>
+                    <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 6, padding: "6px 8px" }}>
+                      <div style={{ fontSize: 8.5, color: "rgba(255,255,255,0.4)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3 }}>NOI</div>
+                      <div style={{ fontSize: 11, color: "#fff", fontWeight: 700 }}>{c.noi}</div>
+                    </div>
+                    <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 6, padding: "6px 8px" }}>
+                      <div style={{ fontSize: 8.5, color: "rgba(255,255,255,0.4)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3 }}>Size</div>
+                      <div style={{ fontSize: 11, color: "#fff", fontWeight: 700 }}>{c.sf}</div>
+                    </div>
+                  </div>
+
+                  {/* Floating signal callout on first card */}
+                  {c.signal && i === 0 && (
+                    <div style={{
+                      position: "absolute", bottom: -18, right: -14,
+                      background: "#0d0d14",
+                      border: "1px solid rgba(132,204,22,0.35)",
+                      borderRadius: 10, padding: "10px 12px",
+                      maxWidth: 200, zIndex: 2,
+                      boxShadow: "0 10px 30px rgba(0,0,0,0.6), 0 0 30px rgba(132,204,22,0.15)",
+                    }}>
+                      <div style={{ fontSize: 10, color: "#84CC16", fontWeight: 700, marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.3 }}>AI Signal</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.85)", lineHeight: 1.35 }}>{c.signal}</div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Right side: feature card */}
+        <div style={{
+          background: "linear-gradient(180deg, rgba(22,22,32,0.9) 0%, rgba(12,12,20,0.95) 100%)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: 16, padding: "20px 18px",
+          position: "sticky", top: 20,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+        }} className="hero-feature-card">
+          <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", lineHeight: 1.25, marginBottom: 6 }}>
+            From OM to Decision
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "#84CC16", marginBottom: 18, lineHeight: 1 }}>
+            in 60 seconds
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[
+              "AI extraction",
+              "Auto underwriting",
+              "Instant scoring",
+              "Shareable deal view",
+            ].map(f => (
+              <div key={f} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                <span style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>{f}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @media (max-width: 900px) {
+          :global(.hero-showcase-grid) {
+            grid-template-columns: 1fr !important;
+          }
+          :global(.hero-feature-card) {
+            position: static !important;
+          }
+        }
+        @media (max-width: 640px) {
+          :global(.hero-cards-grid) {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+/* ===========================================================================
    TYPES
    =========================================================================== */
 type AnalysisData = any;
@@ -1088,28 +1256,8 @@ export default function OmAnalyzerPage() {
             </div>
           </div>
 
-          {/* ── Hero showcase image (blended into page) ── */}
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 80px", position: "relative" }}>
-            <div style={{ position: "relative" }}>
-              {/* Soft lime glow underneath */}
-              <div style={{
-                position: "absolute", inset: "10% 15%", borderRadius: "50%",
-                background: "rgba(132,204,22,0.12)", filter: "blur(120px)", pointerEvents: "none", zIndex: 0,
-              }} />
-              <img
-                src="/home-hero1.png"
-                alt="DealSignals - 11 deals analyzed, 3 worth pursuing"
-                style={{
-                  position: "relative", zIndex: 1, width: "100%", display: "block",
-                  filter: "saturate(0.75) contrast(1.08) brightness(0.95)",
-                  WebkitMaskImage:
-                    "radial-gradient(ellipse 85% 75% at 50% 50%, #000 45%, rgba(0,0,0,0.85) 65%, rgba(0,0,0,0.35) 85%, transparent 100%)",
-                  maskImage:
-                    "radial-gradient(ellipse 85% 75% at 50% 50%, #000 45%, rgba(0,0,0,0.85) 65%, rgba(0,0,0,0.35) 85%, transparent 100%)",
-                }}
-              />
-            </div>
-          </div>
+          {/* ── Hero showcase (native HTML/CSS mockup) ── */}
+          <HeroShowcase />
 
           {/* ── 2. WHY DEALSIGNALS ── */}
           <div id="how-it-works" className="ds-section-pad" style={{ padding: "120px 32px 100px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
