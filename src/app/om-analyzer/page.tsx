@@ -445,7 +445,7 @@ function HeroShowcase() {
       name: "Outback Steakhouse", city: "Fredericksburg, VA", type: "Single-Tenant NNN",
       score: 45, verdict: "PASS",
       price: "$4.8M", cap: "5.6%", noi: "$269K", sf: "6.2K SF",
-      photoUrl: "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=1000&q=85&auto=format&fit=crop",
+      photoUrl: "/images/sample-deals/outback.webp",
       hero: "linear-gradient(135deg, #4a1f1f 0%, #6b2d2d 40%, #F87171 180%)",
       pricePerSf: "$774/SF", dscr: "1.08x", coc: "3.1%", debtYield: "7.9%",
       occupancy: "100%", yearBuilt: "2001", tenantCount: "1", walt: "5.0 yrs", submarket: "I-95 Corridor",
@@ -662,11 +662,19 @@ function HeroShowcase() {
             {cards.map((c, i) => {
               const vc = verdictColor[c.verdict];
               // Prefer real photo from workspace over curated fallback
-              // Prefer a name-matched photo from the user's Pro workspace
-              // (e.g. "Hales Corners Plaza" matches a property with that
-              // name). Fall back to positional match, then curated Unsplash.
-              const matched = matchPhotoByName(c.name);
-              const displayPhoto = matched || realPhotos[i]?.heroImageUrl || c.photoUrl;
+              // Priority order for which image to show on the card:
+              //   1. Explicit local asset (photoUrl starts with "/") - authored
+              //      image committed to /public. Always wins because the team
+              //      picked it intentionally.
+              //   2. Name-matched photo from the user's Pro workspace
+              //      (e.g. "Hales Corners Plaza" matches a property with that name).
+              //   3. Positional match from the Pro workspace feed.
+              //   4. Curated Unsplash fallback on the card definition.
+              const isLocalAsset = typeof c.photoUrl === "string" && c.photoUrl.startsWith("/");
+              const matched = isLocalAsset ? undefined : matchPhotoByName(c.name);
+              const displayPhoto = isLocalAsset
+                ? c.photoUrl
+                : (matched || realPhotos[i]?.heroImageUrl || c.photoUrl);
               return (
                 <button
                   key={i}
@@ -834,7 +842,12 @@ function HeroShowcase() {
       {openCard !== null && (
         <HeroCardModal
           card={cards[openCard]}
-          displayPhoto={matchPhotoByName(cards[openCard].name) || realPhotos[openCard]?.heroImageUrl || cards[openCard].photoUrl}
+          displayPhoto={(() => {
+            const p = cards[openCard].photoUrl;
+            // Local assets in /public always win (authored, intentional).
+            if (typeof p === "string" && p.startsWith("/")) return p;
+            return matchPhotoByName(cards[openCard].name) || realPhotos[openCard]?.heroImageUrl || p;
+          })()}
           verdictColor={verdictColor}
           onClose={() => setOpenCard(null)}
         />
