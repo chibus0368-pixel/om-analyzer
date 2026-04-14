@@ -360,25 +360,22 @@ function ModelLensBanner({
   return (
     <div ref={wrapRef} style={{
       position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between",
-      gap: 12, padding: "10px 18px", marginBottom: 20,
-      background: `${color}10`,
-      borderLeft: `4px solid ${color}`,
-      borderTop: `1px solid ${color}25`,
-      borderRight: `1px solid ${color}25`,
-      borderBottom: `1px solid ${color}25`,
+      gap: 12, padding: "9px 16px", marginBottom: 20,
+      background: "#F8FAFC",
+      border: "1px solid #E2E8F0",
       borderRadius: 10,
       fontFamily: "inherit",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-        <AnalysisTypeIcon type={current} size={18} color={color} />
+        <AnalysisTypeIcon type={current} size={16} color="#64748B" />
         <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#6B7280" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#64748B" }}>
             Scored with
           </span>
-          <span style={{ fontSize: 14, fontWeight: 800, color, letterSpacing: "-0.01em" }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A", letterSpacing: "-0.01em" }}>
             {label}
           </span>
-          <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#6B7280" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#64748B" }}>
             Model
           </span>
         </div>
@@ -391,8 +388,8 @@ function ModelLensBanner({
           style={{
             display: "inline-flex", alignItems: "center", gap: 6,
             padding: "5px 12px", borderRadius: 6,
-            background: "#FFFFFF", color,
-            border: `1px solid ${color}60`,
+            background: "#FFFFFF", color: "#374151",
+            border: "1px solid #D1D5DB",
             fontSize: 11, fontWeight: 700, cursor: busy ? "wait" : "pointer",
             fontFamily: "inherit", lineHeight: 1.4, textTransform: "uppercase", letterSpacing: "0.06em",
             opacity: busy ? 0.6 : 1, whiteSpace: "nowrap",
