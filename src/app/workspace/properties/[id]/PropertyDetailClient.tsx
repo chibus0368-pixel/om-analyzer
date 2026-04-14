@@ -11,7 +11,8 @@ import {
   getWorkspaceProperties,
 } from "@/lib/workspace/firestore";
 import type { Property, ProjectDocument, ExtractedField, ProjectOutput, Note, DocCategory } from "@/lib/workspace/types";
-import { DOC_CATEGORY_LABELS, ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS, ANALYSIS_TYPE_ICONS } from "@/lib/workspace/types";
+import { DOC_CATEGORY_LABELS, ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
+import { AnalysisTypeIcon } from "@/lib/workspace/AnalysisTypeIcon";
 import { generateUnderwritingXLSX, generateBriefDownload, generateStrategyLensXLSX } from "@/lib/workspace/generate-files";
 import { renderPropertyEmailHTML } from "@/lib/workspace/email-property-html";
 import { extractTextFromFiles } from "@/lib/workspace/file-reader";
@@ -331,7 +332,6 @@ function ModelLensBanner({
   const current = (currentType || "retail") as keyof typeof ANALYSIS_TYPE_LABELS;
   const color = ANALYSIS_TYPE_COLORS[current] || "#6B7280";
   const label = ANALYSIS_TYPE_LABELS[current] || "Retail";
-  const icon = ANALYSIS_TYPE_ICONS[current] || "📄";
 
   async function handleSelect(newType: keyof typeof ANALYSIS_TYPE_LABELS) {
     if (newType === current) { setOpen(false); return; }
@@ -370,7 +370,7 @@ function ModelLensBanner({
       fontFamily: "inherit",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-        <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0 }}>{icon}</span>
+        <AnalysisTypeIcon type={current} size={18} color={color} />
         <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
           <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#6B7280" }}>
             Scored with
@@ -416,7 +416,6 @@ function ModelLensBanner({
             {types.map(t => {
               const tColor = ANALYSIS_TYPE_COLORS[t];
               const tLabel = ANALYSIS_TYPE_LABELS[t];
-              const tIcon = ANALYSIS_TYPE_ICONS[t];
               const isCurrent = t === current;
               return (
                 <button
@@ -433,7 +432,7 @@ function ModelLensBanner({
                   onMouseEnter={e => { if (!isCurrent && !busy) (e.currentTarget as HTMLButtonElement).style.background = "#F9FAFB"; }}
                   onMouseLeave={e => { if (!isCurrent && !busy) (e.currentTarget as HTMLButtonElement).style.background = "#FFFFFF"; }}
                 >
-                  <span style={{ fontSize: 14, width: 18, textAlign: "center" }}>{tIcon}</span>
+                  <AnalysisTypeIcon type={t} size={16} color={tColor} />
                   <span style={{ width: 8, height: 8, borderRadius: "50%", background: tColor, flexShrink: 0 }} />
                   <span style={{ flex: 1, fontSize: 13, fontWeight: isCurrent ? 700 : 500, color: "#0F172A" }}>{tLabel}</span>
                   {isCurrent && (
@@ -515,6 +514,8 @@ function EmailPropertyButton({
       }
 
       // 2. Render HTML body
+      const origin = (typeof window !== "undefined" && window.location?.origin) || "https://dealsignals.app";
+      const propertyUrl = property?.id ? `${origin}/workspace/properties/${property.id}` : undefined;
       const html = renderPropertyEmailHTML({
         propertyName: property.propertyName,
         address: property.address1,
@@ -528,6 +529,8 @@ function EmailPropertyButton({
         senderName,
         senderEmail,
         note: note.trim(),
+        heroImageUrl: property?.heroImageUrl,
+        propertyUrl,
       });
 
       // 3. POST as multipart
@@ -1391,10 +1394,7 @@ export default function PropertyDetailClient() {
               const spCity = [sp.city, sp.state].filter(Boolean).join(", ");
               const spProcessing = (sp as any).processingStatus;
               const spIsProcessing = spProcessing && spProcessing !== "complete";
-              // Asset-type lens stripe: 4px colored left border so mixed-type
-              // boards are visually obvious from the sidebar at a glance.
               const spType = ((sp as any).analysisType as string) || activeWorkspace?.analysisType || "retail";
-              const spTypeColor = ANALYSIS_TYPE_COLORS[spType as keyof typeof ANALYSIS_TYPE_COLORS] || "#6B7280";
               const spTypeLabel = ANALYSIS_TYPE_LABELS[spType as keyof typeof ANALYSIS_TYPE_LABELS] || "Retail";
               return (
                 <div
@@ -1402,14 +1402,11 @@ export default function PropertyDetailClient() {
                   onClick={() => router.push(`/workspace/properties/${sp.id}`)}
                   title={`Scored with ${spTypeLabel} model`}
                   style={{
-                    display: "flex", alignItems: "center", gap: 10, padding: "8px 10px 8px 12px",
+                    display: "flex", alignItems: "center", gap: 10, padding: "8px 10px",
                     borderRadius: 8, cursor: "pointer",
                     background: isActive ? "rgba(132,204,22,0.06)" : "transparent",
                     border: "1px solid",
                     borderColor: isActive ? "rgba(132,204,22,0.15)" : "transparent",
-                    borderLeftWidth: 4,
-                    borderLeftStyle: "solid",
-                    borderLeftColor: spTypeColor,
                     transition: "all 0.12s",
                   }}
                   onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "#F9FAFB"; }}

@@ -5,7 +5,8 @@ import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
 import { getWorkspaceProperties, getPropertyExtractedFields } from "@/lib/workspace/firestore";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import type { Property, ExtractedField } from "@/lib/workspace/types";
-import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS, ANALYSIS_TYPE_ICONS } from "@/lib/workspace/types";
+import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
+import { AnalysisTypeIcon } from "@/lib/workspace/AnalysisTypeIcon";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -1347,7 +1348,6 @@ export default function ScoreboardPage() {
                         const lensType = ((pd.property as any).analysisType as string) || activeWorkspace?.analysisType || "retail";
                         const lensColor = ANALYSIS_TYPE_COLORS[lensType as keyof typeof ANALYSIS_TYPE_COLORS] || "#6B7280";
                         const lensLabel = ANALYSIS_TYPE_LABELS[lensType as keyof typeof ANALYSIS_TYPE_LABELS] || "Retail";
-                        const lensIcon = ANALYSIS_TYPE_ICONS[lensType as keyof typeof ANALYSIS_TYPE_ICONS] || "📄";
                         return (
                           <td style={{ padding: "16px 16px", textAlign: "center" }}>
                             <span
@@ -1360,7 +1360,7 @@ export default function ScoreboardPage() {
                                 fontSize: 11, fontWeight: 700, letterSpacing: "0.02em",
                                 whiteSpace: "nowrap",
                               }}>
-                              <span style={{ fontSize: 12, lineHeight: 1 }}>{lensIcon}</span>
+                              <AnalysisTypeIcon type={lensType} size={12} color={lensColor} />
                               <span>{lensLabel}</span>
                             </span>
                           </td>

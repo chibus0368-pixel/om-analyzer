@@ -6,7 +6,8 @@ import { getWorkspaceProperties } from "@/lib/workspace/firestore";
 import { WorkspaceProvider, useWorkspace } from "@/lib/workspace/workspace-context";
 import { useWorkspaceAuth } from "@/lib/workspace/auth";
 import type { Property, AnalysisType } from "@/lib/workspace/types";
-import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_ICONS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
+import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
+import { AnalysisTypeIcon } from "@/lib/workspace/AnalysisTypeIcon";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import Link from "next/link";
 
@@ -1554,7 +1555,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                     transition: "all 0.15s",
                   }}
                 >
-                  <span style={{ fontSize: 24 }}>{ANALYSIS_TYPE_ICONS[type]}</span>
+                  <AnalysisTypeIcon type={type} size={24} color={newWsType === type ? ANALYSIS_TYPE_COLORS[type] : "#585e70"} />
                   <span style={{
                     fontSize: 12, fontWeight: 600,
                     color: newWsType === type ? ANALYSIS_TYPE_COLORS[type] : "#585e70",

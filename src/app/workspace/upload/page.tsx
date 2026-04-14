@@ -10,7 +10,7 @@ import { useWorkspace } from "@/lib/workspace/workspace-context";
 import { extractTextFromFiles } from "@/lib/workspace/file-reader";
 import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
 import type { Property, DocCategory, AnalysisType } from "@/lib/workspace/types";
-import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS, ANALYSIS_TYPE_ICONS } from "@/lib/workspace/types";
+import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import UpgradeModal from "@/components/billing/UpgradeModal";
 import Link from "next/link";

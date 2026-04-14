@@ -4,12 +4,14 @@
  * using table-based layout and inline styles for broad client compatibility.
  *
  * This is NOT meant to be a pixel-perfect clone of PropertyDetailClient — it's
- * a high-fidelity digest: header, lens badge, Deal Score, key metrics, brief,
- * and a callout pointing at the attached Workbook + Brief.
+ * a high-fidelity digest: hero photo, header, lens badge, Deal Score,
+ * key metrics, brief (parsed JSON with strengths/concerns), and a callout
+ * pointing at the attached Workbook + Brief.
  */
 
 import type { ExtractedField, AnalysisType } from "./types";
-import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS, ANALYSIS_TYPE_ICONS } from "./types";
+import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "./types";
+import { analysisTypeIconSVG } from "./AnalysisTypeIcon";
 
 function esc(s: any): string {
   if (s === null || s === undefined) return "";
@@ -58,6 +60,47 @@ function gradeColor(grade: string): string {
   }
 }
 
+function gradeLabel(grade: string): string {
+  switch ((grade || "").toUpperCase()) {
+    case "A": return "STRONG BUY";
+    case "B": return "BUY";
+    case "C": return "CONSIDER";
+    case "D": return "CAUTION";
+    case "F": return "PASS";
+    default:  return "";
+  }
+}
+
+/**
+ * Brief may come in as:
+ *   - JSON string: { overview, strengths[], concerns[] }
+ *   - Plain text with paragraphs
+ *   - Empty
+ * Returns a normalized shape we can render cleanly.
+ */
+function parseBrief(brief?: string): {
+  overview: string;
+  strengths: string[];
+  concerns: string[];
+  fallbackParas: string[];
+} {
+  const out = { overview: "", strengths: [] as string[], concerns: [] as string[], fallbackParas: [] as string[] };
+  if (!brief || !brief.trim()) return out;
+  // Try JSON first
+  try {
+    const j = JSON.parse(brief);
+    if (j && typeof j === "object") {
+      if (typeof j.overview === "string") out.overview = j.overview.trim();
+      if (Array.isArray(j.strengths)) out.strengths = j.strengths.map((s: any) => String(s).trim()).filter(Boolean);
+      if (Array.isArray(j.concerns))  out.concerns  = j.concerns.map((s: any) => String(s).trim()).filter(Boolean);
+      if (out.overview || out.strengths.length || out.concerns.length) return out;
+    }
+  } catch { /* not JSON, fall through */ }
+  // Plain text fallback
+  out.fallbackParas = String(brief).split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+  return out;
+}
+
 interface RenderArgs {
   propertyName: string;
   address?: string;
@@ -71,17 +114,20 @@ interface RenderArgs {
   senderName?: string;
   senderEmail?: string;
   note?: string;
+  heroImageUrl?: string;
+  propertyUrl?: string;
 }
 
 export function renderPropertyEmailHTML(args: RenderArgs): string {
   const {
     propertyName, address, city, state, analysisType,
     dealScore, grade, fields, brief, senderName, senderEmail, note,
+    heroImageUrl, propertyUrl,
   } = args;
 
   const lensColor = ANALYSIS_TYPE_COLORS[analysisType] || "#6B7280";
   const lensLabel = ANALYSIS_TYPE_LABELS[analysisType] || "Retail";
-  const lensIcon = ANALYSIS_TYPE_ICONS[analysisType] || "📄";
+  const lensIconSvg = analysisTypeIconSVG(analysisType, 14, lensColor);
 
   const loc = [address, city, state].filter(Boolean).join(", ");
 
@@ -142,23 +188,41 @@ export function renderPropertyEmailHTML(args: RenderArgs): string {
   const dealScoreNum = typeof dealScore === "number" ? Math.round(dealScore) : null;
   const gradeStr = (grade || "").toUpperCase();
   const gc = gradeColor(gradeStr);
+  const verdict = gradeLabel(gradeStr);
 
   // ── Build HTML ──────────────────────────────────────────────────────
 
-  const metricsHtml = metrics.map(m => `
-    <td align="center" valign="top" style="padding: 14px 10px; border-right: 1px solid #E5E7EB; font-family: Arial, sans-serif;">
-      <div style="font-size: 11px; color: #6B7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px;">${esc(m.label)}</div>
-      <div style="font-size: 18px; color: #111827; font-weight: 700;">${esc(m.value)}</div>
+  // Hero photo — if we have a URL, use it. Otherwise use a subtle branded gradient.
+  const heroHtml = heroImageUrl
+    ? `
+      <tr>
+        <td style="padding: 0; line-height: 0; font-size: 0;">
+          <img src="${esc(heroImageUrl)}" alt="${esc(propertyName)}" width="620" style="display: block; width: 100%; max-width: 620px; height: auto; object-fit: cover;" />
+        </td>
+      </tr>
+    `
+    : `
+      <tr>
+        <td style="padding: 0; line-height: 0; font-size: 0;">
+          <div style="width: 100%; height: 8px; background: linear-gradient(90deg, ${lensColor} 0%, #84CC16 100%);">&nbsp;</div>
+        </td>
+      </tr>
+    `;
+
+  const metricsHtml = metrics.map((m, i) => `
+    <td align="center" valign="top" style="padding: 16px 8px; ${i < metrics.length - 1 ? "border-right: 1px solid #E5E7EB;" : ""} font-family: Arial, sans-serif;">
+      <div style="font-size: 10px; color: #6B7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">${esc(m.label)}</div>
+      <div style="font-size: 17px; color: #0F172A; font-weight: 700; line-height: 1.1;">${esc(m.value)}</div>
     </td>
   `).join("");
 
   const typeMetricsHtml = typeMetrics.length ? `
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 8px; background: ${lensColor}0A; border: 1px solid ${lensColor}33; border-radius: 8px;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 10px; background: ${lensColor}0F; border: 1px solid ${lensColor}33; border-radius: 10px;">
       <tr>
         ${typeMetrics.map((m, i) => `
-          <td align="center" valign="top" style="padding: 12px 10px; ${i < typeMetrics.length - 1 ? `border-right: 1px solid ${lensColor}22;` : ""} font-family: Arial, sans-serif;">
-            <div style="font-size: 10px; color: ${lensColor}; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px;">${esc(m.label)}</div>
-            <div style="font-size: 15px; color: #111827; font-weight: 600;">${esc(m.value)}</div>
+          <td align="center" valign="top" style="padding: 14px 10px; ${i < typeMetrics.length - 1 ? `border-right: 1px solid ${lensColor}33;` : ""} font-family: Arial, sans-serif;">
+            <div style="font-size: 10px; color: ${lensColor}; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;">${esc(m.label)}</div>
+            <div style="font-size: 15px; color: #0F172A; font-weight: 700;">${esc(m.value)}</div>
           </td>
         `).join("")}
       </tr>
@@ -166,17 +230,18 @@ export function renderPropertyEmailHTML(args: RenderArgs): string {
   ` : "";
 
   const scoreHtml = dealScoreNum !== null ? `
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 22px 0 18px;">
       <tr>
-        <td style="padding: 20px; background: linear-gradient(135deg, ${gc}12, ${gc}06); border: 2px solid ${gc}44; border-radius: 12px; font-family: Arial, sans-serif;">
+        <td style="padding: 22px 24px; background: linear-gradient(135deg, ${gc}14 0%, ${gc}05 100%); border: 1px solid ${gc}44; border-radius: 14px; font-family: Arial, sans-serif;">
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
-              <td valign="middle" style="width: 40%;">
-                <div style="font-size: 12px; color: #6B7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;">Deal Score</div>
-                <div style="font-size: 44px; color: ${gc}; font-weight: 800; line-height: 1;">${dealScoreNum}</div>
+              <td valign="middle" align="left">
+                <div style="font-size: 11px; color: #6B7280; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">Deal Score</div>
+                <div style="font-size: 48px; color: ${gc}; font-weight: 800; line-height: 1; letter-spacing: -0.02em;">${dealScoreNum}<span style="font-size: 20px; color: #9CA3AF; font-weight: 600;"> / 100</span></div>
               </td>
-              <td valign="middle" align="right" style="width: 60%;">
-                ${gradeStr ? `<div style="display: inline-block; padding: 10px 22px; background: ${gc}; color: #FFFFFF; border-radius: 10px; font-size: 26px; font-weight: 800; letter-spacing: 0.02em;">${esc(gradeStr)}</div>` : ""}
+              <td valign="middle" align="right">
+                ${verdict ? `<div style="display: inline-block; padding: 10px 18px; background: ${gc}; color: #FFFFFF; border-radius: 999px; font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;">${esc(verdict)}</div>` : ""}
+                ${gradeStr ? `<div style="margin-top: 8px; font-size: 11px; color: #6B7280; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">Grade <span style="color: ${gc}; font-weight: 800;">${esc(gradeStr)}</span></div>` : ""}
               </td>
             </tr>
           </table>
@@ -186,54 +251,116 @@ export function renderPropertyEmailHTML(args: RenderArgs): string {
   ` : "";
 
   const lensBannerHtml = `
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 16px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 18px 0 14px;">
       <tr>
-        <td style="padding: 10px 16px; background: ${lensColor}14; border-left: 4px solid ${lensColor}; border-radius: 6px; font-family: Arial, sans-serif;">
-          <span style="font-size: 14px; margin-right: 8px;">${lensIcon}</span>
-          <span style="font-size: 12px; color: ${lensColor}; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;">Scored with ${esc(lensLabel)} model</span>
+        <td style="padding: 10px 16px; background: ${lensColor}12; border-left: 3px solid ${lensColor}; border-radius: 6px; font-family: Arial, sans-serif;">
+          <span style="vertical-align: middle; margin-right: 8px;">${lensIconSvg}</span>
+          <span style="vertical-align: middle; font-size: 11px; color: ${lensColor}; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;">Scored with ${esc(lensLabel)} model</span>
         </td>
       </tr>
     </table>
   `;
 
   const noteHtml = note && note.trim() ? `
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 18px 0;">
       <tr>
-        <td style="padding: 16px 20px; background: #FEF3C7; border-left: 4px solid #F59E0B; border-radius: 6px; font-family: Arial, sans-serif;">
-          <div style="font-size: 11px; color: #92400E; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">Message from ${esc(senderName || senderEmail || "sender")}</div>
-          <div style="font-size: 14px; color: #1F2937; line-height: 1.55; white-space: pre-wrap;">${esc(note)}</div>
+        <td style="padding: 16px 20px; background: #FEF3C7; border-left: 4px solid #F59E0B; border-radius: 8px; font-family: Arial, sans-serif;">
+          <div style="font-size: 11px; color: #92400E; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;">Note from ${esc(senderName || senderEmail || "sender")}</div>
+          <div style="font-size: 14px; color: #1F2937; line-height: 1.6; white-space: pre-wrap;">${esc(note)}</div>
         </td>
       </tr>
     </table>
   ` : "";
 
-  // Brief body is plain text that may contain paragraph breaks on double-newlines.
-  const briefHtml = brief ? (() => {
-    const paras = String(brief).split(/\n\s*\n/).filter(p => p.trim());
-    return `
-      <table width="100%" cellpadding="0" cellspacing="0" style="margin: 24px 0 8px;">
-        <tr><td style="font-family: Arial, sans-serif;">
-          <h2 style="font-size: 18px; color: #111827; font-weight: 700; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #E5E7EB;">First Pass Brief</h2>
-          ${paras.map(p => `<p style="font-size: 14px; color: #374151; line-height: 1.65; margin: 0 0 12px;">${esc(p)}</p>`).join("")}
-        </td></tr>
-      </table>
-    `;
-  })() : "";
+  // Parse brief (supports JSON and plain-text fallback)
+  const parsed = parseBrief(brief);
+  const hasBrief =
+    parsed.overview || parsed.strengths.length || parsed.concerns.length || parsed.fallbackParas.length;
+
+  const briefHtml = hasBrief ? `
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 26px 0 8px;">
+      <tr><td style="font-family: Arial, sans-serif;">
+        <div style="font-size: 11px; color: #9CA3AF; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">First Pass Brief</div>
+        <h2 style="font-size: 20px; color: #0F172A; font-weight: 800; margin: 0 0 14px; letter-spacing: -0.01em;">Analyst Summary</h2>
+
+        ${parsed.overview ? `
+          <p style="font-size: 14px; color: #374151; line-height: 1.7; margin: 0 0 16px;">${esc(parsed.overview)}</p>
+        ` : ""}
+
+        ${parsed.fallbackParas.length ? parsed.fallbackParas.map(p =>
+          `<p style="font-size: 14px; color: #374151; line-height: 1.7; margin: 0 0 12px;">${esc(p)}</p>`
+        ).join("") : ""}
+
+        ${parsed.strengths.length ? `
+          <div style="margin-top: 18px; padding: 14px 16px; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 10px;">
+            <div style="font-size: 11px; color: #15803D; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;">Key Strengths</div>
+            <table cellpadding="0" cellspacing="0" style="width: 100%;">
+              ${parsed.strengths.map(s => `
+                <tr>
+                  <td valign="top" style="width: 18px; padding: 2px 8px 8px 0; color: #16A34A; font-weight: 800; font-size: 14px;">&#10003;</td>
+                  <td valign="top" style="padding: 2px 0 8px 0; font-size: 13.5px; color: #14532D; line-height: 1.55;">${esc(s)}</td>
+                </tr>
+              `).join("")}
+            </table>
+          </div>
+        ` : ""}
+
+        ${parsed.concerns.length ? `
+          <div style="margin-top: 12px; padding: 14px 16px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px;">
+            <div style="font-size: 11px; color: #B91C1C; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;">Primary Concerns</div>
+            <table cellpadding="0" cellspacing="0" style="width: 100%;">
+              ${parsed.concerns.map(c => `
+                <tr>
+                  <td valign="top" style="width: 18px; padding: 2px 8px 8px 0; color: #DC2626; font-weight: 800; font-size: 14px;">&#9888;</td>
+                  <td valign="top" style="padding: 2px 0 8px 0; font-size: 13.5px; color: #7F1D1D; line-height: 1.55;">${esc(c)}</td>
+                </tr>
+              `).join("")}
+            </table>
+          </div>
+        ` : ""}
+      </td></tr>
+    </table>
+  ` : "";
 
   const attachmentsCallout = `
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 24px 0 8px;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 22px 0 8px;">
       <tr>
-        <td style="padding: 16px 20px; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; font-family: Arial, sans-serif;">
-          <div style="font-size: 13px; color: #166534; font-weight: 700; margin-bottom: 6px;">📎 Attached: Full deal package</div>
-          <div style="font-size: 13px; color: #14532D; line-height: 1.55;">This email includes the <strong>Underwriting Workbook</strong> (XLSX scenario model with all extracted fields, sensitivity, and scoring) and the <strong>First Pass Brief</strong> (DOC) for offline review.</div>
+        <td style="padding: 16px 20px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; font-family: Arial, sans-serif;">
+          <div style="font-size: 12px; color: #0F172A; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;">Attached to this email</div>
+          <table cellpadding="0" cellspacing="0" style="width: 100%; margin-top: 6px;">
+            <tr>
+              <td valign="top" style="padding: 4px 0;">
+                <span style="display: inline-block; padding: 3px 8px; background: #DCFCE7; color: #166534; font-size: 11px; font-weight: 800; border-radius: 4px; letter-spacing: 0.04em; margin-right: 8px;">XLSX</span>
+                <span style="font-size: 13px; color: #1F2937; font-weight: 600;">Underwriting Workbook</span>
+                <span style="font-size: 12px; color: #6B7280;"> &mdash; scenario model, sensitivity, and scoring</span>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top" style="padding: 4px 0;">
+                <span style="display: inline-block; padding: 3px 8px; background: #DBEAFE; color: #1E40AF; font-size: 11px; font-weight: 800; border-radius: 4px; letter-spacing: 0.04em; margin-right: 8px;">DOC</span>
+                <span style="font-size: 13px; color: #1F2937; font-weight: 600;">First Pass Brief</span>
+                <span style="font-size: 12px; color: #6B7280;"> &mdash; narrative memo for offline review</span>
+              </td>
+            </tr>
+          </table>
         </td>
       </tr>
     </table>
   `;
 
+  const ctaHtml = propertyUrl ? `
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 18px 0 4px;">
+      <tr>
+        <td align="center">
+          <a href="${esc(propertyUrl)}" style="display: inline-block; padding: 12px 26px; background: #0F172A; color: #FFFFFF; text-decoration: none; border-radius: 999px; font-size: 13px; font-weight: 700; font-family: Arial, sans-serif; letter-spacing: 0.02em;">Open in Deal Signals &rarr;</a>
+        </td>
+      </tr>
+    </table>
+  ` : "";
+
   const senderLine = senderName || senderEmail ? `
-    <p style="font-size: 12px; color: #6B7280; font-family: Arial, sans-serif; margin: 16px 0 4px;">
-      Shared by ${esc(senderName || senderEmail)}${senderName && senderEmail ? ` (${esc(senderEmail)})` : ""} via Deal Signals.
+    <p style="font-size: 12px; color: #6B7280; font-family: Arial, sans-serif; margin: 16px 0 4px; line-height: 1.5;">
+      Shared by <strong style="color: #374151;">${esc(senderName || senderEmail)}</strong>${senderName && senderEmail ? ` <span style="color: #9CA3AF;">&middot; ${esc(senderEmail)}</span>` : ""}
     </p>
   ` : "";
 
@@ -244,24 +371,35 @@ export function renderPropertyEmailHTML(args: RenderArgs): string {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${esc(propertyName)}</title>
 </head>
-<body style="margin: 0; padding: 0; background: #F3F4F6; font-family: Arial, Helvetica, sans-serif; color: #111827;">
+<body style="margin: 0; padding: 0; background: #F3F4F6; font-family: Arial, Helvetica, sans-serif; color: #0F172A;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background: #F3F4F6; padding: 24px 0;">
     <tr>
       <td align="center">
-        <table width="620" cellpadding="0" cellspacing="0" style="max-width: 620px; background: #FFFFFF; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden;">
+        <table width="620" cellpadding="0" cellspacing="0" style="max-width: 620px; width: 100%; background: #FFFFFF; border-radius: 14px; box-shadow: 0 2px 10px rgba(15,23,42,0.06); overflow: hidden;">
           <!-- Brand header -->
           <tr>
-            <td style="padding: 18px 24px; background: #06080F; color: #FFFFFF; font-family: Arial, sans-serif;">
-              <div style="font-size: 16px; font-weight: 800; letter-spacing: 0.02em;">Deal Signals</div>
-              <div style="font-size: 11px; color: #9CA3AF; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 2px;">Commercial Real Estate Deal Analysis</div>
+            <td style="padding: 16px 24px; background: #06080F; color: #FFFFFF; font-family: Arial, sans-serif;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="left" valign="middle">
+                    <span style="font-size: 15px; font-weight: 800; letter-spacing: 0.02em; color: #FFFFFF;">Deal Signals</span>
+                  </td>
+                  <td align="right" valign="middle">
+                    <span style="font-size: 10px; color: #9CA3AF; letter-spacing: 0.1em; text-transform: uppercase;">CRE Deal Analysis</span>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
+          <!-- Hero photo -->
+          ${heroHtml}
+
           <!-- Property header -->
           <tr>
-            <td style="padding: 24px 24px 8px; font-family: Arial, sans-serif;">
-              <h1 style="font-size: 24px; color: #111827; font-weight: 800; margin: 0 0 6px;">${esc(propertyName)}</h1>
-              ${loc ? `<div style="font-size: 14px; color: #6B7280;">${esc(loc)}</div>` : ""}
+            <td style="padding: 22px 24px 0; font-family: Arial, sans-serif;">
+              <h1 style="font-size: 24px; color: #0F172A; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.01em; line-height: 1.25;">${esc(propertyName)}</h1>
+              ${loc ? `<div style="font-size: 13px; color: #6B7280; font-weight: 500;">${esc(loc)}</div>` : ""}
             </td>
           </tr>
 
@@ -277,7 +415,7 @@ export function renderPropertyEmailHTML(args: RenderArgs): string {
           <!-- Headline metrics strip -->
           <tr>
             <td style="padding: 0 24px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #E5E7EB; border-radius: 10px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #E5E7EB; border-radius: 12px;">
                 <tr>${metricsHtml}</tr>
               </table>
               ${typeMetricsHtml}
@@ -290,12 +428,17 @@ export function renderPropertyEmailHTML(args: RenderArgs): string {
           <!-- Attachments callout -->
           <tr><td style="padding: 0 24px;">${attachmentsCallout}</td></tr>
 
+          <!-- CTA -->
+          ${ctaHtml ? `<tr><td style="padding: 0 24px;">${ctaHtml}</td></tr>` : ""}
+
           <!-- Sender line + footer -->
           <tr>
             <td style="padding: 8px 24px 24px;">
               ${senderLine}
-              <p style="font-size: 11px; color: #9CA3AF; font-family: Arial, sans-serif; margin: 12px 0 0;">
+              <p style="font-size: 11px; color: #9CA3AF; font-family: Arial, sans-serif; margin: 14px 0 0; line-height: 1.55; border-top: 1px solid #F1F5F9; padding-top: 12px;">
                 Deal Signals is a commercial real estate deal analysis tool. Visit <a href="https://dealsignals.app" style="color: #2563EB; text-decoration: none;">dealsignals.app</a> to learn more.
+                <br />
+                <span style="color: #CBD5E1;">This is a first-pass screen, not investment advice.</span>
               </p>
             </td>
           </tr>

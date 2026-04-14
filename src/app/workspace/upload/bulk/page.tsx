@@ -9,7 +9,7 @@ import { createProperty, createDocument } from "@/lib/workspace/firestore";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import { extractTextFromFiles } from "@/lib/workspace/file-reader";
 import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
-import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS, ANALYSIS_TYPE_ICONS } from "@/lib/workspace/types";
+import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
 
 const ACCEPTED_EXT = ".pdf,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.webp";
 const MAX_PROPERTIES = 10;

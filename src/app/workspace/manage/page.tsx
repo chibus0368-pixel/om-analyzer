@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import type { AnalysisType } from "@/lib/workspace/types";
-import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS, ANALYSIS_TYPE_ICONS } from "@/lib/workspace/types";
+import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
+import { AnalysisTypeIcon } from "@/lib/workspace/AnalysisTypeIcon";
 
 export default function ManageWorkspacesPage() {
   const router = useRouter();
@@ -159,7 +160,7 @@ export default function ManageWorkspacesPage() {
                   transition: "all 0.15s",
                 }}
               >
-                <span style={{ fontSize: 22 }}>{ANALYSIS_TYPE_ICONS[type]}</span>
+                <AnalysisTypeIcon type={type} size={22} color={newType === type ? ANALYSIS_TYPE_COLORS[type] : "#585e70"} />
                 <span style={{
                   fontSize: 12, fontWeight: 600,
                   color: newType === type ? ANALYSIS_TYPE_COLORS[type] : "#585e70",
