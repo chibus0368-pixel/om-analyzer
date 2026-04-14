@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { Timestamp } from 'firebase-admin/firestore';
+import { getAdminDb } from '@/lib/firebase-admin';
 import { sendEmail } from '@/lib/email';
 
 interface ContactPayload {
@@ -61,19 +61,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                       'unknown';
     const userAgent = request.headers.get('user-agent') || 'unknown';
 
-    // Store message in Firestore
-    const messagesRef = collection(db, 'contact_messages');
-    const messageDoc: ContactMessageDoc = {
-      name: sanitizedName,
-      email: sanitizedEmail,
-      message: sanitizedMessage,
-      createdAt: Timestamp.now(),
-      ipAddress,
-      userAgent,
-      status: 'new',
-    };
-
-    const docRef = await addDoc(messagesRef, messageDoc);
+    // Store message in Firestore (Admin SDK - bypasses security rules).
+    // The Firestore write is best-effort: if it fails for any reason (missing
+    // service account key, network blip, etc.) we still want the email to go
+    // out. The email IS the source of truth - Firestore is just an audit log.
+    let messageId = 'pending';
+    try {
+      const messageDoc: ContactMessageDoc = {
+        name: sanitizedName,
+        email: sanitizedEmail,
+        message: sanitizedMessage,
+        createdAt: Timestamp.now(),
+        ipAddress,
+        userAgent,
+        status: 'new',
+      };
+      const docRef = await getAdminDb().collection('contact_messages').add(messageDoc);
+      messageId = docRef.id;
+    } catch (firestoreErr) {
+      console.error('[contact] Firestore write failed (continuing with email):', firestoreErr);
+    }
 
     // Send notification email to admin (support@dealsignals.app by default).
     // Reply-To is set to the submitter's address so hitting "Reply" in Gmail
@@ -83,10 +90,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       sanitizedName,
       sanitizedEmail,
       sanitizedMessage,
-      docRef.id
+      messageId
     );
 
-    await sendEmail(
+    const adminResult = await sendEmail(
       adminEmail,
       `New Contact Form Submission from ${sanitizedName}`,
       adminNotificationHtml,
@@ -96,10 +103,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       { replyTo: sanitizedEmail }
     );
 
+    // If the admin email failed, surface that as a 500 so the user knows to
+    // retry (otherwise we'd silently lose their message).
+    if (!adminResult.success) {
+      console.error('[contact] Admin notification failed:', adminResult.error);
+      return NextResponse.json(
+        { success: false, error: 'Unable to deliver your message right now. Please email support@dealsignals.app directly.' },
+        { status: 500 }
+      );
+    }
+
     // Send confirmation to user. Reply-To points to support@ so if the
     // customer replies to the confirmation, it lands in the human mailbox.
+    // This is best-effort - if it fails, the admin already has the message.
     const userConfirmationHtml = generateUserConfirmationEmail(sanitizedName);
-    await sendEmail(
+    const userResult = await sendEmail(
       sanitizedEmail,
       'We Received Your Message - Deal Signals',
       userConfirmationHtml,
@@ -108,12 +126,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       undefined,
       { replyTo: adminEmail }
     );
+    if (!userResult.success) {
+      console.warn('[contact] User confirmation failed (non-fatal):', userResult.error);
+    }
 
     return NextResponse.json(
       {
         success: true,
         message: 'Thank you for your message. We will get back to you soon!',
-        messageId: docRef.id,
+        messageId,
       },
       { status: 201 }
     );
