@@ -95,8 +95,9 @@ function formulaRow(ws: any, r: number, label: string, formula: string, numFmt: 
 export async function generateUnderwritingXLSX(
   propertyName: string,
   fields: ExtractedField[],
-  analysisType: AnalysisType = "retail"
-): Promise<void> {
+  analysisType: AnalysisType = "retail",
+  options?: { returnBlob?: boolean }
+): Promise<void | { blob: Blob; filename: string }> {
   const exceljs = await loadExcelJS();
   const wb = new exceljs.Workbook();
   const g = (group: string, name: string) => getField(fields, group, name);
@@ -683,12 +684,15 @@ export async function generateUnderwritingXLSX(
     dataRow(wsLand, lr++, "Zoning", g("land_zoning", "current_zoning") || g("land_addons", "zoning") || "");
   }
 
-  // Download
+  // Download (or return blob for email attachment)
   const safeName = propertyName.replace(/[^a-zA-Z0-9 -]/g, "").replace(/\s+/g, "-");
   const suffix = analysisType !== "retail" ? `-${typeLabel}` : "";
   const filename = `${safeName}${suffix}-Underwriting.xlsx`;
   const buf = await wb.xlsx.writeBuffer();
   const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  if (options?.returnBlob) {
+    return { blob, filename };
+  }
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -1067,8 +1071,9 @@ export function generateBriefDownload(
   propertyName: string,
   brief: string,
   fields: ExtractedField[],
-  analysisType: AnalysisType = "retail"
-): void {
+  analysisType: AnalysisType = "retail",
+  options?: { returnBlob?: boolean }
+): void | { blob: Blob; filename: string } {
   const g = (group: string, name: string) => getField(fields, group, name);
   const typeLabel = analysisType === "retail" ? "Retail" : analysisType === "industrial" ? "Industrial" : analysisType === "office" ? "Office" : "Land";
 
@@ -1501,12 +1506,16 @@ ${nextStepsHtml}
 
   // Download as .doc (HTML format that Word opens natively)
   const blob = new Blob([html], { type: "application/msword" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
   const safeName = propertyName.replace(/[^a-zA-Z0-9 -]/g, "").replace(/\s+/g, "-");
   const suffix = analysisType !== "retail" ? `-${typeLabel}` : "";
+  const filename = `${safeName}${suffix}-First-Pass-Brief.doc`;
+  if (options?.returnBlob) {
+    return { blob, filename };
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
   a.href = url;
-  a.download = `${safeName}${suffix}-First-Pass-Brief.doc`;
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
 }

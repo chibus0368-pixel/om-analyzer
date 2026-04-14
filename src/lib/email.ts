@@ -62,6 +62,13 @@ const PHYSICAL_ADDRESS = 'Mequon, Wisconsin';
  * Send email via Resend API
  * CAN-SPAM compliant with unsubscribe link and physical address
  */
+export interface EmailAttachment {
+  filename: string;
+  /** base64-encoded content OR Node.js Buffer. Resend accepts either. */
+  content: string | Buffer;
+  contentType?: string;
+}
+
 export async function sendEmail(
   to: string,
   subject: string,
@@ -69,7 +76,7 @@ export async function sendEmail(
   text?: string,
   from: string = DEFAULT_FROM,
   manageToken?: string,
-  options?: { bcc?: string | string[]; replyTo?: string | string[] }
+  options?: { bcc?: string | string[]; replyTo?: string | string[]; attachments?: EmailAttachment[] }
 ): Promise<EmailResult> {
   try {
     // Validate email format
@@ -110,6 +117,15 @@ export async function sendEmail(
     // Add Reply-To if provided. Resend expects `reply_to` in its JSON API.
     if (options?.replyTo) {
       emailPayload.reply_to = options.replyTo;
+    }
+
+    // Add attachments if provided.
+    if (options?.attachments && options.attachments.length > 0) {
+      emailPayload.attachments = options.attachments.map(a => ({
+        filename: a.filename,
+        content: a.content,
+        ...(a.contentType ? { content_type: a.contentType } : {}),
+      }));
     }
 
     const response = await getResend().emails.send(emailPayload);

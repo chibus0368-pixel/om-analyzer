@@ -5,7 +5,7 @@ import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
 import { getWorkspaceProperties, getPropertyExtractedFields } from "@/lib/workspace/firestore";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import type { Property, ExtractedField } from "@/lib/workspace/types";
-import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
+import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS, ANALYSIS_TYPE_ICONS } from "@/lib/workspace/types";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -623,7 +623,7 @@ async function exportToXlsx(propertyData: PropertyData[], workspaceName: string)
 // ══════════════════════════════════════════════════════════════
 // MAIN PAGE
 // ══════════════════════════════════════════════════════════════
-type SortKey = "score" | "name" | "price" | "cap_rate" | "noi" | "gla" | "value_add" | "signal";
+type SortKey = "score" | "name" | "price" | "cap_rate" | "noi" | "gla" | "value_add" | "signal" | "lens";
 type SortDir = "asc" | "desc";
 type ViewMode = "leaderboard" | "comparison";
 
@@ -812,6 +812,12 @@ export default function ScoreboardPage() {
         case "noi": cmp = (Number(a.values.get("noi")) || 0) - (Number(b.values.get("noi")) || 0); break;
         case "gla": cmp = (Number(a.values.get("building_sf")) || 0) - (Number(b.values.get("building_sf")) || 0); break;
         case "value_add": cmp = ((a.property as any).valueAddScore || 0) - ((b.property as any).valueAddScore || 0); break;
+        case "lens": {
+          const la = String((a.property as any).analysisType || activeWorkspace?.analysisType || "retail");
+          const lb = String((b.property as any).analysisType || activeWorkspace?.analysisType || "retail");
+          cmp = la.localeCompare(lb);
+          break;
+        }
         case "signal": {
           const sa = (a.property as any).scoreTotal || 0;
           const sb = (b.property as any).scoreTotal || 0;
@@ -1213,6 +1219,7 @@ export default function ScoreboardPage() {
                 <tr style={{ background: "#fff", borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
                   {([
                     { key: "name" as SortKey, label: "Property", align: "left" as const },
+                    { key: "lens" as SortKey, label: "Lens", align: "center" as const },
                     { key: "score" as SortKey, label: "Deal Score", align: "center" as const },
                     { key: "price" as SortKey, label: "Price", align: "right" as const },
                     { key: "cap_rate" as SortKey, label: "Cap Rate", align: "right" as const },
@@ -1334,6 +1341,31 @@ export default function ScoreboardPage() {
                           </div>
                         </div>
                       </td>
+
+                      {/* Lens (scoring model) chip */}
+                      {(() => {
+                        const lensType = ((pd.property as any).analysisType as string) || activeWorkspace?.analysisType || "retail";
+                        const lensColor = ANALYSIS_TYPE_COLORS[lensType as keyof typeof ANALYSIS_TYPE_COLORS] || "#6B7280";
+                        const lensLabel = ANALYSIS_TYPE_LABELS[lensType as keyof typeof ANALYSIS_TYPE_LABELS] || "Retail";
+                        const lensIcon = ANALYSIS_TYPE_ICONS[lensType as keyof typeof ANALYSIS_TYPE_ICONS] || "📄";
+                        return (
+                          <td style={{ padding: "16px 16px", textAlign: "center" }}>
+                            <span
+                              title={`Scored with ${lensLabel} model`}
+                              style={{
+                                display: "inline-flex", alignItems: "center", gap: 6,
+                                padding: "4px 10px", borderRadius: 999,
+                                background: `${lensColor}14`, color: lensColor,
+                                border: `1px solid ${lensColor}33`,
+                                fontSize: 11, fontWeight: 700, letterSpacing: "0.02em",
+                                whiteSpace: "nowrap",
+                              }}>
+                              <span style={{ fontSize: 12, lineHeight: 1 }}>{lensIcon}</span>
+                              <span>{lensLabel}</span>
+                            </span>
+                          </td>
+                        );
+                      })()}
 
                       {/* Deal Score with circular badge */}
                       <td style={{

@@ -11,8 +11,9 @@ import {
   getWorkspaceProperties,
 } from "@/lib/workspace/firestore";
 import type { Property, ProjectDocument, ExtractedField, ProjectOutput, Note, DocCategory } from "@/lib/workspace/types";
-import { DOC_CATEGORY_LABELS, ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
+import { DOC_CATEGORY_LABELS, ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS, ANALYSIS_TYPE_ICONS } from "@/lib/workspace/types";
 import { generateUnderwritingXLSX, generateBriefDownload, generateStrategyLensXLSX } from "@/lib/workspace/generate-files";
+import { renderPropertyEmailHTML } from "@/lib/workspace/email-property-html";
 import { extractTextFromFiles } from "@/lib/workspace/file-reader";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import Link from "next/link";
@@ -173,6 +174,528 @@ function MetricTooltip({ text }: { text: string }) {
         </span>
       )}
     </span>
+  );
+}
+
+/* ── Asset type pill w/ dropdown ─────────────────────── */
+/* Lets the user override auto-classified asset type. Triggers
+   re-score immediately (no re-parse - uses existing extracted
+   fields). Sets typeManuallySet:true so re-parse/classify can't
+   silently overwrite. */
+function AssetTypePill({
+  currentType, propertyId, onChanged, userId,
+}: {
+  currentType: string;
+  propertyId: string;
+  onChanged: (newType: string) => Promise<void> | void;
+  userId: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDocClick(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [open]);
+
+  const current = (currentType || "retail") as keyof typeof ANALYSIS_TYPE_LABELS;
+  const color = ANALYSIS_TYPE_COLORS[current] || "#6B7280";
+  const label = ANALYSIS_TYPE_LABELS[current] || "Retail";
+
+  async function handleSelect(newType: keyof typeof ANALYSIS_TYPE_LABELS) {
+    if (newType === current) { setOpen(false); return; }
+    setBusy(true);
+    try {
+      await updateProperty(propertyId, { analysisType: newType, typeManuallySet: true } as any);
+      try {
+        await fetch("/api/workspace/score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ propertyId, userId, analysisType: newType }),
+        });
+      } catch { /* non-blocking */ }
+      await onChanged(newType);
+      setOpen(false);
+    } catch (err: any) {
+      console.error("[asset-type-pill] update failed:", err);
+      alert("Failed to update asset type: " + (err?.message || "unknown"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const types: (keyof typeof ANALYSIS_TYPE_LABELS)[] = ["retail", "industrial", "office", "multifamily", "land"];
+
+  return (
+    <div ref={wrapRef} style={{ position: "relative", display: "inline-block" }}>
+      <button
+        onClick={() => setOpen(v => !v)}
+        disabled={busy}
+        title="Click to change asset type (re-scores immediately)"
+        style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "3px 10px", borderRadius: 6,
+          background: `${color}15`, color, border: `1px solid ${color}40`,
+          fontSize: 11, fontWeight: 600, cursor: busy ? "wait" : "pointer",
+          fontFamily: "inherit", lineHeight: 1.4,
+          opacity: busy ? 0.6 : 1,
+        }}>
+        <span>{label}</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 50,
+          minWidth: 200, background: "#FFFFFF",
+          border: "1px solid rgba(0,0,0,0.08)", borderRadius: 8,
+          boxShadow: "0 6px 20px rgba(0,0,0,0.10)", overflow: "hidden",
+        }}>
+          <div style={{
+            fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em",
+            color: "#6B7280", padding: "10px 12px 6px",
+          }}>Change asset type</div>
+          {types.map(t => {
+            const tColor = ANALYSIS_TYPE_COLORS[t];
+            const tLabel = ANALYSIS_TYPE_LABELS[t];
+            const isCurrent = t === current;
+            return (
+              <button
+                key={t}
+                onClick={() => handleSelect(t)}
+                disabled={busy}
+                style={{
+                  display: "flex", alignItems: "center", width: "100%",
+                  padding: "8px 12px", gap: 10,
+                  background: isCurrent ? "#F3F4F6" : "#FFFFFF", border: "none",
+                  cursor: busy ? "wait" : "pointer", fontFamily: "inherit",
+                  textAlign: "left",
+                }}
+                onMouseEnter={e => { if (!isCurrent && !busy) (e.currentTarget as HTMLButtonElement).style.background = "#F9FAFB"; }}
+                onMouseLeave={e => { if (!isCurrent && !busy) (e.currentTarget as HTMLButtonElement).style.background = "#FFFFFF"; }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: tColor, flexShrink: 0 }} />
+                <span style={{ fontSize: 12, color: "#0F172A", fontWeight: isCurrent ? 600 : 500 }}>{tLabel}</span>
+                {isCurrent && (
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: "auto" }}>
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
+          <div style={{
+            fontSize: 10, color: "#9CA3AF", padding: "8px 12px 10px",
+            borderTop: "1px solid #F3F4F6", lineHeight: 1.4,
+          }}>
+            Re-scores immediately with the selected model.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Model Lens Banner ───────────────────────────────────
+   Primary affordance that tells the user which scoring
+   model produced this property's score. Re-uses the pill's
+   re-score logic via a "Change model" dropdown. Rendered
+   full-width at the top of the property content area so the
+   lens is unmissable on mixed-type DealBoards. */
+function ModelLensBanner({
+  currentType, propertyId, onChanged, userId,
+}: {
+  currentType: string;
+  propertyId: string;
+  onChanged: (newType: string) => Promise<void> | void;
+  userId: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDocClick(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [open]);
+
+  const current = (currentType || "retail") as keyof typeof ANALYSIS_TYPE_LABELS;
+  const color = ANALYSIS_TYPE_COLORS[current] || "#6B7280";
+  const label = ANALYSIS_TYPE_LABELS[current] || "Retail";
+  const icon = ANALYSIS_TYPE_ICONS[current] || "📄";
+
+  async function handleSelect(newType: keyof typeof ANALYSIS_TYPE_LABELS) {
+    if (newType === current) { setOpen(false); return; }
+    setBusy(true);
+    try {
+      await updateProperty(propertyId, { analysisType: newType, typeManuallySet: true } as any);
+      try {
+        await fetch("/api/workspace/score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ propertyId, userId, analysisType: newType }),
+        });
+      } catch { /* non-blocking */ }
+      await onChanged(newType);
+      setOpen(false);
+    } catch (err: any) {
+      console.error("[model-lens-banner] update failed:", err);
+      alert("Failed to update asset type: " + (err?.message || "unknown"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const types: (keyof typeof ANALYSIS_TYPE_LABELS)[] = ["retail", "industrial", "office", "multifamily", "land"];
+
+  return (
+    <div ref={wrapRef} style={{
+      position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between",
+      gap: 12, padding: "10px 18px", marginBottom: 20,
+      background: `${color}10`,
+      borderLeft: `4px solid ${color}`,
+      borderTop: `1px solid ${color}25`,
+      borderRight: `1px solid ${color}25`,
+      borderBottom: `1px solid ${color}25`,
+      borderRadius: 10,
+      fontFamily: "inherit",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+        <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0 }}>{icon}</span>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#6B7280" }}>
+            Scored with
+          </span>
+          <span style={{ fontSize: 14, fontWeight: 800, color, letterSpacing: "-0.01em" }}>
+            {label}
+          </span>
+          <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#6B7280" }}>
+            Model
+          </span>
+        </div>
+      </div>
+      <div style={{ position: "relative" }}>
+        <button
+          onClick={() => setOpen(v => !v)}
+          disabled={busy}
+          title="Change the scoring model applied to this deal"
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "5px 12px", borderRadius: 6,
+            background: "#FFFFFF", color,
+            border: `1px solid ${color}60`,
+            fontSize: 11, fontWeight: 700, cursor: busy ? "wait" : "pointer",
+            fontFamily: "inherit", lineHeight: 1.4, textTransform: "uppercase", letterSpacing: "0.06em",
+            opacity: busy ? 0.6 : 1, whiteSpace: "nowrap",
+          }}>
+          <span>Change model</span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+        {open && (
+          <div style={{
+            position: "absolute", top: "calc(100% + 4px)", right: 0, zIndex: 50,
+            minWidth: 240, background: "#FFFFFF",
+            border: "1px solid rgba(0,0,0,0.08)", borderRadius: 8,
+            boxShadow: "0 6px 20px rgba(0,0,0,0.10)", overflow: "hidden",
+          }}>
+            <div style={{
+              fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em",
+              color: "#6B7280", padding: "10px 12px 6px",
+            }}>Change scoring model</div>
+            {types.map(t => {
+              const tColor = ANALYSIS_TYPE_COLORS[t];
+              const tLabel = ANALYSIS_TYPE_LABELS[t];
+              const tIcon = ANALYSIS_TYPE_ICONS[t];
+              const isCurrent = t === current;
+              return (
+                <button
+                  key={t}
+                  onClick={() => handleSelect(t)}
+                  disabled={busy}
+                  style={{
+                    display: "flex", alignItems: "center", width: "100%",
+                    padding: "8px 12px", gap: 10,
+                    background: isCurrent ? "#F3F4F6" : "#FFFFFF", border: "none",
+                    cursor: busy ? "wait" : "pointer", fontFamily: "inherit",
+                    textAlign: "left",
+                  }}
+                  onMouseEnter={e => { if (!isCurrent && !busy) (e.currentTarget as HTMLButtonElement).style.background = "#F9FAFB"; }}
+                  onMouseLeave={e => { if (!isCurrent && !busy) (e.currentTarget as HTMLButtonElement).style.background = "#FFFFFF"; }}
+                >
+                  <span style={{ fontSize: 14, width: 18, textAlign: "center" }}>{tIcon}</span>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: tColor, flexShrink: 0 }} />
+                  <span style={{ flex: 1, fontSize: 13, fontWeight: isCurrent ? 700 : 500, color: "#0F172A" }}>{tLabel}</span>
+                  {isCurrent && (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={tColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+            <div style={{ fontSize: 10, color: "#9CA3AF", padding: "6px 12px 10px", borderTop: "1px solid rgba(0,0,0,0.05)", lineHeight: 1.4 }}>
+              Re-scores immediately with the selected model. Extracted fields are kept as-is.
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── Email This Property button + modal ────────────────── */
+/*
+   Lets a signed-in user email the formatted property page + XLSX/DOC
+   attachments to a recipient. Body is HTML rendered via
+   renderPropertyEmailHTML; attachments are generated client-side using
+   the same generators behind the Workbook/Brief download buttons.
+   Server route: /api/workspace/email-property  */
+function EmailPropertyButton({
+  property, fields, brief, wsType, scoreTotal, scoreBand, user,
+}: {
+  property: any;
+  fields: any[];
+  brief: string;
+  wsType: any;
+  scoreTotal: number | null;
+  scoreBand: string | null;
+  user: any;
+}) {
+  const [open, setOpen] = useState(false);
+  const [to, setTo] = useState("");
+  const [subject, setSubject] = useState("");
+  const [note, setNote] = useState("");
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  // Pre-fill subject when the modal opens
+  useEffect(() => {
+    if (open) {
+      const name = property?.propertyName || "Property";
+      setSubject(`${name} - Deal Signals`);
+      setError(null);
+      setSuccess(false);
+    }
+  }, [open, property?.propertyName]);
+
+  const senderName: string = user?.displayName || "";
+  const senderEmail: string = user?.email || "";
+
+  async function handleSend() {
+    setError(null);
+    setSuccess(false);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to.trim())) {
+      setError("Enter a valid email address.");
+      return;
+    }
+    if (!subject.trim()) {
+      setError("Subject can't be empty.");
+      return;
+    }
+    setSending(true);
+    try {
+      // 1. Generate attachments client-side (reuses existing ExcelJS CDN + DOC builder)
+      const xlsxResult = await generateUnderwritingXLSX(property.propertyName, fields, wsType, { returnBlob: true });
+      const briefResult = generateBriefDownload(property.propertyName, brief, fields, wsType, { returnBlob: true });
+
+      if (!xlsxResult || !briefResult) {
+        throw new Error("Failed to build attachments");
+      }
+
+      // 2. Render HTML body
+      const html = renderPropertyEmailHTML({
+        propertyName: property.propertyName,
+        address: property.address1,
+        city: property.city,
+        state: property.state,
+        analysisType: wsType,
+        dealScore: scoreTotal ?? undefined,
+        grade: scoreBand ?? undefined,
+        fields,
+        brief,
+        senderName,
+        senderEmail,
+        note: note.trim(),
+      });
+
+      // 3. POST as multipart
+      const fd = new FormData();
+      fd.append("to", to.trim());
+      fd.append("subject", subject.trim());
+      fd.append("html", html);
+      fd.append("fromName", senderName);
+      fd.append("fromEmail", senderEmail);
+      fd.append("note", note.trim());
+      fd.append("xlsx", xlsxResult.blob, xlsxResult.filename);
+      fd.append("brief", briefResult.blob, briefResult.filename);
+
+      const res = await fetch("/api/workspace/email-property", { method: "POST", body: fd });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.error || `Send failed (${res.status})`);
+      }
+      setSuccess(true);
+      // auto-close after a brief confirmation
+      setTimeout(() => { setOpen(false); setTo(""); setNote(""); setSuccess(false); }, 1600);
+    } catch (e: any) {
+      setError(e?.message || "Send failed");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="dl-btn"
+        title="Email this property (with Workbook + Brief attached)"
+        style={{
+          padding: "6px 14px", borderRadius: 8,
+          border: "1px solid rgba(0,0,0,0.12)", background: "#F9FAFB",
+          color: "#111827", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+          display: "inline-flex", alignItems: "center", gap: 6,
+        }}>
+        {/* Envelope icon */}
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="5" width="18" height="14" rx="2" ry="2" />
+          <path d="M3 7l9 6 9-6" />
+        </svg>
+        Email
+      </button>
+
+      {open && (
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget && !sending) setOpen(false); }}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(6,8,15,0.55)",
+            zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center",
+            padding: 16,
+          }}>
+          <div style={{
+            width: "100%", maxWidth: 520, background: "#FFFFFF", borderRadius: 14,
+            boxShadow: "0 10px 40px rgba(0,0,0,0.25)", overflow: "hidden", fontFamily: "inherit",
+          }}>
+            {/* Header */}
+            <div style={{ padding: "16px 20px", borderBottom: "1px solid #F0F2F5", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>Email this property</div>
+                <div style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}>Formatted page + Workbook + Brief attached</div>
+              </div>
+              <button onClick={() => !sending && setOpen(false)}
+                style={{ background: "none", border: "none", fontSize: 22, color: "#9CA3AF", cursor: sending ? "not-allowed" : "pointer", lineHeight: 1, padding: 4 }}
+                aria-label="Close">×</button>
+            </div>
+
+            {/* Body */}
+            <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>Recipient</label>
+                <input
+                  type="email"
+                  value={to}
+                  onChange={(e) => setTo(e.target.value)}
+                  placeholder="colleague@company.com"
+                  disabled={sending}
+                  style={{
+                    width: "100%", padding: "10px 12px", border: "1px solid #D1D5DB",
+                    borderRadius: 8, fontSize: 14, fontFamily: "inherit", background: sending ? "#F9FAFB" : "#FFFFFF",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>Subject</label>
+                <input
+                  type="text"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  disabled={sending}
+                  style={{
+                    width: "100%", padding: "10px 12px", border: "1px solid #D1D5DB",
+                    borderRadius: 8, fontSize: 14, fontFamily: "inherit", background: sending ? "#F9FAFB" : "#FFFFFF",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>
+                  Add a note <span style={{ color: "#9CA3AF", fontWeight: 500 }}>(optional)</span>
+                </label>
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  rows={3}
+                  placeholder="Thoughts, context, or what you want them to look at..."
+                  disabled={sending}
+                  style={{
+                    width: "100%", padding: "10px 12px", border: "1px solid #D1D5DB",
+                    borderRadius: 8, fontSize: 13, fontFamily: "inherit", background: sending ? "#F9FAFB" : "#FFFFFF",
+                    resize: "vertical", boxSizing: "border-box",
+                  }}
+                />
+              </div>
+
+              {senderEmail && (
+                <div style={{ fontSize: 11, color: "#6B7280" }}>
+                  Sent from <strong>Deal Signals</strong>. Replies will go to <strong>{senderEmail}</strong>.
+                </div>
+              )}
+
+              {error && (
+                <div style={{ padding: "10px 12px", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8, fontSize: 12, color: "#991B1B" }}>
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div style={{ padding: "10px 12px", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: 8, fontSize: 12, color: "#166534", fontWeight: 600 }}>
+                  Email sent.
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div style={{ padding: "14px 20px", background: "#F9FAFB", borderTop: "1px solid #F0F2F5", display: "flex", justifyContent: "flex-end", gap: 8 }}>
+              <button
+                onClick={() => !sending && setOpen(false)}
+                disabled={sending}
+                style={{
+                  padding: "8px 16px", borderRadius: 8, border: "1px solid #D1D5DB",
+                  background: "#FFFFFF", color: "#374151", fontSize: 13, fontWeight: 600,
+                  cursor: sending ? "not-allowed" : "pointer", fontFamily: "inherit",
+                }}>
+                Cancel
+              </button>
+              <button
+                onClick={handleSend}
+                disabled={sending || success}
+                style={{
+                  padding: "8px 20px", borderRadius: 8, border: "none",
+                  background: sending || success ? "#9CA3AF" : "#DC3545", color: "#FFFFFF",
+                  fontSize: 13, fontWeight: 700, cursor: sending || success ? "not-allowed" : "pointer",
+                  fontFamily: "inherit",
+                }}>
+                {sending ? "Sending..." : success ? "Sent" : "Send"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -698,7 +1221,10 @@ export default function PropertyDetailClient() {
       setDocuments(updatedDocs);
       const newFiles = Array.from(fileList);
       const extractedText = await extractTextFromFiles(newFiles);
-      const analysisType = activeWorkspace?.analysisType || "retail";
+      // Prefer the property's own analysisType (set at classification / manual override).
+      // Falls back to the workspace type, then retail. This prevents re-parse from
+      // overwriting a multifamily property in a "retail" workspace with retail parsing.
+      const analysisType = (property as any)?.analysisType || activeWorkspace?.analysisType || "retail";
       const parseRes = await fetch("/api/workspace/parse", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ projectId: property.projectId, propertyId, userId: user.uid, documentText: extractedText, analysisType }),
@@ -742,7 +1268,8 @@ export default function PropertyDetailClient() {
       if (!extractedText || extractedText.trim().length < 50) { setReparseStatus("Could not extract usable text."); setReparsing(false); return; }
 
       setReparseStatus("Scanning deal data...");
-      const analysisType = activeWorkspace?.analysisType || "retail";
+      // Prefer the property's own analysisType (set at classification / manual override).
+      const analysisType = (property as any)?.analysisType || activeWorkspace?.analysisType || "retail";
       const parseRes = await fetch("/api/workspace/parse", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ projectId: property.projectId, propertyId, userId: user.uid, documentText: extractedText, analysisType }),
@@ -789,7 +1316,10 @@ export default function PropertyDetailClient() {
   const brief = String(notes.find(n => n.noteType === "investment_thesis")?.content || "");
   const hasData = fields.length > 0;
   const encodedAddress = encodeURIComponent(location || property.propertyName);
-  const wsType = activeWorkspace?.analysisType || "retail";
+  // Prefer the property's own analysisType (set by classification or manual override).
+  // This is the key fix that lets a multifamily OM render MF UI even when it lives
+  // in a retail-typed workspace.
+  const wsType = ((property as any)?.analysisType as string) || activeWorkspace?.analysisType || "retail";
 
   const scoreTotal = (property as any).scoreTotal || null;
   const scoreBand = (property as any).scoreBand || "";
@@ -798,9 +1328,9 @@ export default function PropertyDetailClient() {
   const omPurchasePrice = Number(g("pricing_deal_terms", "asking_price")) || null;
 
   return (
-    <div className="pd-outer" style={{ display: "flex", height: "100%", minHeight: 0 }}>
-      {/* Single scroll container so sidebar can use position: sticky and drift with main content scroll */}
-      <div className="pd-scroll" style={{ flex: 1, overflow: "auto", minWidth: 0, display: "flex", alignItems: "flex-start" }}>
+    <div className="pd-outer" style={{ display: "flex", minHeight: 0 }}>
+      {/* Let the outer layout handle scrolling so sidebar's position:sticky snaps to the viewport, not a nested scroller */}
+      <div className="pd-scroll" style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "flex-start" }}>
         {/* ── Main Content ──────────────────────────────────── */}
         <div style={{ flex: 1, minWidth: 0 }}>
         <PropertyDetailInner
@@ -828,7 +1358,8 @@ export default function PropertyDetailClient() {
           width: 260, minWidth: 260, background: "#fff", borderLeft: "1px solid rgba(0,0,0,0.06)",
           flexShrink: 0,
           position: "sticky", top: 0, alignSelf: "flex-start",
-          maxHeight: "100vh", overflow: "auto",
+          maxHeight: "calc(100vh - 32px)", overflowY: "auto",
+          borderRadius: 12,
         }}>
           <div style={{ padding: "14px 14px 8px", borderBottom: "1px solid #F0F2F5" }}>
             <Link href={`/workspace?ws=${activeWorkspace?.slug || "default-dealboard"}`} style={{
@@ -860,15 +1391,25 @@ export default function PropertyDetailClient() {
               const spCity = [sp.city, sp.state].filter(Boolean).join(", ");
               const spProcessing = (sp as any).processingStatus;
               const spIsProcessing = spProcessing && spProcessing !== "complete";
+              // Asset-type lens stripe: 4px colored left border so mixed-type
+              // boards are visually obvious from the sidebar at a glance.
+              const spType = ((sp as any).analysisType as string) || activeWorkspace?.analysisType || "retail";
+              const spTypeColor = ANALYSIS_TYPE_COLORS[spType as keyof typeof ANALYSIS_TYPE_COLORS] || "#6B7280";
+              const spTypeLabel = ANALYSIS_TYPE_LABELS[spType as keyof typeof ANALYSIS_TYPE_LABELS] || "Retail";
               return (
                 <div
                   key={sp.id}
                   onClick={() => router.push(`/workspace/properties/${sp.id}`)}
+                  title={`Scored with ${spTypeLabel} model`}
                   style={{
-                    display: "flex", alignItems: "center", gap: 10, padding: "8px 10px",
+                    display: "flex", alignItems: "center", gap: 10, padding: "8px 10px 8px 12px",
                     borderRadius: 8, cursor: "pointer",
                     background: isActive ? "rgba(132,204,22,0.06)" : "transparent",
-                    border: isActive ? "1px solid rgba(132,204,22,0.15)" : "1px solid transparent",
+                    border: "1px solid",
+                    borderColor: isActive ? "rgba(132,204,22,0.15)" : "transparent",
+                    borderLeftWidth: 4,
+                    borderLeftStyle: "solid",
+                    borderLeftColor: spTypeColor,
                     transition: "all 0.12s",
                   }}
                   onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "#F9FAFB"; }}
@@ -1325,20 +1866,37 @@ function PropertyDetailInner({
                   title="Upgrade to Pro+ to unlock Strategy Analysis"
                   style={{
                     padding: "6px 14px", borderRadius: 8,
-                    border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
-                    color: C.secondary, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                    display: "inline-flex", alignItems: "center", gap: 6, opacity: 0.6,
+                    border: "1px solid #F59E0B",
+                    background: "linear-gradient(135deg, #FEF3C7, #FDE68A)",
+                    color: "#92400E", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                    display: "inline-flex", alignItems: "center", gap: 6,
                   }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5"><path d="M12 15V3M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><path d="M16 6l-4 4-4-4" /></svg>
+                  {/* Lock icon */}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0110 0v4" />
+                  </svg>
                   Strategy
-                  <span style={{ padding: "1px 5px", background: "#E5E7EB", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#6B7280" }}>PRO+</span>
+                  <span style={{ padding: "1px 5px", background: "#FCD34D", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#78350F" }}>PRO+</span>
                 </button>
+              )}
+              {/* Email this property (all tiers) */}
+              {user && (
+                <EmailPropertyButton
+                  property={property}
+                  fields={fields}
+                  brief={brief}
+                  wsType={wsType}
+                  scoreTotal={scoreTotal}
+                  scoreBand={scoreBand}
+                  user={user}
+                />
               )}
             </div>
           )}
         </div>
         {location && (
-          <div className="pd-prop-location" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div className="pd-prop-location" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <p style={{ fontSize: 14, color: C.secondary, margin: 0 }}>{location}</p>
             <a href={`https://www.google.com/maps/search/${encodedAddress}`} target="_blank" rel="noopener noreferrer"
               style={{ fontSize: 11, color: C.secondary, textDecoration: "none", padding: "3px 10px", background: C.surfLow, borderRadius: 6, fontWeight: 500, border: `1px solid ${C.ghostBorder}` }}>
@@ -1347,6 +1905,22 @@ function PropertyDetailInner({
           </div>
         )}
       </div>
+
+      {/* Model Lens Banner — primary "which model is scoring this?" cue */}
+      {user && (
+        <ModelLensBanner
+          currentType={wsType}
+          propertyId={propertyId}
+          userId={user.uid}
+          onChanged={async (newType: string) => {
+            setProperty((prev: Property | null) => prev ? ({ ...prev, analysisType: newType } as any) : prev);
+            try {
+              const fresh = await getProperty(propertyId);
+              if (fresh) setProperty(fresh);
+            } catch { /* non-blocking */ }
+          }}
+        />
+      )}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  MOBILE SCORE + KEY METRICS CARD (hidden on desktop)*/}
@@ -1580,6 +2154,119 @@ function PropertyDetailInner({
               }}>
                 <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280", marginBottom: 4 }}>{m.label}</div>
                 <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{m.value}</div>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
+      {/* Multifamily metrics strip */}
+      {hasData && wsType === "multifamily" && (() => {
+        const unitCount = g("multifamily_addons", "unit_count");
+        const avgRent = g("multifamily_addons", "avg_rent_per_unit");
+        const avgSf = g("multifamily_addons", "avg_sf_per_unit");
+        const vacancy = g("multifamily_addons", "vacancy_rate");
+        const occupancyVal = vacancy !== null && vacancy !== undefined && vacancy !== "" && !isNaN(Number(vacancy))
+          ? `${(100 - Number(vacancy)).toFixed(1)}%`
+          : "--";
+        const valueAdd = g("multifamily_addons", "value_add_signal");
+        const mfMetrics = [
+          { label: "Units", value: unitCount ? Number(unitCount).toLocaleString() : "--" },
+          { label: "Unit Mix", value: g("multifamily_addons", "unit_mix") || "--" },
+          { label: "Avg Rent", value: avgRent ? `${fmt$(avgRent)}/mo` : "--" },
+          { label: "Avg SF", value: avgSf ? `${Math.round(Number(avgSf)).toLocaleString()} SF` : "--" },
+          { label: "Occupancy", value: occupancyVal },
+          { label: "Value-Add", value: valueAdd ? String(valueAdd).replace(/_/g, " ") : "--" },
+        ].filter(c => c.value !== "--");
+        if (mfMetrics.length === 0) return null;
+        return (
+          <div className="pd-metrics-strip" style={{
+            display: "flex", gap: 0, marginBottom: 24,
+            background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
+            overflow: "hidden",
+          }}>
+            {mfMetrics.map((m, i) => (
+              <div key={m.label} style={{
+                flex: 1, padding: "16px 20px",
+                borderRight: i < mfMetrics.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+              }}>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280", marginBottom: 4 }}>{m.label}</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums", textTransform: m.label === "Value-Add" ? "capitalize" : "none" }}>{m.value}</div>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
+      {/* Industrial metrics strip */}
+      {hasData && wsType === "industrial" && (() => {
+        const clearHeight = g("industrial_addons", "clear_height");
+        const loadingCount = g("industrial_addons", "loading_count");
+        const loadingType = g("industrial_addons", "loading_type");
+        const officePct = g("industrial_addons", "office_finish_pct");
+        const lotAcres = g("industrial_addons", "lot_acres") || g("property_basics", "lot_acres") || g("property_basics", "land_acres");
+        const sprinklered = g("industrial_addons", "sprinklered");
+        const railServed = g("industrial_addons", "rail_served");
+        const rentPerSf = g("industrial_addons", "rent_per_sf");
+        const indMetrics = [
+          { label: "Clear Height", value: clearHeight ? `${Number(clearHeight).toFixed(0)}'` : "--" },
+          { label: "Loading", value: loadingCount && loadingType ? `${loadingCount} ${String(loadingType).replace(/_/g, " ")}` : loadingCount ? String(loadingCount) : "--" },
+          { label: "Office Finish", value: officePct !== null && officePct !== undefined && officePct !== "" ? `${Number(officePct).toFixed(0)}%` : "--" },
+          { label: "Lot Size", value: lotAcres ? `${Number(lotAcres).toFixed(2)} ac` : "--" },
+          { label: "Rent / SF", value: rentPerSf ? `${fmt$(rentPerSf)}/SF` : "--" },
+          { label: "Sprinklered", value: sprinklered === true || sprinklered === "true" || sprinklered === "yes" ? "Yes" : sprinklered === false || sprinklered === "false" || sprinklered === "no" ? "No" : "--" },
+          { label: "Rail Served", value: railServed === true || railServed === "true" || railServed === "yes" ? "Yes" : railServed === false || railServed === "false" || railServed === "no" ? "No" : "--" },
+        ].filter(c => c.value !== "--");
+        if (indMetrics.length === 0) return null;
+        return (
+          <div className="pd-metrics-strip" style={{
+            display: "flex", gap: 0, marginBottom: 24,
+            background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
+            overflow: "hidden",
+          }}>
+            {indMetrics.map((m, i) => (
+              <div key={m.label} style={{
+                flex: 1, padding: "16px 20px",
+                borderRight: i < indMetrics.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+              }}>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280", marginBottom: 4 }}>{m.label}</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{m.value}</div>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
+      {/* Office metrics strip */}
+      {hasData && wsType === "office" && (() => {
+        const parkingRatio = g("office_addons", "parking_ratio");
+        const suiteCount = g("office_addons", "suite_count");
+        const buildingClass = g("office_addons", "building_class");
+        const floorCount = g("office_addons", "floor_count");
+        const tiLc = g("office_addons", "ti_lc_signal");
+        const medical = g("office_addons", "medical_flag");
+        const offMetrics = [
+          { label: "Class", value: buildingClass ? String(buildingClass).toUpperCase() : "--" },
+          { label: "Floors", value: floorCount ? String(floorCount) : "--" },
+          { label: "Suites", value: suiteCount ? String(suiteCount) : "--" },
+          { label: "Parking Ratio", value: parkingRatio ? `${Number(parkingRatio).toFixed(2)} / 1k SF` : "--" },
+          { label: "TI/LC", value: tiLc ? String(tiLc).replace(/_/g, " ") : "--" },
+          { label: "Medical", value: medical === true || medical === "true" || medical === "yes" ? "Yes" : medical === false || medical === "false" || medical === "no" ? "No" : "--" },
+        ].filter(c => c.value !== "--");
+        if (offMetrics.length === 0) return null;
+        return (
+          <div className="pd-metrics-strip" style={{
+            display: "flex", gap: 0, marginBottom: 24,
+            background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
+            overflow: "hidden",
+          }}>
+            {offMetrics.map((m, i) => (
+              <div key={m.label} style={{
+                flex: 1, padding: "16px 20px",
+                borderRight: i < offMetrics.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+              }}>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280", marginBottom: 4 }}>{m.label}</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums", textTransform: m.label === "TI/LC" ? "capitalize" : "none" }}>{m.value}</div>
               </div>
             ))}
           </div>

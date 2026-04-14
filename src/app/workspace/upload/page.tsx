@@ -10,7 +10,7 @@ import { useWorkspace } from "@/lib/workspace/workspace-context";
 import { extractTextFromFiles } from "@/lib/workspace/file-reader";
 import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
 import type { Property, DocCategory, AnalysisType } from "@/lib/workspace/types";
-import { DOC_CATEGORY_LABELS, ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS, ANALYSIS_TYPE_ICONS } from "@/lib/workspace/types";
+import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS, ANALYSIS_TYPE_ICONS } from "@/lib/workspace/types";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import UpgradeModal from "@/components/billing/UpgradeModal";
 import Link from "next/link";
@@ -166,10 +166,6 @@ export default function UploadPage() {
 
   function removeFile(id: string) {
     setFiles(prev => prev.filter(f => f.id !== id));
-  }
-
-  function setCat(id: string, cat: DocCategory) {
-    setFiles(prev => prev.map(f => f.id === id ? { ...f, docCategory: cat } : f));
   }
 
   async function handleUpload() {
@@ -585,14 +581,12 @@ export default function UploadPage() {
                   @media (max-width: 768px) {
                     .ul-filelist { overflow-x: auto; }
                     .ul-file-row { flex-wrap: wrap !important; padding: 12px 12px !important; }
-                    .ul-file-select { width: 100% !important; margin-top: 8px !important; }
                   }
                   @media (max-width: 480px) {
                     .ul-filelist-header { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
                     .ul-file-row { gap: 6px !important; }
                     .ul-file-ext { padding: 2px 4px !important; font-size: 8px !important; }
                     .ul-file-name { font-size: 11px !important; }
-                    .ul-file-select { min-height: 36px !important; }
                   }
                 `}</style>
                 <div className="ul-filelist-header" style={{ padding: "10px 16px", borderBottom: `1px solid ${C.ghost}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -605,10 +599,6 @@ export default function UploadPage() {
                       {f.file.name.split(".").pop()}
                     </span>
                     <span className="ul-file-name" style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500, color: C.onSurface }}>{f.file.name}</span>
-                    <select className="ul-file-select" value={f.docCategory || ""} onChange={e => setCat(f.id, e.target.value as DocCategory)}
-                      style={{ padding: "3px 6px", border: `1px solid ${C.ghost}`, borderRadius: 4, fontSize: 10, fontFamily: "'Inter', sans-serif", width: 130, flexShrink: 0, background: C.surfLow, minHeight: 32 }}>
-                      {Object.entries(DOC_CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                    </select>
                     <button className="ul-remove-btn" onClick={() => removeFile(f.id)} style={{ background: "none", border: "none", color: C.secondary, cursor: "pointer", fontSize: 14, flexShrink: 0, padding: "4px", minHeight: 32, minWidth: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>&times;</button>
                   </div>
                 ))}
