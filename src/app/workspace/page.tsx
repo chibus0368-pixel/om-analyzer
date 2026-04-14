@@ -357,8 +357,14 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
               await deleteProperty(property.id, property.projectId || "workspace-default");
               const card = btn.closest("[data-property-card]") as HTMLElement;
               if (card) { card.style.opacity = "0"; card.style.transform = "scale(0.95)"; card.style.transition = "all 0.3s ease"; }
+              // Fire event so parent dashboard (and layout) refetch properties.
+              // NOTE: Do NOT call window.location.reload() here — if the user is
+              // deleting multiple properties in quick succession, the reload from
+              // the first-completed delete will abort any in-flight requests for
+              // the others, leaving them un-deleted. The event-driven refetch in
+              // the dashboard handles the UI refresh safely without interrupting
+              // concurrent deletes.
               window.dispatchEvent(new Event("workspace-properties-changed"));
-              setTimeout(() => window.location.reload(), 300);
             } catch (err) {
               console.error("[delete] Failed:", err);
               btn.disabled = false;
@@ -485,6 +491,27 @@ export default function WorkspaceDashboard() {
     // Depend on the stable workspace id, not the object reference - otherwise
     // any parent re-render that produces a new activeWorkspace object would
     // re-trigger the loading state and re-fetch properties unnecessarily.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, activeWorkspace?.id]);
+
+  // Refetch properties when something fires the "workspace-properties-changed"
+  // event (e.g. a per-card delete completes). Avoids window.location.reload(),
+  // which would abort any other in-flight deletes and leave them un-deleted.
+  useEffect(() => {
+    if (!user || !activeWorkspace) return;
+    const refetch = async () => {
+      try {
+        const props = await getWorkspaceProperties(user.uid, activeWorkspace.id);
+        setProperties(props);
+        const counts: Record<string, number> = {};
+        for (const p of props as any[]) {
+          counts[p.id] = typeof p.documentCount === "number" ? p.documentCount : 0;
+        }
+        setDocCounts(counts);
+      } catch { /* ignore */ }
+    };
+    window.addEventListener("workspace-properties-changed", refetch);
+    return () => window.removeEventListener("workspace-properties-changed", refetch);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid, activeWorkspace?.id]);
 
