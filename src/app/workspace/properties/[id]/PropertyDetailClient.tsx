@@ -12,7 +12,7 @@ import {
 } from "@/lib/workspace/firestore";
 import type { Property, ProjectDocument, ExtractedField, ProjectOutput, Note, DocCategory } from "@/lib/workspace/types";
 import { DOC_CATEGORY_LABELS, ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
-import { generateUnderwritingXLSX, generateBriefDownload, generateStrategyLensXLSX } from "@/lib/workspace/generate-files";
+import { generateUnderwritingXLSX, generateBriefDownload, generateStrategyLensXLSX, generateLOIDoc, generateBrokerQuestionsDoc, generateCreativeStructuringDoc } from "@/lib/workspace/generate-files";
 import { extractTextFromFiles } from "@/lib/workspace/file-reader";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import Link from "next/link";
@@ -1247,7 +1247,7 @@ function PropertyDetailInner({
             onSave={(newName: string) => setProperty((prev: Property | null) => prev ? { ...prev, propertyName: newName } : prev)}
           />
           {hasData && (
-            <div className="pd-dl-buttons" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+            <div className="pd-dl-buttons" style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
               <button
                 onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
                 className="dl-btn"
@@ -1273,6 +1273,48 @@ function PropertyDetailInner({
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
                 Brief
                 <span style={{ padding: "1px 5px", background: "#DBEAFE", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#2563EB" }}>DOC</span>
+              </button>
+              <button
+                onClick={() => { try { generateLOIDoc(property.propertyName, fields, wsType); } catch (e: any) { alert("LOI draft failed: " + (e?.message || "unknown")); } }}
+                className="dl-btn"
+                title="Download an LOI / Offer draft for this property"
+                style={{
+                  padding: "6px 14px", borderRadius: 8,
+                  border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
+                  color: C.onSurface, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+                LOI
+                <span style={{ padding: "1px 5px", background: "#EDE9FE", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#7C3AED" }}>DOC</span>
+              </button>
+              <button
+                onClick={() => { try { generateBrokerQuestionsDoc(property.propertyName, fields, wsType); } catch (e: any) { alert("Broker questions failed: " + (e?.message || "unknown")); } }}
+                className="dl-btn"
+                title="Download a prioritized list of questions for the listing broker"
+                style={{
+                  padding: "6px 14px", borderRadius: 8,
+                  border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
+                  color: C.onSurface, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+                Broker Q&apos;s
+                <span style={{ padding: "1px 5px", background: "#FEE2E2", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#DC2626" }}>DOC</span>
+              </button>
+              <button
+                onClick={() => { try { generateCreativeStructuringDoc(property.propertyName, fields, wsType); } catch (e: any) { alert("Creative structuring failed: " + (e?.message || "unknown")); } }}
+                className="dl-btn"
+                title="Download creative deal structuring scenarios (seller financing, master lease, wrap, etc.)"
+                style={{
+                  padding: "6px 14px", borderRadius: 8,
+                  border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
+                  color: C.onSurface, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0D9488" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+                Creative
+                <span style={{ padding: "1px 5px", background: "#CCFBF1", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#0D9488" }}>DOC</span>
               </button>
               {/* Strategy Analysis - Pro+ only */}
               {userTier === "pro_plus" ? (
