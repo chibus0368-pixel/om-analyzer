@@ -39,57 +39,160 @@ function fmtPct(val: any): string {
 }
 
 // ============================================================
-// XLSX GENERATION - Scenario Model Workbook
+// XLSX GENERATION - Institutional Underwriting Workbook
 // ============================================================
+// Design principles:
+//   - ONE source of truth for every assumption (the Assumptions sheet).
+//     Every downstream sheet references those cells — no duplicated inputs.
+//   - Clean banner section dividers, full-bleed title bars, hidden gridlines.
+//   - All numbers are stored as numbers with proper numFmt (never as strings).
+//   - Consistent color coding: blue text = hardcoded input, black = formula,
+//     green = cross-sheet link, yellow fill = editable assumption.
 
-// Style constants
-const navy = { type: "pattern" as const, pattern: "solid" as const, fgColor: { argb: "FF262C5C" } };
-const ltBlue = { type: "pattern" as const, pattern: "solid" as const, fgColor: { argb: "FFDCE6F1" } };
-const yellow = { type: "pattern" as const, pattern: "solid" as const, fgColor: { argb: "FFFFFFCC" } };
-const white = { type: "pattern" as const, pattern: "solid" as const, fgColor: { argb: "FFFFFFFF" } };
-const ltGreen = { type: "pattern" as const, pattern: "solid" as const, fgColor: { argb: "FFE8F5E9" } };
-const hdrFont = { bold: true, color: { argb: "FFFFFFFF" }, size: 10, name: "Arial" };
-const titleFont = { bold: true, color: { argb: "FF262C5C" }, size: 13, name: "Arial" };
-const secFont = { bold: true, color: { argb: "FF262C5C" }, size: 10, name: "Arial" };
-const labelFont = { bold: false, color: { argb: "FF333333" }, size: 10, name: "Arial" };
-const boldLabel = { bold: true, color: { argb: "FF262C5C" }, size: 10, name: "Arial" };
-const valFont = { color: { argb: "FF000000" }, size: 10, name: "Arial" };
-const inputFont = { bold: true, color: { argb: "FF0000CC" }, size: 10, name: "Arial" };
-const noteFont = { color: { argb: "FF888888" }, size: 9, name: "Arial", italic: true };
-const redFont = { bold: true, color: { argb: "FFCC0000" }, size: 10, name: "Arial" };
-const greenFont = { bold: true, color: { argb: "FF008000" }, size: 10, name: "Arial" };
-const thinBorder = { style: "thin" as const, color: { argb: "FFD8DFE9" } };
+// Palette
+const C_NAVY   = "FF0F172A";
+const C_NAVY2  = "FF1E293B";
+const C_ACCENT = "FF84CC16";
+const C_LINE   = "FFE5E7EB";
+const C_SUBTLE = "FFF8FAFC";
+const C_YELLOW = "FFFFF4C2";
+const C_INPUT  = "FF0000CC";
+const C_LINK   = "FF008000";
+const C_RED    = "FFB91C1C";
+const C_GRN    = "FF15803D";
+const C_MUTED  = "FF64748B";
+
+const navy    = { type: "pattern" as const, pattern: "solid" as const, fgColor: { argb: C_NAVY } };
+const navy2   = { type: "pattern" as const, pattern: "solid" as const, fgColor: { argb: C_NAVY2 } };
+const ltBlue  = { type: "pattern" as const, pattern: "solid" as const, fgColor: { argb: "FFEFF3FA" } };
+const yellow  = { type: "pattern" as const, pattern: "solid" as const, fgColor: { argb: C_YELLOW } };
+const white   = { type: "pattern" as const, pattern: "solid" as const, fgColor: { argb: "FFFFFFFF" } };
+const subtle  = { type: "pattern" as const, pattern: "solid" as const, fgColor: { argb: "FFF8FAFC" } };
+const ltGreen = { type: "pattern" as const, pattern: "solid" as const, fgColor: { argb: "FFF0FDF4" } };
+
+const hdrFont    = { bold: true, color: { argb: "FFFFFFFF" }, size: 10, name: "Arial" };
+const titleFont  = { bold: true, color: { argb: "FFFFFFFF" }, size: 16, name: "Arial" };
+const subTitleFont = { bold: false, color: { argb: "FFCBD5E1" }, size: 10, name: "Arial", italic: true };
+const secFont    = { bold: true, color: { argb: "FFFFFFFF" }, size: 10, name: "Arial" };
+const labelFont  = { bold: false, color: { argb: "FF1F2937" }, size: 10, name: "Arial" };
+const boldLabel  = { bold: true, color: { argb: C_NAVY }, size: 10, name: "Arial" };
+const valFont    = { color: { argb: "FF000000" }, size: 10, name: "Arial" };
+const linkFont   = { color: { argb: C_LINK }, size: 10, name: "Arial" }; // cross-sheet link
+const inputFont  = { bold: true, color: { argb: C_INPUT }, size: 10, name: "Arial" };
+const noteFont   = { color: { argb: C_MUTED }, size: 9, name: "Arial", italic: true };
+const redFont    = { bold: true, color: { argb: C_RED }, size: 10, name: "Arial" };
+const greenFont  = { bold: true, color: { argb: C_GRN }, size: 10, name: "Arial" };
+const bigMetric  = { bold: true, color: { argb: C_NAVY }, size: 20, name: "Arial" };
+
+const thinBorder = { style: "thin" as const, color: { argb: C_LINE } };
 const borders = { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder };
 
-// Helper: header row
+// Number format presets (zero renders as "-" so empty data doesn't shout $0)
+const FMT_MONEY = '_-"$"* #,##0_-;_-"$"* (#,##0);_-"$"* "-"_-;_-@_-';
+const FMT_MONEY_D = '_-"$"* #,##0.00_-;_-"$"* (#,##0.00);_-"$"* "-"_-;_-@_-';
+const FMT_PCT = '0.00%;(0.00%);"-"';
+const FMT_PCT1 = '0.0%;(0.0%);"-"';
+const FMT_NUM = '#,##0;(#,##0);"-"';
+const FMT_MULT = '0.00"x";(0.00"x");"-"';
+const FMT_YEAR = '0';
+
+// Helper: full-width sheet title banner (row height 32, merged, navy bg)
+function sheetTitleBanner(ws: any, r: number, title: string, subtitle: string, colSpan: number): number {
+  ws.mergeCells(r, 1, r, colSpan);
+  const c = ws.getCell(r, 1);
+  c.value = title;
+  c.font = titleFont;
+  c.fill = navy;
+  c.alignment = { vertical: "middle", horizontal: "left", indent: 1 };
+  ws.getRow(r).height = 30;
+  r++;
+  if (subtitle) {
+    ws.mergeCells(r, 1, r, colSpan);
+    const s = ws.getCell(r, 1);
+    s.value = subtitle;
+    s.font = subTitleFont;
+    s.fill = navy;
+    s.alignment = { vertical: "middle", horizontal: "left", indent: 1 };
+    ws.getRow(r).height = 20;
+    r++;
+  }
+  // Accent strip
+  ws.mergeCells(r, 1, r, colSpan);
+  const a = ws.getCell(r, 1);
+  a.fill = { type: "pattern", pattern: "solid", fgColor: { argb: C_ACCENT } };
+  ws.getRow(r).height = 3;
+  return r + 2; // leave one blank row after banner
+}
+
+// Helper: full-width section header band (merged, dark navy, 22px row)
+function sectionBand(ws: any, r: number, label: string, colSpan: number): number {
+  ws.mergeCells(r, 1, r, colSpan);
+  const c = ws.getCell(r, 1);
+  c.value = label.toUpperCase();
+  c.font = { ...secFont, size: 10 };
+  c.fill = navy2;
+  c.alignment = { vertical: "middle", horizontal: "left", indent: 1 };
+  c.border = { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder };
+  ws.getRow(r).height = 22;
+  return r + 1;
+}
+
+// Helper: column header row
 function hdrRow(ws: any, r: number, vals: string[], widths?: number[]) {
-  vals.forEach((v, i) => { const c = ws.getCell(r, i + 1); c.value = v; c.font = hdrFont; c.fill = navy; c.border = borders; c.alignment = { vertical: "middle" }; });
+  vals.forEach((v, i) => {
+    const c = ws.getCell(r, i + 1);
+    c.value = v;
+    c.font = hdrFont;
+    c.fill = navy2;
+    c.border = borders;
+    c.alignment = { vertical: "middle", horizontal: i === 0 ? "left" : "right", indent: i === 0 ? 1 : 0 };
+  });
+  ws.getRow(r).height = 20;
   if (widths) widths.forEach((w, i) => { ws.getColumn(i + 1).width = w; });
 }
 
-// Helper: label + value row (static data)
-function dataRow(ws: any, r: number, label: string, val: any, note?: string, opts?: { yellow?: boolean; bold?: boolean; red?: boolean; green?: boolean }) {
-  const lc = ws.getCell(r, 1); lc.value = label; lc.font = opts?.bold ? boldLabel : labelFont; lc.fill = white; lc.border = borders;
-  const vc = ws.getCell(r, 2); vc.value = val ?? ""; vc.font = opts?.red ? redFont : opts?.green ? greenFont : valFont; vc.fill = opts?.yellow ? yellow : ltBlue; vc.border = borders;
-  if (note !== undefined) { const nc = ws.getCell(r, 3); nc.value = note; nc.font = noteFont; nc.border = borders; }
+// Helper: zebra-stripe a data row based on index
+function zebraFill(idx: number) {
+  return idx % 2 === 0 ? white : subtle;
 }
 
-// Helper: input cell (yellow, editable, returns cell ref like "B5")
-function inputRow(ws: any, r: number, label: string, val: any, note?: string, numFmt?: string): string {
-  const lc = ws.getCell(r, 1); lc.value = label; lc.font = boldLabel; lc.fill = white; lc.border = borders;
+// Helper: label + value row (static data, number or string)
+function dataRow(ws: any, r: number, label: string, val: any, note?: string, opts?: { bold?: boolean; red?: boolean; green?: boolean; numFmt?: string; zebra?: number }) {
+  const zf = opts?.zebra !== undefined ? zebraFill(opts.zebra) : white;
+  const lc = ws.getCell(r, 1); lc.value = label; lc.font = opts?.bold ? boldLabel : labelFont; lc.fill = zf; lc.border = borders;
+  lc.alignment = { vertical: "middle", indent: 1 };
+  const vc = ws.getCell(r, 2); vc.value = val ?? ""; vc.font = opts?.red ? redFont : opts?.green ? greenFont : (opts?.bold ? boldLabel : valFont); vc.fill = zf; vc.border = borders;
+  vc.alignment = { vertical: "middle", horizontal: "right" };
+  if (opts?.numFmt) vc.numFmt = opts.numFmt;
+  if (note !== undefined) { const nc = ws.getCell(r, 3); nc.value = note; nc.font = noteFont; nc.fill = zf; nc.border = borders; nc.alignment = { vertical: "middle", wrapText: true, indent: 1 }; }
+}
+
+// Helper: editable yellow input cell (returns absolute cross-sheet ref, e.g., 'Assumptions!$B$5')
+function inputRow(
+  ws: any, r: number, label: string, val: any, note?: string, numFmt?: string, opts?: { sheetName?: string; zebra?: number }
+): string {
+  const zf = opts?.zebra !== undefined ? zebraFill(opts.zebra) : white;
+  const lc = ws.getCell(r, 1); lc.value = label; lc.font = boldLabel; lc.fill = zf; lc.border = borders;
+  lc.alignment = { vertical: "middle", indent: 1 };
   const vc = ws.getCell(r, 2); vc.value = val; vc.font = inputFont; vc.fill = yellow; vc.border = borders;
+  vc.alignment = { vertical: "middle", horizontal: "right" };
   if (numFmt) vc.numFmt = numFmt;
-  if (note) { const nc = ws.getCell(r, 3); nc.value = note; nc.font = noteFont; nc.border = borders; }
-  return `B${r}`;
+  if (note) { const nc = ws.getCell(r, 3); nc.value = note; nc.font = noteFont; nc.fill = zf; nc.border = borders; nc.alignment = { vertical: "middle", wrapText: true, indent: 1 }; }
+  const sheetPrefix = opts?.sheetName ? `'${opts.sheetName}'!` : "";
+  return `${sheetPrefix}$B$${r}`;
 }
 
-// Helper: formula cell (light green, computed)
-function formulaRow(ws: any, r: number, label: string, formula: string, numFmt: string, note?: string, opts?: { bold?: boolean }): string {
-  const lc = ws.getCell(r, 1); lc.value = label; lc.font = opts?.bold ? boldLabel : labelFont; lc.fill = white; lc.border = borders;
-  const vc = ws.getCell(r, 2); vc.value = { formula }; vc.font = opts?.bold ? boldLabel : valFont; vc.fill = ltGreen; vc.border = borders;
+// Helper: formula cell (light green fill, computed)
+function formulaRow(ws: any, r: number, label: string, formula: string, numFmt: string, note?: string, opts?: { bold?: boolean; sheetName?: string; cross?: boolean; zebra?: number }): string {
+  const zf = opts?.zebra !== undefined ? zebraFill(opts.zebra) : white;
+  const lc = ws.getCell(r, 1); lc.value = label; lc.font = opts?.bold ? boldLabel : labelFont; lc.fill = zf; lc.border = borders;
+  lc.alignment = { vertical: "middle", indent: 1 };
+  const vc = ws.getCell(r, 2); vc.value = { formula }; vc.font = opts?.bold ? boldLabel : (opts?.cross ? linkFont : valFont); vc.fill = ltGreen; vc.border = borders;
+  vc.alignment = { vertical: "middle", horizontal: "right" };
   if (numFmt) vc.numFmt = numFmt;
-  if (note) { const nc = ws.getCell(r, 3); nc.value = note; nc.font = noteFont; nc.border = borders; }
-  return `B${r}`;
+  if (note) { const nc = ws.getCell(r, 3); nc.value = note; nc.font = noteFont; nc.fill = zf; nc.border = borders; nc.alignment = { vertical: "middle", wrapText: true, indent: 1 }; }
+  const sheetPrefix = opts?.sheetName ? `'${opts.sheetName}'!` : "";
+  return `${sheetPrefix}$B$${r}`;
 }
 
 export async function generateUnderwritingXLSX(
@@ -100,559 +203,548 @@ export async function generateUnderwritingXLSX(
 ): Promise<void | { blob: Blob; filename: string }> {
   const exceljs = await loadExcelJS();
   const wb = new exceljs.Workbook();
+  wb.creator = "Deal Signals";
+  wb.company = "Deal Signals";
+  wb.created = new Date();
   const g = (group: string, name: string) => getField(fields, group, name);
 
-  const typeLabel = analysisType === "retail" ? "Retail" : analysisType === "industrial" ? "Industrial" : analysisType === "office" ? "Office" : "Land";
-  const loc = [g("property_basics", "address"), g("property_basics", "city"), g("property_basics", "state")].filter(Boolean).join(", ");
+  const typeLabel =
+    analysisType === "retail" ? "Retail" :
+    analysisType === "industrial" ? "Industrial" :
+    analysisType === "office" ? "Office" :
+    analysisType === "multifamily" ? "Multifamily" : "Land";
+  const addr = g("property_basics", "address") || "";
+  const city = g("property_basics", "city") || "";
+  const state = g("property_basics", "state") || "";
+  const loc = [addr, city, state].filter(Boolean).join(", ");
 
-  // ================================================================
-  // SHEET 1: SCENARIO MODEL - the main interactive sheet
-  // ================================================================
-  if (analysisType !== "land") {
-    const ws = wb.addWorksheet("Scenario Model");
-    ws.getColumn(1).width = 30; ws.getColumn(2).width = 22; ws.getColumn(3).width = 32;
-    let r = 2;
+  // ─────────────────────────────────────────────────────────────
+  // LAND path — single Summary sheet (no income/expense model)
+  // ─────────────────────────────────────────────────────────────
+  if (analysisType === "land") {
+    const wsS = wb.addWorksheet("Summary", { views: [{ showGridLines: false }] });
+    wsS.getColumn(1).width = 30; wsS.getColumn(2).width = 26; wsS.getColumn(3).width = 42;
+    let r = 1;
+    r = sheetTitleBanner(wsS, r, propertyName, loc ? `${loc} · ${typeLabel}` : typeLabel, 3);
+    r = sectionBand(wsS, r, "Site Facts", 3);
+    hdrRow(wsS, r++, ["Field", "Value", "Source"]);
+    const rows: Array<[string, any, string | undefined, string | undefined]> = [
+      ["Asking Price", Number(g("pricing_deal_terms", "asking_price")) || null, FMT_MONEY, "OM"],
+      ["Acreage", Number(g("property_basics", "lot_acres")) || Number(g("property_basics", "usable_acres")) || null, '#,##0.00" ac"', "OM"],
+      ["Price / Acre", Number(g("pricing_deal_terms", "price_per_acre")) || null, FMT_MONEY, "OM"],
+      ["Zoning", g("land_zoning", "current_zoning") || g("land_addons", "zoning") || "", undefined, "OM"],
+      ["Planned Use", g("land_zoning", "planned_use") || g("land_addons", "planned_use") || "", undefined, "OM"],
+      ["Frontage", g("property_basics", "frontage_ft") || g("land_addons", "frontage_signal") || "", undefined, "OM"],
+      ["Road Access", g("land_access", "road_access") || g("land_addons", "access_signal") || "", undefined, "OM"],
+      ["Utilities", g("land_addons", "utilities_signal") || "", undefined, "OM"],
+      ["Year Built", Number(g("property_basics", "year_built")) || null, FMT_YEAR, "OM"],
+    ];
+    rows.forEach(([label, val, fmt, note], i) => {
+      dataRow(wsS, r++, label, val === null ? "" : val, note, { numFmt: fmt, zebra: i });
+    });
 
-    // Title
-    ws.getCell(r, 1).value = `${propertyName}`; ws.getCell(r, 1).font = titleFont; r++;
-    ws.getCell(r, 1).value = `${typeLabel} Underwriting - Scenario Model`; ws.getCell(r, 1).font = { ...noteFont, size: 10 }; r++;
-    ws.getCell(r, 1).value = loc; ws.getCell(r, 1).font = noteFont; r++;
-    ws.getCell(r, 1).value = "Yellow cells = your inputs. Green cells = formulas (auto-update)."; ws.getCell(r, 1).font = { ...noteFont, bold: true, color: { argb: "FF0000CC" } }; r += 2;
-
-    // ── SECTION: DEAL INPUTS ──
-    ws.getCell(r, 1).value = "DEAL INPUTS"; ws.getCell(r, 1).font = secFont; r++;
-    hdrRow(ws, r, ["Item", "Value", "Notes"]); r++;
-
-    const askPrice = Number(g("pricing_deal_terms", "asking_price")) || 0;
-    const buildSf = Number(g("property_basics", "building_sf")) || 1;
-    const noiOm = Number(g("expenses", "noi_om")) || 0;
-    const baseRent = Number(g("income", "base_rent")) || 0;
-    const nnnReimb = Number(g("income", "nnn_reimbursements")) || 0;
-    const camExp = Number(g("expenses", "cam_expenses")) || 0;
-    const propTax = Number(g("expenses", "property_taxes")) || 0;
-    const insurance = Number(g("expenses", "insurance")) || 0;
-    const mgmtFee = Number(g("expenses", "management_fee")) || 0;
-
-    const refPrice = inputRow(ws, r++, "Purchase Price", askPrice, "Change to model scenarios", "$#,##0");
-    const refSf = inputRow(ws, r++, "Building SF (GLA)", buildSf, "From OM", "#,##0");
+    // Signals block
     r++;
-
-    // ── SECTION: INCOME (from OM) ──
-    ws.getCell(r, 1).value = "INCOME (from OM)"; ws.getCell(r, 1).font = secFont; r++;
-    hdrRow(ws, r, ["Item", "Value", "Notes"]); r++;
-
-    const refBaseRent = inputRow(ws, r++, "Base Rent (Annual)", baseRent, "From OM rent roll", "$#,##0");
-    const refReimb = inputRow(ws, r++, "NNN Reimbursements", nnnReimb, "CAM/Tax/Ins reimbursements from OM", "$#,##0");
-    const refOtherInc = inputRow(ws, r++, "Other Income", Number(g("income", "other_income")) || 0, "Parking, late fees, etc.", "$#,##0");
-    const refVacPct = inputRow(ws, r++, "Vacancy %", 0.05, "Change to stress-test occupancy", "0.0%");
-    const refPGI = formulaRow(ws, r++, "Potential Gross Income", `${refBaseRent}+${refReimb}+${refOtherInc}`, "$#,##0", "", { bold: true });
-    const refVacancy = formulaRow(ws, r++, "Less: Vacancy", `-${refPGI}*${refVacPct}`, "$#,##0");
-    const refEGI = formulaRow(ws, r++, "Effective Gross Income", `${refPGI}+${refVacancy}`, "$#,##0", "", { bold: true });
-    r++;
-
-    // ── SECTION: EXPENSES ──
-    ws.getCell(r, 1).value = "EXPENSES"; ws.getCell(r, 1).font = secFont; r++;
-    hdrRow(ws, r, ["Item", "Value", "Notes"]); r++;
-
-    const refCam = inputRow(ws, r++, "CAM / Common Area", camExp, camExp > 0 ? "From OM" : "Not in OM - enter if known", "$#,##0");
-    const refTax = inputRow(ws, r++, "Real Estate Taxes", propTax, propTax > 0 ? "From OM" : "Not in OM - verify with county", "$#,##0");
-    const refIns = inputRow(ws, r++, "Insurance", insurance, insurance > 0 ? "From OM" : "Not in OM - get quote", "$#,##0");
-    const refMgmt = inputRow(ws, r++, "Management Fee", mgmtFee, mgmtFee > 0 ? "From OM" : "Not in OM - typically 3-6% EGI", "$#,##0");
-    const refReserves = inputRow(ws, r++, "Reserves / CapEx", 0, "Annual reserves - enter your estimate", "$#,##0");
-    const refOtherExp = inputRow(ws, r++, "Other Expenses", Number(g("expenses", "other_expenses")) || 0, "", "$#,##0");
-    const refTotalExp = formulaRow(ws, r++, "Total Expenses", `${refCam}+${refTax}+${refIns}+${refMgmt}+${refReserves}+${refOtherExp}`, "$#,##0", "", { bold: true });
-    r++;
-
-    // ── SECTION: NOI ──
-    ws.getCell(r, 1).value = "NET OPERATING INCOME"; ws.getCell(r, 1).font = secFont; r++;
-    hdrRow(ws, r, ["Item", "Value", "Notes"]); r++;
-
-    dataRow(ws, r++, "NOI (from OM)", noiOm, "What the OM states", { bold: true });
-    const refNOI = formulaRow(ws, r++, "NOI (Your Model)", `${refEGI}-${refTotalExp}`, "$#,##0", "Based on your inputs above", { bold: true });
-    formulaRow(ws, r++, "NOI / SF", `${refNOI}/${refSf}`, "$#,##0.00");
-    r++;
-
-    // ── SECTION: FINANCING ──
-    ws.getCell(r, 1).value = "FINANCING"; ws.getCell(r, 1).font = secFont; r++;
-    hdrRow(ws, r, ["Item", "Value", "Notes"]); r++;
-
-    const refLTV = inputRow(ws, r++, "LTV %", (Number(g("debt_assumptions", "ltv")) || 65) / 100, "Loan-to-value ratio", "0.0%");
-    const refRate = inputRow(ws, r++, "Interest Rate", (Number(g("debt_assumptions", "interest_rate")) || 7.25) / 100, "Annual rate", "0.00%");
-    const refAmort = inputRow(ws, r++, "Amortization (Years)", Number(g("debt_assumptions", "amortization_years")) || 25, "", "0");
-    const refClosingPct = inputRow(ws, r++, "Closing Cost %", 0.02, "Typically 1.5-3%", "0.0%");
-
-    const refLoan = formulaRow(ws, r++, "Loan Amount", `${refPrice}*${refLTV}`, "$#,##0", "", { bold: true });
-    const refClosing = formulaRow(ws, r++, "Closing Costs", `${refPrice}*${refClosingPct}`, "$#,##0");
-    const refEquity = formulaRow(ws, r++, "Total Equity Required", `${refPrice}-${refLoan}+${refClosing}`, "$#,##0", "Down payment + closing", { bold: true });
-    // Annual debt service: =PMT(rate/12, amort*12, -loan)*12
-    const refDS = formulaRow(ws, r++, "Annual Debt Service", `PMT(${refRate}/12,${refAmort}*12,-${refLoan})*12`, "$#,##0", "", { bold: true });
-    r++;
-
-    // ── SECTION: RETURNS (all formulas) ──
-    ws.getCell(r, 1).value = "RETURNS - ALL CALCULATED"; ws.getCell(r, 1).font = secFont; r++;
-    hdrRow(ws, r, ["Metric", "Value", "Notes"]); r++;
-
-    formulaRow(ws, r++, "Cap Rate", `${refNOI}/${refPrice}`, "0.00%", "NOI ÷ Price", { bold: true });
-    formulaRow(ws, r++, "Price / SF", `${refPrice}/${refSf}`, "$#,##0");
-    const refCashFlow = formulaRow(ws, r++, "Annual Cash Flow", `${refNOI}-${refDS}`, "$#,##0", "NOI − Debt Service");
-    formulaRow(ws, r++, "DSCR", `${refNOI}/${refDS}`, "0.00\"x\"", "NOI ÷ Debt Service - target >1.25x", { bold: true });
-    formulaRow(ws, r++, "Cash-on-Cash", `${refCashFlow}/${refEquity}`, "0.00%", "Cash Flow ÷ Equity", { bold: true });
-    formulaRow(ws, r++, "Debt Yield", `${refNOI}/${refLoan}`, "0.00%", "NOI ÷ Loan - lender metric");
-    formulaRow(ws, r++, "Monthly Cash Flow", `${refCashFlow}/12`, "$#,##0");
-    r++;
-
-    // ── SECTION: QUICK SCENARIOS ──
-    ws.getCell(r, 1).value = "QUICK SCENARIOS - Change price above to see these update"; ws.getCell(r, 1).font = secFont; r++;
-    ws.getCell(r, 1).value = "Or reference the discount table below for a quick comparison."; ws.getCell(r, 1).font = noteFont; r++;
-    hdrRow(ws, r, ["Discount", "Price", "Cap Rate", "DSCR", "Cash-on-Cash"], [14, 18, 14, 14, 16]); r++;
-    ws.getColumn(3).width = Math.max(ws.getColumn(3).width || 0, 14);
-    ws.getColumn(4).width = Math.max(ws.getColumn(4).width || 0, 14);
-    ws.getColumn(5).width = Math.max(ws.getColumn(5).width || 0, 16);
-
-    for (const pct of [0, 5, 10, 15, 20]) {
-      const discPrice = askPrice * (1 - pct / 100);
-      const discLoan = discPrice * 0.65;
-      const discEquity = discPrice * 0.35 + discPrice * 0.02;
-      const mRate = (7.25 / 100) / 12;
-      const discDS = discLoan > 0 ? (discLoan * mRate) / (1 - Math.pow(1 + mRate, -300)) * 12 : 0;
-      const discCap = discPrice > 0 ? (noiOm / discPrice) * 100 : 0;
-      const discDSCR = discDS > 0 ? noiOm / discDS : 0;
-      const discCoC = discEquity > 0 ? ((noiOm - discDS) / discEquity) * 100 : 0;
-
-      const vals = [
-        pct === 0 ? "Asking" : `−${pct}%`,
-        fmt$(discPrice),
-        discCap.toFixed(2) + "%",
-        discDSCR.toFixed(2) + "x",
-        discCoC.toFixed(1) + "%"
-      ];
-      vals.forEach((v, i) => {
-        const c = ws.getCell(r, i + 1); c.value = v; c.border = borders;
-        c.font = pct === 0 ? boldLabel : valFont;
-        c.fill = pct === 0 ? ltBlue : white;
-      });
-      r++;
+    r = sectionBand(wsS, r, "AI Signals", 3);
+    hdrRow(wsS, r++, ["Signal", "Assessment", ""]);
+    const sigPairs: Array<[string, any]> = [
+      ["Overall", g("signals", "overall_signal")],
+      ["Pricing", g("signals", "pricing_signal")],
+      ["Location", g("signals", "location_signal")],
+      ["Zoning", g("signals", "zoning_signal")],
+      ["Utilities", g("signals", "utilities_signal")],
+    ];
+    let si = 0;
+    for (const [label, val] of sigPairs) {
+      if (!val) continue;
+      const isRed = String(val).toLowerCase().includes("red") || String(val).toLowerCase().includes("sell");
+      const isGreen = String(val).toLowerCase().includes("green") || String(val).toLowerCase().includes("buy");
+      dataRow(wsS, r++, label, val, "", { red: isRed, green: isGreen, zebra: si++ });
     }
-    r++;
-    ws.getCell(r, 1).value = "Note: Quick scenarios use OM NOI with default 65% LTV / 7.25% rate. Your model inputs above may differ.";
-    ws.getCell(r, 1).font = noteFont;
+    const rec = g("signals", "recommendation");
+    if (rec) { r++; dataRow(wsS, r++, "Recommendation", rec, "", { bold: true }); }
 
-    // Freeze title rows for better navigation
-    ws.views = [{ state: "frozen", ySplit: 5 }];
+    const safeName = propertyName.replace(/[^a-zA-Z0-9 -]/g, "").replace(/\s+/g, "-");
+    const filename = `${safeName}-Land-Underwriting.xlsx`;
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    if (options?.returnBlob) return { blob, filename };
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    return;
+  }
 
-    // ================================================================
-    // NEW SHEET: SENSITIVITY ANALYSIS (price × exit cap matrix)
-    // ================================================================
-    const wsSens = wb.addWorksheet("Sensitivity");
-    let sr = 2;
-    wsSens.getColumn(1).width = 26;
-    for (let c = 2; c <= 8; c++) wsSens.getColumn(c).width = 14;
-    wsSens.getCell(sr, 1).value = `${propertyName} - Sensitivity Analysis`; wsSens.getCell(sr, 1).font = titleFont; sr++;
-    wsSens.getCell(sr, 1).value = "Tests how returns change across price and exit cap assumptions."; wsSens.getCell(sr, 1).font = noteFont; sr++;
-    wsSens.getCell(sr, 1).value = "Green = strong IRR. Yellow = marginal. Red = below hurdle."; wsSens.getCell(sr, 1).font = noteFont; sr += 2;
+  // ─────────────────────────────────────────────────────────────
+  // INCOME-PRODUCING path (retail / industrial / office / multifamily)
+  // ─────────────────────────────────────────────────────────────
 
-    // Assumptions block (local inputs so sheet stands on its own)
-    wsSens.getCell(sr, 1).value = "ASSUMPTIONS"; wsSens.getCell(sr, 1).font = secFont; sr++;
-    const sensHoldYrs = inputRow(wsSens, sr++, "Hold Period (Years)", 7, "Typical CRE hold", "0");
-    const sensNoiGrowth = inputRow(wsSens, sr++, "NOI Growth / Yr", 0.025, "Rent + reimbursement inflation", "0.0%");
-    const sensRate = inputRow(wsSens, sr++, "Loan Rate", 0.0725, "", "0.00%");
-    const sensAmort = inputRow(wsSens, sr++, "Amort (Years)", 25, "", "0");
-    const sensLTV = inputRow(wsSens, sr++, "LTV", 0.65, "", "0.0%");
-    const sensSellCosts = inputRow(wsSens, sr++, "Selling Costs % of Exit", 0.025, "Broker fees + closing", "0.0%");
-    const sensBaseNOI = inputRow(wsSens, sr++, "Year-1 NOI", noiOm || 0, "From OM or your model", "$#,##0");
-    sr += 2;
+  const askPrice    = Number(g("pricing_deal_terms", "asking_price")) || 0;
+  const buildSfRaw  = Number(g("property_basics", "building_sf")) || 0;
+  const noiOm       = Number(g("expenses", "noi_om")) || 0;
+  const baseRent    = Number(g("income", "base_rent")) || 0;
+  const nnnReimb    = Number(g("income", "nnn_reimbursements")) || 0;
+  const otherInc    = Number(g("income", "other_income")) || 0;
+  const camExp      = Number(g("expenses", "cam_expenses")) || 0;
+  const propTax     = Number(g("expenses", "property_taxes")) || 0;
+  const insurance   = Number(g("expenses", "insurance")) || 0;
+  const mgmtFee     = Number(g("expenses", "management_fee")) || 0;
+  const otherExp    = Number(g("expenses", "other_expenses")) || 0;
+  const ltvStart    = (Number(g("debt_assumptions", "ltv")) || 65) / 100;
+  const rateStart   = (Number(g("debt_assumptions", "interest_rate")) || 7.25) / 100;
+  const amortStart  = Number(g("debt_assumptions", "amortization_years")) || 25;
 
-    // IRR sensitivity table: Price (rows) × Exit Cap (cols)
-    wsSens.getCell(sr, 1).value = "10-YEAR UNLEVERED IRR (Price × Exit Cap)"; wsSens.getCell(sr, 1).font = secFont; sr++;
-    wsSens.getCell(sr, 1).value = "Find the cell where your assumptions land, then ask: can we live with that IRR?"; wsSens.getCell(sr, 1).font = noteFont; sr++;
+  // ================================================================
+  // SHEET: Assumptions — SINGLE SOURCE OF TRUTH for every input
+  // ================================================================
+  const wsA = wb.addWorksheet("Assumptions", { views: [{ showGridLines: false, state: "frozen", ySplit: 3 }] });
+  const ASM = "Assumptions";
+  wsA.getColumn(1).width = 32; wsA.getColumn(2).width = 18; wsA.getColumn(3).width = 44;
+  let ar = 1;
+  ar = sheetTitleBanner(wsA, ar, "Assumptions", "Every yellow cell is editable. All other sheets reference these values.", 3);
 
-    const exitCaps = [0.060, 0.065, 0.070, 0.075, 0.080, 0.085, 0.090];
-    const priceMultipliers = [0.80, 0.85, 0.90, 0.95, 1.00, 1.05, 1.10];
+  // Section: Deal / Property
+  ar = sectionBand(wsA, ar, "Deal & Property", 3);
+  hdrRow(wsA, ar++, ["Input", "Value", "Notes"]);
+  const aPrice   = inputRow(wsA, ar++, "Purchase Price", askPrice, "Editable — change to test scenarios", FMT_MONEY, { sheetName: ASM, zebra: 0 });
+  const aBldgSf  = inputRow(wsA, ar++, "Building SF (GLA)", buildSfRaw || 1, "From OM", FMT_NUM, { sheetName: ASM, zebra: 1 });
+  const aClosing = inputRow(wsA, ar++, "Closing Cost %", 0.02, "Typically 1.5% – 3.0%", FMT_PCT1, { sheetName: ASM, zebra: 2 });
 
-    // Header row for exit caps
-    const hdrR = sr;
-    wsSens.getCell(hdrR, 1).value = "Price \\ Exit Cap"; wsSens.getCell(hdrR, 1).font = hdrFont; wsSens.getCell(hdrR, 1).fill = navy; wsSens.getCell(hdrR, 1).border = borders;
+  // Section: Income
+  ar++;
+  ar = sectionBand(wsA, ar, "Income", 3);
+  hdrRow(wsA, ar++, ["Input", "Value", "Notes"]);
+  const aBaseRent = inputRow(wsA, ar++, "Base Rent (Annual)", baseRent, "From OM rent roll", FMT_MONEY, { sheetName: ASM, zebra: 0 });
+  const aReimb    = inputRow(wsA, ar++, "NNN Reimbursements", nnnReimb, "CAM + Tax + Insurance recoveries", FMT_MONEY, { sheetName: ASM, zebra: 1 });
+  const aOther    = inputRow(wsA, ar++, "Other Income", otherInc, "Parking, late fees, percentage rent, etc.", FMT_MONEY, { sheetName: ASM, zebra: 2 });
+  const aVacancy  = inputRow(wsA, ar++, "Vacancy & Credit Loss", 0.05, "Stress-test occupancy", FMT_PCT1, { sheetName: ASM, zebra: 3 });
+
+  // Section: Operating Expenses
+  ar++;
+  ar = sectionBand(wsA, ar, "Operating Expenses", 3);
+  hdrRow(wsA, ar++, ["Input", "Value", "Notes"]);
+  const aCam      = inputRow(wsA, ar++, "CAM / Common Area", camExp, camExp ? "From OM" : "Not in OM — enter if known", FMT_MONEY, { sheetName: ASM, zebra: 0 });
+  const aTax      = inputRow(wsA, ar++, "Real Estate Taxes", propTax, propTax ? "From OM" : "Verify with county assessor", FMT_MONEY, { sheetName: ASM, zebra: 1 });
+  const aIns      = inputRow(wsA, ar++, "Insurance", insurance, insurance ? "From OM" : "Get broker quote", FMT_MONEY, { sheetName: ASM, zebra: 2 });
+  const aMgmt     = inputRow(wsA, ar++, "Management Fee", mgmtFee, mgmtFee ? "From OM" : "Typically 3% – 6% of EGI", FMT_MONEY, { sheetName: ASM, zebra: 3 });
+  const aReserves = inputRow(wsA, ar++, "Reserves / CapEx", 0, "Annual — $0.25 / SF is a common floor", FMT_MONEY, { sheetName: ASM, zebra: 4 });
+  const aOtherExp = inputRow(wsA, ar++, "Other Expenses", otherExp, "", FMT_MONEY, { sheetName: ASM, zebra: 5 });
+
+  // Section: Financing
+  ar++;
+  ar = sectionBand(wsA, ar, "Financing", 3);
+  hdrRow(wsA, ar++, ["Input", "Value", "Notes"]);
+  const aLTV   = inputRow(wsA, ar++, "LTV", ltvStart, "Loan-to-value", FMT_PCT1, { sheetName: ASM, zebra: 0 });
+  const aRate  = inputRow(wsA, ar++, "Interest Rate", rateStart, "Annual", FMT_PCT, { sheetName: ASM, zebra: 1 });
+  const aAmort = inputRow(wsA, ar++, "Amortization (Years)", amortStart, "", FMT_YEAR, { sheetName: ASM, zebra: 2 });
+
+  // Section: Exit / Growth
+  ar++;
+  ar = sectionBand(wsA, ar, "Exit & Growth", 3);
+  hdrRow(wsA, ar++, ["Input", "Value", "Notes"]);
+  const aRentGr  = inputRow(wsA, ar++, "Rent Growth / Year", 0.025, "Typical CRE 2% – 3%", FMT_PCT1, { sheetName: ASM, zebra: 0 });
+  const aExpGr   = inputRow(wsA, ar++, "Expense Growth / Year", 0.030, "Often outpaces rent growth", FMT_PCT1, { sheetName: ASM, zebra: 1 });
+  const aExitCap = inputRow(wsA, ar++, "Exit Cap Rate", 0.075, "Typically 25 – 50 bps above entry", FMT_PCT, { sheetName: ASM, zebra: 2 });
+  const aSellC   = inputRow(wsA, ar++, "Selling Costs at Exit", 0.025, "Broker + closing", FMT_PCT1, { sheetName: ASM, zebra: 3 });
+  const aHold    = inputRow(wsA, ar++, "Hold Period (Years)", 10, "Used for IRR calculation", FMT_YEAR, { sheetName: ASM, zebra: 4 });
+
+  // Section: OM Reference (read-only — what the OM states)
+  ar++;
+  ar = sectionBand(wsA, ar, "OM Reference (read-only)", 3);
+  hdrRow(wsA, ar++, ["Metric", "Value", "Source"]);
+  const omNoiRow = ar;
+  dataRow(wsA, ar++, "NOI (as stated in OM)", noiOm || null, "From OM", { numFmt: FMT_MONEY, zebra: 0 });
+  dataRow(wsA, ar++, "Cap Rate (as stated in OM)", Number(g("pricing_deal_terms", "cap_rate_om")) ? Number(g("pricing_deal_terms", "cap_rate_om")) / 100 : null, "From OM", { numFmt: FMT_PCT, zebra: 1 });
+  dataRow(wsA, ar++, "EGI (as stated in OM)", Number(g("income", "effective_gross_income")) || null, "From OM", { numFmt: FMT_MONEY, zebra: 2 });
+  dataRow(wsA, ar++, "Total Expenses (as stated in OM)", Number(g("expenses", "total_expenses")) || null, "From OM", { numFmt: FMT_MONEY, zebra: 3 });
+
+  // ================================================================
+  // SHEET: Underwriting — formulas only; ties to Assumptions
+  // ================================================================
+  const wsU = wb.addWorksheet("Underwriting", { views: [{ showGridLines: false, state: "frozen", ySplit: 3 }] });
+  const UW = "Underwriting";
+  wsU.getColumn(1).width = 32; wsU.getColumn(2).width = 18; wsU.getColumn(3).width = 44;
+  let ur = 1;
+  ur = sheetTitleBanner(wsU, ur, `Underwriting — ${propertyName}`, loc ? `${loc} · ${typeLabel}` : typeLabel, 3);
+
+  // Income block
+  ur = sectionBand(wsU, ur, "Income", 3);
+  hdrRow(wsU, ur++, ["Line Item", "Amount", "Notes"]);
+  const uPGI = formulaRow(wsU, ur++, "Potential Gross Income", `${aBaseRent}+${aReimb}+${aOther}`, FMT_MONEY, "Base Rent + Reimbursements + Other", { bold: true, sheetName: UW });
+  const uVac = formulaRow(wsU, ur++, "Less: Vacancy & Credit Loss", `-${uPGI}*${aVacancy}`, FMT_MONEY, "", { sheetName: UW });
+  const uEGI = formulaRow(wsU, ur++, "Effective Gross Income", `${uPGI}+${uVac}`, FMT_MONEY, "PGI − Vacancy", { bold: true, sheetName: UW });
+
+  // Expense block
+  ur++;
+  ur = sectionBand(wsU, ur, "Operating Expenses", 3);
+  hdrRow(wsU, ur++, ["Line Item", "Amount", "Notes"]);
+  formulaRow(wsU, ur++, "CAM / Common Area",     `${aCam}`,      FMT_MONEY, "", { cross: true });
+  formulaRow(wsU, ur++, "Real Estate Taxes",     `${aTax}`,      FMT_MONEY, "", { cross: true });
+  formulaRow(wsU, ur++, "Insurance",             `${aIns}`,      FMT_MONEY, "", { cross: true });
+  formulaRow(wsU, ur++, "Management Fee",        `${aMgmt}`,     FMT_MONEY, "", { cross: true });
+  formulaRow(wsU, ur++, "Reserves / CapEx",      `${aReserves}`, FMT_MONEY, "", { cross: true });
+  formulaRow(wsU, ur++, "Other Expenses",        `${aOtherExp}`, FMT_MONEY, "", { cross: true });
+  const uTotalExp = formulaRow(wsU, ur++, "Total Operating Expenses", `${aCam}+${aTax}+${aIns}+${aMgmt}+${aReserves}+${aOtherExp}`, FMT_MONEY, "", { bold: true, sheetName: UW });
+
+  // NOI block
+  ur++;
+  ur = sectionBand(wsU, ur, "Net Operating Income", 3);
+  hdrRow(wsU, ur++, ["Metric", "Value", "Notes"]);
+  const uNOI    = formulaRow(wsU, ur++, "NOI (modeled)", `${uEGI}-${uTotalExp}`, FMT_MONEY, "EGI − Total Expenses", { bold: true, sheetName: UW });
+  formulaRow(wsU, ur++, "NOI / SF", `${uNOI}/${aBldgSf}`, FMT_MONEY_D, "");
+  formulaRow(wsU, ur++, "Δ vs. OM NOI", `${uNOI}-'Assumptions'!$B$${omNoiRow}`, FMT_MONEY, "How your model differs from the OM");
+
+  // Financing block
+  ur++;
+  ur = sectionBand(wsU, ur, "Financing", 3);
+  hdrRow(wsU, ur++, ["Metric", "Value", "Notes"]);
+  const uLoan    = formulaRow(wsU, ur++, "Loan Amount", `${aPrice}*${aLTV}`, FMT_MONEY, "", { bold: true, sheetName: UW });
+  const uClosing = formulaRow(wsU, ur++, "Closing Costs", `${aPrice}*${aClosing}`, FMT_MONEY, "", { sheetName: UW });
+  const uEquity  = formulaRow(wsU, ur++, "Total Equity Required", `${aPrice}-${uLoan}+${uClosing}`, FMT_MONEY, "Down payment + closing", { bold: true, sheetName: UW });
+  const uDS      = formulaRow(wsU, ur++, "Annual Debt Service", `PMT(${aRate}/12,${aAmort}*12,-${uLoan})*12`, FMT_MONEY, "", { bold: true, sheetName: UW });
+
+  // Returns block
+  ur++;
+  ur = sectionBand(wsU, ur, "Returns", 3);
+  hdrRow(wsU, ur++, ["Metric", "Value", "Notes"]);
+  formulaRow(wsU, ur++, "Cap Rate",          `${uNOI}/${aPrice}`,         FMT_PCT,   "NOI ÷ Price", { bold: true });
+  formulaRow(wsU, ur++, "Price / SF",        `${aPrice}/${aBldgSf}`,      FMT_MONEY, "");
+  const uCF = formulaRow(wsU, ur++, "Annual Cash Flow (Levered)", `${uNOI}-${uDS}`, FMT_MONEY, "NOI − Debt Service", { bold: true, sheetName: UW });
+  formulaRow(wsU, ur++, "DSCR",              `${uNOI}/${uDS}`,            FMT_MULT,  "Target > 1.25x", { bold: true });
+  formulaRow(wsU, ur++, "Cash-on-Cash",      `${uCF}/${uEquity}`,         FMT_PCT,   "Cash Flow ÷ Equity", { bold: true });
+  formulaRow(wsU, ur++, "Debt Yield",        `${uNOI}/${uLoan}`,          FMT_PCT,   "NOI ÷ Loan — lender metric");
+  formulaRow(wsU, ur++, "Monthly Cash Flow", `${uCF}/12`,                 FMT_MONEY, "");
+
+  // ================================================================
+  // SHEET: Pro Forma — 10-year cash flow, levered IRR & equity multiple
+  // ================================================================
+  const wsCF = wb.addWorksheet("Pro Forma", { views: [{ showGridLines: false, state: "frozen", ySplit: 4, xSplit: 1 }] });
+  wsCF.getColumn(1).width = 30;
+  for (let c = 2; c <= 13; c++) wsCF.getColumn(c).width = 14;
+  let cr = 1;
+  cr = sheetTitleBanner(wsCF, cr, `Pro Forma — ${propertyName}`, "Year 0 = equity outflow. Years 1–10 = cash flow. Year 10 includes exit proceeds.", 13);
+
+  cr = sectionBand(wsCF, cr, "Annual Projection", 13);
+  const cfHdr = cr;
+  const headers: string[] = ["Metric"];
+  for (let y = 0; y <= 10; y++) headers.push(y === 0 ? "Year 0" : `Yr ${y}`);
+  hdrRow(wsCF, cfHdr, headers);
+  cr++;
+
+  // NOI row
+  const noiR = cr;
+  const lNoi = wsCF.getCell(noiR, 1); lNoi.value = "Net Operating Income"; lNoi.font = boldLabel; lNoi.fill = white; lNoi.border = borders; lNoi.alignment = { vertical: "middle", indent: 1 };
+  const y0noi = wsCF.getCell(noiR, 2); y0noi.value = ""; y0noi.fill = white; y0noi.border = borders;
+  for (let y = 1; y <= 10; y++) {
+    const col = y + 2;
+    const c = wsCF.getCell(noiR, col);
+    c.value = { formula: `${uNOI}*(1+${aRentGr})^(${y - 1})` };
+    c.numFmt = FMT_MONEY; c.fill = ltGreen; c.border = borders; c.font = valFont;
+    c.alignment = { vertical: "middle", horizontal: "right" };
+  }
+  cr++;
+
+  // Debt service row (constant)
+  const dsR = cr;
+  const lDs = wsCF.getCell(dsR, 1); lDs.value = "Debt Service"; lDs.font = labelFont; lDs.fill = white; lDs.border = borders; lDs.alignment = { vertical: "middle", indent: 1 };
+  wsCF.getCell(dsR, 2).fill = white; wsCF.getCell(dsR, 2).border = borders;
+  for (let y = 1; y <= 10; y++) {
+    const col = y + 2;
+    const c = wsCF.getCell(dsR, col);
+    c.value = { formula: `${uDS}` };
+    c.numFmt = FMT_MONEY; c.fill = ltGreen; c.border = borders; c.font = valFont;
+    c.alignment = { vertical: "middle", horizontal: "right" };
+  }
+  cr++;
+
+  // Operating Cash Flow row
+  const cashR = cr;
+  const lCF = wsCF.getCell(cashR, 1); lCF.value = "Operating Cash Flow"; lCF.font = boldLabel; lCF.fill = white; lCF.border = borders; lCF.alignment = { vertical: "middle", indent: 1 };
+  const y0 = wsCF.getCell(cashR, 2);
+  y0.value = { formula: `-${uEquity}` };
+  y0.numFmt = FMT_MONEY; y0.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFEE2E2" } }; y0.border = borders; y0.font = redFont;
+  y0.alignment = { vertical: "middle", horizontal: "right" };
+  for (let y = 1; y <= 10; y++) {
+    const col = y + 2;
+    const c = wsCF.getCell(cashR, col);
+    const noiA1 = wsCF.getCell(noiR, col).address;
+    const dsA1  = wsCF.getCell(dsR, col).address;
+    c.value = { formula: `${noiA1}-${dsA1}` };
+    c.numFmt = FMT_MONEY; c.fill = ltGreen; c.border = borders; c.font = boldLabel;
+    c.alignment = { vertical: "middle", horizontal: "right" };
+  }
+  cr++;
+
+  // Exit proceeds row
+  const exitR = cr;
+  const lEx = wsCF.getCell(exitR, 1); lEx.value = "Exit Proceeds"; lEx.font = labelFont; lEx.fill = white; lEx.border = borders; lEx.alignment = { vertical: "middle", indent: 1 };
+  for (let y = 0; y <= 10; y++) {
+    const col = y + 2;
+    const c = wsCF.getCell(exitR, col);
+    c.border = borders; c.numFmt = FMT_MONEY; c.fill = white;
+    c.alignment = { vertical: "middle", horizontal: "right" };
+    if (y === 10) {
+      const noi10 = wsCF.getCell(noiR, col).address;
+      // Loan balance @ end of year 10 from remaining PMT schedule
+      const bal = `(PMT(${aRate}/12,${aAmort}*12,-${uLoan})*(1-(1+${aRate}/12)^(-(${aAmort}*12-120))))/(${aRate}/12)`;
+      c.value = { formula: `${noi10}*(1+${aRentGr})/${aExitCap}*(1-${aSellC})-${bal}` };
+      c.fill = ltGreen; c.font = greenFont;
+    }
+  }
+  cr++;
+
+  // Total cash flow row (operating + exit)
+  const totR = cr;
+  const lT = wsCF.getCell(totR, 1); lT.value = "Total Cash Flow"; lT.font = { ...boldLabel, color: { argb: "FFFFFFFF" } }; lT.fill = navy2; lT.border = borders; lT.alignment = { vertical: "middle", indent: 1 };
+  for (let y = 0; y <= 10; y++) {
+    const col = y + 2;
+    const c = wsCF.getCell(totR, col);
+    const cA1 = wsCF.getCell(cashR, col).address;
+    const eA1 = wsCF.getCell(exitR, col).address;
+    c.value = { formula: `${cA1}+N(${eA1})` };
+    c.numFmt = FMT_MONEY; c.fill = ltBlue; c.border = borders; c.font = boldLabel;
+    c.alignment = { vertical: "middle", horizontal: "right" };
+  }
+  cr += 2;
+
+  // IRR / Equity Multiple
+  cr = sectionBand(wsCF, cr, "Returns (10-Year Levered)", 13);
+  const firstT = wsCF.getCell(totR, 2).address;
+  const lastT  = wsCF.getCell(totR, 12).address;
+  const lirr = wsCF.getCell(cr, 1); lirr.value = "Levered IRR"; lirr.font = boldLabel; lirr.fill = white; lirr.border = borders; lirr.alignment = { vertical: "middle", indent: 1 };
+  const cirr = wsCF.getCell(cr, 2); cirr.value = { formula: `IRR(${firstT}:${lastT})` }; cirr.numFmt = FMT_PCT; cirr.font = { ...greenFont, size: 12 }; cirr.fill = ltGreen; cirr.border = borders; cirr.alignment = { vertical: "middle", horizontal: "right" };
+  cr++;
+  const lem = wsCF.getCell(cr, 1); lem.value = "Equity Multiple"; lem.font = boldLabel; lem.fill = white; lem.border = borders; lem.alignment = { vertical: "middle", indent: 1 };
+  const firstCash = wsCF.getCell(cashR, 3).address;
+  const lastCash  = wsCF.getCell(cashR, 12).address;
+  const y10Exit   = wsCF.getCell(exitR, 12).address;
+  const cem = wsCF.getCell(cr, 2); cem.value = { formula: `(SUM(${firstCash}:${lastCash})+${y10Exit})/${uEquity}+1` }; cem.numFmt = FMT_MULT; cem.font = { ...greenFont, size: 12 }; cem.fill = ltGreen; cem.border = borders; cem.alignment = { vertical: "middle", horizontal: "right" };
+
+  // ================================================================
+  // SHEET: Sensitivity — IRR matrix (Price × Exit Cap)
+  // ================================================================
+  const wsSens = wb.addWorksheet("Sensitivity", { views: [{ showGridLines: false, state: "frozen", ySplit: 4, xSplit: 1 }] });
+  wsSens.getColumn(1).width = 24;
+  for (let c = 2; c <= 8; c++) wsSens.getColumn(c).width = 14;
+  let sr = 1;
+  sr = sheetTitleBanner(wsSens, sr, "Sensitivity", "10-Year Unlevered IRR · Price (rows) × Exit Cap (cols)", 8);
+
+  sr = sectionBand(wsSens, sr, "IRR Matrix", 8);
+  const exitCaps = [0.060, 0.065, 0.070, 0.075, 0.080, 0.085, 0.090];
+  const priceMultipliers = [0.80, 0.85, 0.90, 0.95, 1.00, 1.05, 1.10];
+
+  const sHdr = sr;
+  const sh0 = wsSens.getCell(sHdr, 1); sh0.value = "Price \\ Exit Cap"; sh0.font = hdrFont; sh0.fill = navy2; sh0.border = borders; sh0.alignment = { vertical: "middle", horizontal: "left", indent: 1 };
+  exitCaps.forEach((cap, i) => {
+    const c = wsSens.getCell(sHdr, i + 2);
+    c.value = cap; c.numFmt = FMT_PCT; c.font = hdrFont; c.fill = navy2; c.border = borders;
+    c.alignment = { vertical: "middle", horizontal: "right" };
+  });
+  wsSens.getRow(sHdr).height = 20;
+  sr++;
+
+  priceMultipliers.forEach((pm, rowIdx) => {
+    const rowFill = pm === 1.0 ? ltBlue : (rowIdx % 2 === 0 ? white : subtle);
+    const lc = wsSens.getCell(sr, 1);
+    lc.value = pm === 1.0 ? "Asking Price" : (pm > 1 ? `+${Math.round((pm - 1) * 100)}%` : `−${Math.round((1 - pm) * 100)}%`);
+    lc.font = pm === 1.0 ? boldLabel : labelFont; lc.fill = rowFill; lc.border = borders;
+    lc.alignment = { vertical: "middle", indent: 1 };
     exitCaps.forEach((cap, i) => {
-      const c = wsSens.getCell(hdrR, i + 2);
-      c.value = cap; c.numFmt = "0.00%"; c.font = hdrFont; c.fill = navy; c.border = borders;
+      const c = wsSens.getCell(sr, i + 2);
+      const priceRef = `(${aPrice}*${pm})`;
+      // Unlevered IRR = (NOI/Price)^yield + ((ExitValue/Price)^(1/N) - 1) capital appreciation component
+      const formula = `(${uNOI}/${priceRef})+((${uNOI}*(1+${aRentGr})^(${aHold}-1)/${cap}*(1-${aSellC}))/${priceRef})^(1/${aHold})-1`;
+      c.value = { formula };
+      c.numFmt = FMT_PCT1; c.border = borders; c.fill = rowFill; c.font = pm === 1.0 ? boldLabel : valFont;
+      c.alignment = { vertical: "middle", horizontal: "right" };
     });
     sr++;
+  });
+  sr++;
+  const sNote = wsSens.getCell(sr, 1); sNote.value = "Industry hurdles: Core ~8–10%, Core+ ~10–13%, Value-Add ~13–18%, Opportunistic 18%+."; sNote.font = noteFont;
 
-    // Body rows: one per price multiplier
-    for (const pm of priceMultipliers) {
-      const discPrice = askPrice * pm;
-      wsSens.getCell(sr, 1).value = `${pm === 1.0 ? "Asking" : (pm > 1 ? "+" : "") + Math.round((pm - 1) * 100) + "%"} (${fmt$(discPrice)})`;
-      wsSens.getCell(sr, 1).font = pm === 1.0 ? boldLabel : labelFont;
-      wsSens.getCell(sr, 1).fill = pm === 1.0 ? ltBlue : white;
-      wsSens.getCell(sr, 1).border = borders;
+  // ================================================================
+  // SHEET: Offer Ladder
+  // ================================================================
+  const wsO = wb.addWorksheet("Offer Ladder", { views: [{ showGridLines: false, state: "frozen", ySplit: 4, xSplit: 1 }] });
+  wsO.getColumn(1).width = 30;
+  for (let c = 2; c <= 5; c++) wsO.getColumn(c).width = 18;
+  wsO.getColumn(6).width = 44;
+  let or = 1;
+  or = sheetTitleBanner(wsO, or, "Offer Ladder", "Four offer levels and the returns they produce at current OM NOI", 6);
 
-      exitCaps.forEach((cap, i) => {
-        const c = wsSens.getCell(sr, i + 2);
-        // Approximate IRR formula: ((exit_value / purchase)^(1/yrs) - 1) + yield approximation
-        // exit_value = NOI_yr_N / cap * (1 - selling_costs), where NOI_yr_N = NOI * (1+growth)^(yrs-1)
-        // Annual unlevered yield = NOI / purchase
-        // Simplified unlevered IRR = yield + (exit_value/purchase)^(1/yrs) - 1
-        const formula = `(${sensBaseNOI}/${discPrice})+((${sensBaseNOI}*(1+${sensNoiGrowth})^(${sensHoldYrs}-1)/${cap}*(1-${sensSellCosts}))/${discPrice})^(1/${sensHoldYrs})-1`;
-        c.value = { formula };
-        c.numFmt = "0.0%";
-        c.border = borders;
-        // Can't conditional-fill with formula values in ExcelJS — leave default fill, user sees % directly
-        c.font = valFont;
-        c.fill = white;
+  or = sectionBand(wsO, or, "Offers", 6);
+  hdrRow(wsO, or++, ["Metric", "Walk-Away", "Below Fair", "Target", "Stretch", "Notes"]);
+  const offerPcts = [0.85, 0.90, 0.95, 1.00];
+  const priceR = or;
+  const opl = wsO.getCell(priceR, 1); opl.value = "Offer Price"; opl.font = boldLabel; opl.fill = white; opl.border = borders; opl.alignment = { vertical: "middle", indent: 1 };
+  offerPcts.forEach((pct, i) => {
+    const c = wsO.getCell(priceR, i + 2);
+    c.value = Math.round(askPrice * pct); c.numFmt = FMT_MONEY; c.font = inputFont; c.fill = yellow; c.border = borders;
+    c.alignment = { vertical: "middle", horizontal: "right" };
+  });
+  or++;
+  const addOfferRow = (label: string, build: (priceCell: string) => string, fmt: string, note?: string) => {
+    const l = wsO.getCell(or, 1); l.value = label; l.font = labelFont; l.fill = white; l.border = borders; l.alignment = { vertical: "middle", indent: 1 };
+    offerPcts.forEach((_, i) => {
+      const c = wsO.getCell(or, i + 2);
+      const priceCell = wsO.getCell(priceR, i + 2).address;
+      c.value = { formula: build(priceCell) };
+      c.numFmt = fmt; c.font = valFont; c.fill = ltGreen; c.border = borders;
+      c.alignment = { vertical: "middle", horizontal: "right" };
+    });
+    if (note) { const nc = wsO.getCell(or, 6); nc.value = note; nc.font = noteFont; nc.fill = white; nc.border = borders; nc.alignment = { vertical: "middle", wrapText: true, indent: 1 }; }
+    or++;
+  };
+  addOfferRow("% of Asking",           (pc) => `${pc}/${askPrice}`, FMT_PCT1);
+  addOfferRow("Implied Cap (OM NOI)",  (pc) => `${noiOm}/${pc}`, FMT_PCT, "Based on stated OM NOI");
+  addOfferRow("DSCR (OM NOI)",         (pc) => `${noiOm}/(PMT(${aRate}/12,${aAmort}*12,-${pc}*${aLTV})*12)`, FMT_MULT, "Lender comfort test");
+  addOfferRow("Cash-on-Cash (Yr 1)",   (pc) => `(${noiOm}-PMT(${aRate}/12,${aAmort}*12,-${pc}*${aLTV})*12)/(${pc}*(1-${aLTV})+${pc}*${aClosing})`, FMT_PCT);
+  addOfferRow("Equity Required",       (pc) => `${pc}*(1-${aLTV})+${pc}*${aClosing}`, FMT_MONEY);
+  or += 2;
+
+  // Strategy notes
+  or = sectionBand(wsO, or, "Strategy Notes", 6);
+  const notes: Array<[string, string]> = [
+    ["Walk-Away", "Below this the math does not work. If seller won't meet, pass."],
+    ["Below Fair", "Opening bid. Test seller motivation — if they counter aggressively, move up."],
+    ["Target", "Where you expect to land after negotiation. Most likely settlement price."],
+    ["Stretch", "Max acceptable. Only for unique, irreplaceable, uncontested deals."],
+  ];
+  notes.forEach(([label, text], i) => {
+    const zf = zebraFill(i);
+    const lc = wsO.getCell(or, 1); lc.value = label; lc.font = boldLabel; lc.fill = zf; lc.border = borders; lc.alignment = { vertical: "middle", indent: 1 };
+    const nc = wsO.getCell(or, 2); nc.value = text; nc.font = valFont; nc.fill = zf; nc.border = borders; nc.alignment = { vertical: "middle", wrapText: true, indent: 1 };
+    wsO.mergeCells(or, 2, or, 6);
+    or++;
+  });
+
+  // ================================================================
+  // SHEET: Rent Roll (tenant-level data)
+  // ================================================================
+  const tenantFields = fields.filter(f => f.fieldGroup === "rent_roll" && f.fieldName.startsWith("tenant_"));
+  const tenantMap: Record<string, Record<string, any>> = {};
+  for (const f of tenantFields) {
+    const match = f.fieldName.match(/^tenant_(\d+)_(.+)$/);
+    if (match) {
+      const [, idx, key] = match;
+      if (!tenantMap[idx]) tenantMap[idx] = {};
+      tenantMap[idx][key] = f.isUserOverridden ? f.userOverrideValue : f.normalizedValue || f.rawValue;
+    }
+  }
+  const tenantList = Object.entries(tenantMap).sort(([a], [b]) => Number(a) - Number(b)).map(([, t]) => t);
+  if (tenantList.length > 0) {
+    const wsR = wb.addWorksheet("Rent Roll", { views: [{ showGridLines: false, state: "frozen", ySplit: 5 }] });
+    let rr = 1;
+    rr = sheetTitleBanner(wsR, rr, "Rent Roll", `${tenantList.length} tenant${tenantList.length === 1 ? "" : "s"} · ${propertyName}`, 7);
+    hdrRow(wsR, rr++, ["Tenant", "SF", "Annual Rent", "Rent/SF", "Lease Type", "Lease End", "Status"], [26, 10, 14, 11, 14, 13, 13]);
+    let totalSf = 0, totalRent = 0;
+    tenantList.forEach((t, i) => {
+      const isExpired = String(t.status || "").toLowerCase().match(/expir|mtm|vacant/);
+      const zf = zebraFill(i);
+      const sf = Number(t.sf) || null;
+      const rent = Number(t.rent) || null;
+      const rentPsf = t.rent_psf ? Number(t.rent_psf) : (sf && rent ? rent / sf : null);
+      totalSf += sf || 0; totalRent += rent || 0;
+      const cells: Array<[any, string | undefined]> = [
+        [t.name || "", undefined],
+        [sf, FMT_NUM],
+        [rent, FMT_MONEY],
+        [rentPsf, FMT_MONEY_D],
+        [t.type || "", undefined],
+        [t.lease_end || "", undefined],
+        [t.status || "", undefined],
+      ];
+      cells.forEach(([v, fmt], ci) => {
+        const c = wsR.getCell(rr, ci + 1);
+        c.value = v === null ? "" : v;
+        c.font = ci === 0 ? { ...labelFont, bold: true } : (isExpired ? redFont : valFont);
+        c.fill = zf; c.border = borders;
+        if (fmt) c.numFmt = fmt;
+        c.alignment = { vertical: "middle", horizontal: ci === 0 ? "left" : (typeof v === "number" ? "right" : "left"), indent: ci === 0 ? 1 : 0 };
       });
-      sr++;
-    }
-    sr += 2;
-    wsSens.getCell(sr, 1).value = "Formula approximates unlevered IRR using yield + capital appreciation. Levered IRR will be higher with positive leverage.";
-    wsSens.getCell(sr, 1).font = noteFont; sr++;
-    wsSens.getCell(sr, 1).value = "Industry hurdles: Core ~8-10%, Core+ ~10-13%, Value-Add ~13-18%, Opportunistic 18%+.";
-    wsSens.getCell(sr, 1).font = noteFont;
-
-    wsSens.views = [{ state: "frozen", ySplit: 3, xSplit: 1 }];
-
-    // ================================================================
-    // NEW SHEET: 10-YEAR CASH FLOW PROJECTION with IRR
-    // ================================================================
-    const wsCF = wb.addWorksheet("10-Yr Cash Flow");
-    let cr = 2;
-    wsCF.getColumn(1).width = 32;
-    for (let c = 2; c <= 13; c++) wsCF.getColumn(c).width = 14;
-    wsCF.getCell(cr, 1).value = `${propertyName} - 10-Year Cash Flow Projection`; wsCF.getCell(cr, 1).font = titleFont; cr++;
-    wsCF.getCell(cr, 1).value = "Year-by-year pro forma with exit at Year 10. Yellow cells = inputs. Green cells = formulas."; wsCF.getCell(cr, 1).font = noteFont; cr += 2;
-
-    // Assumptions block
-    wsCF.getCell(cr, 1).value = "ASSUMPTIONS"; wsCF.getCell(cr, 1).font = secFont; cr++;
-    const cfYrNOI = inputRow(wsCF, cr++, "Year-1 NOI", noiOm || 0, "From your Scenario Model", "$#,##0");
-    const cfPrice = inputRow(wsCF, cr++, "Purchase Price", askPrice, "", "$#,##0");
-    const cfRentGr = inputRow(wsCF, cr++, "Rent Growth / Yr", 0.025, "Typical CRE 2-3%", "0.0%");
-    const cfExpGr = inputRow(wsCF, cr++, "Expense Growth / Yr", 0.030, "Typically outpaces rent growth", "0.0%");
-    const cfYr1Exp = inputRow(wsCF, cr++, "Year-1 Operating Expenses", 0, "Leave 0 if NOI is net of expenses", "$#,##0");
-    const cfLTV = inputRow(wsCF, cr++, "LTV", 0.65, "", "0.0%");
-    const cfRate = inputRow(wsCF, cr++, "Loan Rate", 0.0725, "", "0.00%");
-    const cfAmort = inputRow(wsCF, cr++, "Amortization (Yrs)", 25, "", "0");
-    const cfExitCap = inputRow(wsCF, cr++, "Exit Cap Rate", 0.075, "Typically 25-50 bps above entry", "0.00%");
-    const cfSellCost = inputRow(wsCF, cr++, "Selling Cost % at Exit", 0.025, "Broker + closing", "0.0%");
-    const cfClosing = inputRow(wsCF, cr++, "Closing Costs at Purchase", 0.02, "% of price", "0.0%");
-
-    const cfLoan = formulaRow(wsCF, cr++, "Loan Amount", `${cfPrice}*${cfLTV}`, "$#,##0");
-    const cfEquity = formulaRow(wsCF, cr++, "Total Equity at Close", `${cfPrice}-${cfLoan}+${cfPrice}*${cfClosing}`, "$#,##0", "Down + closing costs", { bold: true });
-    const cfDS = formulaRow(wsCF, cr++, "Annual Debt Service", `PMT(${cfRate}/12,${cfAmort}*12,-${cfLoan})*12`, "$#,##0");
-    cr += 2;
-
-    // Year-by-year table
-    wsCF.getCell(cr, 1).value = "ANNUAL PROJECTION"; wsCF.getCell(cr, 1).font = secFont; cr++;
-    const cfHdr = cr;
-    wsCF.getCell(cfHdr, 1).value = "Metric"; wsCF.getCell(cfHdr, 1).font = hdrFont; wsCF.getCell(cfHdr, 1).fill = navy; wsCF.getCell(cfHdr, 1).border = borders;
-    for (let y = 0; y <= 10; y++) {
-      const c = wsCF.getCell(cfHdr, y + 2);
-      c.value = y === 0 ? "Year 0" : `Yr ${y}`;
-      c.font = hdrFont; c.fill = navy; c.border = borders; c.alignment = { horizontal: "center" };
-    }
-    cr++;
-
-    // Year 0 = purchase year (equity outflow only)
-    // Years 1-10 = NOI - debt service
-    // Year 10 exit = NOI_10/exitCap*(1-sellCost) - loan_balance_10
-
-    // NOI row (grows with cfRentGr)
-    const noiR = cr;
-    wsCF.getCell(noiR, 1).value = "Net Operating Income"; wsCF.getCell(noiR, 1).font = boldLabel; wsCF.getCell(noiR, 1).border = borders; wsCF.getCell(noiR, 1).fill = white;
-    wsCF.getCell(noiR, 2).value = ""; wsCF.getCell(noiR, 2).border = borders; // Year 0
-    for (let y = 1; y <= 10; y++) {
-      const col = y + 2;
-      const c = wsCF.getCell(noiR, col);
-      c.value = { formula: `${cfYrNOI}*(1+${cfRentGr})^(${y - 1})` };
-      c.numFmt = "$#,##0"; c.fill = ltGreen; c.border = borders;
-    }
-    cr++;
-
-    // Debt Service row (constant)
-    const dsR = cr;
-    wsCF.getCell(dsR, 1).value = "Debt Service"; wsCF.getCell(dsR, 1).font = labelFont; wsCF.getCell(dsR, 1).border = borders; wsCF.getCell(dsR, 1).fill = white;
-    wsCF.getCell(dsR, 2).value = ""; wsCF.getCell(dsR, 2).border = borders;
-    for (let y = 1; y <= 10; y++) {
-      const col = y + 2;
-      const c = wsCF.getCell(dsR, col);
-      c.value = { formula: cfDS };
-      c.numFmt = "$#,##0"; c.fill = ltGreen; c.border = borders;
-    }
-    cr++;
-
-    // Operating Cash Flow (NOI - DS)
-    const cashR = cr;
-    wsCF.getCell(cashR, 1).value = "Operating Cash Flow"; wsCF.getCell(cashR, 1).font = boldLabel; wsCF.getCell(cashR, 1).border = borders; wsCF.getCell(cashR, 1).fill = white;
-    wsCF.getCell(cashR, 2).value = { formula: `-${cfEquity}` }; wsCF.getCell(cashR, 2).numFmt = "$#,##0"; wsCF.getCell(cashR, 2).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFEE2E2" } }; wsCF.getCell(cashR, 2).border = borders; wsCF.getCell(cashR, 2).font = redFont;
-    for (let y = 1; y <= 10; y++) {
-      const col = y + 2;
-      const c = wsCF.getCell(cashR, col);
-      const noiCol = String.fromCharCode(65 + col - 1); // e.g., C, D, ...
-      const dsCellA1 = wsCF.getCell(dsR, col).address;
-      const noiCellA1 = wsCF.getCell(noiR, col).address;
-      c.value = { formula: `${noiCellA1}-${dsCellA1}` };
-      c.numFmt = "$#,##0"; c.fill = ltGreen; c.border = borders; c.font = boldLabel;
-    }
-    cr++;
-
-    // Exit proceeds row (only Year 10)
-    const exitR = cr;
-    wsCF.getCell(exitR, 1).value = "Exit Proceeds (Year 10)"; wsCF.getCell(exitR, 1).font = boldLabel; wsCF.getCell(exitR, 1).border = borders; wsCF.getCell(exitR, 1).fill = white;
-    for (let y = 0; y <= 10; y++) {
-      const col = y + 2;
-      const c = wsCF.getCell(exitR, col);
-      if (y === 10) {
-        const noiY11A1 = wsCF.getCell(noiR, col).address;
-        // Approximate remaining loan balance at year 10 for 25-yr amort
-        const balFormula = `(PMT(${cfRate}/12,${cfAmort}*12,-${cfLoan})*(1-(1+${cfRate}/12)^(-(${cfAmort}*12-120))))/(${cfRate}/12)`;
-        c.value = { formula: `${noiY11A1}*(1+${cfRentGr})/${cfExitCap}*(1-${cfSellCost})-${balFormula}` };
-        c.numFmt = "$#,##0"; c.fill = ltGreen; c.border = borders; c.font = greenFont;
-      } else {
-        // Leave the cell truly blank (no value) so it's treated as 0 in
-        // downstream arithmetic. Setting value = "" writes a text string,
-        // which causes #VALUE! when added to a number in Total Cash Flow.
-        c.numFmt = "$#,##0"; c.border = borders;
-      }
-    }
-    cr++;
-
-    // Total cash flow per year (operating + exit)
-    const totR = cr;
-    wsCF.getCell(totR, 1).value = "Total Cash Flow"; wsCF.getCell(totR, 1).font = { ...boldLabel, color: { argb: "FF253352" } }; wsCF.getCell(totR, 1).border = borders; wsCF.getCell(totR, 1).fill = ltBlue;
-    for (let y = 0; y <= 10; y++) {
-      const col = y + 2;
-      const c = wsCF.getCell(totR, col);
-      const cashA1 = wsCF.getCell(cashR, col).address;
-      const exitA1 = wsCF.getCell(exitR, col).address;
-      // N() coerces blank/text to 0, so years 0-9 (no exit) work cleanly.
-      c.value = { formula: `${cashA1}+N(${exitA1})` };
-      c.numFmt = "$#,##0"; c.fill = ltBlue; c.border = borders; c.font = boldLabel;
-    }
-    cr += 2;
-
-    // IRR
-    wsCF.getCell(cr, 1).value = "Levered IRR (10-Year Hold)"; wsCF.getCell(cr, 1).font = secFont; wsCF.getCell(cr, 1).border = borders;
-    const firstCol = wsCF.getCell(totR, 2).address;
-    const lastCol = wsCF.getCell(totR, 12).address;
-    wsCF.getCell(cr, 2).value = { formula: `IRR(${firstCol}:${lastCol})` };
-    wsCF.getCell(cr, 2).numFmt = "0.00%"; wsCF.getCell(cr, 2).font = { ...greenFont, size: 12 }; wsCF.getCell(cr, 2).fill = ltGreen; wsCF.getCell(cr, 2).border = borders;
-    cr++;
-    wsCF.getCell(cr, 1).value = "Equity Multiple"; wsCF.getCell(cr, 1).font = secFont; wsCF.getCell(cr, 1).border = borders;
-    wsCF.getCell(cr, 2).value = { formula: `SUM(${wsCF.getCell(cashR, 3).address}:${wsCF.getCell(cashR, 12).address})/${cfEquity}+${wsCF.getCell(exitR, 12).address}/${cfEquity}+1` };
-    wsCF.getCell(cr, 2).numFmt = "0.00\"x\""; wsCF.getCell(cr, 2).font = { ...greenFont, size: 12 }; wsCF.getCell(cr, 2).fill = ltGreen; wsCF.getCell(cr, 2).border = borders;
-    cr += 2;
-    wsCF.getCell(cr, 1).value = "Note: IRR includes equity outflow at Year 0, 10 years of cash flow, and exit proceeds at Year 10.";
-    wsCF.getCell(cr, 1).font = noteFont;
-
-    wsCF.views = [{ state: "frozen", ySplit: cfHdr, xSplit: 1 }];
-
-    // ================================================================
-    // NEW SHEET: OFFER LADDER - multi-offer strategy
-    // ================================================================
-    const wsOffer = wb.addWorksheet("Offer Ladder");
-    let or = 2;
-    wsOffer.getColumn(1).width = 28;
-    for (let c = 2; c <= 5; c++) wsOffer.getColumn(c).width = 22;
-    wsOffer.getCell(or, 1).value = `${propertyName} - Offer Ladder`; wsOffer.getCell(or, 1).font = titleFont; or++;
-    wsOffer.getCell(or, 1).value = "Four offer levels to consider, with expected returns at each price point."; wsOffer.getCell(or, 1).font = noteFont; or += 2;
-
-    const offerPcts = [0.85, 0.90, 0.95, 1.00];
-    const offerLabels = ["Walk-Away", "Below Fair", "Target", "Stretch"];
-
-    // Header
-    hdrRow(wsOffer, or, ["Metric", ...offerLabels]); or++;
-
-    // Price row
-    const priceR = or;
-    wsOffer.getCell(priceR, 1).value = "Offer Price"; wsOffer.getCell(priceR, 1).font = boldLabel; wsOffer.getCell(priceR, 1).fill = white; wsOffer.getCell(priceR, 1).border = borders;
-    offerPcts.forEach((pct, i) => {
-      const c = wsOffer.getCell(priceR, i + 2);
-      c.value = askPrice * pct; c.numFmt = "$#,##0"; c.font = boldLabel; c.border = borders;
-      c.fill = yellow; // editable
+      rr++;
     });
-    or++;
+    // Totals row
+    rr++;
+    const tl = wsR.getCell(rr, 1); tl.value = "TOTALS"; tl.font = { ...boldLabel, color: { argb: "FFFFFFFF" } }; tl.fill = navy2; tl.border = borders; tl.alignment = { vertical: "middle", indent: 1 };
+    const tsf = wsR.getCell(rr, 2); tsf.value = totalSf; tsf.font = { ...boldLabel, color: { argb: "FFFFFFFF" } }; tsf.fill = navy2; tsf.border = borders; tsf.numFmt = FMT_NUM; tsf.alignment = { vertical: "middle", horizontal: "right" };
+    const trr = wsR.getCell(rr, 3); trr.value = totalRent; trr.font = { ...boldLabel, color: { argb: "FFFFFFFF" } }; trr.fill = navy2; trr.border = borders; trr.numFmt = FMT_MONEY; trr.alignment = { vertical: "middle", horizontal: "right" };
+    const tpsf = wsR.getCell(rr, 4); tpsf.value = totalSf > 0 ? totalRent / totalSf : 0; tpsf.font = { ...boldLabel, color: { argb: "FFFFFFFF" } }; tpsf.fill = navy2; tpsf.border = borders; tpsf.numFmt = FMT_MONEY_D; tpsf.alignment = { vertical: "middle", horizontal: "right" };
+  }
 
-    // % of ask row
-    wsOffer.getCell(or, 1).value = "% of Asking"; wsOffer.getCell(or, 1).font = labelFont; wsOffer.getCell(or, 1).fill = white; wsOffer.getCell(or, 1).border = borders;
-    offerPcts.forEach((pct, i) => {
-      const c = wsOffer.getCell(or, i + 2);
-      const priceCell = wsOffer.getCell(priceR, i + 2).address;
-      c.value = { formula: `${priceCell}/${askPrice}` };
-      c.numFmt = "0.0%"; c.font = valFont; c.border = borders; c.fill = ltGreen;
-    });
-    or++;
+  // ================================================================
+  // SHEET: OM Data — property facts + signals (no financials; those live in Assumptions)
+  // ================================================================
+  const wsD = wb.addWorksheet("OM Data", { views: [{ showGridLines: false }] });
+  wsD.getColumn(1).width = 28; wsD.getColumn(2).width = 30; wsD.getColumn(3).width = 22;
+  let dr = 1;
+  dr = sheetTitleBanner(wsD, dr, "OM Reference Data", "Raw extracted values from the OM / flyer. Editable inputs live on the Assumptions sheet.", 3);
 
-    // Implied cap at OM NOI
-    wsOffer.getCell(or, 1).value = "Implied Cap Rate (OM NOI)"; wsOffer.getCell(or, 1).font = labelFont; wsOffer.getCell(or, 1).fill = white; wsOffer.getCell(or, 1).border = borders;
-    offerPcts.forEach((_, i) => {
-      const c = wsOffer.getCell(or, i + 2);
-      const priceCell = wsOffer.getCell(priceR, i + 2).address;
-      c.value = { formula: `${noiOm}/${priceCell}` };
-      c.numFmt = "0.00%"; c.font = valFont; c.border = borders; c.fill = ltGreen;
-    });
-    or++;
-
-    // DSCR at 65/7.25/25
-    wsOffer.getCell(or, 1).value = "DSCR (at 65% LTV / 7.25%)"; wsOffer.getCell(or, 1).font = labelFont; wsOffer.getCell(or, 1).fill = white; wsOffer.getCell(or, 1).border = borders;
-    offerPcts.forEach((_, i) => {
-      const c = wsOffer.getCell(or, i + 2);
-      const priceCell = wsOffer.getCell(priceR, i + 2).address;
-      c.value = { formula: `${noiOm}/(PMT(0.0725/12,25*12,-${priceCell}*0.65)*12)` };
-      c.numFmt = "0.00\"x\""; c.font = valFont; c.border = borders; c.fill = ltGreen;
-    });
-    or++;
-
-    // Cash-on-Cash
-    wsOffer.getCell(or, 1).value = "Cash-on-Cash (Yr 1)"; wsOffer.getCell(or, 1).font = labelFont; wsOffer.getCell(or, 1).fill = white; wsOffer.getCell(or, 1).border = borders;
-    offerPcts.forEach((_, i) => {
-      const c = wsOffer.getCell(or, i + 2);
-      const priceCell = wsOffer.getCell(priceR, i + 2).address;
-      c.value = { formula: `(${noiOm}-PMT(0.0725/12,25*12,-${priceCell}*0.65)*12)/(${priceCell}*0.37)` };
-      c.numFmt = "0.00%"; c.font = valFont; c.border = borders; c.fill = ltGreen;
-    });
-    or++;
-
-    // Equity check
-    wsOffer.getCell(or, 1).value = "Equity Required"; wsOffer.getCell(or, 1).font = labelFont; wsOffer.getCell(or, 1).fill = white; wsOffer.getCell(or, 1).border = borders;
-    offerPcts.forEach((_, i) => {
-      const c = wsOffer.getCell(or, i + 2);
-      const priceCell = wsOffer.getCell(priceR, i + 2).address;
-      c.value = { formula: `${priceCell}*0.37` };
-      c.numFmt = "$#,##0"; c.font = valFont; c.border = borders; c.fill = ltGreen;
-    });
-    or += 2;
-
-    // Strategy notes per column
-    const stratNotes: [string, string][] = [
-      ["Walk-Away", "Final price. If seller won't meet this, pass. Below this, the math doesn't work."],
-      ["Below Fair", "Opening bid. Test seller motivation. If they counter aggressively, move up."],
-      ["Target", "Where you expect to land after negotiation. Most likely settlement price."],
-      ["Stretch", "Maximum acceptable. Only go here for unique, irreplaceable assets or uncontested deals."],
+  dr = sectionBand(wsD, dr, "Property Facts", 3);
+  hdrRow(wsD, dr++, ["Field", "Value", "Source"]);
+  const propRows: Array<[string, any, string | undefined]> = [
+    ["Address", addr, "OM"],
+    ["City, State", [city, state].filter(Boolean).join(", "), "OM"],
+    ["Year Built", Number(g("property_basics", "year_built")) || null, "OM"],
+    ["GLA (SF)", Number(g("property_basics", "building_sf")) || null, "OM"],
+    ["Occupancy", Number(g("property_basics", "occupancy_pct")) ? Number(g("property_basics", "occupancy_pct")) / 100 : null, "OM"],
+    ["Tenant Count", Number(g("property_basics", "tenant_count")) || null, "OM"],
+    ["WALE (years)", Number(g("property_basics", "wale_years")) || null, "OM"],
+    ["Broker", g("property_basics", "broker") || "", "OM"],
+  ];
+  propRows.forEach(([label, val, src], i) => {
+    const fmt = label === "Occupancy" ? FMT_PCT1 : label === "GLA (SF)" || label === "Tenant Count" ? FMT_NUM : label === "WALE (years)" ? '0.0' : label === "Year Built" ? FMT_YEAR : undefined;
+    dataRow(wsD, dr++, label, val === null ? "" : val, src, { numFmt: fmt, zebra: i });
+  });
+  if (analysisType === "industrial") {
+    dr++;
+    dr = sectionBand(wsD, dr, "Industrial Specifics", 3);
+    hdrRow(wsD, dr++, ["Field", "Value", "Source"]);
+    const rows: Array<[string, any]> = [
+      ["Clear Height (ft)", Number(g("industrial_addons", "clear_height")) || null],
+      ["Loading Type", g("industrial_addons", "loading_type") || ""],
+      ["Dock / Loading Count", Number(g("industrial_addons", "loading_count")) || null],
+      ["Office Finish %", Number(g("industrial_addons", "office_finish_pct")) ? Number(g("industrial_addons", "office_finish_pct")) / 100 : null],
     ];
-    hdrRow(wsOffer, or, ["Strategy", "Purpose"]); or++;
-    for (const [label, note] of stratNotes) {
-      const c1 = wsOffer.getCell(or, 1); c1.value = label; c1.font = boldLabel; c1.fill = white; c1.border = borders;
-      const c2 = wsOffer.getCell(or, 2); c2.value = note; c2.font = valFont; c2.fill = white; c2.border = borders; c2.alignment = { wrapText: true };
-      wsOffer.mergeCells(or, 2, or, 5);
-      or++;
-    }
-    or += 2;
-    wsOffer.getCell(or, 1).value = "All price cells are editable. DSCR target >1.25x; Cash-on-Cash target >6% for market-rate deals.";
-    wsOffer.getCell(or, 1).font = noteFont;
+    rows.forEach(([label, val], i) => {
+      const fmt = label.includes("%") ? FMT_PCT1 : label.includes("(ft)") || label.includes("Count") ? FMT_NUM : undefined;
+      dataRow(wsD, dr++, label, val === null ? "" : val, "OM", { numFmt: fmt, zebra: i });
+    });
+  } else if (analysisType === "office") {
+    dr++;
+    dr = sectionBand(wsD, dr, "Office Specifics", 3);
+    hdrRow(wsD, dr++, ["Field", "Value", "Source"]);
+    const rows: Array<[string, any]> = [
+      ["Suite Count", Number(g("office_addons", "suite_count")) || null],
+      ["Floor Count", Number(g("office_addons", "floor_count")) || null],
+      ["Building Class", g("office_addons", "building_class") || ""],
+      ["Parking Ratio", Number(g("office_addons", "parking_ratio")) || null],
+    ];
+    rows.forEach(([label, val], i) => {
+      const fmt = label.includes("Count") || label.includes("Ratio") ? FMT_NUM : undefined;
+      dataRow(wsD, dr++, label, val === null ? "" : val, "OM", { numFmt: fmt, zebra: i });
+    });
+  } else if (analysisType === "multifamily") {
+    dr++;
+    dr = sectionBand(wsD, dr, "Multifamily Specifics", 3);
+    hdrRow(wsD, dr++, ["Field", "Value", "Source"]);
+    const rows: Array<[string, any]> = [
+      ["Unit Count", Number(g("multifamily_addons", "unit_count")) || null],
+      ["Avg Rent / Unit", Number(g("multifamily_addons", "avg_rent_per_unit")) || null],
+      ["Vacancy %", Number(g("multifamily_addons", "vacancy_rate")) ? Number(g("multifamily_addons", "vacancy_rate")) / 100 : null],
+    ];
+    rows.forEach(([label, val], i) => {
+      const fmt = label.includes("Rent") ? FMT_MONEY : label.includes("%") ? FMT_PCT1 : FMT_NUM;
+      dataRow(wsD, dr++, label, val === null ? "" : val, "OM", { numFmt: fmt, zebra: i });
+    });
   }
 
-  // ================================================================
-  // SHEET 2: RENT ROLL
-  // ================================================================
-  if (analysisType !== "land") {
-    const tenantFields = fields.filter(f => f.fieldGroup === "rent_roll" && f.fieldName.startsWith("tenant_"));
-    const tenantMap: Record<string, Record<string, any>> = {};
-    for (const f of tenantFields) {
-      const match = f.fieldName.match(/^tenant_(\d+)_(.+)$/);
-      if (match) {
-        const [, idx, key] = match;
-        if (!tenantMap[idx]) tenantMap[idx] = {};
-        tenantMap[idx][key] = f.isUserOverridden ? f.userOverrideValue : f.normalizedValue || f.rawValue;
-      }
-    }
-    const tenantList = Object.entries(tenantMap).sort(([a], [b]) => Number(a) - Number(b)).map(([, t]) => t);
-    const totalSf = tenantList.reduce((sum, t) => sum + (Number(t.sf) || 0), 0);
-    const totalRent = tenantList.reduce((sum, t) => sum + (Number(t.rent) || 0), 0);
-    const buildingSf = Number(g("property_basics", "building_sf")) || totalSf;
-
-    const ws2 = wb.addWorksheet("Rent Roll");
-    let r = 2;
-    ws2.getCell(r, 1).value = `RENT ROLL - ${propertyName}`; ws2.getCell(r, 1).font = titleFont; r += 2;
-    hdrRow(ws2, r, ["Tenant", "SF", "Annual Rent", "Rent/SF", "Lease Type", "Lease End", "Status"], [24, 10, 14, 10, 13, 12, 12]); r++;
-
-    for (const t of tenantList) {
-      const isExpired = String(t.status || "").toLowerCase().includes("expir") || String(t.status || "").toLowerCase().includes("mtm") || String(t.status || "").toLowerCase().includes("vacant");
-      const rowVals = [t.name, Number(t.sf) || "", Number(t.rent) || "", t.rent_psf ? Number(t.rent_psf) : "", t.type || "", t.lease_end || "", t.status || ""];
-      rowVals.forEach((v, i) => {
-        const c = ws2.getCell(r, i + 1); c.value = v; c.border = borders; c.fill = white;
-        c.font = i === 0 ? { ...labelFont, bold: true } : (isExpired ? redFont : valFont);
-        if (i === 1) c.numFmt = "#,##0";
-        if (i === 2) c.numFmt = "$#,##0";
-        if (i === 3) c.numFmt = "$#,##0.00";
-      }); r++;
-    }
-
-    if (tenantList.length > 0) {
-      r++;
-      const c1 = ws2.getCell(r, 1); c1.value = "TOTALS"; c1.font = boldLabel; c1.fill = ltBlue; c1.border = borders;
-      const c2 = ws2.getCell(r, 2); c2.value = totalSf; c2.font = boldLabel; c2.fill = ltBlue; c2.border = borders; c2.numFmt = "#,##0";
-      const c3 = ws2.getCell(r, 3); c3.value = totalRent; c3.font = boldLabel; c3.fill = ltBlue; c3.border = borders; c3.numFmt = "$#,##0";
-      const c4 = ws2.getCell(r, 4); c4.value = totalSf > 0 ? totalRent / totalSf : 0; c4.font = boldLabel; c4.fill = ltBlue; c4.border = borders; c4.numFmt = "$#,##0.00";
-    }
-  }
-
-  // ================================================================
-  // SHEET 3: OM DATA - raw reference from the document
-  // ================================================================
-  const wsRef = wb.addWorksheet(analysisType === "land" ? "Site Data" : "OM Data");
-  let r = 2;
-  wsRef.getColumn(1).width = 28; wsRef.getColumn(2).width = 28; wsRef.getColumn(3).width = 30;
-  wsRef.getCell(r, 1).value = `${propertyName} - ${analysisType === "land" ? "SITE" : "OM"} REFERENCE DATA`; wsRef.getCell(r, 1).font = titleFont; r++;
-  wsRef.getCell(r, 1).value = "This is what was extracted from the OM/flyer. For reference only."; wsRef.getCell(r, 1).font = noteFont; r += 2;
-
-  // Property info
-  wsRef.getCell(r, 1).value = "PROPERTY"; wsRef.getCell(r, 1).font = secFont; r++;
-  hdrRow(wsRef, r, ["Field", "Value", "Source"]); r++;
-  dataRow(wsRef, r++, "Address", g("property_basics", "address") || "", "OM");
-  dataRow(wsRef, r++, "City, State", [g("property_basics", "city"), g("property_basics", "state")].filter(Boolean).join(", "), "OM");
-  dataRow(wsRef, r++, "Year Built", g("property_basics", "year_built") || "", "OM");
-  if (analysisType === "land") {
-    dataRow(wsRef, r++, "Acreage", g("property_basics", "lot_acres") || g("property_basics", "usable_acres") || "", "OM");
-    dataRow(wsRef, r++, "Zoning", g("land_zoning", "current_zoning") || g("land_addons", "zoning") || "", "OM");
-    dataRow(wsRef, r++, "Planned Use", g("land_zoning", "planned_use") || g("land_addons", "planned_use") || "", "OM");
-    dataRow(wsRef, r++, "Frontage", g("property_basics", "frontage_ft") || g("land_addons", "frontage_signal") || "", "OM");
-    dataRow(wsRef, r++, "Access", g("land_access", "road_access") || g("land_addons", "access_signal") || "", "OM");
-    dataRow(wsRef, r++, "Utilities", g("land_addons", "utilities_signal") || "", "OM");
-    dataRow(wsRef, r++, "Asking Price", fmt$(g("pricing_deal_terms", "asking_price")), "OM");
-    dataRow(wsRef, r++, "Price / Acre", g("pricing_deal_terms", "price_per_acre") || "", "OM");
-  } else {
-    dataRow(wsRef, r++, "GLA (SF)", g("property_basics", "building_sf") || "", "OM");
-    dataRow(wsRef, r++, "Occupancy", g("property_basics", "occupancy_pct") ? g("property_basics", "occupancy_pct") + "%" : "", "OM");
-    dataRow(wsRef, r++, "Tenants", g("property_basics", "tenant_count") || "", "OM");
-    dataRow(wsRef, r++, "WALE", g("property_basics", "wale_years") ? g("property_basics", "wale_years") + " yrs" : "", "OM");
-    dataRow(wsRef, r++, "Broker", g("property_basics", "broker") || "", "OM");
-    if (analysisType === "industrial") {
-      dataRow(wsRef, r++, "Clear Height", g("industrial_addons", "clear_height") || "", "OM");
-      dataRow(wsRef, r++, "Loading", g("industrial_addons", "loading_type") || "", "OM");
-      dataRow(wsRef, r++, "Dock Count", g("industrial_addons", "loading_count") || "", "OM");
-    }
-    if (analysisType === "office") {
-      dataRow(wsRef, r++, "Suite Count", g("office_addons", "suite_count") || "", "OM");
-      dataRow(wsRef, r++, "Parking Ratio", g("office_addons", "parking_ratio") || "", "OM");
-    }
-    r++;
-
-    // Financial data from OM
-    wsRef.getCell(r, 1).value = "FINANCIALS (from OM)"; wsRef.getCell(r, 1).font = secFont; r++;
-    hdrRow(wsRef, r, ["Field", "Value", "Notes"]); r++;
-    dataRow(wsRef, r++, "Asking Price", fmt$(g("pricing_deal_terms", "asking_price")), "OM");
-    dataRow(wsRef, r++, "Price / SF", g("pricing_deal_terms", "price_per_sf") ? "$" + Number(g("pricing_deal_terms", "price_per_sf")).toFixed(2) : "", "OM");
-    dataRow(wsRef, r++, "Cap Rate (OM)", g("pricing_deal_terms", "cap_rate_om") ? Number(g("pricing_deal_terms", "cap_rate_om")).toFixed(2) + "%" : "", "OM stated");
-    dataRow(wsRef, r++, "Base Rent", fmt$(g("income", "base_rent")), "OM");
-    dataRow(wsRef, r++, "NNN Reimbursements", fmt$(g("income", "nnn_reimbursements")), g("income", "nnn_reimbursements") ? "OM" : "Not stated");
-    dataRow(wsRef, r++, "CAM Charges", fmt$(g("expenses", "cam_expenses")), g("expenses", "cam_expenses") ? "OM" : "Not stated");
-    dataRow(wsRef, r++, "Real Estate Taxes", fmt$(g("expenses", "property_taxes")), g("expenses", "property_taxes") ? "OM" : "Not stated");
-    dataRow(wsRef, r++, "Insurance", fmt$(g("expenses", "insurance")), g("expenses", "insurance") ? "OM" : "Not stated");
-    dataRow(wsRef, r++, "Management Fee", fmt$(g("expenses", "management_fee")), g("expenses", "management_fee") ? "OM" : "Not stated");
-    dataRow(wsRef, r++, "Total Expenses", fmt$(g("expenses", "total_expenses")), g("expenses", "total_expenses") ? "OM" : "Not stated");
-    dataRow(wsRef, r++, "NOI (OM)", fmt$(g("expenses", "noi_om")), "OM stated NOI", { bold: true });
-    dataRow(wsRef, r++, "EGI", fmt$(g("income", "effective_gross_income")), g("income", "effective_gross_income") ? "OM" : "Not stated");
-  }
-
-  // Signals
-  r++;
-  wsRef.getCell(r, 1).value = "AI SIGNAL ASSESSMENT"; wsRef.getCell(r, 1).font = secFont; r++;
-  hdrRow(wsRef, r, ["Signal", "Assessment"]); r++;
-  const sigPairs = analysisType === "land" ? [
-    ["Overall", g("signals", "overall_signal")],
-    ["Pricing", g("signals", "pricing_signal")],
-    ["Location", g("signals", "location_signal")],
-    ["Zoning", g("signals", "zoning_signal")],
-    ["Utilities", g("signals", "utilities_signal")],
-  ] : [
+  // AI Signals block
+  dr++;
+  dr = sectionBand(wsD, dr, "AI Signal Assessment", 3);
+  hdrRow(wsD, dr++, ["Signal", "Assessment", ""]);
+  const sigPairs: Array<[string, any]> = [
     ["Overall", g("signals", "overall_signal")],
     ["Cap Rate", g("signals", "cap_rate_signal")],
     ["DSCR", g("signals", "dscr_signal")],
@@ -660,29 +752,18 @@ export async function generateUnderwritingXLSX(
     ["Basis / Price", g("signals", "basis_signal")],
     ["Tenant Quality", g("signals", "tenant_quality_signal")],
   ];
+  let si = 0;
   for (const [label, val] of sigPairs) {
     if (!val) continue;
     const isRed = String(val).toLowerCase().includes("red") || String(val).toLowerCase().includes("sell");
     const isGreen = String(val).toLowerCase().includes("green") || String(val).toLowerCase().includes("buy");
-    dataRow(wsRef, r++, label, val, "", isRed ? { red: true } : isGreen ? { green: true } : undefined);
+    dataRow(wsD, dr++, label, val, "", { red: isRed, green: isGreen, zebra: si++ });
   }
   const rec = g("signals", "recommendation");
-  if (rec) dataRow(wsRef, r++, "Recommendation", rec, "", { bold: true });
+  if (rec) { dr++; dataRow(wsD, dr++, "Recommendation", rec, "", { bold: true }); }
 
-  // ================================================================
-  // LAND-specific: simple inputs sheet (no scenario model for land)
-  // ================================================================
-  if (analysisType === "land") {
-    const wsLand = wb.addWorksheet("Pricing Analysis");
-    let lr = 2;
-    wsLand.getColumn(1).width = 28; wsLand.getColumn(2).width = 28;
-    wsLand.getCell(lr, 1).value = `LAND PRICING - ${propertyName}`; wsLand.getCell(lr, 1).font = titleFont; lr += 2;
-    hdrRow(wsLand, lr, ["Field", "Value"]); lr++;
-    dataRow(wsLand, lr++, "Asking Price", fmt$(g("pricing_deal_terms", "asking_price")));
-    dataRow(wsLand, lr++, "Acreage", g("property_basics", "lot_acres") || g("property_basics", "usable_acres") || "");
-    dataRow(wsLand, lr++, "Price / Acre", g("pricing_deal_terms", "price_per_acre") || "");
-    dataRow(wsLand, lr++, "Zoning", g("land_zoning", "current_zoning") || g("land_addons", "zoning") || "");
-  }
+  // Workbook opens on Assumptions
+  wb.views = [{ firstSheet: 0, activeTab: 0, visibility: "visible" }];
 
   // Download (or return blob for email attachment)
   const safeName = propertyName.replace(/[^a-zA-Z0-9 -]/g, "").replace(/\s+/g, "-");
