@@ -247,7 +247,18 @@ function DealSignalBadge({ score, band }: { score: number | null; band: string }
   const isYellow = b === "hold" || b === "neutral";
   const color = isGreen ? "#059669" : isYellow ? "#D97706" : "#DC2626";
   const bgColor = isGreen ? "#D1FAE5" : isYellow ? "#FEF3C7" : "#FDE8EA";
-  const displayBand = band.replace(/_/g, " ");
+  // Use the same human-readable labels as the dealboard so "hold" and
+  // "neutral" render consistently across pages. The dealboard shows "Neutral"
+  // for the hold band — match that here instead of the raw "Hold" string.
+  const bandLabels: Record<string, string> = {
+    "strong buy": "Strong Buy",
+    "buy": "Buy",
+    "hold": "Neutral",
+    "neutral": "Neutral",
+    "pass": "Pass",
+    "strong reject": "Strong Reject",
+  };
+  const displayBand = bandLabels[b] || band.replace(/_/g, " ");
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
       <div style={{
@@ -834,6 +845,16 @@ export default function PropertyDetailClient() {
             {siblingProps.map(sp => {
               const isActive = sp.id === propertyId;
               const spScore = (sp as any).scoreTotal || 0;
+              // Match the detail-page badge: color by Signal Band, not a raw
+              // numeric threshold. Falls back to numeric if band is missing.
+              const spBandNorm = ((sp as any).scoreBand || "").toLowerCase().replace(/_/g, " ");
+              const spSColor = spBandNorm === "strong buy" || spBandNorm === "buy"
+                ? "#059669"
+                : spBandNorm === "hold" || spBandNorm === "neutral"
+                  ? "#D97706"
+                  : spBandNorm === "pass" || spBandNorm === "strong reject"
+                    ? "#DC2626"
+                    : spScore >= 75 ? "#059669" : spScore >= 50 ? "#D97706" : "#DC2626";
               const spHero = (sp as any).heroImageUrl;
               const spName = cleanDisplayName(sp.propertyName, sp.address1, sp.city, sp.state);
               const spCity = [sp.city, sp.state].filter(Boolean).join(", ");
@@ -897,7 +918,7 @@ export default function PropertyDetailClient() {
                       <div style={{
                         display: "inline-flex", alignItems: "center", gap: 3, marginTop: 3,
                         fontSize: 9, fontWeight: 700,
-                        color: spScore >= 70 ? "#059669" : spScore >= 50 ? "#D97706" : "#DC2626",
+                        color: spSColor,
                       }}>
                         Score: {spScore}
                       </div>
@@ -1359,7 +1380,11 @@ function PropertyDetailInner({
                 <span style={{
                   marginTop: 6, fontSize: 9, fontWeight: 700, textTransform: "uppercase",
                   letterSpacing: "0.08em", color: sColor,
-                }}>{scoreBand.replace(/_/g, " ")}</span>
+                }}>{((): string => {
+                  const key = scoreBand.toLowerCase().replace(/_/g, " ");
+                  const map: Record<string, string> = { "strong buy": "Strong Buy", "buy": "Buy", "hold": "Neutral", "neutral": "Neutral", "pass": "Pass", "strong reject": "Strong Reject" };
+                  return map[key] || scoreBand.replace(/_/g, " ");
+                })()}</span>
               </div>
               {/* Right: Key metrics - stacked */}
               <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>

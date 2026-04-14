@@ -405,7 +405,10 @@ export async function generateUnderwritingXLSX(
         c.value = { formula: `${noiY11A1}*(1+${cfRentGr})/${cfExitCap}*(1-${cfSellCost})-${balFormula}` };
         c.numFmt = "$#,##0"; c.fill = ltGreen; c.border = borders; c.font = greenFont;
       } else {
-        c.value = ""; c.border = borders;
+        // Leave the cell truly blank (no value) so it's treated as 0 in
+        // downstream arithmetic. Setting value = "" writes a text string,
+        // which causes #VALUE! when added to a number in Total Cash Flow.
+        c.numFmt = "$#,##0"; c.border = borders;
       }
     }
     cr++;
@@ -418,7 +421,8 @@ export async function generateUnderwritingXLSX(
       const c = wsCF.getCell(totR, col);
       const cashA1 = wsCF.getCell(cashR, col).address;
       const exitA1 = wsCF.getCell(exitR, col).address;
-      c.value = { formula: `${cashA1}+IFERROR(${exitA1},0)` };
+      // N() coerces blank/text to 0, so years 0-9 (no exit) work cleanly.
+      c.value = { formula: `${cashA1}+N(${exitA1})` };
       c.numFmt = "$#,##0"; c.fill = ltBlue; c.border = borders; c.font = boldLabel;
     }
     cr += 2;

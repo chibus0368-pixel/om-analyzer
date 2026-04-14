@@ -152,9 +152,32 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
     setDuplicating(false);
   }
 
-  // Score color by value
-  const scoreColor = score != null ? (score >= 75 ? "#059669" : score >= 50 ? "#D97706" : "#EF4444") : "#9CA3AF";
-  const scoreBg = score != null ? (score >= 75 ? "rgba(5,150,105,0.08)" : score >= 50 ? "rgba(217,119,6,0.08)" : "rgba(239,68,68,0.08)") : "rgba(156,163,175,0.06)";
+  // Score color: drive off the Signal Band so the dealboard matches the
+  // property detail page (a 73 scored "Buy" shows green on the detail page,
+  // so it must show green here too). Fall back to numeric thresholds only
+  // when a band isn't set yet (e.g. still parsing).
+  const bandNorm = (scoreBand || "").toLowerCase().replace(/_/g, " ");
+  const bandIsGreen = bandNorm === "strong buy" || bandNorm === "buy";
+  const bandIsYellow = bandNorm === "hold" || bandNorm === "neutral";
+  const bandIsRed = bandNorm === "pass" || bandNorm === "strong reject";
+  const scoreColor = bandIsGreen
+    ? "#059669"
+    : bandIsYellow
+      ? "#D97706"
+      : bandIsRed
+        ? "#DC2626"
+        : score != null
+          ? score >= 75 ? "#059669" : score >= 50 ? "#D97706" : "#DC2626"
+          : "#9CA3AF";
+  const scoreBg = bandIsGreen
+    ? "rgba(5,150,105,0.08)"
+    : bandIsYellow
+      ? "rgba(217,119,6,0.08)"
+      : bandIsRed
+        ? "rgba(220,38,38,0.08)"
+        : score != null
+          ? score >= 75 ? "rgba(5,150,105,0.08)" : score >= 50 ? "rgba(217,119,6,0.08)" : "rgba(220,38,38,0.08)"
+          : "rgba(156,163,175,0.06)";
 
   return (
     <div
