@@ -7,7 +7,7 @@ import { getAuth } from "firebase/auth";
 interface UpgradeModalProps {
   open: boolean;
   onClose: () => void;
-  reason?: "limit_reached" | "save_required" | "feature_locked" | "anon_limit";
+  reason?: "limit_reached" | "save_required" | "feature_locked" | "anon_limit" | "upgrade";
   featureName?: string;
 }
 

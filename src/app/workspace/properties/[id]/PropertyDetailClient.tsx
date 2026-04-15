@@ -2019,97 +2019,109 @@ function PropertyDetailInner({
       {/* ═══════════════════════════════════════════════════ */}
       {/*  2. DEAL SUMMARY + IMAGE + SCORE (COMBINED CARD)     */}
       {/* ═══════════════════════════════════════════════════ */}
-      {(brief || scoreTotal) && (
-        <div className="pd-summary-card" style={{
-          background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
+      {/* ═══════════════════════════════════════════════════ */}
+      {/*  2A. DEALSIGNAL SCORE STRIP (horizontal)            */}
+      {/* ═══════════════════════════════════════════════════ */}
+      {scoreTotal && (() => {
+        const b = scoreBand.toLowerCase().replace(/_/g, " ");
+        const isGreen = b === "strong buy" || b === "buy";
+        const isYellow = b === "hold" || b === "neutral";
+        const verdict = isGreen
+          ? "Worth pursuing. Clean fundamentals, manageable risks."
+          : isYellow
+          ? "Not a clear winner. Proceed only if thesis fits."
+          : "Skip. Risk profile doesn't justify the price.";
+        const bandLabel = (() => {
+          const map: Record<string, string> = {
+            "strong buy": "Strong Buy", "buy": "Buy",
+            "hold": "Neutral", "neutral": "Neutral",
+            "pass": "Pass", "strong reject": "Strong Reject",
+          };
+          return map[b] || scoreBand.replace(/_/g, " ");
+        })();
+        const accent = isGreen ? "#059669" : isYellow ? "#D97706" : "#DC2626";
+        return (
+          <div className="pd-score-strip" style={{
+            display: "flex", alignItems: "center", gap: 20,
+            background: "#FFFFFF", borderRadius: 12,
+            border: "1px solid rgba(0,0,0,0.05)",
+            boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
+            padding: "18px 24px", marginBottom: 16,
+          }}>
+            <DealSignalBadge score={scoreTotal} band={scoreBand} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.secondary, marginBottom: 4 }}>
+                DealSignal Score <span style={{ color: accent, marginLeft: 6 }}>· {bandLabel}</span>
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "#0F172A", lineHeight: 1.5 }}>
+                {verdict}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ═══════════════════════════════════════════════════ */}
+      {/*  2B. EXECUTIVE SUMMARY (standalone card)            */}
+      {/* ═══════════════════════════════════════════════════ */}
+      {brief && (
+        <div style={{
+          background: "#FFFFFF", borderRadius: 12,
+          border: "1px solid rgba(0,0,0,0.05)",
           boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
-          display: "flex", overflow: "hidden", marginBottom: 24,
+          padding: "22px 26px", marginBottom: 24,
         }}>
-          {/* Left: Executive Summary */}
-          <div className="pd-summary-text" style={{ flex: 1, padding: "24px 28px" }}>
-            {brief ? (() => {
-              // Parse structured brief (JSON) or fall back to legacy plain text
-              let parsed: { overview?: string; strengths?: string[]; concerns?: string[] } | null = null;
-              try {
-                const obj = JSON.parse(brief);
-                if (obj && typeof obj.overview === "string") parsed = obj;
-              } catch { /* legacy plain text brief */ }
+          {(() => {
+            let parsed: { overview?: string; strengths?: string[]; concerns?: string[] } | null = null;
+            try {
+              const obj = JSON.parse(brief);
+              if (obj && typeof obj.overview === "string") parsed = obj;
+            } catch { /* legacy plain text */ }
 
-              if (parsed) {
-                return (
-                  <>
-                    <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", marginBottom: 12 }}>Executive Summary</div>
-                    <p style={{ fontSize: 14, color: "#0F172A", lineHeight: 1.75, margin: "0 0 16px" }}>{parsed.overview}</p>
-
-                    {parsed.strengths && parsed.strengths.length > 0 && (
-                      <div style={{ marginBottom: 14 }}>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", marginBottom: 8 }}>Key Strengths</div>
-                        {parsed.strengths.map((s: string, i: number) => (
-                          <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 6 }}>
-                            <span style={{ color: "#22C55E", fontSize: 14, lineHeight: "20px", flexShrink: 0 }}>✓</span>
-                            <span style={{ fontSize: 13, color: "#374151", lineHeight: "20px" }}>{s}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {parsed.concerns && parsed.concerns.length > 0 && (
-                      <div>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", marginBottom: 8 }}>Primary Concerns</div>
-                        {parsed.concerns.map((c: string, i: number) => (
-                          <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 6 }}>
-                            <span style={{ color: "#F59E0B", fontSize: 14, lineHeight: "20px", flexShrink: 0 }}>△</span>
-                            <span style={{ fontSize: 13, color: "#374151", lineHeight: "20px" }}>{c}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                );
-              }
-
-              // Legacy fallback: plain text paragraphs
+            if (parsed) {
               return (
                 <>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>DEAL SUMMARY</div>
-                  <div style={{ fontSize: 15, color: "#0F172A", lineHeight: 1.8 }}>
-                    {brief.split("\n").filter((p: string) => p.trim()).slice(0, 4).map((p: string, i: number) => (
-                      <p key={i} style={{ margin: "0 0 8px" }}>{p}</p>
-                    ))}
-                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", marginBottom: 12 }}>Executive Summary</div>
+                  <p style={{ fontSize: 14, color: "#0F172A", lineHeight: 1.75, margin: "0 0 16px" }}>{parsed.overview}</p>
+
+                  {parsed.strengths && parsed.strengths.length > 0 && (
+                    <div style={{ marginBottom: 14 }}>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", marginBottom: 8 }}>Key Strengths</div>
+                      {parsed.strengths.map((s: string, i: number) => (
+                        <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 6 }}>
+                          <span style={{ color: "#22C55E", fontSize: 14, lineHeight: "20px", flexShrink: 0 }}>✓</span>
+                          <span style={{ fontSize: 13, color: "#374151", lineHeight: "20px" }}>{s}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {parsed.concerns && parsed.concerns.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", marginBottom: 8 }}>Primary Concerns</div>
+                      {parsed.concerns.map((c: string, i: number) => (
+                        <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 6 }}>
+                          <span style={{ color: "#F59E0B", fontSize: 14, lineHeight: "20px", flexShrink: 0 }}>△</span>
+                          <span style={{ fontSize: 13, color: "#374151", lineHeight: "20px" }}>{c}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </>
               );
-            })() : (
-              <div style={{ flex: 1 }} />
-            )}
-          </div>
+            }
 
-          {/* Right: Image + Score stacked */}
-          <div className="pd-summary-image" style={{
-            width: 240, flexShrink: 0, display: "flex", flexDirection: "column",
-            borderLeft: "1px solid rgba(0,0,0,0.05)",
-          }}>
-            {/* Property Image (mobile-only; desktop uses the hero above) */}
-            <div className="pd-summary-image-photo" style={{ height: 160, overflow: "hidden", background: C.surfLow }}>
-              <PropertyImage
-                heroImageUrl={(property as any).heroImageUrl}
-                location={location}
-                address={location}
-                propertyName={property.propertyName}
-                propertyId={property.id}
-              />
-            </div>
-            {/* Deal Score */}
-            {scoreTotal && (
-              <div style={{
-                flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                padding: "16px 12px", borderTop: "1px solid rgba(0,0,0,0.05)",
-              }}>
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.secondary, marginBottom: 8 }}>DEAL SCORE</div>
-                <DealSignalBadge score={scoreTotal} band={scoreBand} />
-              </div>
-            )}
-          </div>
+            return (
+              <>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", marginBottom: 12 }}>Executive Summary</div>
+                <div style={{ fontSize: 14, color: "#0F172A", lineHeight: 1.75 }}>
+                  {brief.split("\n").filter((p: string) => p.trim()).slice(0, 4).map((p: string, i: number) => (
+                    <p key={i} style={{ margin: "0 0 8px" }}>{p}</p>
+                  ))}
+                </div>
+              </>
+            );
+          })()}
         </div>
       )}
 
@@ -2480,7 +2492,7 @@ function PropertyDetailInner({
           <div style={{ padding: "14px 18px", borderBottom: "1px solid #F3E8C8", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
-              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#92400E", fontFamily: "'Inter', sans-serif" }}>What to Double Check</h3>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#92400E", fontFamily: "'Inter', sans-serif" }}>Needs Review</h3>
             </div>
             {reviewItems.length > 3 && (
               <button onClick={() => setReviewExpanded(!reviewExpanded)} style={{
@@ -2660,7 +2672,7 @@ function PropertyDetailInner({
           border: `1px solid rgba(0,0,0,0.06)`, marginBottom: 16,
         }}>
           <div style={{ padding: "12px 18px", borderBottom: `1px solid rgba(0,0,0,0.04)`, background: "#F9FAFB" }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Tenant Summary</h3>
+            <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Rent Roll</h3>
           </div>
           <div className="pd-table-wrap" style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 500 }}>

@@ -1504,7 +1504,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
       </main>
 
       {/* Upgrade Modal */}
-      <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} reason="limit_reached" />
+      <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} reason="upgrade" />
 
       {/* New Workspace Modal */}
       {showNewWs && (
