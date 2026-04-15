@@ -524,35 +524,59 @@ export async function generateUnderwritingXLSX(
   // SHEET: Sensitivity — IRR matrix (Price × Exit Cap)
   // ================================================================
   const wsSens = wb.addWorksheet("Sensitivity", { views: [{ showGridLines: false, state: "frozen", ySplit: 4, xSplit: 1 }] });
-  wsSens.getColumn(1).width = 24;
+  // Wider first column so the row labels fit the dollar price + delta.
+  wsSens.getColumn(1).width = 30;
   for (let c = 2; c <= 8; c++) wsSens.getColumn(c).width = 14;
   let sr = 1;
-  sr = sheetTitleBanner(wsSens, sr, "Sensitivity", "10-Year Unlevered IRR · Price (rows) × Exit Cap (cols)", 8);
+  sr = sheetTitleBanner(
+    wsSens,
+    sr,
+    "Sensitivity",
+    "How the 10-year unlevered IRR changes if you pay more or less than asking, and if the market exit cap shifts. Rows = purchase price. Columns = exit cap rate.",
+    8,
+  );
 
-  sr = sectionBand(wsSens, sr, "IRR Matrix", 8);
+  sr = sectionBand(wsSens, sr, "Unlevered IRR at Each Price / Exit Cap", 8);
   const exitCaps = [0.060, 0.065, 0.070, 0.075, 0.080, 0.085, 0.090];
   const priceMultipliers = [0.80, 0.85, 0.90, 0.95, 1.00, 1.05, 1.10];
 
   const sHdr = sr;
-  const sh0 = wsSens.getCell(sHdr, 1); sh0.value = "Price \\ Exit Cap"; sh0.font = hdrFont; sh0.fill = navy2; sh0.border = borders; sh0.alignment = { vertical: "middle", horizontal: "left", indent: 1 };
+  // Clearer corner label — two lines so users immediately see what each
+  // axis represents without having to read the banner.
+  const sh0 = wsSens.getCell(sHdr, 1);
+  sh0.value = "Purchase Price  ↓   /   Exit Cap  →";
+  sh0.font = hdrFont; sh0.fill = navy2; sh0.border = borders;
+  sh0.alignment = { vertical: "middle", horizontal: "left", indent: 1, wrapText: true };
   exitCaps.forEach((cap, i) => {
     const c = wsSens.getCell(sHdr, i + 2);
     c.value = cap; c.numFmt = FMT_PCT; c.font = hdrFont; c.fill = navy2; c.border = borders;
     c.alignment = { vertical: "middle", horizontal: "right" };
   });
-  wsSens.getRow(sHdr).height = 20;
+  wsSens.getRow(sHdr).height = 24;
   sr++;
 
   priceMultipliers.forEach((pm, rowIdx) => {
     const rowFill = pm === 1.0 ? ltBlue : (rowIdx % 2 === 0 ? white : subtle);
     const lc = wsSens.getCell(sr, 1);
-    lc.value = pm === 1.0 ? "Asking Price" : (pm > 1 ? `+${Math.round((pm - 1) * 100)}%` : `−${Math.round((1 - pm) * 100)}%`);
+    // Show the ACTUAL dollar price for each row, not just the %-delta from
+    // asking. Previously the labels read "−20%, −15%, ... Asking, +5%,
+    // +10%" which forced the reader to do math to figure out what price
+    // each row represented. Now each row shows "$1,234,000 (−20%)" etc.,
+    // tied to the live Asking Price cell so edits to the Assumptions
+    // sheet flow through here automatically.
+    const deltaLabel =
+      pm === 1.0
+        ? "Asking"
+        : pm > 1
+        ? `+${Math.round((pm - 1) * 100)}%`
+        : `−${Math.round((1 - pm) * 100)}%`;
+    lc.value = { formula: `TEXT(${aPrice}*${pm},"$#,##0")&"  (${deltaLabel})"` };
     lc.font = pm === 1.0 ? boldLabel : labelFont; lc.fill = rowFill; lc.border = borders;
     lc.alignment = { vertical: "middle", indent: 1 };
     exitCaps.forEach((cap, i) => {
       const c = wsSens.getCell(sr, i + 2);
       const priceRef = `(${aPrice}*${pm})`;
-      // Unlevered IRR = (NOI/Price)^yield + ((ExitValue/Price)^(1/N) - 1) capital appreciation component
+      // Unlevered IRR = (NOI/Price) yield + ((ExitValue/Price)^(1/N) - 1) capital appreciation component
       const formula = `(${uNOI}/${priceRef})+((${uNOI}*(1+${aRentGr})^(${aHold}-1)/${cap}*(1-${aSellC}))/${priceRef})^(1/${aHold})-1`;
       c.value = { formula };
       c.numFmt = FMT_PCT1; c.border = borders; c.fill = rowFill; c.font = pm === 1.0 ? boldLabel : valFont;
@@ -561,7 +585,18 @@ export async function generateUnderwritingXLSX(
     sr++;
   });
   sr++;
-  const sNote = wsSens.getCell(sr, 1); sNote.value = "Industry hurdles: Core ~8–10%, Core+ ~10–13%, Value-Add ~13–18%, Opportunistic 18%+."; sNote.font = noteFont;
+  // How-to-read note makes the table self-explanatory for anyone opening
+  // it without the banner context (e.g. a partner opening the XLS cold).
+  const sRead = wsSens.getCell(sr, 1);
+  sRead.value = "How to read: each cell is the unlevered IRR you'd earn if you bought at the price on the left and sold 10 years later at the cap rate on top. Higher exit caps (right) = lower exit value = lower IRR.";
+  sRead.font = noteFont; sRead.alignment = { wrapText: true, vertical: "top" };
+  wsSens.mergeCells(sr, 1, sr, 8);
+  wsSens.getRow(sr).height = 32;
+  sr++;
+  const sNote = wsSens.getCell(sr, 1);
+  sNote.value = "Industry hurdles: Core ~8-10% · Core+ ~10-13% · Value-Add ~13-18% · Opportunistic 18%+";
+  sNote.font = noteFont;
+  wsSens.mergeCells(sr, 1, sr, 8);
 
   // ================================================================
   // SHEET: Offer Ladder
@@ -571,10 +606,15 @@ export async function generateUnderwritingXLSX(
   for (let c = 2; c <= 5; c++) wsO.getColumn(c).width = 18;
   wsO.getColumn(6).width = 44;
   let or = 1;
-  or = sheetTitleBanner(wsO, or, "Offer Ladder", "Four offer levels and the returns they produce at current OM NOI", 6);
+  or = sheetTitleBanner(wsO, or, "Offer Ladder", "Four buyer offer levels and the returns each produces at current OM NOI. Read left → right as low → high.", 6);
 
   or = sectionBand(wsO, or, "Offers", 6);
-  hdrRow(wsO, or++, ["Metric", "Walk-Away", "Below Fair", "Target", "Stretch", "Notes"]);
+  // Buyer-perspective ladder: leftmost is your opening lowball, rightmost
+  // is your ceiling. "Walk-Away" is the price at which YOU walk away from
+  // the deal (i.e. do not pay more), not the price at which the seller
+  // walks. Previously this was labeled backwards and read as if the
+  // lowest offer was the walk-away.
+  hdrRow(wsO, or++, ["Metric", "Aggressive", "Opening", "Target", "Walk-Away", "Notes"]);
   const offerPcts = [0.85, 0.90, 0.95, 1.00];
   const priceR = or;
   const opl = wsO.getCell(priceR, 1); opl.value = "Offer Price"; opl.font = boldLabel; opl.fill = white; opl.border = borders; opl.alignment = { vertical: "middle", indent: 1 };
@@ -606,10 +646,10 @@ export async function generateUnderwritingXLSX(
   // Strategy notes
   or = sectionBand(wsO, or, "Strategy Notes", 6);
   const notes: Array<[string, string]> = [
-    ["Walk-Away", "Below this the math does not work. If seller won't meet, pass."],
-    ["Below Fair", "Opening bid. Test seller motivation — if they counter aggressively, move up."],
-    ["Target", "Where you expect to land after negotiation. Most likely settlement price."],
-    ["Stretch", "Max acceptable. Only for unique, irreplaceable, uncontested deals."],
+    ["Aggressive", "Opening lowball (~85% of ask). Tests seller motivation. Expect a sharp counter; be prepared to move up or hold."],
+    ["Opening", "Realistic first offer (~90% of ask). Signals serious interest without exposing your ceiling."],
+    ["Target", "Where you expect to land after negotiation (~95% of ask). The most likely settlement price."],
+    ["Walk-Away", "Your ceiling — full asking price. Do NOT pay more. If the seller won't meet you here, pass on the deal."],
   ];
   notes.forEach(([label, text], i) => {
     const zf = zebraFill(i);

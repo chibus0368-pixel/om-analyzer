@@ -5039,6 +5039,117 @@ async function downloadLiteXLSX(d: any) {
     }); r++;
   }
 
+  // ── SHEET 7: Offer Ladder ──
+  // Buyer-perspective ladder matching Pro XLS. Aggressive = opening lowball,
+  // Walk-Away = ceiling (full ask). Parity with generate-files.ts.
+  const askPrice = Number(d.askingPrice) || 0;
+  const noiForOffer = Number(d.noiOm) || noi;
+  const LTV = 0.65, RATE = 0.0725, AMORT = 25, CLOSING = 0.02;
+  const pmtAnnual = (principal: number) => {
+    if (principal <= 0) return 0;
+    const mr = RATE / 12, n = AMORT * 12;
+    return (principal * mr) / (1 - Math.pow(1 + mr, -n)) * 12;
+  };
+  const ws7 = wb.addWorksheet("Offer Ladder");
+  ws7.getColumn(1).width = 26; for (let c = 2; c <= 5; c++) ws7.getColumn(c).width = 16; ws7.getColumn(6).width = 40;
+  r = 2;
+  ws7.getCell(r, 1).value = `OFFER LADDER - ${pName}`; ws7.getCell(r, 1).font = titleFont; r++;
+  ws7.getCell(r, 1).value = "Four buyer offer levels and the returns each produces at current OM NOI. Read left to right as low to high."; ws7.getCell(r, 1).font = noteFont; r += 2;
+  hdrRow(ws7, r, ["Metric", "Aggressive", "Opening", "Target", "Walk-Away", "Notes"], [26, 16, 16, 16, 16, 40]); r++;
+  const offerPcts = [0.85, 0.90, 0.95, 1.00];
+  const offerPrices = offerPcts.map(p => askPrice * p);
+  const opRow = (label: string, vals: string[], note?: string, opts?: { bold?: boolean; yellow?: boolean }) => {
+    const lc = ws7.getCell(r, 1); lc.value = label; lc.font = opts?.bold ? { ...labelFont, color: { argb: "FF262C5C" } } : labelFont; lc.fill = white; lc.border = borders;
+    vals.forEach((v, i) => {
+      const c = ws7.getCell(r, i + 2); c.value = v; c.font = valFont; c.fill = opts?.yellow ? yellow : ltBlue; c.border = borders;
+      c.alignment = { horizontal: "right", vertical: "middle" };
+    });
+    if (note) { const nc = ws7.getCell(r, 6); nc.value = note; nc.font = noteFont; nc.border = borders; nc.alignment = { wrapText: true, vertical: "middle" }; }
+    r++;
+  };
+  opRow("Offer Price", offerPrices.map(p => fmt$(p)), "", { bold: true, yellow: true });
+  opRow("% of Asking", offerPcts.map(p => `${(p * 100).toFixed(0)}%`));
+  opRow("Implied Cap (OM NOI)", offerPrices.map(p => p > 0 ? `${(noiForOffer / p * 100).toFixed(2)}%` : "-"), "Based on stated OM NOI");
+  opRow("DSCR (OM NOI)", offerPrices.map(p => {
+    const ds = pmtAnnual(p * LTV); return ds > 0 ? `${(noiForOffer / ds).toFixed(2)}x` : "-";
+  }), "Lender comfort test");
+  opRow("Cash-on-Cash (Yr 1)", offerPrices.map(p => {
+    const ds = pmtAnnual(p * LTV); const eq = p * (1 - LTV) + p * CLOSING;
+    return eq > 0 ? `${((noiForOffer - ds) / eq * 100).toFixed(2)}%` : "-";
+  }));
+  opRow("Equity Required", offerPrices.map(p => fmt$(p * (1 - LTV) + p * CLOSING)));
+  r += 2;
+
+  // Strategy notes block
+  ws7.getCell(r, 1).value = "STRATEGY NOTES"; ws7.getCell(r, 1).font = secFont; r++;
+  const stratNotes: Array<[string, string]> = [
+    ["Aggressive", "Opening lowball (~85% of ask). Tests seller motivation. Expect a sharp counter; be prepared to move up or hold."],
+    ["Opening", "Realistic first offer (~90% of ask). Signals serious interest without exposing your ceiling."],
+    ["Target", "Where you expect to land after negotiation (~95% of ask). The most likely settlement price."],
+    ["Walk-Away", "Your ceiling, full asking price. Do NOT pay more. If the seller won't meet you here, pass on the deal."],
+  ];
+  stratNotes.forEach(([label, text], i) => {
+    const zf = i % 2 === 0 ? white : ltBlue;
+    const lc = ws7.getCell(r, 1); lc.value = label; lc.font = { ...labelFont, color: { argb: "FF262C5C" }, bold: true }; lc.fill = zf; lc.border = borders; lc.alignment = { vertical: "middle" };
+    const nc = ws7.getCell(r, 2); nc.value = text; nc.font = valFont; nc.fill = zf; nc.border = borders; nc.alignment = { wrapText: true, vertical: "middle" };
+    ws7.mergeCells(r, 2, r, 6);
+    r++;
+  });
+
+  // ── SHEET 8: Sensitivity (Price × Exit Cap IRR matrix) ──
+  // Unlevered IRR at each purchase price / exit cap combination.
+  // Parity with Pro XLS. Uses 10yr hold, 2% rent growth, 2% sell costs.
+  const HOLD = 10, RENT_GR = 0.02, SELL_C = 0.02;
+  const ws8 = wb.addWorksheet("Sensitivity");
+  ws8.getColumn(1).width = 30; for (let c = 2; c <= 8; c++) ws8.getColumn(c).width = 13;
+  r = 2;
+  ws8.getCell(r, 1).value = `SENSITIVITY - ${pName}`; ws8.getCell(r, 1).font = titleFont; r++;
+  ws8.getCell(r, 1).value = "How the 10-year unlevered IRR changes if you pay more or less than asking, and if the market exit cap shifts. Rows = purchase price. Columns = exit cap rate."; ws8.getCell(r, 1).font = noteFont;
+  ws8.mergeCells(r, 1, r, 8); ws8.getRow(r).height = 30; ws8.getCell(r, 1).alignment = { wrapText: true, vertical: "top" }; r += 2;
+  ws8.getCell(r, 1).value = "Unlevered IRR at Each Price / Exit Cap"; ws8.getCell(r, 1).font = secFont; r++;
+
+  const exitCaps = [0.060, 0.065, 0.070, 0.075, 0.080, 0.085, 0.090];
+  const priceMults = [0.80, 0.85, 0.90, 0.95, 1.00, 1.05, 1.10];
+  // Header row
+  const h0 = ws8.getCell(r, 1); h0.value = "Purchase Price  ↓   /   Exit Cap  →"; h0.font = hdrFont; h0.fill = navy; h0.border = borders;
+  h0.alignment = { wrapText: true, vertical: "middle", horizontal: "left", indent: 1 };
+  exitCaps.forEach((cap, i) => {
+    const c = ws8.getCell(r, i + 2); c.value = `${(cap * 100).toFixed(2)}%`; c.font = hdrFont; c.fill = navy; c.border = borders;
+    c.alignment = { horizontal: "right", vertical: "middle" };
+  });
+  ws8.getRow(r).height = 24;
+  r++;
+
+  priceMults.forEach((pm, rowIdx) => {
+    const price = askPrice * pm;
+    const deltaLabel = pm === 1.0 ? "Asking" : pm > 1 ? `+${Math.round((pm - 1) * 100)}%` : `-${Math.round((1 - pm) * 100)}%`;
+    const fill = pm === 1.0 ? ltBlue : (rowIdx % 2 === 0 ? white : { type: "pattern" as const, pattern: "solid" as const, fgColor: { argb: "FFF6F8FB" } });
+    const lc = ws8.getCell(r, 1); lc.value = `${fmt$(price)}  (${deltaLabel})`; lc.font = pm === 1.0 ? { ...labelFont, color: { argb: "FF262C5C" }, bold: true } : labelFont;
+    lc.fill = fill; lc.border = borders; lc.alignment = { vertical: "middle", indent: 1 };
+    exitCaps.forEach((cap, i) => {
+      // Unlevered IRR: yield component (NOI/Price) + capital appreciation ((ExitValue/Price)^(1/N)-1)
+      let irr = 0;
+      if (price > 0 && noiForOffer > 0 && cap > 0) {
+        const exitNoi = noiForOffer * Math.pow(1 + RENT_GR, HOLD - 1);
+        const exitValue = exitNoi / cap * (1 - SELL_C);
+        irr = (noiForOffer / price) + Math.pow(exitValue / price, 1 / HOLD) - 1;
+      }
+      const c = ws8.getCell(r, i + 2); c.value = `${(irr * 100).toFixed(1)}%`;
+      c.font = pm === 1.0 ? { ...labelFont, color: { argb: "FF262C5C" }, bold: true } : valFont;
+      c.fill = fill; c.border = borders; c.alignment = { horizontal: "right", vertical: "middle" };
+    });
+    r++;
+  });
+  r++;
+  const sRead = ws8.getCell(r, 1);
+  sRead.value = "How to read: each cell is the unlevered IRR you'd earn if you bought at the price on the left and sold 10 years later at the cap rate on top. Higher exit caps (right) = lower exit value = lower IRR.";
+  sRead.font = noteFont; sRead.alignment = { wrapText: true, vertical: "top" };
+  ws8.mergeCells(r, 1, r, 8); ws8.getRow(r).height = 32;
+  r++;
+  const sNote = ws8.getCell(r, 1);
+  sNote.value = "Industry hurdles: Core ~8-10% · Core+ ~10-13% · Value-Add ~13-18% · Opportunistic 18%+";
+  sNote.font = noteFont; ws8.mergeCells(r, 1, r, 8);
+
   // Download
   const safeName = pName.replace(/[^a-zA-Z0-9 -]/g, "").replace(/\s+/g, "-");
   const buf = await wb.xlsx.writeBuffer();
@@ -5127,7 +5238,7 @@ td{padding:5px 10px;border:1px solid #D8DFE9}
 <h1>FIRST-PASS UNDERWRITING BRIEF</h1>
 <h2 style="border:none;margin-top:6px;font-size:15pt;">${pName}</h2>
 <p class="loc">${loc}</p>
-<p class="sub">First-pass underwriting screen. Directional only &mdash; not a formal recommendation.</p>
+<p class="sub">First-pass underwriting screen. Directional only, not a formal recommendation.</p>
 
 ${snap.length > 0 ? `<h2>Deal Snapshot</h2><ul>${snap.map(s => `<li>${s}</li>`).join("")}</ul>` : ""}
 
@@ -5172,7 +5283,7 @@ ${capRows.join("")}
 ${d.signals?.recommendation ? `<h2>First-Pass Conclusion</h2>
 <p><b class="${sc(d.signals.recommendation)}">${d.signals.recommendation}</b></p>` : ""}
 
-<p class="footer">Generated by Deal Signals &mdash; dealsignals.app</p>
+<p class="footer">Generated by Deal Signals · dealsignals.app</p>
 </body></html>`;
 
   const blob = new Blob([html], { type: "application/msword" });
