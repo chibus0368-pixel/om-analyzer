@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, useCallback, useRef, type ReactNode } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import type { Workspace, AnalysisType } from "./types";
 import { toSlug } from "./types";
@@ -259,8 +259,16 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
     }
   }, [userId, mounted]);
 
-  // Sync URL ?ws= param when workspace changes
-  const activeWorkspace = workspaces.find(ws => ws.id === activeId) || null;
+  // Sync URL ?ws= param when workspace changes.
+  // Memoize so consumers relying on activeWorkspace object identity (e.g.
+  // useEffect dep arrays) don't re-fire on every unrelated re-render. Without
+  // this, ws.find() returns a fresh reference each render, which cascades
+  // into the workspace layout/page re-fetching properties and piled up
+  // 8+ duplicate API calls per load.
+  const activeWorkspace = useMemo(
+    () => workspaces.find(ws => ws.id === activeId) || null,
+    [workspaces, activeId],
+  );
   const isUrlSyncRef = useRef(false);
 
   useEffect(() => {
@@ -448,8 +456,16 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
     setWorkspaces(all.map(ws => ({ ...ws, userId })));
   }, [userId]);
 
+  // Memoize the context value - a fresh object literal each render would
+  // re-render every `useWorkspace()` consumer unnecessarily, triggering
+  // cascading fetches in the layout/dashboard.
+  const contextValue = useMemo(
+    () => ({ workspaces, activeWorkspace, loading, switchWorkspace, addWorkspace, renameWorkspace, deleteWorkspace, clearWorkspaceData, refreshWorkspaces }),
+    [workspaces, activeWorkspace, loading, switchWorkspace, addWorkspace, renameWorkspace, deleteWorkspace, clearWorkspaceData, refreshWorkspaces],
+  );
+
   return (
-    <WorkspaceContext.Provider value={{ workspaces, activeWorkspace, loading, switchWorkspace, addWorkspace, renameWorkspace, deleteWorkspace, clearWorkspaceData, refreshWorkspaces }}>
+    <WorkspaceContext.Provider value={contextValue}>
       {children}
     </WorkspaceContext.Provider>
   );
