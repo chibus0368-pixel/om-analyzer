@@ -561,6 +561,13 @@ function PropertyDetail({
   properties: SharedProperty[];
   onNavigate: (id: string) => void;
 }) {
+  // PropertyDetail lives at module scope, so shareId from the outer
+  // SharedViewPage is not in closure scope. Pull it from the route
+  // params directly. Used to build the /api/share/[id]/download URL
+  // on the Source Documents anchors below; evaluating it during render
+  // was the source of the black-screen crash (ReferenceError on shareId).
+  const routeParams = useParams();
+  const shareId = (routeParams?.id as string) || "";
   const fields = prop.extractedFields;
   const g = (group: string, name: string) => gf(fields, group, name);
   const addr = [prop.address1, prop.city, prop.state, prop.zip].filter(Boolean).join(", ");
