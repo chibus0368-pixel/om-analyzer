@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useRouter } from "next/navigation";
 import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
@@ -368,12 +369,12 @@ function EmailPropertyButton({
         Email
       </button>
 
-      {open && (
+      {open && typeof document !== "undefined" && createPortal(
         <div
           onClick={(e) => { if (e.target === e.currentTarget && !sending) setOpen(false); }}
           style={{
             position: "fixed", inset: 0, background: "rgba(6,8,15,0.55)",
-            zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center",
+            zIndex: 2147483000, display: "flex", alignItems: "center", justifyContent: "center",
             padding: 16,
           }}>
           <div style={{
@@ -485,7 +486,8 @@ function EmailPropertyButton({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
