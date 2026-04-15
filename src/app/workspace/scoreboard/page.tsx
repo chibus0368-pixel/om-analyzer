@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useRef, Fragment } from "react";
 import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
-import { getWorkspaceProperties, getPropertyExtractedFields } from "@/lib/workspace/firestore";
+import { getWorkspaceProperties, getPropertyExtractedFields, peekWorkspaceProperties } from "@/lib/workspace/firestore";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import type { Property, ExtractedField } from "@/lib/workspace/types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
@@ -632,8 +632,26 @@ export default function ScoreboardPage() {
   const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
   const router = useRouter();
-  const [propertyData, setPropertyData] = useState<PropertyData[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Seed from cache if available so tab switches don't flash a spinner.
+  // If the cache has data we skip the loading state entirely and trigger a
+  // background refresh inside the useEffect below.
+  const _cachedSeed = peekWorkspaceProperties(user?.uid, activeWorkspace?.id);
+  const [propertyData, setPropertyData] = useState<PropertyData[]>(() => {
+    if (!_cachedSeed) return [];
+    return _cachedSeed.map((prop) => {
+      const values = new Map<string, string>();
+      const addr = [prop.address1, prop.city, prop.state].filter(Boolean).join(", ");
+      if (addr) values.set("address", addr);
+      if ((prop as any).cardAskingPrice) values.set("asking_price", String((prop as any).cardAskingPrice));
+      if ((prop as any).cardCapRate) values.set("cap_rate", String((prop as any).cardCapRate));
+      if ((prop as any).cardNoi) values.set("noi", String((prop as any).cardNoi));
+      if ((prop as any).cardBuildingSf || prop.buildingSf) values.set("building_sf", String((prop as any).cardBuildingSf || prop.buildingSf));
+      if (prop.occupancyPct) values.set("occupancy", String(prop.occupancyPct));
+      if ((prop as any).analysisType) values.set("asset_type", String((prop as any).analysisType));
+      return { property: prop, values };
+    });
+  });
+  const [loading, setLoading] = useState(!_cachedSeed);
   const [sortBy, setSortBy] = useState<SortKey>("score");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [view, setView] = useState<ViewMode>("comparison");
@@ -732,7 +750,10 @@ export default function ScoreboardPage() {
   useEffect(() => {
     if (!user || !activeWorkspace) return;
     const runId = ++enrichRunId.current;
-    setLoading(true);
+    // Only show loading spinner if we have no seed data; otherwise do a
+    // silent background refresh and swap in fresh data when it arrives.
+    const hasSeed = peekWorkspaceProperties(user.uid, activeWorkspace.id);
+    if (!hasSeed) setLoading(true);
     getWorkspaceProperties(user.uid, activeWorkspace.id).then(async (props) => {
       if (runId !== enrichRunId.current) return; // stale - newer run superseded us
       if (props.length === 0) { setPropertyData([]); setLoading(false); return; }

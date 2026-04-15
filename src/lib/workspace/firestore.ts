@@ -81,6 +81,21 @@ export function invalidateWorkspacePropertiesCache(userId?: string, workspaceId?
   _wsPropsCache.delete(`${userId}::${workspaceId}`);
 }
 
+/**
+ * Synchronous cache peek. Returns the last-resolved property list for a given
+ * (userId, workspaceId) if one exists, or null if the cache is empty.
+ *
+ * Lets page components skip the `loading=true` flash on tab switches: if
+ * cached data is available they can seed useState with it and trigger a
+ * background refresh via getWorkspaceProperties afterwards. No network,
+ * no await, no spinner.
+ */
+export function peekWorkspaceProperties(userId?: string | null, workspaceId?: string | null): Property[] | null {
+  if (!userId || !workspaceId) return null;
+  const cached = _wsPropsCache.get(`${userId}::${workspaceId}`);
+  return cached?.resolved ?? null;
+}
+
 export async function getWorkspaceProperties(userId: string, workspaceId: string): Promise<Property[]> {
   const key = `${userId}::${workspaceId}`;
   const cached = _wsPropsCache.get(key);
