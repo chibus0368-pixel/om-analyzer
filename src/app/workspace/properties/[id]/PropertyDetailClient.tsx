@@ -577,19 +577,19 @@ function DealSignalBadge({ score, band }: { score: number | null; band: string }
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
       <div style={{
-        width: 72, height: 72, borderRadius: "50%",
+        width: 92, height: 92, borderRadius: "50%",
         background: `conic-gradient(${color} ${(score / 100) * 360}deg, ${C.ghost} 0deg)`,
         display: "flex", alignItems: "center", justifyContent: "center",
       }}>
         <div style={{
-          width: 58, height: 58, borderRadius: "50%", background: C.surfLowest,
+          width: 74, height: 74, borderRadius: "50%", background: C.surfLowest,
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 20, fontWeight: 800, color, fontVariantNumeric: "tabular-nums",
+          fontSize: 26, fontWeight: 800, color, fontVariantNumeric: "tabular-nums",
         }}>{score}</div>
       </div>
       <span style={{
-        marginTop: 6, fontSize: 10, fontWeight: 700, textTransform: "uppercase",
-        letterSpacing: 0.8, color, padding: "2px 8px", borderRadius: 4, background: bgColor,
+        marginTop: 8, fontSize: 11, fontWeight: 700, textTransform: "uppercase",
+        letterSpacing: 0.8, color, padding: "3px 10px", borderRadius: 4, background: bgColor,
       }}>{displayBand}</span>
     </div>
   );
@@ -1896,7 +1896,7 @@ function PropertyDetailInner({
                 flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                 padding: "16px 12px", borderTop: "1px solid rgba(0,0,0,0.05)",
               }}>
-                <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.secondary, marginBottom: 6 }}>DEAL SCORE</div>
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.secondary, marginBottom: 8 }}>DEAL SCORE</div>
                 <DealSignalBadge score={scoreTotal} band={scoreBand} />
               </div>
             )}
