@@ -2,10 +2,9 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { getWorkspaceProperties } from "@/lib/workspace/firestore";
 import { WorkspaceProvider, useWorkspace } from "@/lib/workspace/workspace-context";
 import { useWorkspaceAuth } from "@/lib/workspace/auth";
-import type { Property, AnalysisType } from "@/lib/workspace/types";
+import type { AnalysisType } from "@/lib/workspace/types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
 import { AnalysisTypeIcon } from "@/lib/workspace/AnalysisTypeIcon";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
@@ -626,8 +625,9 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   const searchParams = useSearchParams();
   const { workspaces, activeWorkspace, switchWorkspace, addWorkspace, loading: wsLoading } = useWorkspace();
   const [collapsed, setCollapsed] = useState(false);
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loadingProps, setLoadingProps] = useState(true);
+  // NOTE: we intentionally do NOT fetch properties here. The dashboard page
+  // (src/app/workspace/page.tsx) owns the property list. The layout used to
+  // double-fetch into unused state, which was a wasted API call per mount.
   const [showNewWs, setShowNewWs] = useState(false);
   const [showWsDropdown, setShowWsDropdown] = useState(false);
   const [newWsName, setNewWsName] = useState("");
@@ -638,7 +638,6 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [globalDrag, setGlobalDrag] = useState(false);
   const globalDragCounter = useRef(0);
-  const prevWsIdRef = useRef<string | null>(null);
   const upgradeHandledRef = useRef(false);
   const wsDropdownRef = useRef<HTMLDivElement>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
@@ -836,38 +835,10 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
     };
   }, [user]);
 
-  // Load properties for active workspace
-  const loadProperties = useCallback(async () => {
-    if (!activeWorkspace || !user) return;
-    try {
-      const props = await getWorkspaceProperties(user.uid, activeWorkspace.id);
-      setProperties(props.sort((a, b) => a.propertyName.localeCompare(b.propertyName)));
-    } catch { /* ignore */ }
-    setLoadingProps(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid, activeWorkspace?.id]);
-
-  // Only show loading flash on very first load, not workspace switches
-  useEffect(() => {
-    if (!activeWorkspace) return;
-    const isFirstLoad = prevWsIdRef.current === null;
-    prevWsIdRef.current = activeWorkspace.id;
-    if (isFirstLoad) setLoadingProps(true);
-    loadProperties();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadProperties, activeWorkspace?.id]);
-
-  // Listen for property/workspace changes (event-driven refresh, no polling)
-  useEffect(() => {
-    const handler = () => loadProperties();
-    window.addEventListener("workspace-properties-changed", handler);
-    window.addEventListener("workspace-changed", handler);
-    // Removed: 30-second polling was causing ~80 unnecessary API calls per session
-    return () => {
-      window.removeEventListener("workspace-properties-changed", handler);
-      window.removeEventListener("workspace-changed", handler);
-    };
-  }, [loadProperties]);
+  // Property list loading is the dashboard page's job. The old layout-level
+  // fetch wrote to unused `properties`/`loadingProps` state, doubling the
+  // API traffic on every mount and reacting to events the dashboard also
+  // listens for. Removed entirely - dashboard owns this.
 
   const isActive = (href: string) => {
     if (href === "/workspace") return pathname === "/workspace";
