@@ -67,6 +67,28 @@ export function useWorkspaceAuth(): WorkspaceAuthState {
   async function signOut() {
     // Clear cached user immediately so the auth listener doesn't hold stale state
     lastKnownUser.current = null;
+    // CRITICAL: purge all per-user cached state from localStorage so the next
+    // user to sign in on this browser does NOT inherit the previous user's
+    // dealboards, active board, or any other workspace-scoped cache.
+    if (typeof window !== "undefined") {
+      try {
+        const keysToRemove = [
+          "nnn-workspaces",
+          "nnn-active-workspace",
+          "nnn_anon_id",
+        ];
+        for (const k of keysToRemove) localStorage.removeItem(k);
+        // Also remove any key that starts with "nnn-" or "workspace-" as a
+        // safety net for caches added later.
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const key = localStorage.key(i);
+          if (!key) continue;
+          if (key.startsWith("nnn-") || key.startsWith("nnn_") || key.startsWith("workspace-")) {
+            localStorage.removeItem(key);
+          }
+        }
+      } catch { /* ignore quota / access errors */ }
+    }
     const auth = getAuthInstance();
     await firebaseSignOut(auth);
   }

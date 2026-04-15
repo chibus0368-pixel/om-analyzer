@@ -52,7 +52,26 @@ export function useWorkspace() {
 
 const WS_LIST_KEY = "nnn-workspaces";
 const ACTIVE_WS_KEY = "nnn-active-workspace";
+const WS_OWNER_KEY = "nnn-workspaces-owner"; // uid that last wrote the cache
 const DEFAULT_WS_ID = "default";
+
+/**
+ * Wipe every workspace-scoped key from localStorage. Called when we detect
+ * that the cache belongs to a different user than the one currently signed
+ * in — this is the guardrail against cross-user dealboard bleed.
+ */
+function purgeWorkspaceCache() {
+  if (typeof window === "undefined") return;
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (!key) continue;
+      if (key.startsWith("nnn-") || key.startsWith("nnn_") || key.startsWith("workspace-")) {
+        localStorage.removeItem(key);
+      }
+    }
+  } catch { /* ignore */ }
+}
 
 function generateId(): string {
   return "ws_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -120,9 +139,10 @@ function getStoredWorkspaces(): Workspace[] {
   return [defaultWs];
 }
 
-function saveWorkspaces(workspaces: Workspace[]) {
+function saveWorkspaces(workspaces: Workspace[], ownerUid?: string) {
   if (typeof window === "undefined") return;
   localStorage.setItem(WS_LIST_KEY, JSON.stringify(workspaces));
+  if (ownerUid) localStorage.setItem(WS_OWNER_KEY, ownerUid);
 }
 
 /**
@@ -159,10 +179,23 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
 
   // Hydrate from localStorage on mount (fast paint), then reconcile with server.
   useEffect(() => {
+    // ── CROSS-USER GUARD ────────────────────────────────────────────
+    // If the cached workspaces belong to a different user (e.g. someone
+    // else signed out and this user signed in on the same browser, or
+    // the cache was written before we added the owner stamp), purge the
+    // whole cache before reading it. Without this the previous user's
+    // dealboards would bleed into this user's UI.
+    const cachedOwner = typeof window !== "undefined"
+      ? localStorage.getItem(WS_OWNER_KEY)
+      : null;
+    if (!cachedOwner || cachedOwner !== userId) {
+      purgeWorkspaceCache();
+    }
+
     const cached = getStoredWorkspaces();
     const withUser = cached.map(ws => ({ ...ws, userId }));
     setWorkspaces(withUser);
-    saveWorkspaces(withUser);
+    saveWorkspaces(withUser, userId);
 
     // Determine active workspace: URL ?ws= slug > localStorage > first workspace
     const urlSlug = new URLSearchParams(window.location.search).get("ws");
@@ -186,50 +219,21 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
 
     // Background reconcile with server - server is authoritative. This is
     // the critical step that makes boards survive a cache wipe.
+    //
+    // NOTE: the old "migration POST" block that pushed unknown local boards
+    // up to the server was REMOVED. It was dangerous: combined with a stale
+    // cache from a previous user it would silently create copies of that
+    // user's boards under the current account, causing cross-user bleed.
     (async () => {
       const token = await getAuthToken();
       if (!token) return;
       const remote = await fetchRemoteWorkspaces();
       if (!remote) return;
 
-      // ── One-time migration ─────────────────────────────────────────
-      // Users who were on the old localStorage-only build have boards
-      // that the server knows nothing about. Before trusting the server
-      // list, push any locally-known boards that are missing upstream.
-      // Without this, the first post-deploy load would silently delete
-      // every custom DealBoard (and orphan every property on them).
-      const remoteIds = new Set(remote.map(w => w.id));
-      const missing = cached.filter(w => !remoteIds.has(w.id));
-      if (missing.length > 0) {
-        await Promise.all(
-          missing.map(async w => {
-            try {
-              const res = await fetch("/api/workspace/boards", {
-                method: "POST",
-                headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  id: w.id,
-                  name: w.name,
-                  analysisType: w.analysisType || "retail",
-                }),
-              });
-              if (res.ok) {
-                const data = await res.json();
-                if (data?.workspace) remote.push(data.workspace as Workspace);
-              } else {
-                console.warn("[workspace] migration POST failed:", res.status, w.id);
-              }
-            } catch (err) {
-              console.warn("[workspace] migration error for", w.id, err);
-            }
-          }),
-        );
-      }
-
-      if (remote.length === 0) return;
+      // Server is authoritative. Always replace local state with remote.
       const withUserRemote = remote.map(ws => ({ ...ws, userId }));
       setWorkspaces(withUserRemote);
-      saveWorkspaces(withUserRemote);
+      saveWorkspaces(withUserRemote, userId);
 
       // Re-resolve active workspace against the authoritative list. If the
       // previously active id no longer exists server-side, fall back to
@@ -241,15 +245,18 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
         return fallback;
       });
     })();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Keep workspaces in sync if userId changes (rare)
+  // Keep workspaces in sync if userId changes (rare) — wipe cache first so
+  // we never render another user's boards.
   useEffect(() => {
     if (!mounted) return;
-    const all = getStoredWorkspaces();
-    const withUser = all.map(ws => ({ ...ws, userId }));
-    setWorkspaces(withUser);
-    saveWorkspaces(withUser);
+    const cachedOwner = localStorage.getItem(WS_OWNER_KEY);
+    if (cachedOwner && cachedOwner !== userId) {
+      purgeWorkspaceCache();
+      setWorkspaces([]);
+      setActiveId(null);
+    }
   }, [userId, mounted]);
 
   // Sync URL ?ws= param when workspace changes
@@ -307,7 +314,7 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
     };
     setWorkspaces(prev => {
       const updated = [...prev, optimistic];
-      saveWorkspaces(updated);
+      saveWorkspaces(updated, userId);
       return updated;
     });
     switchWorkspace(tempId);
@@ -328,7 +335,7 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
           if (server) {
             setWorkspaces(prev => {
               const updated = prev.map(w => (w.id === tempId ? { ...server, userId } : w));
-              saveWorkspaces(updated);
+              saveWorkspaces(updated, userId);
               return updated;
             });
             // If server slug differs, re-sync active id
@@ -353,7 +360,7 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
       const updated = prev.map(ws =>
         ws.id === id ? { ...ws, name: newName, slug: newSlug, updatedAt: new Date().toISOString() } : ws
       );
-      saveWorkspaces(updated);
+      saveWorkspaces(updated, userId);
       return updated;
     });
     // Write through to server (fire-and-forget with warn on failure)
@@ -371,13 +378,13 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
         console.warn("[workspace] renameWorkspace write-through error:", err);
       }
     })();
-  }, []);
+  }, [userId]);
 
   const deleteWorkspace = useCallback((id: string) => {
     if (id === DEFAULT_WS_ID) return; // never delete the default
     setWorkspaces(prev => {
       const updated = prev.filter(ws => ws.id !== id);
-      saveWorkspaces(updated);
+      saveWorkspaces(updated, userId);
       // If we deleted the active workspace, switch to first available
       if (id === activeId) {
         const next = updated[0]?.id || DEFAULT_WS_ID;
@@ -401,7 +408,7 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
         console.warn("[workspace] deleteWorkspace write-through error:", err);
       }
     })();
-  }, [activeId]);
+  }, [activeId, userId]);
 
   const clearWorkspaceData = useCallback(async (id: string) => {
     // Clear all Firestore properties and related data via server-side API
@@ -434,7 +441,7 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
     if (remote && remote.length > 0) {
       const withUser = remote.map(ws => ({ ...ws, userId }));
       setWorkspaces(withUser);
-      saveWorkspaces(withUser);
+      saveWorkspaces(withUser, userId);
       return;
     }
     const all = getStoredWorkspaces();
