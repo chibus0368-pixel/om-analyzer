@@ -1554,7 +1554,15 @@ function HeroCardModal({ card: c, displayPhoto, verdictColor, onClose }: {
               Upload an OM and get the same scored brief in under 60 seconds.
             </div>
           </div>
-          <button onClick={onClose} style={{
+          <button onClick={() => {
+            onClose();
+            // Drop the user back at the top of the landing view where the
+            // upload box lives, so the CTA actually takes them somewhere
+            // instead of just dismissing the modal.
+            if (typeof window !== "undefined") {
+              requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+            }
+          }} style={{
             background: LT.lime, color: "#fff", border: "none", borderRadius: 10,
             padding: "12px 22px", fontSize: 13, fontWeight: 800, cursor: "pointer",
             letterSpacing: 0.3, display: "flex", alignItems: "center", gap: 8,
