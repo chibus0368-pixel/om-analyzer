@@ -1480,6 +1480,20 @@ function PropertyDetailInner({
         .pd-mobile-score-card { display: none; }
         .pd-mobile-hero { display: none; }
 
+        /* ─── Desktop-only: hide the legacy prop-header so the     */
+        /*     modal-style hero (.pd-desktop-hero) owns the top.    */
+        /*     On mobile the old header still renders so users      */
+        /*     can rename inline beneath the mobile hero image.     */
+        @media (min-width: 769px) {
+          .pd-prop-header { display: none !important; }
+          /* Drop the image column inside the summary card on       */
+          /* desktop — the hero carries the image now. The score    */
+          /* panel stays; its own border-left is fine since the     */
+          /* column is the only thing to the right of the text.     */
+          .pd-summary-image .pd-summary-image-photo { display: none !important; }
+          .pd-summary-image { width: 200px !important; }
+        }
+
         /* ─── Mobile responsive ─── */
         @media (max-width: 768px) {
           .pd-outer { flex-direction: column !important; }
@@ -1489,6 +1503,8 @@ function PropertyDetailInner({
           /* Show mobile-only elements */
           .pd-mobile-score-card { display: block !important; }
           .pd-mobile-hero { display: block !important; }
+          /* Hide the desktop modal-style hero on mobile */
+          .pd-desktop-hero { display: none !important; }
 
           /* Full-bleed hero on mobile */
           .pd-mobile-hero { margin: 0 -10px !important; }
@@ -1604,7 +1620,191 @@ function PropertyDetailInner({
       </div>
 
       {/* ═══════════════════════════════════════════════════ */}
-      {/*  1. PROPERTY HEADER                                  */}
+      {/*  1a. DESKTOP HERO — modal-style full-width image     */}
+      {/*      with title + address overlaid                   */}
+      {/* ═══════════════════════════════════════════════════ */}
+      <div className="pd-desktop-hero" style={{
+        position: "relative", overflow: "hidden", borderRadius: 14,
+        border: "1px solid rgba(0,0,0,0.05)",
+        boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+        marginBottom: 16, height: 280, background: "#0F172A",
+      }}>
+        {/* Image layer */}
+        <div style={{ position: "absolute", inset: 0 }}>
+          <PropertyImage
+            heroImageUrl={(property as any).heroImageUrl}
+            location={location}
+            address={location}
+            propertyName={property.propertyName}
+            propertyId={property.id}
+          />
+        </div>
+        {/* Legibility gradient */}
+        <div style={{
+          position: "absolute", inset: 0, pointerEvents: "none",
+          background: "linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.25) 55%, rgba(0,0,0,0.82) 100%)",
+        }} />
+
+        {/* Top-left: asset type pill (small, over image) */}
+        <div style={{ position: "absolute", top: 16, left: 20, zIndex: 2 }}>
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "5px 10px", fontSize: 10, fontWeight: 700,
+            textTransform: "uppercase", letterSpacing: 0.8,
+            color: "#fff", background: "rgba(255,255,255,0.16)",
+            border: "1px solid rgba(255,255,255,0.25)", borderRadius: 6,
+            backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+          }}>
+            {ANALYSIS_TYPE_LABELS[wsType as keyof typeof ANALYSIS_TYPE_LABELS] || wsType} Model
+          </span>
+        </div>
+
+        {/* Top-right: download buttons (desktop only, kept on darker backdrop) */}
+        {hasData && (
+          <div className="pd-hero-dl" style={{
+            position: "absolute", top: 14, right: 14, zIndex: 2,
+            display: "flex", gap: 8, flexShrink: 0,
+          }}>
+            <button
+              onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
+              className="dl-btn"
+              style={{
+                padding: "6px 14px", borderRadius: 8,
+                border: "1px solid #A7F3D0", background: "#ECFDF5",
+                color: "#065F46", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                display: "inline-flex", alignItems: "center", gap: 6,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+              }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#065F46" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+              Workbook
+              <span style={{ padding: "1px 5px", background: "#D1FAE5", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#065F46" }}>XLSX</span>
+            </button>
+            <button
+              onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType)}
+              className="dl-btn"
+              style={{
+                padding: "6px 14px", borderRadius: 8,
+                border: "1px solid #BFDBFE", background: "#EFF6FF",
+                color: "#1E40AF", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                display: "inline-flex", alignItems: "center", gap: 6,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+              }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1E40AF" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+              Brief
+              <span style={{ padding: "1px 5px", background: "#DBEAFE", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#1E40AF" }}>DOC</span>
+            </button>
+            {userTier === "pro_plus" ? (
+              <button
+                onClick={async () => { try { await generateStrategyLensXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("Strategy XLS failed: " + (e?.message || "unknown")); } }}
+                className="dl-btn"
+                style={{
+                  padding: "6px 14px", borderRadius: 8,
+                  border: `1px solid ${C.ghostBorder}`, background: "linear-gradient(135deg, #FEF3C7, #FDE68A)",
+                  color: "#92400E", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+                }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+                Strategy
+                <span style={{ padding: "1px 5px", background: "#FCD34D", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#78350F" }}>PRO+</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  if (confirm("Strategy Analysis is a Pro+ feature. Upgrade to unlock detailed Core / Value-Add / Opportunistic analysis for every deal.\n\nGo to upgrade page?")) {
+                    window.location.href = "/workspace?upgrade=true";
+                  }
+                }}
+                className="dl-btn"
+                title="Upgrade to Pro+ to unlock Strategy Analysis"
+                style={{
+                  padding: "6px 14px", borderRadius: 8,
+                  border: "1px solid #E5E7EB", background: "#F3F4F6",
+                  color: "#9CA3AF", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+                }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0110 0v4" />
+                </svg>
+                Strategy
+                <span style={{ padding: "1px 5px", background: "#E5E7EB", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#6B7280" }}>PRO+</span>
+              </button>
+            )}
+            {user && (
+              <EmailPropertyButton
+                property={property}
+                fields={fields}
+                brief={brief}
+                wsType={wsType}
+                scoreTotal={scoreTotal}
+                scoreBand={scoreBand}
+                user={user}
+              />
+            )}
+          </div>
+        )}
+
+        {/* Bottom-left: title + address over gradient */}
+        <div style={{
+          position: "absolute", bottom: 20, left: 24, right: 24, zIndex: 2,
+          color: "#fff",
+        }}>
+          <div
+            onClick={() => { /* preserve native click-to-edit via the component below */ }}
+            style={{ display: "flex", alignItems: "center", gap: 10, color: "#fff" }}
+          >
+            <h1
+              onClick={(e) => {
+                // Use the same edit pathway by delegating to a prompt — keeps
+                // hero rendering simple while still letting the user rename
+                // the deal. The EditablePropertyName lives on the hidden
+                // mobile header and still serves mobile click-to-edit.
+                e.stopPropagation();
+                const next = prompt("Rename deal", property.propertyName);
+                if (next && next.trim() && next.trim() !== property.propertyName) {
+                  updateProperty(propertyId, { propertyName: next.trim() } as any)
+                    .then(() => {
+                      setProperty((prev: Property | null) => prev ? { ...prev, propertyName: next.trim() } : prev);
+                      if (typeof window !== "undefined") window.dispatchEvent(new Event("workspace-properties-changed"));
+                    })
+                    .catch(() => {});
+                }
+              }}
+              style={{
+                fontSize: 28, fontWeight: 800, color: "#fff", margin: 0,
+                lineHeight: 1.15, letterSpacing: "-0.3px", textShadow: "0 2px 8px rgba(0,0,0,0.4)",
+                fontFamily: "'Inter', sans-serif", cursor: "pointer", maxWidth: "100%",
+              }}
+            >
+              {cleanDisplayName(property.propertyName, property.address1, property.city, property.state)}
+            </h1>
+          </div>
+          {location && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.85 }}>
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              <span style={{ fontSize: 14, color: "#fff", textShadow: "0 1px 4px rgba(0,0,0,0.5)", fontWeight: 500 }}>{location}</span>
+              <a href={`https://www.google.com/maps/search/${encodedAddress}`} target="_blank" rel="noopener noreferrer"
+                style={{
+                  fontSize: 11, color: "#fff", textDecoration: "none",
+                  padding: "3px 10px", background: "rgba(255,255,255,0.18)",
+                  border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6,
+                  fontWeight: 600, backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)",
+                }}>
+                Map &rarr;
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════ */}
+      {/*  1. PROPERTY HEADER (mobile only - desktop uses     */}
+      {/*     the modal-style hero above)                      */}
       {/* ═══════════════════════════════════════════════════ */}
       <div className="pd-prop-header" style={{ marginBottom: 20 }}>
         {/* Top row: name + download buttons */}
@@ -1880,8 +2080,8 @@ function PropertyDetailInner({
             width: 240, flexShrink: 0, display: "flex", flexDirection: "column",
             borderLeft: "1px solid rgba(0,0,0,0.05)",
           }}>
-            {/* Property Image */}
-            <div style={{ height: 160, overflow: "hidden", background: C.surfLow }}>
+            {/* Property Image (mobile-only; desktop uses the hero above) */}
+            <div className="pd-summary-image-photo" style={{ height: 160, overflow: "hidden", background: C.surfLow }}>
               <PropertyImage
                 heroImageUrl={(property as any).heroImageUrl}
                 location={location}
