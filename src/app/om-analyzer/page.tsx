@@ -2195,7 +2195,7 @@ export default function OmAnalyzerPage() {
           style={{ background: "#0d0d14", paddingTop: 64 }}>
 
           {/* ── 1. HERO ── */}
-          <div className="ds-section-pad ds-hero-section" style={{ padding: "100px 32px 120px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
+          <div className="ds-section-pad ds-hero-section" style={{ padding: "85px 32px 102px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
             {/* Subtle line-drawing cityscape background */}
             <svg
               style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0, opacity: 0.08 }}
@@ -2374,7 +2374,7 @@ export default function OmAnalyzerPage() {
                 {/* "Try now" label */}
                 <div style={{ textAlign: "center", marginBottom: 14 }}>
                   <span style={{ fontSize: 13, fontWeight: 700, color: "#84CC16", letterSpacing: 0.3 }}>
-                    Analyze CRE on-market deals. Try now.
+                    Instantly analyze on-market CRE deals. Try now.
                   </span>
                 </div>
 
@@ -2500,7 +2500,7 @@ export default function OmAnalyzerPage() {
 
           {/* ── ASSET-SPECIFIC MODELS (highlight only, no backend detail) ── */}
           <div id="asset-models" className="ds-section-pad" style={{
-            padding: "100px 32px 80px", background: "#0d0d14",
+            padding: "85px 32px 68px", background: "#0d0d14",
             position: "relative", overflow: "hidden",
             borderTop: "1px solid rgba(255,255,255,0.04)",
           }}>
@@ -2772,7 +2772,7 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 2. WHY DEALSIGNALS ── */}
-          <div id="how-it-works" className="ds-section-pad" style={{ padding: "120px 32px 100px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
+          <div id="how-it-works" className="ds-section-pad" style={{ padding: "102px 32px 85px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
             {/* Subtle background depth */}
             <div style={{ position: "absolute", top: -100, left: "50%", transform: "translateX(-50%)", width: 800, height: 800, borderRadius: "50%", background: "rgba(132,204,22,0.03)", filter: "blur(180px)", pointerEvents: "none" }} />
 
@@ -2865,7 +2865,7 @@ export default function OmAnalyzerPage() {
           {/* testimonials section removed */}
 
           {/* ── 6. FEATURES - PRODUCT STORY ── */}
-          <div id="features" className="ds-section-pad" style={{ padding: "120px 32px 80px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
+          <div id="features" className="ds-section-pad" style={{ padding: "102px 32px 68px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
             {/* Background depth */}
             <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "rgba(132,204,22,0.05)", filter: "blur(160px)", pointerEvents: "none" }} />
             <div style={{ position: "absolute", bottom: -150, left: -100, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.03)", filter: "blur(140px)", pointerEvents: "none" }} />
@@ -3478,7 +3478,7 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 8. PRICING ── */}
-          <div id="pricing" className="ds-section-pad" style={{ maxWidth: 1000, margin: "0 auto", padding: "120px 32px 80px", position: "relative", overflow: "visible" }}>
+          <div id="pricing" className="ds-section-pad" style={{ maxWidth: 1000, margin: "0 auto", padding: "102px 32px 68px", position: "relative", overflow: "visible" }}>
             {/* Section divider */}
             <div className="ds-section-divider" style={{
               height: 1,
@@ -3624,7 +3624,7 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* ── 9. FAQ ── */}
-          <div id="faq" className="ds-section-pad" style={{ maxWidth: 1100, margin: "0 auto", padding: "120px 32px 80px", position: "relative", zIndex: 2 }}>
+          <div id="faq" className="ds-section-pad" style={{ maxWidth: 1100, margin: "0 auto", padding: "102px 32px 68px", position: "relative", zIndex: 2 }}>
             {/* Section divider */}
             <div className="ds-section-divider" style={{
               height: 1,
