@@ -955,6 +955,45 @@ export default function PropertyDetailClient() {
       .catch(() => {});
   }, [propertyId]);
 
+  // Auto-run location research for Pro tier users when none cached.
+  // Every Pro-tier user should see Location Intelligence on every property
+  // without having to click a button — matches the modal experience where
+  // location data is presented inline alongside the deal summary.
+  useEffect(() => {
+    if (!propertyId || !property) return;
+    if (deepResearch) return; // already have data
+    if (deepResearchLoading) return;
+    if (userTier !== "pro" && userTier !== "pro_plus") return;
+    const addr = [property.address1, property.city, property.state].filter(Boolean).join(", ") || property.propertyName;
+    if (!addr) return;
+    // Don't auto-run while the deal is still being processed
+    const procStatus = (property as any)?.processingStatus || "";
+    if (procStatus && procStatus !== "complete") return;
+
+    let cancelled = false;
+    setDeepResearchLoading(true);
+    (async () => {
+      try {
+        const res = await fetch("/api/workspace/deep-research", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            propertyId,
+            propertyName: property.propertyName,
+            address: addr,
+            analysisType: (property as any).analysisType || "",
+          }),
+        });
+        if (!cancelled && res.ok) {
+          const data = await res.json();
+          setDeepResearch(data);
+        }
+      } catch { /* silent — fall back to manual button */ }
+      if (!cancelled) setDeepResearchLoading(false);
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propertyId, property?.id, userTier, deepResearch]);
+
   // Auto-poll while property is still processing
   // NOTE: Must be before conditional early returns to satisfy React Rules of Hooks
   // Optimization: only fetch the property doc (lightweight) to check status,
@@ -2839,7 +2878,7 @@ function PropertyDetailInner({
               <path d="M5 17l.5 1.5L7 19l-1.5.5L5 21l-.5-1.5L3 19l1.5-.5L5 17z" />
             </svg>
             <span style={{ fontSize: 11.5, color: "#4338CA", fontWeight: 500, fontFamily: "'Inter', sans-serif", lineHeight: 1.4 }}>
-              AI-powered analysis - sourced from publicly available data including government records, census data, and news outlets.
+              Sourced from publicly available data including government records, census data, and news outlets.
             </span>
           </div>
 
