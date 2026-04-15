@@ -5058,8 +5058,8 @@ async function downloadLiteXLSX(d: any) {
   }
 
   // ── SHEET 7: Offer Ladder ──
-  // Buyer-perspective ladder matching Pro XLS. Aggressive = opening lowball,
-  // Walk-Away = ceiling (full ask). Parity with generate-files.ts.
+  // Buyer-perspective ladder matching Pro XLS. Anchored around asking price:
+  // Low (85%) / Under Asking (95%) / Asking Price (100%) / Stretch (105%).
   const askPrice = Number(d.askingPrice) || 0;
   const noiForOffer = Number(d.noiOm) || noi;
   const LTV = 0.65, RATE = 0.0725, AMORT = 25, CLOSING = 0.02;
@@ -5073,8 +5073,8 @@ async function downloadLiteXLSX(d: any) {
   r = 2;
   ws7.getCell(r, 1).value = `OFFER LADDER - ${pName}`; ws7.getCell(r, 1).font = titleFont; r++;
   ws7.getCell(r, 1).value = "Four buyer offer levels and the returns each produces at current OM NOI. Read left to right as low to high."; ws7.getCell(r, 1).font = noteFont; r += 2;
-  hdrRow(ws7, r, ["Metric", "Aggressive", "Opening", "Target", "Walk-Away", "Notes"], [26, 16, 16, 16, 16, 40]); r++;
-  const offerPcts = [0.85, 0.90, 0.95, 1.00];
+  hdrRow(ws7, r, ["Metric", "Low", "Under Asking", "Asking Price", "Stretch", "Notes"], [26, 16, 16, 16, 16, 40]); r++;
+  const offerPcts = [0.85, 0.95, 1.00, 1.05];
   const offerPrices = offerPcts.map(p => askPrice * p);
   const opRow = (label: string, vals: string[], note?: string, opts?: { bold?: boolean; yellow?: boolean }) => {
     const lc = ws7.getCell(r, 1); lc.value = label; lc.font = opts?.bold ? { ...labelFont, color: { argb: "FF262C5C" } } : labelFont; lc.fill = white; lc.border = borders;
@@ -5101,10 +5101,10 @@ async function downloadLiteXLSX(d: any) {
   // Strategy notes block
   ws7.getCell(r, 1).value = "STRATEGY NOTES"; ws7.getCell(r, 1).font = secFont; r++;
   const stratNotes: Array<[string, string]> = [
-    ["Aggressive", "Opening lowball (~85% of ask). Tests seller motivation. Expect a sharp counter; be prepared to move up or hold."],
-    ["Opening", "Realistic first offer (~90% of ask). Signals serious interest without exposing your ceiling."],
-    ["Target", "Where you expect to land after negotiation (~95% of ask). The most likely settlement price."],
-    ["Walk-Away", "Your ceiling, full asking price. Do NOT pay more. If the seller won't meet you here, pass on the deal."],
+    ["Low", "Lowball test (~85% of ask). Probes seller motivation. Expect a sharp counter; be ready to move up or walk."],
+    ["Under Asking", "Realistic offer below ask (~95%). Signals serious interest and leaves room to settle at or near ask."],
+    ["Asking Price", "Full asking price (100%). Your typical ceiling. Use only when returns still pencil out at this number."],
+    ["Stretch", "Premium offer (~105%) above ask. Reserved for competitive bids, unique assets, or thesis-driven conviction where paying up is justified."],
   ];
   stratNotes.forEach(([label, text], i) => {
     const zf = i % 2 === 0 ? white : ltBlue;

@@ -609,13 +609,12 @@ export async function generateUnderwritingXLSX(
   or = sheetTitleBanner(wsO, or, "Offer Ladder", "Four buyer offer levels and the returns each produces at current OM NOI. Read left → right as low → high.", 6);
 
   or = sectionBand(wsO, or, "Offers", 6);
-  // Buyer-perspective ladder: leftmost is your opening lowball, rightmost
-  // is your ceiling. "Walk-Away" is the price at which YOU walk away from
-  // the deal (i.e. do not pay more), not the price at which the seller
-  // walks. Previously this was labeled backwards and read as if the
-  // lowest offer was the walk-away.
-  hdrRow(wsO, or++, ["Metric", "Aggressive", "Opening", "Target", "Walk-Away", "Notes"]);
-  const offerPcts = [0.85, 0.90, 0.95, 1.00];
+  // Buyer-perspective ladder anchored around the seller's asking price.
+  // Low = lowball test. Under Asking = realistic first offer below ask.
+  // Asking Price = full ask, your typical ceiling. Stretch = modest
+  // premium you'd only pay in a competitive bid or to win a unique asset.
+  hdrRow(wsO, or++, ["Metric", "Low", "Under Asking", "Asking Price", "Stretch", "Notes"]);
+  const offerPcts = [0.85, 0.95, 1.00, 1.05];
   const priceR = or;
   const opl = wsO.getCell(priceR, 1); opl.value = "Offer Price"; opl.font = boldLabel; opl.fill = white; opl.border = borders; opl.alignment = { vertical: "middle", indent: 1 };
   offerPcts.forEach((pct, i) => {
@@ -646,10 +645,10 @@ export async function generateUnderwritingXLSX(
   // Strategy notes
   or = sectionBand(wsO, or, "Strategy Notes", 6);
   const notes: Array<[string, string]> = [
-    ["Aggressive", "Opening lowball (~85% of ask). Tests seller motivation. Expect a sharp counter; be prepared to move up or hold."],
-    ["Opening", "Realistic first offer (~90% of ask). Signals serious interest without exposing your ceiling."],
-    ["Target", "Where you expect to land after negotiation (~95% of ask). The most likely settlement price."],
-    ["Walk-Away", "Your ceiling — full asking price. Do NOT pay more. If the seller won't meet you here, pass on the deal."],
+    ["Low", "Lowball test (~85% of ask). Probes seller motivation. Expect a sharp counter; be ready to move up or walk."],
+    ["Under Asking", "Realistic offer below ask (~95%). Signals serious interest and leaves room to settle at or near ask."],
+    ["Asking Price", "Full asking price (100%). Your typical ceiling. Use only when returns still pencil out at this number."],
+    ["Stretch", "Premium offer (~105%) above ask. Reserved for competitive bids, unique assets, or thesis-driven conviction where paying up is justified."],
   ];
   notes.forEach(([label, text], i) => {
     const zf = zebraFill(i);
