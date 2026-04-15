@@ -1600,31 +1600,41 @@ function PropertyDetailInner({
           />
           {hasData && (
             <div className="pd-dl-buttons" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+              {/*
+                Download CTAs: tint each button in its format's canonical hue
+                (Excel-green for the XLSX, Word-blue for the brief DOC) so they
+                scan as "this is a spreadsheet" / "this is a document" at a
+                glance instead of a row of identical grey pills. Soft tinted
+                background + matching border keeps them readable and in-brand
+                with the lime green accents elsewhere on the page.
+              */}
               <button
                 onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
                 className="dl-btn"
                 style={{
                   padding: "6px 14px", borderRadius: 8,
-                  border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
-                  color: C.onSurface, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  border: "1px solid #A7F3D0",
+                  background: "#ECFDF5",
+                  color: "#065F46", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
                   display: "inline-flex", alignItems: "center", gap: 6,
                 }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0A7E5A" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#065F46" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
                 Workbook
-                <span style={{ padding: "1px 5px", background: "#D1FAE5", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#0A7E5A" }}>XLSX</span>
+                <span style={{ padding: "1px 5px", background: "#D1FAE5", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#065F46" }}>XLSX</span>
               </button>
               <button
                 onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType)}
                 className="dl-btn"
                 style={{
                   padding: "6px 14px", borderRadius: 8,
-                  border: `1px solid ${C.ghostBorder}`, background: C.surfLow,
-                  color: C.onSurface, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  border: "1px solid #BFDBFE",
+                  background: "#EFF6FF",
+                  color: "#1E40AF", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
                   display: "inline-flex", alignItems: "center", gap: 6,
                 }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1E40AF" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
                 Brief
-                <span style={{ padding: "1px 5px", background: "#DBEAFE", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#2563EB" }}>DOC</span>
+                <span style={{ padding: "1px 5px", background: "#DBEAFE", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#1E40AF" }}>DOC</span>
               </button>
               {/* Strategy Analysis - Pro+ only */}
               {userTier === "pro_plus" ? (
@@ -1642,6 +1652,9 @@ function PropertyDetailInner({
                   <span style={{ padding: "1px 5px", background: "#FCD34D", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#78350F" }}>PRO+</span>
                 </button>
               ) : (
+                // Locked state: render as a muted/disabled-looking button so it
+                // doesn't compete with the active downloads. Still clickable -
+                // the click routes to the upgrade flow - just visually gated.
                 <button
                   onClick={() => {
                     if (confirm("Strategy Analysis is a Pro+ feature. Upgrade to unlock detailed Core / Value-Add / Opportunistic analysis for every deal.\n\nGo to upgrade page?")) {
@@ -1652,18 +1665,18 @@ function PropertyDetailInner({
                   title="Upgrade to Pro+ to unlock Strategy Analysis"
                   style={{
                     padding: "6px 14px", borderRadius: 8,
-                    border: "1px solid #F59E0B",
-                    background: "linear-gradient(135deg, #FEF3C7, #FDE68A)",
-                    color: "#92400E", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                    border: "1px solid #E5E7EB",
+                    background: "#F3F4F6",
+                    color: "#9CA3AF", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
                     display: "inline-flex", alignItems: "center", gap: 6,
                   }}>
                   {/* Lock icon */}
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                     <path d="M7 11V7a5 5 0 0110 0v4" />
                   </svg>
                   Strategy
-                  <span style={{ padding: "1px 5px", background: "#FCD34D", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#78350F" }}>PRO+</span>
+                  <span style={{ padding: "1px 5px", background: "#E5E7EB", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#6B7280" }}>PRO+</span>
                 </button>
               )}
               {/* Email this property (all tiers) */}
