@@ -76,7 +76,7 @@ type Step = "upload" | "processing" | "name" | "done";
 
 export default function UploadPage() {
   const { user, loading: authLoading } = useAuth();
-  const { activeWorkspace, addWorkspace } = useWorkspace();
+  const { activeWorkspace, addWorkspace, switchWorkspace } = useWorkspace();
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedProperty = searchParams.get("property") || "";
@@ -91,7 +91,7 @@ export default function UploadPage() {
   const [statusMsg, setStatusMsg] = useState("");
   const [parseResult, setParseResult] = useState("");
   const [showMismatchModal, setShowMismatchModal] = useState(false);
-  const [mismatchInfo, setMismatchInfo] = useState<{ detected: string; workspace: string; propertyId: string } | null>(null);
+  const [mismatchInfo, setMismatchInfo] = useState<{ detected: string; workspace: string; propertyId: string; extractedText?: string } | null>(null);
   const skipMismatchRef = useRef(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -343,6 +343,7 @@ export default function UploadPage() {
               detected: detectedType,
               workspace: activeWorkspace?.analysisType || "retail",
               propertyId,
+              extractedText,
             });
             setShowMismatchModal(true);
             setStep("upload");
@@ -461,19 +462,80 @@ export default function UploadPage() {
   }
 
   async function handleMismatchCreateWorkspace() {
-    if (!mismatchInfo || !activeWorkspace) return;
+    if (!mismatchInfo || !activeWorkspace || !user) return;
+    const { detected, propertyId, extractedText } = mismatchInfo;
     try {
-      const newWsName = `${ANALYSIS_TYPE_LABELS[mismatchInfo.detected as any]} DealBoard`;
-      const newWs = await addWorkspace(newWsName, mismatchInfo.detected as any);
-      console.log("[upload] Created new workspace:", newWs);
-      const { updateProperty } = await import("@/lib/workspace/firestore");
-      await updateProperty(mismatchInfo.propertyId, { workspaceId: newWs.id } as any);
       setShowMismatchModal(false);
+      setStep("processing");
+      setStatusMsg(`Creating ${ANALYSIS_TYPE_LABELS[detected as any]} DealBoard...`);
+
+      const newWsName = `${ANALYSIS_TYPE_LABELS[detected as any]} DealBoard`;
+      const newWs = await addWorkspace(newWsName, detected as any);
+      console.log("[upload] Created new workspace:", newWs);
+
+      const { updateProperty } = await import("@/lib/workspace/firestore");
+      await updateProperty(propertyId, {
+        workspaceId: newWs.id,
+        analysisType: detected,
+      } as any);
+
+      // Move the user to the newly created dealboard so when they land on the
+      // property page, sidebar / header context matches.
+      switchWorkspace(newWs.id);
+
+      // Files were already uploaded before classification ran. Skip re-upload
+      // and go straight to the full analysis pipeline against the new model.
+      if (extractedText && extractedText.trim().length >= 50) {
+        setStatusMsg("Analyzing your document - this takes 30-90 seconds...");
+        setParseResult("Running full analysis pipeline (parse -> generate -> score)...");
+        try {
+          const processRes = await fetch("/api/workspace/process", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              propertyId,
+              userId: user.uid,
+              documentText: extractedText,
+              analysisType: detected,
+            }),
+          });
+          if (processRes.ok) {
+            const processData = await processRes.json();
+            setParseResult(`Analysis complete - ${processData.fieldsExtracted || 0} fields extracted and scored.`);
+          } else {
+            setParseResult("Analysis encountered an issue. You can re-analyze from the property page.");
+          }
+        } catch (err) {
+          console.error("[upload] Process (create-workspace) failed:", err);
+          setParseResult("Analysis encountered an issue. You can re-analyze from the property page.");
+        }
+      } else {
+        setParseResult("Uploaded, but text extraction was limited. Try re-analyzing from the property page.");
+      }
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("workspace-properties-changed"));
+      }
+
+      // Bump usage once per successful deal, same as the normal path.
+      try {
+        const token = await user.getIdToken();
+        await fetch("/api/workspace/usage", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({}),
+        });
+        if (typeof window !== "undefined") window.dispatchEvent(new Event("usage-updated"));
+      } catch (err) {
+        console.warn("[upload] Usage increment failed:", err);
+      }
+
       setMismatchInfo(null);
-      router.push(`/workspace/properties/${mismatchInfo.propertyId}`);
+      router.push(`/workspace/properties/${propertyId}`);
     } catch (err) {
       console.error("[upload] Failed to create workspace:", err);
       alert("Failed to create workspace");
+      setStep("upload");
     }
   }
 
