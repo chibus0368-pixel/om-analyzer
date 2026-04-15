@@ -1204,8 +1204,8 @@ export default function PropertyDetailClient() {
             // Nudge the sticky top up and shrink max-height so the last
             // property row is always reachable above any OS / in-page UI
             // chrome that was clipping the bottom of the list.
-            position: "sticky", top: 72, alignSelf: "flex-start",
-            maxHeight: "calc(100vh - 120px)", overflowY: "auto",
+            position: "sticky", top: 16, alignSelf: "flex-start",
+            maxHeight: "calc(100vh - 40px)", overflowY: "auto",
             borderRadius: 12,
             overscrollBehavior: "contain",
             scrollbarGutter: "stable",
