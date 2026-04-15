@@ -157,6 +157,25 @@ export default function DealSignalFooter() {
         </div>
       </div>
 
+      {/* ── Disclaimer ── */}
+      <div
+        style={{
+          maxWidth: 1100,
+          margin: "0 auto 20px",
+          padding: "16px 18px",
+          background: "rgba(255,255,255,0.03)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: 8,
+          fontSize: 11.5,
+          color: "#8b93a8",
+          lineHeight: 1.6,
+          fontFamily: "'Inter', sans-serif",
+        }}
+      >
+        <span style={{ fontWeight: 700, color: "#cbd2e0", marginRight: 6 }}>Disclaimer:</span>
+        DealSignals output is automated general guidance, not investment, legal, tax, or financial advice. Every deal demands your own full due diligence and independent professional review before you commit capital. Figures are derived from uploaded documents and public data sources that may be incomplete or inaccurate. Verify all material facts directly.
+      </div>
+
       {/* ── Bottom bar ── */}
       <div
         style={{

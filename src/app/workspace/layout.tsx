@@ -1484,20 +1484,32 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           <div style={{ flex: 1 }}>{children}</div>
           <footer className="ws-footer" style={{
             padding: "32px 0 24px", marginTop: 40,
-            display: "flex", justifyContent: "space-between", alignItems: "flex-start",
             fontSize: 11, color: "#585e70",
-            flexWrap: "wrap", gap: 16,
           }}>
-            <div>
-              <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 14, color: "#151b2b", display: "block", marginBottom: 6 }}>DealSignals</span>
-              <span style={{ color: "#585e70", fontSize: 10 }}>&copy; {new Date().getFullYear()} DealSignals, Inc. All rights reserved.</span>
+            <div style={{
+              padding: "12px 14px", marginBottom: 16,
+              background: "#F8FAFC", border: "1px solid #E2E8F0",
+              borderRadius: 8, fontSize: 11, color: "#475569",
+              lineHeight: 1.55, fontFamily: "'Inter', sans-serif",
+            }}>
+              <span style={{ fontWeight: 700, color: "#1E293B", marginRight: 6 }}>Disclaimer:</span>
+              DealSignals output is automated general guidance, not investment, legal, tax, or financial advice. Every deal demands your own full due diligence and independent professional review before you commit capital. Figures are derived from uploaded documents and public data sources that may be incomplete or inaccurate. Verify all material facts directly.
             </div>
-            <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
-              <a href="/" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Home</a>
-              <a href="/#pricing" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Pricing</a>
-              <a href="/contact" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Contact</a>
-              <a href="/terms" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Terms</a>
-              <a href="/privacy" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Privacy</a>
+            <div style={{
+              display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+              flexWrap: "wrap", gap: 16,
+            }}>
+              <div>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 14, color: "#151b2b", display: "block", marginBottom: 6 }}>DealSignals</span>
+                <span style={{ color: "#585e70", fontSize: 10 }}>&copy; {new Date().getFullYear()} DealSignals, Inc. All rights reserved.</span>
+              </div>
+              <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+                <a href="/" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Home</a>
+                <a href="/#pricing" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Pricing</a>
+                <a href="/contact" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Contact</a>
+                <a href="/terms" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Terms</a>
+                <a href="/privacy" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Privacy</a>
+              </div>
             </div>
           </footer>
         </div>
