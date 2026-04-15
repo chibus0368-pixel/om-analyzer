@@ -1144,15 +1144,31 @@ export default function PropertyDetailClient() {
         />
         </div>
 
-      {/* ── Property Sidebar (right) ─────────────────────── */}
+      {/* ── Property Sidebar (right) ───────────────────────
+         Sticky + internally scrollable. Two things the previous version got
+         wrong when a dealboard had 20+ properties:
+           1. top:0 and maxHeight:calc(100vh - 32px) ignored the 64px
+              workspace header, so the top chunk of the list sat behind the
+              header and the bottom got clipped off-screen.
+           2. overscroll-behavior wasn't set, so when the list reached its
+              top/bottom, the wheel event bubbled to the page and the
+              sidebar content you were trying to reach scrolled away with it.
+         Fix: offset for the header, reserve matching space at the bottom,
+         and contain scroll chaining so hovering the column always scrolls
+         the column.                                                       */}
       {siblingProps.length > 1 && (
-        <div className="pd-sidebar" style={{
-          width: 260, minWidth: 260, background: "#fff", borderLeft: "1px solid rgba(0,0,0,0.06)",
-          flexShrink: 0,
-          position: "sticky", top: 0, alignSelf: "flex-start",
-          maxHeight: "calc(100vh - 32px)", overflowY: "auto",
-          borderRadius: 12,
-        }}>
+        <div
+          className="pd-sidebar"
+          style={{
+            width: 260, minWidth: 260, background: "#fff", borderLeft: "1px solid rgba(0,0,0,0.06)",
+            flexShrink: 0,
+            position: "sticky", top: 80, alignSelf: "flex-start",
+            maxHeight: "calc(100vh - 96px)", overflowY: "auto",
+            borderRadius: 12,
+            overscrollBehavior: "contain",
+            scrollbarGutter: "stable",
+          }}
+        >
           <div style={{ padding: "14px 14px 8px", borderBottom: "1px solid #F0F2F5" }}>
             <Link href={`/workspace?ws=${activeWorkspace?.slug || "default-dealboard"}`} style={{
               fontSize: 13, fontWeight: 700, color: "#111827", textDecoration: "none",
