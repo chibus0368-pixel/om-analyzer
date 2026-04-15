@@ -946,22 +946,22 @@ export default function PropertyDetailClient() {
     })();
   }, []);
 
-  // Load cached deep research on mount
+  // Load cached deep research on mount — disabled while Location Intel
+  // is hidden from the UI. Leaving the fetch in place would still burn
+  // a Firestore read per page load for a section no one can see.
   useEffect(() => {
     if (!propertyId) return;
+    if (true) return; // Location Intel disabled
     fetch(`/api/workspace/deep-research?propertyId=${propertyId}`)
       .then(r => r.json())
       .then(data => { if (data.exists !== false && data.sections) setDeepResearch(data); })
       .catch(() => {});
   }, [propertyId]);
 
-  // Auto-run location research whenever no cached result exists.
-  // Location Intelligence is no longer a gated Pro-plus feature; every
-  // user who can reach a property page should see the same layout and
-  // depth of information the landing modal shows, without a manual
-  // button click or upgrade prompt.
+  // Auto-run location research — disabled while Location Intel is hidden.
   useEffect(() => {
     if (!propertyId || !property) return;
+    if (true) return; // Location Intel disabled
     if (deepResearch) return; // already have data
     if (deepResearchLoading) return;
     const addr = [property.address1, property.city, property.state].filter(Boolean).join(", ") || property.propertyName;
@@ -2936,9 +2936,12 @@ function PropertyDetailInner({
       </div>
 
       {/* ═══════════════════════════════════════════════════ */}
-      {/*  9. DEEP RESEARCH PANEL                             */}
+      {/*  9. DEEP RESEARCH PANEL — disabled                  */}
+      {/*  Temporarily hidden while Location Intel v2 is      */}
+      {/*  reworked. Flip the `false` below to `true` to       */}
+      {/*  re-enable without deleting the implementation.     */}
       {/* ═══════════════════════════════════════════════════ */}
-      {(
+      {false && (
         <div style={{
           background: "#FFFFFF", borderRadius: C.radius, overflow: "hidden",
           border: `1px solid rgba(0,0,0,0.06)`, marginBottom: 16,

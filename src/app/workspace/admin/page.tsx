@@ -80,6 +80,41 @@ export default function AdminPage() {
   const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
+  // Beta access panel state
+  const [betaEmail, setBetaEmail] = useState("");
+  const [betaTier, setBetaTier] = useState<"pro" | "pro_plus">("pro_plus");
+  const [betaLoading, setBetaLoading] = useState<"grant" | "revoke" | null>(null);
+  const [betaResult, setBetaResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  const handleBetaAccess = async (action: "grant" | "revoke") => {
+    if (!betaEmail.trim()) {
+      setBetaResult({ ok: false, message: "Enter an email first" });
+      return;
+    }
+    setBetaLoading(action);
+    setBetaResult(null);
+    try {
+      const token = await getAuthInstance().currentUser?.getIdToken();
+      const res = await fetch("/api/admin/beta-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ email: betaEmail.trim(), action, tier: betaTier }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setBetaResult({ ok: false, message: data.error || `HTTP ${res.status}` });
+      } else {
+        setBetaResult({ ok: true, message: data.message || "Done" });
+        setBetaEmail("");
+        await fetchUsers();
+      }
+    } catch (err: any) {
+      setBetaResult({ ok: false, message: err?.message || "Request failed" });
+    } finally {
+      setBetaLoading(null);
+    }
+  };
+
   const copyToClipboard = (value: string, field: string) => {
     navigator.clipboard.writeText(value);
     setCopiedField(field);
@@ -417,6 +452,78 @@ export default function AdminPage() {
         <p style={{ fontSize: 14, color: "#9CA3AF", margin: 0 }}>
           Manage users, dealboards, and billing for Deal Signals.
         </p>
+      </div>
+
+      {/* Beta Access Panel */}
+      <div style={{
+        background: "#fff", borderRadius: 10, border: "1px solid rgba(0,0,0,0.05)",
+        padding: "16px 20px", boxShadow: "0 1px 2px rgba(0,0,0,0.04)", marginBottom: 20,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: "#111827", textTransform: "uppercase", letterSpacing: 0.8 }}>
+            Beta Access
+          </div>
+          <div style={{ fontSize: 11, color: "#9CA3AF" }}>
+            Grant or revoke paid-tier access for beta testers (bypasses Stripe)
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <input
+            type="email"
+            placeholder="user@example.com"
+            value={betaEmail}
+            onChange={(e) => setBetaEmail(e.target.value)}
+            style={{
+              padding: "8px 12px", borderRadius: 6, border: "1px solid #E5E7EB",
+              fontSize: 13, fontFamily: "inherit", minWidth: 260, outline: "none",
+            }}
+          />
+          <select
+            value={betaTier}
+            onChange={(e) => setBetaTier(e.target.value as "pro" | "pro_plus")}
+            style={{
+              padding: "8px 12px", borderRadius: 6, border: "1px solid #E5E7EB",
+              fontSize: 13, fontFamily: "inherit", background: "#fff", cursor: "pointer",
+            }}
+          >
+            <option value="pro_plus">Pro+</option>
+            <option value="pro">Pro</option>
+          </select>
+          <button
+            onClick={() => handleBetaAccess("grant")}
+            disabled={betaLoading !== null}
+            style={{
+              padding: "8px 16px", borderRadius: 6, border: "none",
+              background: "#7C3AED", color: "#fff",
+              fontSize: 12, fontWeight: 700, cursor: betaLoading ? "default" : "pointer",
+              fontFamily: "inherit", opacity: betaLoading ? 0.6 : 1,
+            }}
+          >
+            {betaLoading === "grant" ? "Granting..." : "Grant Beta Access"}
+          </button>
+          <button
+            onClick={() => handleBetaAccess("revoke")}
+            disabled={betaLoading !== null}
+            style={{
+              padding: "8px 16px", borderRadius: 6, border: "1px solid #E5E7EB",
+              background: "#fff", color: "#6B7280",
+              fontSize: 12, fontWeight: 700, cursor: betaLoading ? "default" : "pointer",
+              fontFamily: "inherit", opacity: betaLoading ? 0.6 : 1,
+            }}
+          >
+            {betaLoading === "revoke" ? "Revoking..." : "Revoke"}
+          </button>
+          {betaResult && (
+            <div style={{
+              fontSize: 12, fontWeight: 600,
+              color: betaResult.ok ? "#059669" : "#DC2626",
+              padding: "6px 10px", borderRadius: 6,
+              background: betaResult.ok ? "#ECFDF5" : "#FEF2F2",
+            }}>
+              {betaResult.message}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* KPI Row */}
