@@ -28,6 +28,14 @@ export async function GET(
     const shareDoc = snap.docs[0];
     const shareData = shareDoc.data();
 
+    // Honor hard expiration if set. Empty string / missing field means "no expiration".
+    if (shareData.expiresAt && typeof shareData.expiresAt === "string") {
+      const expiry = new Date(shareData.expiresAt).getTime();
+      if (Number.isFinite(expiry) && Date.now() > expiry) {
+        return NextResponse.json({ error: "This share link has expired." }, { status: 410 });
+      }
+    }
+
     // Increment view count (fire and forget)
     shareDoc.ref.update({ viewCount: (shareData.viewCount || 0) + 1 }).catch(() => {});
 

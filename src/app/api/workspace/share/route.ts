@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized - valid Firebase token required" }, { status: 401 });
     }
     const body = await req.json();
-    const { workspaceId, workspaceName, displayName, whiteLabel, hideDocuments, contactName, contactAgency, contactPhone } = body;
+    const { workspaceId, workspaceName, displayName, whiteLabel, hideDocuments, contactName, contactAgency, contactPhone, expiresAt } = body;
 
     if (!workspaceId) {
       return NextResponse.json({ error: "workspaceId is required" }, { status: 400 });
@@ -91,6 +91,8 @@ export async function POST(req: NextRequest) {
       contactName: contactName || "",
       contactAgency: contactAgency || "",
       contactPhone: contactPhone || "",
+      // Empty string = no expiration (default). ISO timestamp = hard cutoff.
+      expiresAt: typeof expiresAt === "string" ? expiresAt : "",
       isActive: true,
       viewCount: 0,
       createdAt: now,
@@ -147,6 +149,7 @@ export async function PATCH(req: NextRequest) {
     if (updates.contactName !== undefined) allowed.contactName = updates.contactName;
     if (updates.contactAgency !== undefined) allowed.contactAgency = updates.contactAgency;
     if (updates.contactPhone !== undefined) allowed.contactPhone = updates.contactPhone;
+    if (updates.expiresAt !== undefined) allowed.expiresAt = typeof updates.expiresAt === "string" ? updates.expiresAt : "";
     allowed.updatedAt = new Date().toISOString();
 
     await ref.update(allowed);

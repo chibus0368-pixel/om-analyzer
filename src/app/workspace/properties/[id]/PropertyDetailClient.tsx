@@ -157,127 +157,40 @@ function MetricTooltip({ text }: { text: string }) {
   );
 }
 
-/* ── Asset type pill w/ dropdown ─────────────────────── */
-/* Lets the user override auto-classified asset type. Triggers
-   re-score immediately (no re-parse - uses existing extracted
-   fields). Sets typeManuallySet:true so re-parse/classify can't
-   silently overwrite. */
+/* ── Asset type pill (read-only) ─────────────────────────
+   Was a dropdown that let users override the auto-classified asset
+   type. Removed because the override only changed the score — the
+   rest of the analysis (signals, brief, benchmarks) stayed the same,
+   which made the feature feel broken ("I changed the lens but only
+   the number moved"). Until we wire a full re-analysis through the
+   selected type's model, we lock to auto-detect and render the
+   pill as a static label.
+
+   The props stay the same so callers don't need to change; the
+   onChanged/propertyId/userId props are intentionally unused. */
 function AssetTypePill({
-  currentType, propertyId, onChanged, userId,
+  currentType,
 }: {
   currentType: string;
   propertyId: string;
   onChanged: (newType: string) => Promise<void> | void;
   userId: string;
 }) {
-  const [open, setOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const wrapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function onDocClick(e: MouseEvent) {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [open]);
-
   const current = (currentType || "retail") as keyof typeof ANALYSIS_TYPE_LABELS;
   const color = ANALYSIS_TYPE_COLORS[current] || "#6B7280";
   const label = ANALYSIS_TYPE_LABELS[current] || "Retail";
-
-  async function handleSelect(newType: keyof typeof ANALYSIS_TYPE_LABELS) {
-    if (newType === current) { setOpen(false); return; }
-    setBusy(true);
-    try {
-      await updateProperty(propertyId, { analysisType: newType, typeManuallySet: true } as any);
-      try {
-        await fetch("/api/workspace/score", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ propertyId, userId, analysisType: newType }),
-        });
-      } catch { /* non-blocking */ }
-      await onChanged(newType);
-      setOpen(false);
-    } catch (err: any) {
-      console.error("[asset-type-pill] update failed:", err);
-      alert("Failed to update asset type: " + (err?.message || "unknown"));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const types: (keyof typeof ANALYSIS_TYPE_LABELS)[] = ["retail", "industrial", "office", "multifamily", "land"];
-
   return (
-    <div ref={wrapRef} style={{ position: "relative", display: "inline-block" }}>
-      <button
-        onClick={() => setOpen(v => !v)}
-        disabled={busy}
-        title="Click to change asset type (re-scores immediately)"
-        style={{
-          display: "inline-flex", alignItems: "center", gap: 6,
-          padding: "3px 10px", borderRadius: 6,
-          background: `${color}15`, color, border: `1px solid ${color}40`,
-          fontSize: 11, fontWeight: 600, cursor: busy ? "wait" : "pointer",
-          fontFamily: "inherit", lineHeight: 1.4,
-          opacity: busy ? 0.6 : 1,
-        }}>
-        <span>{label}</span>
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </button>
-      {open && (
-        <div style={{
-          position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 50,
-          minWidth: 200, background: "#FFFFFF",
-          border: "1px solid rgba(0,0,0,0.08)", borderRadius: 8,
-          boxShadow: "0 6px 20px rgba(0,0,0,0.10)", overflow: "hidden",
-        }}>
-          <div style={{
-            fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em",
-            color: "#6B7280", padding: "10px 12px 6px",
-          }}>Change asset type</div>
-          {types.map(t => {
-            const tColor = ANALYSIS_TYPE_COLORS[t];
-            const tLabel = ANALYSIS_TYPE_LABELS[t];
-            const isCurrent = t === current;
-            return (
-              <button
-                key={t}
-                onClick={() => handleSelect(t)}
-                disabled={busy}
-                style={{
-                  display: "flex", alignItems: "center", width: "100%",
-                  padding: "8px 12px", gap: 10,
-                  background: isCurrent ? "#F3F4F6" : "#FFFFFF", border: "none",
-                  cursor: busy ? "wait" : "pointer", fontFamily: "inherit",
-                  textAlign: "left",
-                }}
-                onMouseEnter={e => { if (!isCurrent && !busy) (e.currentTarget as HTMLButtonElement).style.background = "#F9FAFB"; }}
-                onMouseLeave={e => { if (!isCurrent && !busy) (e.currentTarget as HTMLButtonElement).style.background = "#FFFFFF"; }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: tColor, flexShrink: 0 }} />
-                <span style={{ fontSize: 12, color: "#0F172A", fontWeight: isCurrent ? 600 : 500 }}>{tLabel}</span>
-                {isCurrent && (
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: "auto" }}>
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                )}
-              </button>
-            );
-          })}
-          <div style={{
-            fontSize: 10, color: "#9CA3AF", padding: "8px 12px 10px",
-            borderTop: "1px solid #F3F4F6", lineHeight: 1.4,
-          }}>
-            Re-scores immediately with the selected model.
-          </div>
-        </div>
-      )}
-    </div>
+    <span
+      title="Auto-detected asset type"
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 6,
+        padding: "3px 10px", borderRadius: 6,
+        background: `${color}15`, color, border: `1px solid ${color}40`,
+        fontSize: 11, fontWeight: 600, fontFamily: "inherit", lineHeight: 1.4,
+      }}
+    >
+      {label}
+    </span>
   );
 }
 
@@ -288,142 +201,42 @@ function AssetTypePill({
    full-width at the top of the property content area so the
    lens is unmissable on mixed-type DealBoards. */
 function ModelLensBanner({
-  currentType, propertyId, onChanged, userId,
+  currentType,
 }: {
   currentType: string;
   propertyId: string;
   onChanged: (newType: string) => Promise<void> | void;
   userId: string;
 }) {
-  const [open, setOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
+  // Dropdown removed - was a "Change model" affordance that re-scored but
+  // did not re-run signals, benchmarks, or the brief against the selected
+  // type. That made the override feel broken. Banner now just surfaces
+  // which model produced the score.
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    function onDocClick(e: MouseEvent) {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [open]);
-
   const current = (currentType || "retail") as keyof typeof ANALYSIS_TYPE_LABELS;
-  const color = ANALYSIS_TYPE_COLORS[current] || "#6B7280";
   const label = ANALYSIS_TYPE_LABELS[current] || "Retail";
-
-  async function handleSelect(newType: keyof typeof ANALYSIS_TYPE_LABELS) {
-    if (newType === current) { setOpen(false); return; }
-    setBusy(true);
-    try {
-      await updateProperty(propertyId, { analysisType: newType, typeManuallySet: true } as any);
-      try {
-        await fetch("/api/workspace/score", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ propertyId, userId, analysisType: newType }),
-        });
-      } catch { /* non-blocking */ }
-      await onChanged(newType);
-      setOpen(false);
-    } catch (err: any) {
-      console.error("[model-lens-banner] update failed:", err);
-      alert("Failed to update asset type: " + (err?.message || "unknown"));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const types: (keyof typeof ANALYSIS_TYPE_LABELS)[] = ["retail", "industrial", "office", "multifamily", "land"];
 
   return (
     <div ref={wrapRef} style={{
-      position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between",
-      gap: 12, padding: "9px 16px", marginBottom: 20,
+      position: "relative", display: "flex", alignItems: "center",
+      gap: 10, padding: "9px 16px", marginBottom: 20,
       background: "#F8FAFC",
       border: "1px solid #E2E8F0",
       borderRadius: 10,
       fontFamily: "inherit",
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-        <AnalysisTypeIcon type={current} size={16} color="#64748B" />
-        <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#64748B" }}>
-            Scored with
-          </span>
-          <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A", letterSpacing: "-0.01em" }}>
-            {label}
-          </span>
-          <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#64748B" }}>
-            Model
-          </span>
-        </div>
-      </div>
-      <div style={{ position: "relative" }}>
-        <button
-          onClick={() => setOpen(v => !v)}
-          disabled={busy}
-          title="Change the scoring model applied to this deal"
-          style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            padding: "5px 12px", borderRadius: 6,
-            background: "#FFFFFF", color: "#374151",
-            border: "1px solid #D1D5DB",
-            fontSize: 11, fontWeight: 700, cursor: busy ? "wait" : "pointer",
-            fontFamily: "inherit", lineHeight: 1.4, textTransform: "uppercase", letterSpacing: "0.06em",
-            opacity: busy ? 0.6 : 1, whiteSpace: "nowrap",
-          }}>
-          <span>Change model</span>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
-        {open && (
-          <div style={{
-            position: "absolute", top: "calc(100% + 4px)", right: 0, zIndex: 50,
-            minWidth: 240, background: "#FFFFFF",
-            border: "1px solid rgba(0,0,0,0.08)", borderRadius: 8,
-            boxShadow: "0 6px 20px rgba(0,0,0,0.10)", overflow: "hidden",
-          }}>
-            <div style={{
-              fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em",
-              color: "#6B7280", padding: "10px 12px 6px",
-            }}>Change scoring model</div>
-            {types.map(t => {
-              const tColor = ANALYSIS_TYPE_COLORS[t];
-              const tLabel = ANALYSIS_TYPE_LABELS[t];
-              const isCurrent = t === current;
-              return (
-                <button
-                  key={t}
-                  onClick={() => handleSelect(t)}
-                  disabled={busy}
-                  style={{
-                    display: "flex", alignItems: "center", width: "100%",
-                    padding: "8px 12px", gap: 10,
-                    background: isCurrent ? "#F3F4F6" : "#FFFFFF", border: "none",
-                    cursor: busy ? "wait" : "pointer", fontFamily: "inherit",
-                    textAlign: "left",
-                  }}
-                  onMouseEnter={e => { if (!isCurrent && !busy) (e.currentTarget as HTMLButtonElement).style.background = "#F9FAFB"; }}
-                  onMouseLeave={e => { if (!isCurrent && !busy) (e.currentTarget as HTMLButtonElement).style.background = "#FFFFFF"; }}
-                >
-                  <AnalysisTypeIcon type={t} size={16} color={tColor} />
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: tColor, flexShrink: 0 }} />
-                  <span style={{ flex: 1, fontSize: 13, fontWeight: isCurrent ? 700 : 500, color: "#0F172A" }}>{tLabel}</span>
-                  {isCurrent && (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={tColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  )}
-                </button>
-              );
-            })}
-            <div style={{ fontSize: 10, color: "#9CA3AF", padding: "6px 12px 10px", borderTop: "1px solid rgba(0,0,0,0.05)", lineHeight: 1.4 }}>
-              Re-scores immediately with the selected model. Extracted fields are kept as-is.
-            </div>
-          </div>
-        )}
+      <AnalysisTypeIcon type={current} size={16} color="#64748B" />
+      <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
+        <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#64748B" }}>
+          Scored with
+        </span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A", letterSpacing: "-0.01em" }}>
+          {label}
+        </span>
+        <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#64748B" }}>
+          Model (auto-detected)
+        </span>
       </div>
     </div>
   );

@@ -37,6 +37,14 @@ export async function GET(
 
     const shareData = shareSnap.docs[0].data();
 
+    // Honor hard expiration on downloads too.
+    if (shareData.expiresAt && typeof shareData.expiresAt === "string") {
+      const expiry = new Date(shareData.expiresAt).getTime();
+      if (Number.isFinite(expiry) && Date.now() > expiry) {
+        return NextResponse.json({ error: "This share link has expired." }, { status: 410 });
+      }
+    }
+
     // 2. Documents must not be hidden on this share link
     if (shareData.hideDocuments) {
       return NextResponse.json({ error: "Documents are hidden on this share link" }, { status: 403 });

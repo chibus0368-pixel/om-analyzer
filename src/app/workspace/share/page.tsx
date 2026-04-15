@@ -15,11 +15,45 @@ interface ShareLink {
   contactName: string;
   contactAgency: string;
   contactPhone: string;
+  expiresAt?: string; // ISO string, empty/missing = no expiration
   isActive: boolean;
   viewCount: number;
   createdAt: string;
   updatedAt: string;
   url?: string;
+}
+
+/**
+ * Expiration preset options for the create/edit form. "never" is the default
+ * (empty expiresAt in Firestore). Day-based presets are computed at submit
+ * time so the cutoff is relative to when the link is saved, not when the
+ * form was opened. "custom" lets the user pick any future date.
+ */
+type ExpiryPreset = "never" | "7d" | "30d" | "90d" | "custom";
+
+function computeExpiryIso(preset: ExpiryPreset, customDate: string): string {
+  if (preset === "never") return "";
+  if (preset === "custom") {
+    if (!customDate) return "";
+    // HTML date input returns YYYY-MM-DD. Anchor to end-of-day local so the
+    // link stays usable for the full calendar day the user picked.
+    const d = new Date(`${customDate}T23:59:59`);
+    return isNaN(d.getTime()) ? "" : d.toISOString();
+  }
+  const days = preset === "7d" ? 7 : preset === "30d" ? 30 : 90;
+  return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+}
+
+function presetFromIso(iso: string | undefined): { preset: ExpiryPreset; customDate: string } {
+  if (!iso) return { preset: "never", customDate: "" };
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return { preset: "never", customDate: "" };
+  // Always expose an existing expiration as "custom" in the edit form so the
+  // user sees the exact date rather than a fuzzy preset bucket.
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return { preset: "custom", customDate: `${yyyy}-${mm}-${dd}` };
 }
 
 const C = {
@@ -53,6 +87,8 @@ export default function ShareLinksPage() {
   const [contactName, setContactName] = useState("");
   const [contactAgency, setContactAgency] = useState("");
   const [contactPhone, setContactPhone] = useState("");
+  const [expiryPreset, setExpiryPreset] = useState<ExpiryPreset>("never");
+  const [expiryCustomDate, setExpiryCustomDate] = useState("");
 
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -63,6 +99,8 @@ export default function ShareLinksPage() {
   const [editContactName, setEditContactName] = useState("");
   const [editContactAgency, setEditContactAgency] = useState("");
   const [editContactPhone, setEditContactPhone] = useState("");
+  const [editExpiryPreset, setEditExpiryPreset] = useState<ExpiryPreset>("never");
+  const [editExpiryCustomDate, setEditExpiryCustomDate] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -115,6 +153,7 @@ export default function ShareLinksPage() {
           contactName: contactName.trim() || "",
           contactAgency: contactAgency.trim() || "",
           contactPhone: contactPhone.trim() || "",
+          expiresAt: computeExpiryIso(expiryPreset, expiryCustomDate),
         }),
       });
 
@@ -129,6 +168,8 @@ export default function ShareLinksPage() {
         setContactName("");
         setContactAgency("");
         setContactPhone("");
+        setExpiryPreset("never");
+        setExpiryCustomDate("");
       }
     } catch (err) {
       console.error("[share] Failed to create link:", err);
@@ -145,6 +186,9 @@ export default function ShareLinksPage() {
     setEditContactName(link.contactName || "");
     setEditContactAgency(link.contactAgency || "");
     setEditContactPhone(link.contactPhone || "");
+    const { preset, customDate } = presetFromIso(link.expiresAt);
+    setEditExpiryPreset(preset);
+    setEditExpiryCustomDate(customDate);
   }
 
   function cancelEdit() {
@@ -154,6 +198,7 @@ export default function ShareLinksPage() {
   async function handleSaveEdit(link: ShareLink) {
     setSaving(true);
     const newWs = workspaces.find(w => w.id === editWorkspaceId);
+    const nextExpiry = computeExpiryIso(editExpiryPreset, editExpiryCustomDate);
     try {
       const authHeaders = await getAuthHeaders();
       const res = await fetch("/api/workspace/share", {
@@ -169,6 +214,7 @@ export default function ShareLinksPage() {
           contactName: editContactName.trim(),
           contactAgency: editContactAgency.trim(),
           contactPhone: editContactPhone.trim(),
+          expiresAt: nextExpiry,
         }),
       });
 
@@ -183,6 +229,7 @@ export default function ShareLinksPage() {
           contactName: editContactName.trim(),
           contactAgency: editContactAgency.trim(),
           contactPhone: editContactPhone.trim(),
+          expiresAt: nextExpiry,
         } : l));
         setEditingId(null);
       }
@@ -355,6 +402,38 @@ export default function ShareLinksPage() {
             />
           </div>
 
+          {/* Expiration */}
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.onSurface, marginBottom: 6 }}>
+              Link Expiration
+            </label>
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+              <select
+                value={expiryPreset}
+                onChange={e => setExpiryPreset(e.target.value as ExpiryPreset)}
+                style={{ ...inputStyle, cursor: "pointer", maxWidth: 220 }}
+              >
+                <option value="never">Never (default)</option>
+                <option value="7d">In 7 days</option>
+                <option value="30d">In 30 days</option>
+                <option value="90d">In 90 days</option>
+                <option value="custom">Custom date...</option>
+              </select>
+              {expiryPreset === "custom" && (
+                <input
+                  type="date"
+                  value={expiryCustomDate}
+                  onChange={e => setExpiryCustomDate(e.target.value)}
+                  min={new Date().toISOString().slice(0, 10)}
+                  style={{ ...inputStyle, maxWidth: 180 }}
+                />
+              )}
+              <span style={{ fontSize: 11, color: C.secondary }}>
+                After this date the link returns "expired" to anyone who opens it.
+              </span>
+            </div>
+          </div>
+
           {/* Checkboxes */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
             <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 13, color: C.onSurface }}>
@@ -514,6 +593,35 @@ export default function ShareLinksPage() {
                       />
                     </div>
 
+                    {/* Expiration */}
+                    <div style={{ marginBottom: 12 }}>
+                      <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.onSurface, marginBottom: 6 }}>
+                        Link Expiration
+                      </label>
+                      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                        <select
+                          value={editExpiryPreset}
+                          onChange={e => setEditExpiryPreset(e.target.value as ExpiryPreset)}
+                          style={{ ...inputStyle, cursor: "pointer", maxWidth: 220 }}
+                        >
+                          <option value="never">Never</option>
+                          <option value="7d">In 7 days (from now)</option>
+                          <option value="30d">In 30 days (from now)</option>
+                          <option value="90d">In 90 days (from now)</option>
+                          <option value="custom">Custom date...</option>
+                        </select>
+                        {editExpiryPreset === "custom" && (
+                          <input
+                            type="date"
+                            value={editExpiryCustomDate}
+                            onChange={e => setEditExpiryCustomDate(e.target.value)}
+                            min={new Date().toISOString().slice(0, 10)}
+                            style={{ ...inputStyle, maxWidth: 180 }}
+                          />
+                        )}
+                      </div>
+                    </div>
+
                     {/* Checkboxes */}
                     <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
                       <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 13, color: C.onSurface }}>
@@ -614,6 +722,20 @@ export default function ShareLinksPage() {
                               {[link.contactName, link.contactAgency].filter(Boolean).join(" · ")}
                             </span>
                           )}
+                          {link.expiresAt ? (() => {
+                            const exp = new Date(link.expiresAt);
+                            if (isNaN(exp.getTime())) return null;
+                            const expired = exp.getTime() < Date.now();
+                            return (
+                              <span style={{
+                                fontSize: 10, color: expired ? "#EF4444" : C.secondary,
+                                background: expired ? "rgba(239,68,68,0.08)" : C.surfLow,
+                                padding: "2px 6px", borderRadius: 3, fontWeight: expired ? 600 : 400,
+                              }}>
+                                {expired ? "Expired " : "Expires "}{exp.toLocaleDateString()}
+                              </span>
+                            );
+                          })() : null}
                         </div>
                       </div>
 
