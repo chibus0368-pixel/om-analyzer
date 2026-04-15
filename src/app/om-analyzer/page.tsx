@@ -249,6 +249,10 @@ type ShowcasePhoto = { heroImageUrl: string; nameKey?: string; assetType?: strin
 
 function HeroShowcase() {
   const [openCard, setOpenCard] = React.useState<number | null>(null);
+  // When true, the example deal cards on the left are re-ordered by score
+  // descending so a visitor can instantly see which hypothetical deals
+  // score highest. Controlled by the small sort icon on the right rail.
+  const [sortByScore, setSortByScore] = React.useState(false);
   // Real property hero photos pulled from the user's workspace (live Firestore)
   const [realPhotos, setRealPhotos] = React.useState<ShowcasePhoto[]>([]);
 
@@ -659,7 +663,10 @@ function HeroShowcase() {
           <div style={{
             display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14,
           }} className="hero-cards-grid">
-            {cards.map((c, i) => {
+            {(sortByScore
+              ? cards.map((c, i) => ({ c, i })).sort((a, b) => b.c.score - a.c.score)
+              : cards.map((c, i) => ({ c, i }))
+            ).map(({ c, i }) => {
               const vc = verdictColor[c.verdict];
               // Prefer real photo from workspace over curated fallback
               // Priority order for which image to show on the card:
@@ -795,7 +802,35 @@ function HeroShowcase() {
           position: "sticky", top: 20,
           boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
         }} className="hero-feature-card">
-          <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", lineHeight: 1.25, marginBottom: 6 }}>
+          {/* Sort-by-score toggle. Subtle icon in upper right of the rail
+              that re-orders the example deal cards on the left by score
+              descending, so visitors can instantly see "which of these
+              would I pursue first" without reading each tile. */}
+          <button
+            type="button"
+            onClick={() => setSortByScore(v => !v)}
+            title={sortByScore ? "Sorted by score (highest first). Click to reset." : "Sort example deals by score"}
+            aria-label="Sort by score"
+            style={{
+              position: "absolute", top: 10, right: 10,
+              width: 28, height: 28, borderRadius: 8,
+              background: sortByScore ? "rgba(132,204,22,0.15)" : "rgba(255,255,255,0.04)",
+              border: `1px solid ${sortByScore ? "rgba(132,204,22,0.45)" : "rgba(255,255,255,0.1)"}`,
+              color: sortByScore ? "#84CC16" : "rgba(255,255,255,0.55)",
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", padding: 0,
+              transition: "background 0.15s ease, color 0.15s ease, border-color 0.15s ease",
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="4" y1="7" x2="16" y2="7" />
+              <line x1="4" y1="12" x2="12" y2="12" />
+              <line x1="4" y1="17" x2="8" y2="17" />
+              <polyline points="18 10 21 7 18 4" />
+              <line x1="21" y1="7" x2="18" y2="7" opacity="0" />
+            </svg>
+          </button>
+          <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", lineHeight: 1.25, marginBottom: 6, paddingRight: 34 }}>
             From OM to Decision
           </div>
           <div style={{ fontSize: 22, fontWeight: 800, color: "#84CC16", marginBottom: 18, lineHeight: 1 }}>
@@ -4150,16 +4185,6 @@ export default function OmAnalyzerPage() {
         </div>
 
         <div style={{
-          maxWidth: 1100, margin: "0 auto 20px", padding: "16px 18px",
-          background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)",
-          borderRadius: 8, fontSize: 11.5, color: "#8b93a8", lineHeight: 1.6,
-          fontFamily: "'Inter', sans-serif",
-        }}>
-          <span style={{ fontWeight: 700, color: "#cbd2e0", marginRight: 6 }}>Disclaimer:</span>
-          DealSignals output is automated general guidance, not investment, legal, tax, or financial advice. Every deal demands your own full due diligence and independent professional review before you commit capital. Figures are derived from uploaded documents and public data sources that may be incomplete or inaccurate. Verify all material facts directly.
-        </div>
-
-        <div style={{
           maxWidth: 1100, margin: "0 auto", paddingTop: 24,
           borderTop: "1px solid rgba(255,255,255,0.06)",
           display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -4172,6 +4197,14 @@ export default function OmAnalyzerPage() {
             Made for CRE investors and brokers.
           </span>
         </div>
+
+        <p style={{
+          maxWidth: 1100, margin: "20px auto 0",
+          fontSize: 10.5, color: "#5b6170", lineHeight: 1.55,
+          fontFamily: "'Inter', sans-serif", fontStyle: "italic",
+        }}>
+          DealSignals output is automated general guidance, not investment, legal, tax, or financial advice. Every deal demands your own full due diligence and independent professional review before you commit capital. Figures are derived from uploaded documents and public data sources that may be incomplete or inaccurate. Verify all material facts directly.
+        </p>
       </footer>
     </div>
   );

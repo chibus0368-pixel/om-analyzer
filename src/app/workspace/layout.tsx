@@ -1487,15 +1487,6 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             fontSize: 11, color: "#585e70",
           }}>
             <div style={{
-              padding: "12px 14px", marginBottom: 16,
-              background: "#F8FAFC", border: "1px solid #E2E8F0",
-              borderRadius: 8, fontSize: 11, color: "#475569",
-              lineHeight: 1.55, fontFamily: "'Inter', sans-serif",
-            }}>
-              <span style={{ fontWeight: 700, color: "#1E293B", marginRight: 6 }}>Disclaimer:</span>
-              DealSignals output is automated general guidance, not investment, legal, tax, or financial advice. Every deal demands your own full due diligence and independent professional review before you commit capital. Figures are derived from uploaded documents and public data sources that may be incomplete or inaccurate. Verify all material facts directly.
-            </div>
-            <div style={{
               display: "flex", justifyContent: "space-between", alignItems: "flex-start",
               flexWrap: "wrap", gap: 16,
             }}>
@@ -1511,6 +1502,13 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                 <a href="/privacy" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Privacy</a>
               </div>
             </div>
+            <p style={{
+              marginTop: 16, fontSize: 10, color: "#94a3b8",
+              lineHeight: 1.55, fontFamily: "'Inter', sans-serif",
+              fontStyle: "italic",
+            }}>
+              DealSignals output is automated general guidance, not investment, legal, tax, or financial advice. Every deal demands your own full due diligence and independent professional review before you commit capital. Figures are derived from uploaded documents and public data sources that may be incomplete or inaccurate. Verify all material facts directly.
+            </p>
           </footer>
         </div>
       </main>
