@@ -250,7 +250,7 @@ const HELP_TOPICS: HelpTopic[] = [
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Bulk Upload</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          Have multiple deals to analyze? Use the <strong>Bulk Upload</strong> feature (linked from the bottom of the single upload page). Drop up to 10 OMs at once, and each will be created as a separate property with its own analysis. Great for quickly ingesting a pipeline of deals.
+          Have multiple deals to analyze? Click the <strong>Bulk Upload (up to 10)</strong> button in the upper right of the upload page. Drop up to 10 OMs at once, and each will be created as a separate property with its own analysis. Great for quickly ingesting a pipeline of deals.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Adding More Documents to a Property</h4>
@@ -405,7 +405,22 @@ const HELP_TOPICS: HelpTopic[] = [
     content: (
       <div>
         <p style={{ fontSize: 14, color: C.secondary, lineHeight: 1.7 }}>
-          The property detail page is where you see everything about a single deal - documents, extracted data, outputs, notes, and scoring.
+          The property detail page is where you see everything about a single deal. It opens with a full-width hero photo and property title overlay, followed by a horizontal score strip, executive summary, pulled-from-OM metrics, rent roll, strengths and risks, location intel, documents, and outputs.
+        </p>
+
+        <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Score Strip and Executive Summary</h4>
+        <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
+          The top of the page shows a single DealSignal Score badge, the score band label (Strong Buy / Buy / Neutral / Pass / Reject), and a one-line verdict. Directly below is the Executive Summary card with an overview paragraph plus parallel strengths and concerns lists pulled from the underwriting brief.
+        </p>
+
+        <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Location Intel</h4>
+        <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
+          Every Pro tier gets automatic location intel on every property. Once analysis completes, DealSignals pulls neighborhood grade, population and income demographics, nearby anchor tenants, traffic counts, and market signals for the property address. No extra click or upgrade required. You will see it populate on the right rail of the detail page.
+        </p>
+
+        <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Rent Roll and Needs Review</h4>
+        <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
+          The <strong>Rent Roll</strong> section surfaces tenant-by-tenant data extracted from the uploaded rent roll (SF, rent, term). The <strong>Needs Review</strong> block flags fields the system is less confident about or line items that commonly need operator adjustment (vacancy allowances, management fees, capital reserves).
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Documents Section</h4>
@@ -531,6 +546,16 @@ const HELP_TOPICS: HelpTopic[] = [
           Send to your investment committee for deal review. Share a curated pipeline with a client or capital partner. Give your broker a quick look at how a deal scores. Distribute to team members who don't need full platform access.
         </p>
 
+        <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Source Document Downloads</h4>
+        <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
+          Shared dealboards include a <strong>Source Documents</strong> section on each property. Recipients can click any listed file (OM, rent roll, T-12, lease) to download the original document directly. If you do not want to expose source files, toggle off document sharing on the share link before distributing.
+        </p>
+
+        <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Email a Property</h4>
+        <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
+          The <strong>Email this property</strong> action sends a branded HTML email carrying the DealSignals logo header, hero photo, score, key metrics, executive summary, and a link back to the live property. The email also includes the standard disclaimer so recipients know the analysis is automated guidance, not investment advice.
+        </p>
+
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Privacy & Control</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
           Shared links are read-only and can be revoked at any time from the sharing panel. You control exactly which DealBoard is shared. Sharing one DealBoard does not expose any other DealBoards or account data.
@@ -605,6 +630,11 @@ const HELP_TOPICS: HelpTopic[] = [
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Proforma XLSX</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
           A financial spreadsheet containing projected income, expenses, NOI, debt service, cash flow, and returns over your hold period. Uses the extracted data plus your DealBoard's default assumptions (LTV, interest rate, amortization, hold period, exit cap, vacancy, rent growth, expense growth). Editable in Excel or Google Sheets.
+        </p>
+
+        <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Offer Ladder</h4>
+        <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
+          The Proforma XLSX includes an Offer Ladder tab anchored around list price, with four scenarios: <strong>Low (85%)</strong>, <strong>Under Asking (95%)</strong>, <strong>Asking Price (100%)</strong>, and <strong>Stretch (105%)</strong>. Each column recalculates cap rate, cash-on-cash, DSCR, and debt yield so you can see how return metrics move across bid levels.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Underwriting Brief</h4>
