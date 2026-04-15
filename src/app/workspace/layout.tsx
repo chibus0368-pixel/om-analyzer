@@ -187,7 +187,6 @@ function _SidebarUserCard({ user, collapsed, userTier, usage, onUpgradeClick }: 
  * we bypass SSR streaming entirely for /workspace/*.
  */
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const { user, loading: authLoading } = useWorkspaceAuth();
   const pathname = usePathname();
@@ -198,25 +197,6 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
   // 1-3s to every cold load of /workspace/login. Render immediately and
   // bypass the workspace chrome entirely.
   const isLoginPage = pathname === "/workspace/login";
-
-  // Redirect signed-out users straight to /workspace/login. Previously this
-  // only happened inside WorkspaceLayoutInner, which is rendered after
-  // WorkspaceProvider mounts. If the provider or its children ever got
-  // stuck in a loading state, the user would be pinned on the "Loading
-  // workspace..." skeleton forever instead of bouncing to login.
-  // NOTE: this hook MUST run on every render (including login page) so
-  // hook order stays stable across route changes - do not gate it with
-  // an early return.
-  useEffect(() => {
-    if (mounted && !authLoading && !user && !isLoginPage) {
-      router.replace("/workspace/login");
-    }
-  }, [mounted, authLoading, user, isLoginPage, router]);
-
-  // The login page is the auth entry point - it should NEVER wait for
-  // Firebase auth to initialize before rendering. Render immediately and
-  // bypass the workspace chrome entirely. (Placed AFTER all hooks above
-  // so hook-order invariant is preserved.)
   if (isLoginPage) {
     return <>{children}</>;
   }

@@ -30,20 +30,7 @@ export function useWorkspaceAuth(): WorkspaceAuthState {
 
   useEffect(() => {
     const auth = getAuthInstance();
-    // Safety net: if onAuthStateChanged never fires (Firebase init failure,
-    // blocked network, service worker issue), don't strand the UI on a
-    // loading spinner forever. After 5s with no callback we force
-    // loading=false with a null user so the layout can redirect to login.
-    const initTimeout = setTimeout(() => {
-      if (!hasInitialized.current) {
-        console.warn("[auth] onAuthStateChanged did not fire within 5s; assuming signed out");
-        hasInitialized.current = true;
-        setUser(null);
-        setLoading(false);
-      }
-    }, 5000);
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      clearTimeout(initTimeout);
       if (firebaseUser) {
         // User is authenticated - update both state and cache
         lastKnownUser.current = firebaseUser;
