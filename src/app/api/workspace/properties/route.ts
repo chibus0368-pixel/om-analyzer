@@ -107,8 +107,12 @@ export async function GET(req: NextRequest) {
           .get();
       }
 
+      // Tight timeout - doc counts are a decorative badge; the user should
+      // never wait on them. If the count query is still in flight at 300ms,
+      // we ship the response with zeros and let the UI patch them in on a
+      // later refresh (upload event triggers refetch).
       const timeoutPromise = new Promise<null>(resolve =>
-        setTimeout(() => resolve(null), 1500),
+        setTimeout(() => resolve(null), 300),
       );
 
       const docsSnap = await Promise.race([docsPromise, timeoutPromise]);

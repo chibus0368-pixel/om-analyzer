@@ -534,6 +534,9 @@ export default function WorkspaceDashboard() {
   const router = useRouter();
   const [properties, setProperties] = useState<Property[]>([]);
   const [docCounts, setDocCounts] = useState<Record<string, number>>({});
+  // `loading` gates only the property grid area, not the whole page. The
+  // dashboard shell (header, nav, empty state) renders immediately so the
+  // user sees something within a frame instead of a blank "Loading..." page.
   const [loading, setLoading] = useState(true);
   // Page-level drag state so the dealboard accepts files dropped anywhere on
   // screen (mirrors the Try-Me landing-page behavior). dragCounter avoids the
@@ -605,9 +608,10 @@ export default function WorkspaceDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid, activeWorkspace?.id]);
 
-  if (loading) {
-    return <div style={{ padding: 40, textAlign: "center", color: "#585e70" }}>Loading dashboard...</div>;
-  }
+  // Deliberately do NOT early-return on `loading`. The dashboard shell
+  // (header, actions, counts) renders immediately; the property grid shows
+  // a light skeleton while the API is in flight. This keeps perceived load
+  // under a single frame even on cold Vercel containers.
 
   return (
     <div className="db-page" style={{ width: "100%", padding: "0 24px" }}
@@ -824,7 +828,23 @@ export default function WorkspaceDashboard() {
       </div>
 
       {/* Property Cards Grid */}
-      {properties.length === 0 ? (
+      {loading && properties.length === 0 ? (
+        <div className="db-grid" style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+          gap: 24,
+          marginBottom: 24,
+        }}>
+          {[0,1,2,3,4,5].map(i => (
+            <div key={i} style={{
+              height: 280, borderRadius: 12, background: "#F2F3FB",
+              border: "1px solid #E5E7EB",
+              animation: "pulse 1.4s ease-in-out infinite",
+            }} />
+          ))}
+          <style>{`@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }`}</style>
+        </div>
+      ) : properties.length === 0 ? (
         <EmptyDealboardDropZone onFiles={(fl) => {
           setPendingUploadFiles(fl);
           router.push("/workspace/upload");
