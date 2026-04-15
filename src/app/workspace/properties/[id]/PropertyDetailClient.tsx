@@ -955,15 +955,15 @@ export default function PropertyDetailClient() {
       .catch(() => {});
   }, [propertyId]);
 
-  // Auto-run location research for Pro tier users when none cached.
-  // Every Pro-tier user should see Location Intelligence on every property
-  // without having to click a button — matches the modal experience where
-  // location data is presented inline alongside the deal summary.
+  // Auto-run location research whenever no cached result exists.
+  // Location Intelligence is no longer a gated Pro-plus feature; every
+  // user who can reach a property page should see the same layout and
+  // depth of information the landing modal shows, without a manual
+  // button click or upgrade prompt.
   useEffect(() => {
     if (!propertyId || !property) return;
     if (deepResearch) return; // already have data
     if (deepResearchLoading) return;
-    if (userTier !== "pro" && userTier !== "pro_plus") return;
     const addr = [property.address1, property.city, property.state].filter(Boolean).join(", ") || property.propertyName;
     if (!addr) return;
     // Don't auto-run while the deal is still being processed
@@ -992,7 +992,7 @@ export default function PropertyDetailClient() {
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [propertyId, property?.id, userTier, deepResearch]);
+  }, [propertyId, property?.id, deepResearch]);
 
   // Auto-poll while property is still processing
   // NOTE: Must be before conditional early returns to satisfy React Rules of Hooks
@@ -2893,7 +2893,11 @@ function PropertyDetailInner({
                 <p style={{ fontSize: 13, color: C.secondary, margin: "0 0 16px", lineHeight: 1.5 }}>
                   Live research on what{"'"}s happening around this property - nearby developments, civic activity, area demographics, and recent news.
                 </p>
-                {userTier === "pro_plus" || userTier === "pro" ? (
+                {/* Location Intelligence is universally available: no tier
+                    gate. The auto-fetch effect above populates deepResearch
+                    on mount, so this button only shows if the initial fetch
+                    hasn't completed or failed, as a manual retry. */}
+                {true ? (
                   <button
                     onClick={async () => {
                       setDeepResearchLoading(true);
