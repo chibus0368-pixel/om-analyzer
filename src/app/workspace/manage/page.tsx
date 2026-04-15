@@ -252,7 +252,10 @@ export default function ManageWorkspacesPage() {
                 {!isEditing && (
                   <div className="mg-actions" style={{ display: "flex", gap: 6, flexShrink: 0, marginLeft: 12 }}>
                     {!isActive && (
-                      <ActionButton label="Switch" onClick={() => { switchWorkspace(ws.id); router.push("/workspace"); }} color="#2563EB" />
+                      <ActionButton label="Switch" onClick={() => {
+                        switchWorkspace(ws.id);
+                        window.location.href = `/workspace?ws=${encodeURIComponent(ws.slug)}`;
+                      }} color="#2563EB" />
                     )}
                     <ActionButton label="Rename" onClick={() => startEdit(ws)} color="#5A7091" />
                     <ActionButton label="Clear Data" onClick={() => setConfirmClearId(ws.id)} color="#F59E0B" />

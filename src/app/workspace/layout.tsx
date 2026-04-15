@@ -444,7 +444,16 @@ function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean;
           {workspaces.map(ws => (
             <button
               key={ws.id}
-              onClick={() => { switchWorkspace(ws.id); setOpen(false); router.push("/workspace"); }}
+              onClick={() => {
+                switchWorkspace(ws.id);
+                setOpen(false);
+                // Hard nav to the dealboard home for the newly selected board.
+                // Using window.location guarantees navigation even when we're
+                // already under /workspace (e.g. on a property detail page),
+                // and the ?ws= slug keeps the context provider and the board
+                // page in sync on load.
+                window.location.href = `/workspace?ws=${encodeURIComponent(ws.slug)}`;
+              }}
               className="ws-nav"
               style={{
                 display: "flex", alignItems: "center", gap: 10, width: "100%",
@@ -557,7 +566,11 @@ function HeaderWorkspaceSwitcher({ onAddNew }: { onAddNew: () => void }) {
           {workspaces.map(ws => (
             <button
               key={ws.id}
-              onClick={() => { switchWorkspace(ws.id); setOpen(false); router.push("/workspace"); }}
+              onClick={() => {
+                switchWorkspace(ws.id);
+                setOpen(false);
+                window.location.href = `/workspace?ws=${encodeURIComponent(ws.slug)}`;
+              }}
               className="ws-nav"
               style={{
                 display: "flex", alignItems: "center", gap: 10, width: "100%",
@@ -975,7 +988,9 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                         onClick={() => {
                           switchWorkspace(ws.id);
                           setShowWsDropdown(false);
-                          router.push(`/workspace?ws=${encodeURIComponent(ws.slug)}`);
+                          // Hard nav so we don't strand the user on a sub-page
+                          // (property detail, manage, admin) after switching.
+                          window.location.href = `/workspace?ws=${encodeURIComponent(ws.slug)}`;
                         }}
                         style={{
                           display: "flex", alignItems: "center", gap: 12, width: "100%",
