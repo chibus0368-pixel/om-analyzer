@@ -130,8 +130,13 @@ export default function RegisterPage() {
     setGoogleLoading(true);
 
     if (!agreeTerms) {
-      setError("You must accept the terms and privacy policy");
+      setError("Please check the box below to agree to the Terms and Privacy Policy, then click Continue with Google again.");
       setGoogleLoading(false);
+      // Scroll the terms checkbox into view so the user sees what's blocking them
+      if (typeof document !== "undefined") {
+        const el = document.getElementById("terms-checkbox");
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
       return;
     }
 
@@ -139,8 +144,14 @@ export default function RegisterPage() {
       const credential = await loginWithGoogle();
       const token = await credential.user.getIdToken();
 
-      // Send verification email
-      await sendVerificationEmail();
+      // Google accounts come with an already-verified email, so we skip
+      // the verification send + /verify-email detour and land users
+      // straight in the workspace. Only fall back to sending a
+      // verification mail if the provider somehow returned a user whose
+      // email isn't verified yet.
+      if (!credential.user.emailVerified) {
+        try { await sendVerificationEmail(); } catch {}
+      }
 
       // Bootstrap user in Firestore (merge anonymous usage)
       const gAnonId = typeof window !== "undefined" ? localStorage.getItem("nnn_anon_id") : null;
@@ -163,8 +174,9 @@ export default function RegisterPage() {
 
       if (gAnonId) localStorage.removeItem("nnn_anon_id");
 
-      // Redirect to email verification page
-      router.push("/verify-email");
+      // Google users are already verified - go straight to workspace.
+      // Email/password users still route through /verify-email below.
+      router.push(credential.user.emailVerified ? "/workspace" : "/verify-email");
     } catch (err) {
       setError(mapAuthError(err));
       setGoogleLoading(false);
@@ -529,6 +541,7 @@ export default function RegisterPage() {
             }}
           >
             <input
+              id="terms-checkbox"
               type="checkbox"
               checked={agreeTerms}
               onChange={(e) => setAgreeTerms(e.target.checked)}
@@ -657,7 +670,7 @@ export default function RegisterPage() {
           e.currentTarget.style.backgroundColor = C.surfLow;
         }}
       >
-        {googleLoading ? "Creating Account..." : "Sign Up with Google"}
+        {googleLoading ? "Creating Account..." : "Continue with Google"}
       </button>
 
       {/* Link to Login */}
