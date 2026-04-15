@@ -2946,7 +2946,10 @@ function PropertyDetailInner({
           <div style={{ padding: "20px 24px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4338CA" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /><path d="M11 8v6M8 11h6" /></svg>
-              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Location Intelligence</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Location Intel</h3>
+                <div style={{ fontSize: 11, color: C.secondary, lineHeight: 1.3 }}>Deep research on the trade area, comps, and rooftops</div>
+              </div>
             </div>
 
             {!deepResearch ? (
@@ -3045,27 +3048,48 @@ function PropertyDetailInner({
                   </div>
                 </div>
 
-                {/* ── Row 2: Census strip ── */}
-                {deepResearch.census && (
-                  <div style={{
-                    display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))",
-                    gap: 1, marginBottom: 16, background: C.ghostBorder, borderRadius: 8, overflow: "hidden",
-                    border: `1px solid ${C.ghostBorder}`,
-                  }}>
-                    {[
-                      { label: "Population", value: deepResearch.census.population?.toLocaleString() },
-                      { label: "Med. Income", value: deepResearch.census.medianIncome ? `$${(deepResearch.census.medianIncome / 1000).toFixed(0)}K` : null },
-                      { label: "Med. Age", value: deepResearch.census.medianAge },
-                      { label: "Home Value", value: deepResearch.census.medianHomeValue ? `$${(deepResearch.census.medianHomeValue / 1000).toFixed(0)}K` : null },
-                      { label: "Unemployment", value: deepResearch.census.unemploymentRate !== null && deepResearch.census.unemploymentRate !== undefined ? `${deepResearch.census.unemploymentRate}%` : null },
-                    ].filter(d => d.value).map((d, i) => (
-                      <div key={i} style={{ textAlign: "center", padding: "10px 8px", background: "#fff" }}>
-                        <div style={{ fontSize: 9, color: C.secondary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>{d.label}</div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: C.onSurface }}>{d.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {/* ── Row 2: Tile strip ──
+                    Preference order:
+                      1. New typed tiles[] from the route (confidence-gated, type-aware).
+                      2. Fall back to raw census (for cached research created before
+                         the route started emitting tiles[]).
+                    Either way, filter out any row with no value so we never render
+                    an empty box. */}
+                {(() => {
+                  const typedTiles: Array<{ label: string; value: string }> | null =
+                    Array.isArray(deepResearch.tiles) && deepResearch.tiles.length > 0
+                      ? deepResearch.tiles
+                          .filter((t: any) => t && t.value)
+                          .map((t: any) => ({ label: t.label || t.key, value: String(t.value) }))
+                      : null;
+                  const legacyTiles = deepResearch.census
+                    ? [
+                        { label: "Population", value: deepResearch.census.population?.toLocaleString() },
+                        { label: "Median HHI", value: deepResearch.census.medianIncome ? `$${(deepResearch.census.medianIncome / 1000).toFixed(0)}K` : null },
+                        { label: "Median Age", value: deepResearch.census.medianAge },
+                        { label: "Home Value", value: deepResearch.census.medianHomeValue ? `$${(deepResearch.census.medianHomeValue / 1000).toFixed(0)}K` : null },
+                        { label: "Unemployment", value: deepResearch.census.unemploymentRate !== null && deepResearch.census.unemploymentRate !== undefined ? `${deepResearch.census.unemploymentRate}%` : null },
+                      ].filter(d => d.value)
+                    : [];
+                  const tiles = typedTiles || legacyTiles;
+                  if (tiles.length === 0) return null;
+                  return (
+                    <div style={{
+                      display: "grid", gridTemplateColumns: `repeat(${Math.min(tiles.length, 5)}, 1fr)`,
+                      gap: 10, marginBottom: 16,
+                    }}>
+                      {tiles.map((d: any, i: number) => (
+                        <div key={i} style={{
+                          padding: "12px 14px", background: "#FFFFFF",
+                          border: "1px solid rgba(0,0,0,0.06)", borderRadius: 10,
+                        }}>
+                          <div style={{ fontSize: 10, color: C.secondary, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4, fontWeight: 700 }}>{d.label}</div>
+                          <div style={{ fontSize: 18, fontWeight: 800, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>{d.value}</div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
 
                 {/* ── Row 3: Map ── */}
                 {deepResearch.mapData?.center && (
@@ -3094,42 +3118,95 @@ function PropertyDetailInner({
                   </div>
                 )}
 
-                {/* ── Row 4: Top Anchors strip ── */}
-                {deepResearch.topAnchors?.length > 0 && (
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: C.secondary, textTransform: "uppercase", letterSpacing: 0.5, alignSelf: "center", marginRight: 4 }}>Nearby Anchors</span>
-                    {deepResearch.topAnchors.map((name: string, i: number) => (
-                      <span key={i} style={{
-                        padding: "3px 10px", background: "#F3F4F6", borderRadius: 20,
-                        fontSize: 11, fontWeight: 600, color: C.onSurface, border: `1px solid ${C.ghostBorder}`,
-                      }}>{name}</span>
-                    ))}
-                  </div>
-                )}
-
-                {/* ── Row 5: Key Signals (compact cards) ── */}
-                {(deepResearch.signals || []).length > 0 && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
-                    {(deepResearch.signals || []).map((sig: any, i: number) => {
-                      const colors: Record<string, { bg: string; border: string; dot: string; text: string }> = {
-                        green: { bg: "#F0FDF4", border: "#BBF7D0", dot: "#22C55E", text: "#15803D" },
-                        yellow: { bg: "#FFFBEB", border: "#FDE68A", dot: "#F59E0B", text: "#92400E" },
-                        red: { bg: "#FEF2F2", border: "#FECACA", dot: "#EF4444", text: "#991B1B" },
-                      };
-                      const c = colors[sig.signal] || colors.yellow;
-                      return (
-                        <div key={i} style={{
-                          display: "flex", alignItems: "center", gap: 10,
-                          padding: "8px 12px", background: c.bg, borderRadius: 8,
-                          borderLeft: `3px solid ${c.dot}`,
-                        }}>
-                          <span style={{ width: 7, height: 7, borderRadius: "50%", background: c.dot, flexShrink: 0 }} />
-                          <span style={{ fontSize: 12, fontWeight: 700, color: c.text, minWidth: 100, flexShrink: 0 }}>{sig.label}</span>
-                          <span style={{ fontSize: 12, color: c.text, lineHeight: 1.4 }}>{sig.detail}</span>
+                {/* ── Row 4: Nearby Anchors ──
+                    Uses the new typed anchors[] (mid/high confidence only,
+                    already gated server-side) and falls back to topAnchors for
+                    cached legacy docs. If we genuinely have no anchors, we
+                    surface "Anchor coverage is sparse in this dataset" rather
+                    than asserting "No nearby anchors" - users flagged false
+                    negatives there. */}
+                {(() => {
+                  type AnchorItem = { name: string };
+                  const typedAnchors: AnchorItem[] = Array.isArray(deepResearch.anchors)
+                    ? deepResearch.anchors.filter((a: any) => a && a.name).map((a: any) => ({ name: a.name }))
+                    : [];
+                  const legacyAnchors: AnchorItem[] = typedAnchors.length === 0 && Array.isArray(deepResearch.topAnchors)
+                    ? deepResearch.topAnchors.map((n: string) => ({ name: n }))
+                    : [];
+                  const anchors = typedAnchors.length > 0 ? typedAnchors : legacyAnchors;
+                  const quality = deepResearch.anchorDataQuality as string | undefined;
+                  if (anchors.length === 0 && quality !== "sparse") return null;
+                  return (
+                    <div style={{ marginBottom: 16 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: C.secondary, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
+                        Nearby Anchors
+                      </div>
+                      {anchors.length > 0 ? (
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          {anchors.map((a, i) => (
+                            <span key={i} style={{
+                              display: "inline-flex", alignItems: "center", gap: 6,
+                              padding: "5px 12px", background: "#FFFFFF", borderRadius: 999,
+                              border: "1px solid rgba(0,0,0,0.08)",
+                              fontSize: 12, fontWeight: 600, color: C.onSurface,
+                            }}>
+                              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#84CC16" }} />
+                              {a.name}
+                            </span>
+                          ))}
                         </div>
-                      );
-                    })}
-                  </div>
+                      ) : (
+                        <div style={{ fontSize: 11, color: C.secondary, fontStyle: "italic" }}>
+                          Anchor coverage is sparse in this dataset — absence here does not imply absence on the ground.
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* ── Row 5: Key Signals (band-labeled cards) ──
+                    Card style matches the Location Intel mockup: colored
+                    label + verdict on the left, STRONG/WATCH/CAUTION band
+                    pill on the right. Maps the new `band` field with a
+                    graceful fallback to the legacy `signal` green/yellow/red. */}
+                {(deepResearch.signals || []).length > 0 && (
+                  <>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: C.secondary, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
+                      Key Signals
+                    </div>
+                    <div style={{
+                      display: "grid", gap: 10, marginBottom: 16,
+                      gridTemplateColumns: `repeat(auto-fit, minmax(220px, 1fr))`,
+                    }}>
+                      {(deepResearch.signals || []).map((sig: any, i: number) => {
+                        // Normalize band from either new `band` field or legacy `signal`.
+                        const rawBand = (sig.band || "").toString().toLowerCase();
+                        const rawSignal = (sig.signal || "").toString().toLowerCase();
+                        const band: "strong" | "watch" | "caution" =
+                          rawBand === "strong" || rawSignal === "green" ? "strong"
+                          : rawBand === "caution" || rawSignal === "red" ? "caution"
+                          : "watch";
+                        const theme = {
+                          strong:  { bg: "#F3FCE4", border: "#D9F29B", label: "#4D7C0F", dot: "#84CC16" },
+                          watch:   { bg: "#FEFCE8", border: "#FEF08A", label: "#A16207", dot: "#EAB308" },
+                          caution: { bg: "#FEF2F2", border: "#FECACA", label: "#B91C1C", dot: "#EF4444" },
+                        }[band];
+                        const bandLabel = band === "strong" ? "STRONG" : band === "caution" ? "CAUTION" : "WATCH";
+                        return (
+                          <div key={i} style={{
+                            padding: "12px 14px", background: theme.bg,
+                            border: `1px solid ${theme.border}`, borderRadius: 10,
+                          }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
+                              <span style={{ fontSize: 13, fontWeight: 700, color: C.onSurface }}>{sig.label}</span>
+                              <span style={{ fontSize: 9, fontWeight: 800, color: theme.label, letterSpacing: 0.9 }}>{bandLabel}</span>
+                            </div>
+                            <div style={{ fontSize: 12, color: "#374151", lineHeight: 1.5 }}>{sig.detail}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
                 )}
 
                 {/* ── Bottom Line ── */}

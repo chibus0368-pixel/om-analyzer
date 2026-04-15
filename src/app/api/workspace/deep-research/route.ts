@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { configFor, TILE_LABELS, type TileKey } from "@/lib/workspace/location-intel/config";
 
 export const maxDuration = 120;
 
@@ -405,15 +406,13 @@ function buildLocationPrompt(
   - Unemployment Rate: ${census.unemploymentRate !== null ? census.unemploymentRate + "%" : "N/A"}`
     : `No Census data available for ${geo.city}, ${geo.state}.`;
 
-  const assetContext = analysisType === "multifamily"
-    ? `This is a MULTIFAMILY property. Focus on: renter demographics, housing supply/demand, competing apartment communities, household formation trends, employment centers that drive rental demand.`
-    : analysisType === "industrial"
-    ? `This is an INDUSTRIAL property. Focus on: highway/freight access, labor market, warehouse/distribution demand, nearby industrial parks, port/rail access, e-commerce fulfillment trends.`
-    : analysisType === "office"
-    ? `This is an OFFICE property. Focus on: white-collar employment centers, competing office stock, tech/professional services presence, transit access, live-work-play environment, remote work impact.`
-    : analysisType === "land"
-    ? `This is a LAND deal. Focus on: zoning and entitlements, utility access, road frontage and traffic counts, surrounding development pattern, highest-and-best-use analysis, growth direction of the city.`
-    : `This is a RETAIL property. Focus on: foot traffic generators, consumer spending power, retail competition and co-tenancy, drive-by traffic, anchor tenants within 1 mile, retail vacancy trends in the trade area.`;
+  // Per-asset-type rubric + anchor bias + tile keys. Config is the single
+  // place we describe "what matters" for each asset class - the prompt
+  // below just inlines it.
+  const cfg = configFor(analysisType);
+  const assetContext = cfg.focusPrompt;
+  const rubricLines = cfg.signalRubric.map((r, i) => `  ${i + 1}. ${r}`).join("\n");
+  const tileGuidance = cfg.tileKeys.map((k) => `${k} (${TILE_LABELS[k]})`).join(", ");
 
   return `You are a senior CRE location intelligence analyst. Produce a CONCISE visual-style location report. No lengthy paragraphs - think dashboard, not essay.
 
@@ -451,6 +450,11 @@ ${developmentSection}
 
 ${newsSection}
 
+─── SIGNAL RUBRIC FOR THIS ASSET TYPE ───
+
+Grade the following signals (in this order). Use only what is supported by the data above.
+${rubricLines}
+
 ─── OUTPUT (JSON only) ───
 
 Return EXACTLY this structure. Keep text SHORT - 1 sentence per finding, max 15 words per label.
@@ -459,12 +463,29 @@ Return EXACTLY this structure. Keep text SHORT - 1 sentence per finding, max 15 
   "locationGrade": "A|A-|B+|B|B-|C+|C|C-|D",
   "gradeRationale": "1 sentence explaining the grade using specific data",
   "summary": "2 sentences max. Reference key data points: population, income, anchors.",
+  "tiles": [
+    {
+      "key": "one of: ${tileGuidance}",
+      "label": "display label",
+      "value": "formatted value e.g. '134,200', '$94,600', '40.5', '$348K', '2.9%'",
+      "confidence": "high|medium|low"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "Actual business name from the data",
+      "confidence": "high|medium|low"
+    }
+  ],
+  "anchorDataQuality": "good|sparse|unknown",
   "signals": [
     {
       "label": "Short label (max 5 words)",
       "detail": "1 sentence with specific data - name a business, cite a number, reference an article",
+      "band": "strong|watch|caution",
       "signal": "green|yellow|red",
-      "icon": "traffic|demographics|development|news|civic|investment|comps"
+      "icon": "traffic|demographics|development|news|civic|investment|comps",
+      "confidence": "high|medium|low"
     }
   ],
   "topAnchors": ["Name1", "Name2", "Name3"],
@@ -472,12 +493,18 @@ Return EXACTLY this structure. Keep text SHORT - 1 sentence per finding, max 15 
 }
 
 RULES:
-- "signals" array: return ONLY 4-6 items. Only the most investment-relevant findings. Skip anything generic.
+- "tiles": return only the keys listed above, in that order. Omit a tile entirely if the underlying datapoint is not in the data we provided or its confidence is low. NEVER fabricate a value.
+- "tiles[].confidence": "high" only if the value came directly from Census or a citeable source above; "medium" if derived/estimated from surrounding data; "low" otherwise (and you should omit it).
+- "anchors": only include businesses that actually appear in the NEARBY BUSINESSES data above. 3-6 items. Skip restaurants unless they are national chains that anchor traffic (Chick-fil-A, Starbucks-caliber). Prefer grocery, hospital, big-box, mall, pharmacy, university.
+- "anchors[].confidence": "high" if the business appears in the "Anchors" bucket; "medium" if prominent by reviews (>1000); omit if "low".
+- "anchorDataQuality": "good" if the data has >= 3 branded anchors within 1mi; "sparse" if 1-2 or only generic businesses; "unknown" if the search returned nothing meaningful. NEVER say a location has "no nearby anchors" - say "anchor coverage is sparse in this dataset" instead.
+- "signals" array: return ONLY 3 items, matching the rubric above in order. Skip any rubric item you cannot support with the data.
 - Each signal "detail" must be 1 sentence, max 25 words. Cite specific names/numbers.
+- "band": "strong" (positive fundamentals), "watch" (mixed / needs diligence), "caution" (material concern).
+- "signal": "green"=strong, "yellow"=watch, "red"=caution. Keep consistent with "band".
 - "topAnchors": list the 3-5 most notable anchor/national businesses within 1 mile. Use actual names from the data.
 - If businesses exist in the data, you MUST name them. Never say "no businesses found" when data shows otherwise.
-- "signal" must be exactly "green", "yellow", or "red"
-- Do NOT invent data. If sparse, say so briefly.
+- Do NOT invent data. If sparse, say so briefly and lower the confidence.
 - Return ONLY valid JSON, no markdown`;
 }
 
@@ -575,6 +602,46 @@ export async function POST(req: NextRequest) {
         sections: [],
         bottomLine: "Research completed but structured output could not be parsed.",
       };
+    }
+
+    // Step 4a: Confidence gating and safer fallbacks. The prompt already
+    // tells the model to omit low-confidence items, but we enforce it here
+    // too so a drift in the LLM output can never leak low-confidence
+    // numbers into the UI. Mid/high only.
+    if (Array.isArray(result.tiles)) {
+      result.tiles = result.tiles.filter(
+        (t: any) => t && t.value && (t.confidence === "high" || t.confidence === "medium"),
+      );
+    }
+    if (Array.isArray(result.anchors)) {
+      result.anchors = result.anchors.filter(
+        (a: any) => a && a.name && (a.confidence === "high" || a.confidence === "medium"),
+      );
+    }
+    if (Array.isArray(result.signals)) {
+      result.signals = result.signals.filter(
+        (s: any) => s && s.label && (s.confidence === "high" || s.confidence === "medium" || !s.confidence),
+      );
+    }
+
+    // Step 4b: Anchor-fallback safety. Users reported false negatives from
+    // the old "No nearby anchors" state - often anchors are there, the
+    // model just failed to name them. If the LLM produced zero typed
+    // anchors but the Places search actually returned anchors, backfill
+    // from the deterministic Places data instead of showing an empty
+    // state. If even Places was thin, surface as "sparse" not "none".
+    const placesAnchorCats = categorizePlaces(nearbyPlaces);
+    if (!Array.isArray(result.anchors) || result.anchors.length === 0) {
+      const fallbackAnchors = placesAnchorCats.anchors
+        .filter((a: any) => a.businessStatus !== "CLOSED_PERMANENTLY")
+        .slice(0, 6)
+        .map((a: any) => ({ name: a.name, confidence: "high" as const }));
+      if (fallbackAnchors.length > 0) {
+        result.anchors = fallbackAnchors;
+        result.anchorDataQuality = result.anchorDataQuality || "good";
+      } else if (!result.anchorDataQuality || result.anchorDataQuality === "unknown") {
+        result.anchorDataQuality = "sparse";
+      }
     }
 
     // Step 5: Persist to Firestore - include map data for UI
