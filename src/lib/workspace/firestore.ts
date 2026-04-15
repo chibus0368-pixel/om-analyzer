@@ -55,8 +55,23 @@ async function safeGet<T>(fn: () => Promise<T | null>): Promise<T | null> {
  * after the first finishes reuses the data instead of firing a third call.
  * TTL is intentionally short so mutations become visible quickly.
  */
-const _wsPropsCache: Map<string, { at: number; promise: Promise<Property[]> }> = new Map();
-const _WS_PROPS_CACHE_TTL_MS = 2000;
+// Stores both the in-flight promise AND the last resolved value so we can
+// serve stale data immediately while a background refresh runs (SWR).
+type WsPropsEntry = {
+  at: number;
+  promise: Promise<Property[]>;
+  resolved?: Property[]; // last successful result - enables stale-while-revalidate
+};
+const _wsPropsCache: Map<string, WsPropsEntry> = new Map();
+// Tab-switch clicks that re-mount consumers used to refire /api/workspace/properties
+// every 250-300 ms. 15s TTL turns those remounts into instant cache hits while
+// still being short enough that uploads/edits become visible quickly. Mutations
+// call invalidateWorkspacePropertiesCache() to force a fresh read on demand.
+const _WS_PROPS_CACHE_TTL_MS = 15000;
+// After TTL expires we still return the stale value synchronously and kick
+// off a refresh in the background, so the user never sees a spinner for data
+// we already have.
+const _WS_PROPS_STALE_MS = 60000;
 
 export function invalidateWorkspacePropertiesCache(userId?: string, workspaceId?: string) {
   if (!userId || !workspaceId) {
@@ -69,8 +84,16 @@ export function invalidateWorkspacePropertiesCache(userId?: string, workspaceId?
 export async function getWorkspaceProperties(userId: string, workspaceId: string): Promise<Property[]> {
   const key = `${userId}::${workspaceId}`;
   const cached = _wsPropsCache.get(key);
-  if (cached && Date.now() - cached.at < _WS_PROPS_CACHE_TTL_MS) {
+  const age = cached ? Date.now() - cached.at : Infinity;
+  if (cached && age < _WS_PROPS_CACHE_TTL_MS) {
     return cached.promise;
+  }
+  // Stale-while-revalidate: if we have a resolved value within the stale window,
+  // return it immediately and trigger a background refresh so next render is
+  // up to date. This prevents the click-to-spinner flash on tab switches.
+  if (cached?.resolved && age < _WS_PROPS_STALE_MS) {
+    void _refreshWorkspaceProperties(userId, workspaceId).catch(() => {});
+    return cached.resolved;
   }
 
   const promise = (async () => {
@@ -98,7 +121,11 @@ export async function getWorkspaceProperties(userId: string, workspaceId: string
       console.log(
         `[getWorkspaceProperties] API returned ${data.total} properties for workspace "${workspaceId}"`,
       );
-      return (data.properties || []) as Property[];
+      const list = (data.properties || []) as Property[];
+      // Save last successful value for stale-while-revalidate path
+      const existing = _wsPropsCache.get(key);
+      if (existing) existing.resolved = list;
+      return list;
     } catch (err: any) {
       console.warn("[getWorkspaceProperties] Failed:", err?.message || err);
       return [] as Property[];
@@ -108,6 +135,34 @@ export async function getWorkspaceProperties(userId: string, workspaceId: string
   _wsPropsCache.set(key, { at: Date.now(), promise });
   promise.catch(() => _wsPropsCache.delete(key));
   return promise;
+}
+
+// Background refresh used by the stale-while-revalidate path. Swallows errors
+// so a transient failure doesn't bubble into the UI - the next real call
+// will retry anyway.
+async function _refreshWorkspaceProperties(userId: string, workspaceId: string): Promise<void> {
+  const key = `${userId}::${workspaceId}`;
+  // Guard against concurrent background refreshes
+  const cur = _wsPropsCache.get(key);
+  if (cur && Date.now() - cur.at < 1000) return; // another call just fired
+  try {
+    const { getAuth } = await import("firebase/auth");
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+    const token = await currentUser.getIdToken();
+    const res = await fetch(
+      `/api/workspace/properties?workspaceId=${encodeURIComponent(workspaceId)}`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    if (!res.ok) return;
+    const data = await res.json();
+    const list = (data.properties || []) as Property[];
+    const promise = Promise.resolve(list);
+    _wsPropsCache.set(key, { at: Date.now(), promise, resolved: list });
+  } catch {
+    // best-effort; ignore
+  }
 }
 
 // ===== PROJECTS =====
