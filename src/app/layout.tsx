@@ -24,21 +24,30 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://dealsignals.app",
-    siteName: "DealSignals",
+    siteName: "Deal Signals",
     title: {
-      default: "DealSignals - Commercial Real Estate Pre-Diligence",
-      template: "%s | DealSignals",
+      default: "Deal Signals - Instantly analyze on-market CRE deals.",
+      template: "%s | Deal Signals",
     },
     description:
-      "Pre-diligence engine for commercial real estate. Upload an OM and get a scored deal brief in under 60 seconds.",
+      "Deal Signals - Instantly analyze on-market CRE deals.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Deal Signals - Instantly analyze on-market CRE deals.",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: {
-      default: "DealSignals - Commercial Real Estate Pre-Diligence",
-      template: "%s | DealSignals",
+      default: "Deal Signals - Instantly analyze on-market CRE deals.",
+      template: "%s | Deal Signals",
     },
-    description: "Pre-diligence engine for commercial real estate. Upload an OM and get a scored deal brief in under 60 seconds.",
+    description: "Deal Signals - Instantly analyze on-market CRE deals.",
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,

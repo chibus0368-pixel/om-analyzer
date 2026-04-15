@@ -9,11 +9,13 @@ export const metadata: Metadata = {
     title: "Terms of Use",
     description:
       "Deal Signals terms of use - guidelines for using our platform, content, and tools.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Deal Signals" }],
   },
   twitter: {
     title: "Terms of Use",
     description:
       "Deal Signals terms of use - guidelines for using our platform, content, and tools.",
+    images: ["/og-image.png"],
   },
 };
 

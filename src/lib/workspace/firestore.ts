@@ -44,35 +44,70 @@ async function safeGet<T>(fn: () => Promise<T | null>): Promise<T | null> {
 // Only the workspaceId field on properties lives in Firestore.
 // The "default" workspace ID means: properties with no workspaceId OR workspaceId === "default".
 
-/** Get properties filtered by workspace via server-side API (bypasses Firestore security rules). */
-export async function getWorkspaceProperties(userId: string, workspaceId: string): Promise<Property[]> {
-  try {
-    // Get auth token from Firebase Auth
-    const { getAuth } = await import("firebase/auth");
-    const auth = getAuth();
-    const currentUser = auth.currentUser;
-    if (!currentUser) {
-      console.warn("[getWorkspaceProperties] No authenticated user");
-      return [];
-    }
-    const token = await currentUser.getIdToken();
+/**
+ * Get properties filtered by workspace via server-side API.
+ *
+ * Dedupes concurrent callers: the workspace layout and the dashboard page
+ * both request the same list on mount. Without dedup that is two parallel
+ * API calls for identical data. We cache the in-flight promise for a given
+ * (userId, workspaceId) key and share it between callers. Resolved results
+ * stay in the cache for a short TTL so a second caller that arrives a tick
+ * after the first finishes reuses the data instead of firing a third call.
+ * TTL is intentionally short so mutations become visible quickly.
+ */
+const _wsPropsCache: Map<string, { at: number; promise: Promise<Property[]> }> = new Map();
+const _WS_PROPS_CACHE_TTL_MS = 2000;
 
-    const res = await fetch(`/api/workspace/properties?workspaceId=${encodeURIComponent(workspaceId)}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!res.ok) {
-      console.warn(`[getWorkspaceProperties] API returned ${res.status}`);
-      return [];
-    }
-
-    const data = await res.json();
-    console.log(`[getWorkspaceProperties] API returned ${data.total} properties for workspace "${workspaceId}"`);
-    return (data.properties || []) as Property[];
-  } catch (err: any) {
-    console.warn("[getWorkspaceProperties] Failed:", err?.message || err);
-    return [];
+export function invalidateWorkspacePropertiesCache(userId?: string, workspaceId?: string) {
+  if (!userId || !workspaceId) {
+    _wsPropsCache.clear();
+    return;
   }
+  _wsPropsCache.delete(`${userId}::${workspaceId}`);
+}
+
+export async function getWorkspaceProperties(userId: string, workspaceId: string): Promise<Property[]> {
+  const key = `${userId}::${workspaceId}`;
+  const cached = _wsPropsCache.get(key);
+  if (cached && Date.now() - cached.at < _WS_PROPS_CACHE_TTL_MS) {
+    return cached.promise;
+  }
+
+  const promise = (async () => {
+    try {
+      const { getAuth } = await import("firebase/auth");
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        console.warn("[getWorkspaceProperties] No authenticated user");
+        return [] as Property[];
+      }
+      const token = await currentUser.getIdToken();
+
+      const res = await fetch(
+        `/api/workspace/properties?workspaceId=${encodeURIComponent(workspaceId)}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      if (!res.ok) {
+        console.warn(`[getWorkspaceProperties] API returned ${res.status}`);
+        return [] as Property[];
+      }
+
+      const data = await res.json();
+      console.log(
+        `[getWorkspaceProperties] API returned ${data.total} properties for workspace "${workspaceId}"`,
+      );
+      return (data.properties || []) as Property[];
+    } catch (err: any) {
+      console.warn("[getWorkspaceProperties] Failed:", err?.message || err);
+      return [] as Property[];
+    }
+  })();
+
+  _wsPropsCache.set(key, { at: Date.now(), promise });
+  promise.catch(() => _wsPropsCache.delete(key));
+  return promise;
 }
 
 // ===== PROJECTS =====

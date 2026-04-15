@@ -198,45 +198,41 @@ function generateAdminNotificationEmail(
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>New Inbound - Deal Signals</title>
 </head>
-<body style="margin: 0; padding: 20px 0; background-color: #F5F5F5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF;">
+<body style="margin: 0; padding: 24px 0; background-color: #F5F7FA; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1F2937;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
     <tr>
-      <td style="padding: 32px 28px 0;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
-          <tr>
-            <td style="text-align: center; padding-bottom: 18px; border-bottom: 3px solid #06080F;">
-              <img src="${appUrl}/logo.png" alt="Deal Signals" width="200" style="max-width: 200px; height: auto; display: inline-block;" />
-              <p style="margin: 8px 0 0 0; color: #C49A3C; font-size: 11px; font-weight: bold; letter-spacing: 1.5px;">ADMIN NOTIFICATION</p>
-            </td>
-          </tr>
-        </table>
+      <td style="background-color: #0d0d14; padding: 24px 32px; text-align: center;">
+        <img src="${appUrl}/images/dealsignals-full-logo4.png" alt="Deal Signals" width="180" style="max-width: 180px; height: auto; display: inline-block; border: 0;" />
       </td>
     </tr>
     <tr>
-      <td style="padding: 0 28px 32px;">
-        <p style="margin: 0 0 4px 0; color: #DC3545; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.2px;">New inbound</p>
-        <h2 style="margin: 0 0 20px 0; color: #06080F; font-size: 20px;">Contact form submission</h2>
+      <td style="height: 3px; background: linear-gradient(90deg, #84CC16, #65A30D); line-height: 3px; font-size: 0;">&nbsp;</td>
+    </tr>
+    <tr>
+      <td style="padding: 32px 32px 28px;">
+        <p style="margin: 0 0 4px 0; color: #65A30D; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.3px;">New inbound</p>
+        <h2 style="margin: 0 0 20px 0; color: #0d0d14; font-size: 22px; font-weight: 800; letter-spacing: -0.02em;">Contact form submission</h2>
 
-        <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #E5E5E5; border-radius: 6px; border-left: 4px solid #DC3545;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #E5E7EB; border-radius: 10px; border-left: 4px solid #84CC16;">
           <tr>
             <td style="padding: 18px 20px;">
-              <p style="margin: 0 0 10px 0; font-size: 13px;"><strong style="color: #666;">From:</strong> <span style="color: #06080F;">${name}</span></p>
-              <p style="margin: 0 0 10px 0; font-size: 13px;"><strong style="color: #666;">Email:</strong> <a href="mailto:${email}" style="color: #DC3545; text-decoration: none;">${email}</a></p>
-              <p style="margin: 0 0 14px 0; font-size: 13px;"><strong style="color: #666;">Submission ID:</strong> <span style="color: #06080F; font-family: 'SF Mono', Menlo, monospace; font-size: 12px;">${messageId}</span></p>
+              <p style="margin: 0 0 10px 0; font-size: 13px;"><strong style="color: #525866;">From:</strong> <span style="color: #0d0d14;">${name}</span></p>
+              <p style="margin: 0 0 10px 0; font-size: 13px;"><strong style="color: #525866;">Email:</strong> <a href="mailto:${email}" style="color: #65A30D; text-decoration: none; font-weight: 600;">${email}</a></p>
+              <p style="margin: 0 0 14px 0; font-size: 13px;"><strong style="color: #525866;">Submission ID:</strong> <span style="color: #0d0d14; font-family: 'SF Mono', Menlo, monospace; font-size: 12px;">${messageId}</span></p>
 
-              <div style="margin: 16px 0 0 0; padding: 16px; background-color: #F5F5F5; border-radius: 4px;">
-                <p style="margin: 0 0 8px 0; color: #C49A3C; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.2px;">Message</p>
-                <p style="margin: 0; white-space: pre-wrap; word-wrap: break-word; font-size: 14px; color: #333; line-height: 1.65;">${message}</p>
+              <div style="margin: 16px 0 0 0; padding: 16px; background-color: #F2F3FB; border-radius: 8px;">
+                <p style="margin: 0 0 8px 0; color: #65A30D; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;">Message</p>
+                <p style="margin: 0; white-space: pre-wrap; word-wrap: break-word; font-size: 14px; color: #1F2937; line-height: 1.65;">${message}</p>
               </div>
 
               <p style="margin: 22px 0 0 0;">
-                <a href="${dashboardUrl}" style="background-color: #DC3545; color: #FFFFFF; padding: 11px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold; font-size: 13px;">Open in Dashboard</a>
+                <a href="${dashboardUrl}" style="background-color: #84CC16; color: #0d0d14; padding: 11px 26px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 700; font-size: 13px;">Open in Dashboard</a>
               </p>
             </td>
           </tr>
         </table>
 
-        <p style="margin: 20px 0 0 0; color: #999; font-size: 11px;">Reply to this email to respond directly to ${name}.</p>
+        <p style="margin: 20px 0 0 0; color: #6B7280; font-size: 11px;">Reply to this email to respond directly to ${name}.</p>
       </td>
     </tr>
   </table>
@@ -256,54 +252,51 @@ function generateUserConfirmationEmail(name: string): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Message Received - Deal Signals</title>
 </head>
-<body style="margin: 0; padding: 20px 0; background-color: #F5F5F5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF;">
+<body style="margin: 0; padding: 24px 0; background-color: #F5F7FA; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1F2937;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
     <tr>
-      <td style="padding: 40px 28px;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
-          <tr>
-            <td style="text-align: center; padding-bottom: 18px; border-bottom: 3px solid #06080F;">
-              <a href="${appUrl}" style="text-decoration: none;">
-                <img src="${appUrl}/logo.png" alt="Deal Signals" width="220" style="max-width: 220px; height: auto; display: inline-block;" />
-              </a>
-              <p style="margin: 8px 0 0 0; color: #C49A3C; font-size: 12px; font-weight: bold; letter-spacing: 1px;">MARKET INTELLIGENCE</p>
-            </td>
-          </tr>
-        </table>
+      <td style="background-color: #0d0d14; padding: 28px 32px; text-align: center;">
+        <a href="${appUrl}" style="text-decoration: none; display: inline-block;">
+          <img src="${appUrl}/images/dealsignals-full-logo4.png" alt="Deal Signals" width="200" style="max-width: 200px; height: auto; display: inline-block; border: 0;" />
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td style="height: 3px; background: linear-gradient(90deg, #84CC16, #65A30D); line-height: 3px; font-size: 0;">&nbsp;</td>
+    </tr>
+    <tr>
+      <td style="padding: 36px 36px 28px;">
+        <p style="margin: 0 0 8px 0; color: #65A30D; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;">Message received</p>
+        <h2 style="margin: 0 0 20px 0; color: #0d0d14; font-size: 26px; line-height: 1.25; letter-spacing: -0.02em; font-weight: 800;">Thanks, ${name}. We've got it.</h2>
 
-        <p style="margin: 24px 0 6px 0; color: #C49A3C; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; text-align: center;">Message received</p>
-        <h2 style="margin: 0 0 20px 0; color: #06080F; text-align: center; font-size: 24px; letter-spacing: -0.01em;">Thanks, ${name}. We've got it.</h2>
-
-        <p style="margin: 0 0 15px 0; font-size: 14px; line-height: 1.7; color: #333;">
+        <p style="margin: 0 0 15px 0; font-size: 15px; line-height: 1.65; color: #1F2937;">
           Your message is in front of the Deal Signals team. We read every inbound and we'll get back to you inside one business day, usually much faster.
         </p>
 
-        <p style="margin: 0 0 15px 0; font-size: 14px; line-height: 1.7; color: #333;">
+        <p style="margin: 0 0 15px 0; font-size: 15px; line-height: 1.65; color: #1F2937;">
           If you're in the middle of a deal and need a quick screen while you wait, you can upload an OM right now and the platform will hand you a Deal Score in about 3 minutes.
         </p>
 
         <table width="100%" cellpadding="0" cellspacing="0" style="margin: 28px 0;">
           <tr>
             <td style="text-align: center;">
-              <a href="${appUrl}/workspace" style="background-color: #DC3545; color: #FFFFFF; padding: 13px 32px; font-weight: bold; font-size: 14px; text-decoration: none; border-radius: 4px; display: inline-block;">
+              <a href="${appUrl}/workspace" style="background-color: #84CC16; color: #0d0d14; padding: 14px 36px; font-weight: 700; font-size: 14px; text-decoration: none; border-radius: 8px; display: inline-block; letter-spacing: 0.02em;">
                 Open My Workspace
               </a>
             </td>
           </tr>
         </table>
 
-        <p style="margin: 24px 0 0 0; font-size: 13px; color: #666; line-height: 1.6;">
-          The Deal Signals team
+        <p style="margin: 24px 0 0 0; font-size: 13px; color: #6B7280; line-height: 1.6;">
+          &mdash; The Deal Signals team
         </p>
-
-        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 36px; padding-top: 20px; border-top: 1px solid #E5E5E5;">
-          <tr>
-            <td style="font-size: 11px; color: #999; text-align: center; padding: 16px 0;">
-              <p style="margin: 4px 0;">&copy; ${new Date().getFullYear()} Deal Signals. All rights reserved.</p>
-              <p style="margin: 4px 0;">Mequon, Wisconsin &middot; <a href="${appUrl}" style="color: #999; text-decoration: none;">dealsignals.app</a></p>
-            </td>
-          </tr>
-        </table>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: #F2F3FB; padding: 24px 32px; font-size: 11px; color: #6B7280; text-align: center; line-height: 1.7;">
+        <p style="margin: 0 0 4px 0;"><a href="${appUrl}" style="color: #65A30D; text-decoration: none; font-weight: 600;">dealsignals.app</a></p>
+        <p style="margin: 4px 0;">&copy; ${new Date().getFullYear()} Deal Signals. All rights reserved.</p>
+        <p style="margin: 4px 0;">Mequon, Wisconsin</p>
       </td>
     </tr>
   </table>
