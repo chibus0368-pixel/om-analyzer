@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
 import { getWorkspaceProperties, deleteProperty, updateProperty } from "@/lib/workspace/firestore";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
@@ -10,6 +10,7 @@ import type { Property, ProjectDocument, Workspace } from "@/lib/workspace/types
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import PropertyHeroImage from "@/components/workspace/PropertyHeroImage";
+import { setPendingUploadFiles } from "@/lib/workspace/upload-handoff";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -413,7 +414,62 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
   );
 }
 
-/* ========== Upload Drop Zone ========== */
+/* ========== Empty Dealboard Drop Zone ==========
+   Real file picker + drop zone. Selected files are stashed in the
+   upload-handoff module and the user is navigated to /workspace/upload,
+   which consumes them on mount. Previously this was a stub that just
+   redirected without capturing the file, which made the Select File
+   button feel broken. */
+function EmptyDealboardDropZone({ onFiles }: { onFiles: (files: FileList) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [hover, setHover] = useState(false);
+  return (
+    <div
+      onClick={() => inputRef.current?.click()}
+      onDragOver={e => { e.preventDefault(); e.stopPropagation(); setHover(true); }}
+      onDragLeave={e => { e.preventDefault(); e.stopPropagation(); setHover(false); }}
+      onDrop={e => {
+        e.preventDefault(); e.stopPropagation(); setHover(false);
+        if (e.dataTransfer.files?.length) onFiles(e.dataTransfer.files);
+      }}
+      style={{
+        background: "#FFFFFF", borderRadius: 6,
+        border: `2px dashed ${hover ? "#84CC16" : "#D8DFE9"}`,
+        padding: "48px 20px", textAlign: "center", cursor: "pointer",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.05)", transition: "all 0.2s",
+      }}
+    >
+      <input
+        ref={inputRef} type="file" multiple
+        accept=".pdf,.xls,.xlsx,.csv,.doc,.docx"
+        style={{ display: "none" }}
+        onChange={e => { if (e.target.files?.length) onFiles(e.target.files); }}
+      />
+      <div style={{
+        width: 56, height: 56, borderRadius: "50%", background: "rgba(132, 204, 22, 0.1)",
+        display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
+      }}>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9v.01M9 12v.01M9 15v.01M9 18v.01" />
+        </svg>
+      </div>
+      <p style={{ fontSize: 16, fontWeight: 600, color: "#0F172A", margin: "0 0 6px", fontFamily: "'Inter', sans-serif" }}>
+        Drop your OM or flyer here
+      </p>
+      <p style={{ fontSize: 13, color: "#585e70", margin: "0 0 16px" }}>
+        PDF, Excel, or CSV accepted (Max 50MB)
+      </p>
+      <button onClick={e => { e.stopPropagation(); inputRef.current?.click(); }} style={{
+        padding: "12px 32px", background: "#151b2b", color: "#fff", border: "none",
+        borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: "pointer",
+        fontFamily: "'Inter', sans-serif",
+      }}>
+        Select File from Local
+      </button>
+    </div>
+  );
+}
+
 /* ========== Editable Workspace Title ========== */
 function EditableWorkspaceTitle({ name, workspaceId }: { name: string; workspaceId: string }) {
   const [editing, setEditing] = useState(false);
@@ -479,6 +535,16 @@ export default function WorkspaceDashboard() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [docCounts, setDocCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  // Page-level drag state so the dealboard accepts files dropped anywhere on
+  // screen (mirrors the Try-Me landing-page behavior). dragCounter avoids the
+  // flicker you get when dragenter/dragleave fire on child elements.
+  const [globalDragging, setGlobalDragging] = useState(false);
+  const dragCounter = useRef(0);
+  const handleGlobalFiles = useCallback((fl: FileList | null | undefined) => {
+    if (!fl || !fl.length) return;
+    setPendingUploadFiles(fl);
+    router.push("/workspace/upload");
+  }, [router]);
 
   useEffect(() => {
     if (!user || !activeWorkspace) return;
@@ -544,7 +610,36 @@ export default function WorkspaceDashboard() {
   }
 
   return (
-    <div className="db-page" style={{ width: "100%", padding: "0 24px" }}>
+    <div className="db-page" style={{ width: "100%", padding: "0 24px" }}
+      onDragEnter={e => { e.preventDefault(); dragCounter.current++; setGlobalDragging(true); }}
+      onDragOver={e => { e.preventDefault(); }}
+      onDragLeave={e => { e.preventDefault(); dragCounter.current--; if (dragCounter.current <= 0) { dragCounter.current = 0; setGlobalDragging(false); } }}
+      onDrop={e => { e.preventDefault(); dragCounter.current = 0; setGlobalDragging(false); handleGlobalFiles(e.dataTransfer.files); }}
+    >
+      {globalDragging && (
+        <div
+          onDragOver={e => e.preventDefault()}
+          onDragLeave={e => { e.preventDefault(); dragCounter.current = 0; setGlobalDragging(false); }}
+          onDrop={e => { e.preventDefault(); dragCounter.current = 0; setGlobalDragging(false); handleGlobalFiles(e.dataTransfer.files); }}
+          style={{
+            position: "fixed", inset: 0, zIndex: 9998,
+            background: "rgba(13,13,20,0.85)", backdropFilter: "blur(8px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <div style={{
+            padding: "48px 64px", borderRadius: 20,
+            border: "2px dashed #84CC16", background: "rgba(132,204,22,0.05)",
+            textAlign: "center",
+          }}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }}>
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", marginBottom: 6 }}>Drop your file anywhere</div>
+            <div style={{ fontSize: 14, color: "#9ca3af" }}>PDF, Excel, or CSV. We&apos;ll start the analysis.</div>
+          </div>
+        </div>
+      )}
       <style>{`
         @keyframes spin { to { transform: rotate(360deg) } }
         .db-card-hero { transition: none; }
@@ -730,39 +825,10 @@ export default function WorkspaceDashboard() {
 
       {/* Property Cards Grid */}
       {properties.length === 0 ? (
-        <div
-          onClick={() => router.push("/workspace/upload")}
-          onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
-          onDrop={e => { e.preventDefault(); e.stopPropagation(); router.push("/workspace/upload"); }}
-          style={{
-            background: "#FFFFFF", borderRadius: 6, border: "2px dashed #D8DFE9",
-            padding: "48px 20px", textAlign: "center", cursor: "pointer",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
-            transition: "all 0.2s",
-          }}
-        >
-          <div style={{
-            width: 56, height: 56, borderRadius: "50%", background: "rgba(132, 204, 22, 0.1)",
-            display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
-          }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9v.01M9 12v.01M9 15v.01M9 18v.01" />
-            </svg>
-          </div>
-          <p style={{ fontSize: 16, fontWeight: 600, color: "#0F172A", margin: "0 0 6px", fontFamily: "'Inter', sans-serif" }}>
-            Drop your OM or flyer here
-          </p>
-          <p style={{ fontSize: 13, color: "#585e70", margin: "0 0 16px" }}>
-            PDF, Excel, or CSV accepted (Max 50MB)
-          </p>
-          <button onClick={e => { e.stopPropagation(); router.push("/workspace/upload"); }} style={{
-            padding: "12px 32px", background: "#151b2b", color: "#fff", border: "none",
-            borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: "pointer",
-            fontFamily: "'Inter', sans-serif",
-          }}>
-            Select File from Local
-          </button>
-        </div>
+        <EmptyDealboardDropZone onFiles={(fl) => {
+          setPendingUploadFiles(fl);
+          router.push("/workspace/upload");
+        }} />
       ) : (
         <div className="db-grid" style={{
           display: "grid",

@@ -9,6 +9,7 @@ import { getWorkspaceProperties, createProperty, createDocument } from "@/lib/wo
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import { extractTextFromFiles } from "@/lib/workspace/file-reader";
 import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
+import { consumePendingUploadFiles } from "@/lib/workspace/upload-handoff";
 import type { Property, DocCategory, AnalysisType } from "@/lib/workspace/types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
@@ -163,6 +164,19 @@ export default function UploadPage() {
     setIsDragging(false);
     if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
   }
+
+  // Consume any files handed off from the empty dealboard drop zone. Runs
+  // once on mount; the handoff module auto-clears after read.
+  useEffect(() => {
+    const handoff = consumePendingUploadFiles();
+    if (handoff && handoff.length) addFiles(handoff);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Page-level drag-and-drop: accept files dropped anywhere on screen, not
+  // just inside the visible upload box. Mirrors the Try-Me landing page.
+  const [globalDragging, setGlobalDragging] = useState(false);
+  const dragCounter = useRef(0);
 
   function removeFile(id: string) {
     setFiles(prev => prev.filter(f => f.id !== id));
@@ -464,7 +478,42 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="ul-container" style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
+    <div className="ul-container" style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}
+      onDragEnter={e => { e.preventDefault(); dragCounter.current++; if (step !== "processing") setGlobalDragging(true); }}
+      onDragOver={e => { e.preventDefault(); }}
+      onDragLeave={e => { e.preventDefault(); dragCounter.current--; if (dragCounter.current <= 0) { dragCounter.current = 0; setGlobalDragging(false); } }}
+      onDrop={e => {
+        e.preventDefault(); dragCounter.current = 0; setGlobalDragging(false);
+        if (step !== "processing" && e.dataTransfer.files?.length) addFiles(e.dataTransfer.files);
+      }}
+    >
+      {globalDragging && step !== "processing" && (
+        <div
+          onDragOver={e => e.preventDefault()}
+          onDragLeave={e => { e.preventDefault(); dragCounter.current = 0; setGlobalDragging(false); }}
+          onDrop={e => {
+            e.preventDefault(); dragCounter.current = 0; setGlobalDragging(false);
+            if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files);
+          }}
+          style={{
+            position: "fixed", inset: 0, zIndex: 9998,
+            background: "rgba(13,13,20,0.85)", backdropFilter: "blur(8px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <div style={{
+            padding: "48px 64px", borderRadius: 20,
+            border: "2px dashed #84CC16", background: "rgba(132,204,22,0.05)",
+            textAlign: "center",
+          }}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }}>
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", marginBottom: 6 }}>Drop your file anywhere</div>
+            <div style={{ fontSize: 14, color: "#9ca3af" }}>PDF, Excel, or CSV. We&apos;ll add it to the upload.</div>
+          </div>
+        </div>
+      )}
       <style>{`
         @media (max-width: 768px) {
           .ul-container { padding: 0 12px !important; }
