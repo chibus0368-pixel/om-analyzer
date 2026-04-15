@@ -218,7 +218,7 @@ function ModelLensBanner({
   const label = ANALYSIS_TYPE_LABELS[current] || "Retail";
 
   return (
-    <div ref={wrapRef} style={{
+    <div ref={wrapRef} className="pd-model-lens-banner" style={{
       position: "relative", display: "flex", alignItems: "center",
       gap: 10, padding: "9px 16px", marginBottom: 20,
       background: "#F8FAFC",
@@ -1566,10 +1566,22 @@ function PropertyDetailInner({
           .pd-inner { padding: 0 !important; }
 
           /* Show mobile-only elements */
-          .pd-mobile-score-card { display: block !important; }
           .pd-mobile-hero { display: block !important; }
           /* Hide the desktop modal-style hero on mobile */
           .pd-desktop-hero { display: none !important; }
+
+          /* Collapse the redundant upper score card on mobile — the
+             DealSignal Score strip below it carries the same info. */
+          .pd-mobile-score-card { display: none !important; }
+
+          /* Hide the full-width "Scored with … Model (auto-detected)"
+             banner on mobile. On mobile the model is shown as a small
+             pill overlay on the hero image instead. */
+          .pd-model-lens-banner { display: none !important; }
+
+          /* Score strip reflow: stack the metric chips under the verdict. */
+          .pd-score-strip { padding: 16px 18px !important; gap: 14px !important; margin: 12px 16px 16px !important; }
+          .pd-score-strip-metrics { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
 
           /* Full-bleed hero on mobile */
           .pd-mobile-hero { margin: 0 -10px !important; }
@@ -1674,7 +1686,7 @@ function PropertyDetailInner({
       {/* ═══════════════════════════════════════════════════ */}
       {/*  MOBILE HERO IMAGE (hidden on desktop)              */}
       {/* ═══════════════════════════════════════════════════ */}
-      <div className="pd-mobile-hero">
+      <div className="pd-mobile-hero" style={{ position: "relative" }}>
         {(property as any).heroImageUrl ? (
           <img src={(property as any).heroImageUrl} alt={property.propertyName} />
         ) : (
@@ -1682,6 +1694,25 @@ function PropertyDetailInner({
             <span style={{ fontSize: 48, opacity: 0.25 }}>📍</span>
           </div>
         )}
+        {/* Asset-type pill overlay — replaces the full-width
+            "Scored with … Model (auto-detected)" banner on mobile. */}
+        {(() => {
+          const t = ((property as any).analysisType as string) || wsType || "retail";
+          const label = ANALYSIS_TYPE_LABELS[t as keyof typeof ANALYSIS_TYPE_LABELS] || "Retail";
+          return (
+            <span style={{
+              position: "absolute", top: 12, left: 16,
+              display: "inline-flex", alignItems: "center",
+              padding: "6px 12px", fontSize: 10, fontWeight: 700,
+              textTransform: "uppercase", letterSpacing: 0.8,
+              color: "#fff", background: "rgba(15,23,42,0.55)",
+              backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)",
+              borderRadius: 999, border: "1px solid rgba(255,255,255,0.25)",
+            }}>
+              {label} Model
+            </span>
+          );
+        })()}
       </div>
 
       {/* ═══════════════════════════════════════════════════ */}
@@ -2096,6 +2127,9 @@ function PropertyDetailInner({
           return map[b] || scoreBand.replace(/_/g, " ");
         })();
         const accent = isGreen ? "#059669" : isYellow ? "#D97706" : "#DC2626";
+        const stripSf = property.cardBuildingSf || property.buildingSf;
+        const stripSfStr = stripSf ? (stripSf >= 1000 ? `${(stripSf / 1000).toFixed(stripSf >= 10000 ? 0 : 1)}K SF` : `${stripSf.toLocaleString()} SF`) : null;
+        const stripAsk = property.cardAskingPrice ? fmt$(property.cardAskingPrice) : null;
         return (
           <div className="pd-score-strip" style={{
             display: "flex", alignItems: "center", gap: 20,
@@ -2112,6 +2146,32 @@ function PropertyDetailInner({
               <div style={{ fontSize: 15, fontWeight: 600, color: "#0F172A", lineHeight: 1.5 }}>
                 {verdict}
               </div>
+              {/* Mobile-only compact metrics row (hidden on desktop via
+                  inline display:none; CSS in the @media block flips it to
+                  a 2-col grid). Keeps building SF + asking price visible
+                  now that the upper Signal Score card is collapsed. */}
+              {(stripSfStr || stripAsk) && (
+                <div className="pd-score-strip-metrics" style={{ display: "none" }}>
+                  {stripSfStr && (
+                    <div style={{
+                      padding: "8px 10px", borderRadius: 8,
+                      background: "#F8FAFC", border: "1px solid rgba(0,0,0,0.04)",
+                    }}>
+                      <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#6B7280", marginBottom: 2 }}>Size</div>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: "#0F172A", fontFamily: "monospace" }}>{stripSfStr}</div>
+                    </div>
+                  )}
+                  {stripAsk && (
+                    <div style={{
+                      padding: "8px 10px", borderRadius: 8,
+                      background: "#F8FAFC", border: "1px solid rgba(0,0,0,0.04)",
+                    }}>
+                      <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#6B7280", marginBottom: 2 }}>Asking Price</div>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: "#0F172A", fontFamily: "monospace" }}>{stripAsk}</div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         );
