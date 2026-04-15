@@ -1162,8 +1162,11 @@ export default function PropertyDetailClient() {
           style={{
             width: 260, minWidth: 260, background: "#fff", borderLeft: "1px solid rgba(0,0,0,0.06)",
             flexShrink: 0,
-            position: "sticky", top: 80, alignSelf: "flex-start",
-            maxHeight: "calc(100vh - 96px)", overflowY: "auto",
+            // Nudge the sticky top up and shrink max-height so the last
+            // property row is always reachable above any OS / in-page UI
+            // chrome that was clipping the bottom of the list.
+            position: "sticky", top: 72, alignSelf: "flex-start",
+            maxHeight: "calc(100vh - 120px)", overflowY: "auto",
             borderRadius: 12,
             overscrollBehavior: "contain",
             scrollbarGutter: "stable",
@@ -1180,7 +1183,13 @@ export default function PropertyDetailClient() {
               Properties ({siblingProps.length})
             </div>
           </div>
-          <div style={{ padding: 8, display: "flex", flexDirection: "column", gap: 4 }}>
+          <div style={{
+            // Extra bottom padding guarantees the last property row lifts
+            // above the sticky column's lower edge; without it the final
+            // entry was sitting flush with the scroll end and felt clipped.
+            padding: "8px 8px 64px",
+            display: "flex", flexDirection: "column", gap: 4,
+          }}>
             {siblingProps.map(sp => {
               const isActive = sp.id === propertyId;
               const spScore = (sp as any).scoreTotal || 0;
