@@ -115,10 +115,22 @@ export async function loginWithGoogle(): Promise<UserCredential> {
   }
 
   return new Promise<UserCredential>((resolve, reject) => {
+    // Safety net: if neither callback fires within 90s, release the
+    // button. GIS has been observed to silently drop the callback when
+    // popup blockers or third-party-cookie policies interfere, which
+    // left our "Connecting to Google..." button spinning forever.
+    const timeoutId = setTimeout(() => {
+      reject({
+        code: 'auth/timeout',
+        message: 'Google sign-in timed out. Try again, allow popups for this site, or use email sign-up.',
+      });
+    }, 90_000);
+
     const client = window.google!.accounts.oauth2.initTokenClient({
       client_id: clientId,
       scope: 'openid email profile',
       callback: async (response) => {
+        clearTimeout(timeoutId);
         if (response.error || !response.access_token) {
           reject(new Error(response.error || 'No access token received'));
           return;
@@ -133,6 +145,7 @@ export async function loginWithGoogle(): Promise<UserCredential> {
         }
       },
       error_callback: (error) => {
+        clearTimeout(timeoutId);
         // User closed the popup or other non-fatal error
         if (error.type === 'popup_closed') {
           reject({ code: 'auth/popup-closed-by-user', message: 'Popup closed' });
