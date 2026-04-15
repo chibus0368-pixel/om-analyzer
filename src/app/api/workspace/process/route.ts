@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { runParseEngine } from "@/lib/workspace/parse-engine";
 import { runScoreEngine } from "@/lib/workspace/score-engine";
-import { buildSmartPropertyName, extractShortStreetAddress } from "@/lib/workspace/propertyNameUtils";
+import { buildSmartPropertyName, extractShortStreetAddress, extractPropertyNameFromText } from "@/lib/workspace/propertyNameUtils";
 
 /**
  * Background Processing Endpoint
@@ -78,11 +78,15 @@ export async function POST(req: NextRequest) {
           // card titles compact. Falls back to buildSmartPropertyName if we
           // couldn't extract a usable street address from parsed content.
           const shortStreet = extractShortStreetAddress(parsedAddress);
+          const hasUsableParsedName = parsedName && parsedName !== "Unknown Property";
+          const textExtracted = !shortStreet && !hasUsableParsedName
+            ? extractPropertyNameFromText(documentText)
+            : "";
           const finalName = shortStreet
             ? shortStreet
-            : (parsedName && parsedName !== "Unknown Property"
+            : (hasUsableParsedName
                 ? buildSmartPropertyName(parsedName, parsedAddress, parsedCity, parsedState)
-                : null);
+                : (textExtracted || null));
 
           if (finalName) {
             await db.collection("workspace_properties").doc(propertyId).set({

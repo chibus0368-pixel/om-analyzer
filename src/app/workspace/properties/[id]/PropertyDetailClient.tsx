@@ -1205,7 +1205,11 @@ export default function PropertyDetailClient() {
             // property row is always reachable above any OS / in-page UI
             // chrome that was clipping the bottom of the list.
             position: "sticky", top: 16, alignSelf: "flex-start",
-            maxHeight: "calc(100vh - 40px)", overflowY: "auto",
+            // Scroll container height is (100vh - 64px header). Subtract
+            // the top:16 offset plus ~16px bottom breathing room so the
+            // last row in a long property list isn't clipped below the
+            // visible area.
+            maxHeight: "calc(100vh - 96px)", overflowY: "auto",
             borderRadius: 12,
             overscrollBehavior: "contain",
             scrollbarGutter: "stable",

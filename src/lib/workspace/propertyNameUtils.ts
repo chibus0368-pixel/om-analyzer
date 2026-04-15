@@ -287,3 +287,102 @@ export function shortenAddress(address: string): string {
 function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
+
+/**
+ * Best-effort property name extraction from raw document text.
+ *
+ * Used as a last-resort fallback when the LLM did not return a usable
+ * property name and we can't derive a short street address. Scans the
+ * first portion of the document for OM cover-page patterns and common
+ * CRE naming conventions before giving up.
+ *
+ * Returns empty string if nothing confident is found.
+ */
+export function extractPropertyNameFromText(
+  documentText: string | null | undefined,
+): string {
+  if (!documentText) return "";
+  // Work on the first ~3000 chars - OM cover pages and headings live up front
+  const head = documentText.slice(0, 3000);
+  const lines = head
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
+
+  const brokerish =
+    /(broker|brokerage|realty|real estate|presented by|prepared by|exclusively|listed by|listing agent|licensed|commercial|marcus\s*&\s*millichap|cbre|colliers|jll|newmark|cushman|avison young|keller williams|coldwell|sperry|kw\s)/i;
+  const junk =
+    /^(confidential|offering memorandum|investment offering|investment summary|executive summary|property information|property overview|table of contents|disclaimer|contents|for sale|for lease|sale flyer)$/i;
+
+  const clean = (s: string): string =>
+    s
+      .replace(/^[\s\-–|•*#>]+/, "")
+      .replace(/[\s\-–|•*#>]+$/, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  // 1. Explicit label patterns: "Property Name: X", "Subject Property: X", "Property: X"
+  const labelRe =
+    /(?:property\s*name|subject\s*property|project\s*name|development\s*name|site\s*name|property)\s*[:\-–]\s*(.{3,80}?)(?:\r?\n|$)/i;
+  const labelMatch = head.match(labelRe);
+  if (labelMatch) {
+    const v = clean(labelMatch[1]);
+    if (v && !brokerish.test(v) && !junk.test(v)) return v.substring(0, 80);
+  }
+
+  // 2. "Offering Memorandum for X" / "OM for X" / "Offering: X"
+  const ofRe =
+    /(?:offering\s*memorandum|offering)\s*(?:for|:)\s*(.{3,80}?)(?:\r?\n|$)/i;
+  const ofMatch = head.match(ofRe);
+  if (ofMatch) {
+    const v = clean(ofMatch[1]);
+    if (v && !brokerish.test(v) && !junk.test(v)) return v.substring(0, 80);
+  }
+
+  // 3. Shopping-center / mixed-use suffix pattern anywhere in the head.
+  // Catches things like "The Shoppes at Riverview", "Oakridge Plaza",
+  // "Sunset Crossing", "Main Street Commons".
+  const centerRe =
+    /\b((?:the\s+)?[A-Z][A-Za-z'&.]*(?:\s+(?:at|of|on|&|and)\s+)?(?:\s+[A-Z][A-Za-z'&.]+){0,4}\s+(?:Plaza|Center|Centre|Mall|Crossing|Crossings|Commons|Square|Shoppes|Shops|Village|Park|Pointe|Point|Place|Terrace|Gardens|Heights|Ridge|Landing|Station|Junction|Marketplace|Market|Promenade|Galleria|Pavilion|Courtyard|Corners|Corner))\b/;
+  const centerMatch = head.match(centerRe);
+  if (centerMatch) {
+    const v = clean(centerMatch[1]);
+    if (v && !brokerish.test(v) && v.length >= 5) return v.substring(0, 80);
+  }
+
+  // 4. Single-tenant NNN anchor pattern: "Walgreens - Tulsa, OK" etc.
+  const anchors =
+    /(Walgreens|CVS|Starbucks|Dollar General|Family Dollar|Dollar Tree|7-Eleven|AutoZone|O'Reilly|Advance Auto|Taco Bell|McDonald'?s|Burger King|Chick-fil-A|Wendy'?s|Chipotle|Popeyes|KFC|Pizza Hut|Wawa|Sheetz|Circle K|Tractor Supply|Big Lots|Aldi|Lidl|Trader Joe'?s|Whole Foods|Kroger|Publix|Safeway|FedEx|UPS|Amazon|Wells Fargo|Chase|Bank of America|Fifth Third|BBVA|Chipotle|Panera|Dunkin|Five Below|Hobby Lobby|TJ\s?Maxx|Marshalls|Ross|Target|Walmart|Home Depot|Lowe'?s|Best Buy|AutoZone)/i;
+  const anchorMatch = head.match(anchors);
+  if (anchorMatch) {
+    // Prefer "<Anchor> <City>" or "<Anchor> NNN"
+    const aRe = new RegExp(
+      `(${anchorMatch[1]})\\s*(?:[\\-–|])?\\s*([A-Z][A-Za-z]+(?:[,\\s]+[A-Z]{2})?|NNN|Ground Lease|Absolute NNN|Net Lease)?`,
+      "i",
+    );
+    const m2 = head.match(aRe);
+    if (m2) {
+      const combined = clean(`${m2[1]}${m2[2] ? " " + m2[2] : ""}`);
+      if (combined && combined.length >= 3) return combined.substring(0, 80);
+    }
+  }
+
+  // 5. First meaningful line that looks title-like (Title Case, 3-60 chars,
+  // not a broker line, not boilerplate junk, not a date/price).
+  for (const line of lines.slice(0, 20)) {
+    if (line.length < 4 || line.length > 70) continue;
+    if (brokerish.test(line) || junk.test(line)) continue;
+    if (/^[\d$,.\s%-]+$/.test(line)) continue; // pure numbers/prices
+    if (/^(page\s*\d|figure\s*\d|table\s*\d)/i.test(line)) continue;
+    // Must have at least one letter and look title-ish (starts with capital)
+    if (!/^[A-Z0-9]/.test(line)) continue;
+    // Count capitalized words - titles usually have multiple
+    const words = line.split(/\s+/);
+    const capWords = words.filter((w) => /^[A-Z]/.test(w)).length;
+    if (words.length >= 2 && capWords >= Math.ceil(words.length * 0.5)) {
+      return clean(line).substring(0, 80);
+    }
+  }
+
+  return "";
+}
