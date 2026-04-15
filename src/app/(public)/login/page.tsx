@@ -57,7 +57,22 @@ function LoginContent() {
       if (anonId1) localStorage.removeItem("nnn_anon_id");
       router.push(redirectUrl);
     } catch (err) {
-      setError(mapAuthError(err));
+      // Email/password login failed. The most common cause for our users
+      // right now is that they originally signed up with Google (no password
+      // set on the Firebase Auth record), so "Invalid email or password" is
+      // confusing. Nudge them toward the Google button.
+      const code = (err as any)?.code || "";
+      if (
+        code === "auth/invalid-credential" ||
+        code === "auth/wrong-password" ||
+        code === "auth/user-not-found"
+      ) {
+        setError(
+          "We could not sign you in with that email and password. If you signed up with Google, use the Continue with Google button below. If you are new, click Sign up.",
+        );
+      } else {
+        setError(mapAuthError(err));
+      }
       setLoading(false);
     }
   };
