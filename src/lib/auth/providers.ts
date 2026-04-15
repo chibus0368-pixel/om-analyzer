@@ -148,7 +148,7 @@ export async function loginWithGoogle(): Promise<UserCredential> {
 
 /**
  * Legacy Firebase popup/redirect flow.
- * Shows hacktheprompt-8051e.firebaseapp.com on the consent screen.
+ * Shows deal-signals.firebaseapp.com on the consent screen.
  */
 async function loginWithGoogleLegacy(): Promise<UserCredential> {
   try {

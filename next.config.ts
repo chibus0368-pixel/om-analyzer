@@ -243,7 +243,7 @@ const nextConfig: NextConfig = {
       beforeFiles: [
         {
           source: "/__/auth/:path*",
-          destination: "https://hacktheprompt-8051e.firebaseapp.com/__/auth/:path*",
+          destination: "https://deal-signals.firebaseapp.com/__/auth/:path*",
         },
         // Serve om-analyzer page at root
         {
