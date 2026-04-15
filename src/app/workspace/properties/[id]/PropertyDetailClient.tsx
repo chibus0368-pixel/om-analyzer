@@ -2017,21 +2017,10 @@ function PropertyDetailInner({
         )}
       </div>
 
-      {/* Model Lens Banner — primary "which model is scoring this?" cue */}
-      {user && (
-        <ModelLensBanner
-          currentType={wsType}
-          propertyId={propertyId}
-          userId={user.uid}
-          onChanged={async (newType: string) => {
-            setProperty((prev: Property | null) => prev ? ({ ...prev, analysisType: newType } as any) : prev);
-            try {
-              const fresh = await getProperty(propertyId);
-              if (fresh) setProperty(fresh);
-            } catch { /* non-blocking */ }
-          }}
-        />
-      )}
+      {/* Model Lens Banner removed — the asset-type is already conveyed
+          by the pill overlay on the hero image and the score card, so the
+          full-width "Scored with … Model (auto-detected)" row was
+          redundant and taking up prime real estate. */}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  MOBILE SCORE + KEY METRICS CARD (hidden on desktop)*/}
