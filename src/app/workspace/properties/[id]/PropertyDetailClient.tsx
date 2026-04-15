@@ -2943,22 +2943,6 @@ function PropertyDetailInner({
           background: "#FFFFFF", borderRadius: C.radius, overflow: "hidden",
           border: `1px solid rgba(0,0,0,0.06)`, marginBottom: 16,
         }}>
-          {/* AI-generated data disclaimer */}
-          <div style={{
-            display: "flex", alignItems: "center", gap: 8,
-            padding: "10px 24px", background: "rgba(67, 56, 202, 0.06)",
-            borderBottom: `1px solid rgba(0,0,0,0.06)`,
-          }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4338CA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
-              <path d="M18 14l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3z" />
-              <path d="M5 17l.5 1.5L7 19l-1.5.5L5 21l-.5-1.5L3 19l1.5-.5L5 17z" />
-            </svg>
-            <span style={{ fontSize: 11.5, color: "#4338CA", fontWeight: 500, fontFamily: "'Inter', sans-serif", lineHeight: 1.4 }}>
-              Sourced from publicly available data including government records, census data, and news outlets.
-            </span>
-          </div>
-
           <div style={{ padding: "20px 24px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4338CA" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /><path d="M11 8v6M8 11h6" /></svg>
