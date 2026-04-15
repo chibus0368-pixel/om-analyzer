@@ -20,6 +20,7 @@ import { useWorkspace } from "@/lib/workspace/workspace-context";
 import Link from "next/link";
 
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
+import PropertyHeroImage from "@/components/workspace/PropertyHeroImage";
 
 /* ── Design tokens ─────────────────────────────────────── */
 const C = {
@@ -100,45 +101,23 @@ function SourceTag({ type }: { type: SourceType }) {
 }
 
 /* ── Property image card ─────────────────────────────── */
-function PropertyImage({ heroImageUrl, location, encodedAddress, propertyName }: {
-  heroImageUrl?: string; location: string; encodedAddress: string; propertyName: string;
+// Thin wrapper around the shared PropertyHeroImage component so the detail
+// page uses the same hero → Places → Street View → satellite → placeholder
+// cascade as the dashboard card. The shared component also persists Places
+// photos back to Firestore via `persistPropertyId`.
+function PropertyImage({ heroImageUrl, location, address, propertyName, propertyId }: {
+  heroImageUrl?: string; location: string; address: string; propertyName: string; propertyId?: string;
 }) {
-  const [imgError, setImgError] = useState(false);
-  const [streetViewError, setStreetViewError] = useState(false);
-  const [satelliteError, setSatelliteError] = useState(false);
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
-  const hasGoogleApi = !!apiKey && !!location;
-  const mapLink = `https://www.google.com/maps/search/${encodedAddress}`;
-
   return (
     <div style={{ width: "100%", height: "100%", minHeight: 200, overflow: "hidden", borderRadius: C.radius }}>
-      {heroImageUrl && !imgError ? (
-        <img src={heroImageUrl} alt={propertyName}
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", minHeight: 200 }}
-          onError={() => setImgError(true)} />
-      ) : hasGoogleApi && !streetViewError ? (
-        <a href={mapLink} target="_blank" rel="noopener noreferrer" style={{ display: "block", width: "100%", height: "100%" }}>
-          <img src={`https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${encodedAddress}&key=${apiKey}`}
-            alt={`Street view of ${propertyName}`}
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", minHeight: 200 }}
-            onError={() => setStreetViewError(true)} />
-        </a>
-      ) : hasGoogleApi && !satelliteError ? (
-        <a href={mapLink} target="_blank" rel="noopener noreferrer" style={{ display: "block", width: "100%", height: "100%" }}>
-          <img src={`https://maps.googleapis.com/maps/api/staticmap?center=${encodedAddress}&zoom=18&size=600x400&maptype=satellite&key=${apiKey}`}
-            alt={`Satellite view of ${propertyName}`}
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", minHeight: 200 }}
-            onError={() => setSatelliteError(true)} />
-        </a>
-      ) : (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", minHeight: 200, background: `linear-gradient(135deg, ${C.surfLow}, ${C.bg})` }}>
-          <a href={location ? mapLink : "#"} target="_blank" rel="noopener noreferrer" style={{ textAlign: "center", padding: 20, textDecoration: "none" }}>
-            <div style={{ fontSize: 36, marginBottom: 8 }}>📍</div>
-            <div style={{ color: C.secondary, fontSize: 12, fontWeight: 500, lineHeight: 1.4 }}>{location || "No address"}</div>
-            {location && <div style={{ color: C.gold, fontSize: 10, marginTop: 6 }}>View on Google Maps &rarr;</div>}
-          </a>
-        </div>
-      )}
+      <PropertyHeroImage
+        heroImageUrl={heroImageUrl}
+        address={address}
+        location={location}
+        propertyName={propertyName}
+        persistPropertyId={propertyId}
+        style={{ minHeight: 200 }}
+      />
     </div>
   );
 }
@@ -2064,8 +2043,9 @@ function PropertyDetailInner({
               <PropertyImage
                 heroImageUrl={(property as any).heroImageUrl}
                 location={location}
-                encodedAddress={encodedAddress}
+                address={location}
                 propertyName={property.propertyName}
+                propertyId={property.id}
               />
             </div>
             {/* Deal Score */}

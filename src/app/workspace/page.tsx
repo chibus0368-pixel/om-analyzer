@@ -9,6 +9,7 @@ import { db } from "@/lib/firebase";
 import type { Property, ProjectDocument, Workspace } from "@/lib/workspace/types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
+import PropertyHeroImage from "@/components/workspace/PropertyHeroImage";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -198,15 +199,15 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
         height: 160, background: "linear-gradient(135deg, #F3F4F6, #E5E7EB)",
         overflow: "hidden", position: "relative",
       }}>
-        {heroUrl ? (
-          <img src={heroUrl} alt={displayName}
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
-          />
-        ) : (
-          <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontSize: 48, opacity: 0.25 }}>📍</span>
-          </div>
-        )}
+        <PropertyHeroImage
+          heroImageUrl={heroUrl}
+          address={[property.address1, property.city, property.state].filter(Boolean).join(", ")}
+          location={location}
+          propertyName={displayName}
+          persistPropertyId={property.id}
+          style={{ objectPosition: "center" }}
+        />
+
 
         {/* Status badge - top-left */}
         <span style={{
