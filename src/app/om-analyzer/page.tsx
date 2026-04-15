@@ -5098,22 +5098,6 @@ async function downloadLiteXLSX(d: any) {
   opRow("Equity Required", offerPrices.map(p => fmt$(p * (1 - LTV) + p * CLOSING)));
   r += 2;
 
-  // Strategy notes block
-  ws7.getCell(r, 1).value = "STRATEGY NOTES"; ws7.getCell(r, 1).font = secFont; r++;
-  const stratNotes: Array<[string, string]> = [
-    ["Low", "Lowball test (~85% of ask). Probes seller motivation. Expect a sharp counter; be ready to move up or walk."],
-    ["Under Asking", "Realistic offer below ask (~95%). Signals serious interest and leaves room to settle at or near ask."],
-    ["Asking Price", "Full asking price (100%). Your typical ceiling. Use only when returns still pencil out at this number."],
-    ["Stretch", "Premium offer (~105%) above ask. Reserved for competitive bids, unique assets, or thesis-driven conviction where paying up is justified."],
-  ];
-  stratNotes.forEach(([label, text], i) => {
-    const zf = i % 2 === 0 ? white : ltBlue;
-    const lc = ws7.getCell(r, 1); lc.value = label; lc.font = { ...labelFont, color: { argb: "FF262C5C" }, bold: true }; lc.fill = zf; lc.border = borders; lc.alignment = { vertical: "middle" };
-    const nc = ws7.getCell(r, 2); nc.value = text; nc.font = valFont; nc.fill = zf; nc.border = borders; nc.alignment = { wrapText: true, vertical: "middle" };
-    ws7.mergeCells(r, 2, r, 6);
-    r++;
-  });
-
   // ── SHEET 8: Sensitivity (Price × Exit Cap IRR matrix) ──
   // Unlevered IRR at each purchase price / exit cap combination.
   // Parity with Pro XLS. Uses 10yr hold, 2% rent growth, 2% sell costs.

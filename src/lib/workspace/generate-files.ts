@@ -642,22 +642,6 @@ export async function generateUnderwritingXLSX(
   addOfferRow("Equity Required",       (pc) => `${pc}*(1-${aLTV})+${pc}*${aClosing}`, FMT_MONEY);
   or += 2;
 
-  // Strategy notes
-  or = sectionBand(wsO, or, "Strategy Notes", 6);
-  const notes: Array<[string, string]> = [
-    ["Low", "Lowball test (~85% of ask). Probes seller motivation. Expect a sharp counter; be ready to move up or walk."],
-    ["Under Asking", "Realistic offer below ask (~95%). Signals serious interest and leaves room to settle at or near ask."],
-    ["Asking Price", "Full asking price (100%). Your typical ceiling. Use only when returns still pencil out at this number."],
-    ["Stretch", "Premium offer (~105%) above ask. Reserved for competitive bids, unique assets, or thesis-driven conviction where paying up is justified."],
-  ];
-  notes.forEach(([label, text], i) => {
-    const zf = zebraFill(i);
-    const lc = wsO.getCell(or, 1); lc.value = label; lc.font = boldLabel; lc.fill = zf; lc.border = borders; lc.alignment = { vertical: "middle", indent: 1 };
-    const nc = wsO.getCell(or, 2); nc.value = text; nc.font = valFont; nc.fill = zf; nc.border = borders; nc.alignment = { vertical: "middle", wrapText: true, indent: 1 };
-    wsO.mergeCells(or, 2, or, 6);
-    or++;
-  });
-
   // ================================================================
   // SHEET: Rent Roll (tenant-level data)
   // ================================================================
