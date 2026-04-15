@@ -187,6 +187,7 @@ function _SidebarUserCard({ user, collapsed, userTier, usage, onUpgradeClick }: 
  * we bypass SSR streaming entirely for /workspace/*.
  */
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const { user, loading: authLoading } = useWorkspaceAuth();
   const pathname = usePathname();
@@ -200,6 +201,17 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
   if (isLoginPage) {
     return <>{children}</>;
   }
+
+  // Redirect signed-out users straight to /workspace/login. Previously this
+  // only happened inside WorkspaceLayoutInner, which is rendered after
+  // WorkspaceProvider mounts. If the provider or its children ever got
+  // stuck in a loading state, the user would be pinned on the "Loading
+  // workspace..." skeleton forever instead of bouncing to login.
+  useEffect(() => {
+    if (mounted && !authLoading && !user && !isLoginPage) {
+      router.replace("/workspace/login");
+    }
+  }, [mounted, authLoading, user, isLoginPage, router]);
 
   if (!mounted) {
     // Server render: show nothing to prevent hydration mismatch
