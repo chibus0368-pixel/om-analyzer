@@ -857,32 +857,23 @@ function PropertyDetail({
             <div style={sectionTitle}>Source Documents</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {prop.documents.map(doc => (
-                <button key={doc.id}
-                  onClick={async () => {
+                // Render as a native anchor so the browser handles the
+                // download directly off the user's click gesture. The
+                // previous implementation ran an async HEAD check before
+                // calling window.open, which caused popup blockers to
+                // swallow the new tab (the click was no longer considered
+                // the originating gesture by the time open() ran). The
+                // /api/share/[id]/download endpoint streams the file bytes
+                // with Content-Disposition: attachment, so a plain link
+                // with download attribute triggers the save dialog with
+                // zero JS.
+                <a key={doc.id}
+                  href={doc.storagePath ? `/api/share/${shareId}/download?doc=${doc.id}` : undefined}
+                  download={doc.originalFilename || true}
+                  onClick={(e) => {
                     if (!doc.storagePath) {
+                      e.preventDefault();
                       alert("No storage path recorded for this document.");
-                      return;
-                    }
-                    // The endpoint now streams the file bytes directly (with
-                    // Content-Disposition: attachment), so we navigate to it
-                    // in a new tab and the browser handles the save dialog.
-                    // On error the endpoint returns JSON; we HEAD-check first
-                    // so we can surface a friendly alert instead of dropping
-                    // the user on a raw JSON error page.
-                    const url = `/api/share/${shareId}/download?doc=${doc.id}`;
-                    try {
-                      const head = await fetch(url, { method: "HEAD" });
-                      if (!head.ok) {
-                        const res = await fetch(url);
-                        const data = await res.json().catch(() => ({}));
-                        console.error("[share/download] failed:", res.status, data);
-                        alert(data.error || `Download failed (HTTP ${res.status}).`);
-                        return;
-                      }
-                      window.open(url, "_blank");
-                    } catch (err) {
-                      console.error("[share/download] network error:", err);
-                      alert("Download failed. Network or server error.");
                     }
                   }}
                   style={{
@@ -890,7 +881,7 @@ function PropertyDetail({
                     background: "#f8fafc", borderRadius: 6, fontSize: 12, color: "#585e70",
                     border: "1px solid #e2e8f0", cursor: doc.storagePath ? "pointer" : "default",
                     fontFamily: "inherit", textAlign: "left", width: "100%",
-                    transition: "background 0.15s",
+                    transition: "background 0.15s", textDecoration: "none",
                   }}
                   onMouseEnter={e => { if (doc.storagePath) (e.currentTarget as HTMLElement).style.background = "#eef2f7"; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#f8fafc"; }}
@@ -915,7 +906,7 @@ function PropertyDetail({
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
                     </svg>
                   )}
-                </button>
+                </a>
               ))}
             </div>
           </div>
