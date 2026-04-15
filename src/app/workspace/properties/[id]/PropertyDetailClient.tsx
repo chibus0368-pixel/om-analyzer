@@ -1847,36 +1847,61 @@ function PropertyDetailInner({
           position: "absolute", bottom: 20, left: 24, right: 24, zIndex: 2,
           color: "#fff",
         }}>
-          <div
-            onClick={() => { /* preserve native click-to-edit via the component below */ }}
-            style={{ display: "flex", alignItems: "center", gap: 10, color: "#fff" }}
-          >
-            <h1
-              onClick={(e) => {
-                // Use the same edit pathway by delegating to a prompt — keeps
-                // hero rendering simple while still letting the user rename
-                // the deal. The EditablePropertyName lives on the hidden
-                // mobile header and still serves mobile click-to-edit.
-                e.stopPropagation();
-                const next = prompt("Rename deal", property.propertyName);
-                if (next && next.trim() && next.trim() !== property.propertyName) {
-                  updateProperty(propertyId, { propertyName: next.trim() } as any)
-                    .then(() => {
-                      setProperty((prev: Property | null) => prev ? { ...prev, propertyName: next.trim() } : prev);
-                      if (typeof window !== "undefined") window.dispatchEvent(new Event("workspace-properties-changed"));
-                    })
-                    .catch(() => {});
-                }
-              }}
-              style={{
-                fontSize: 28, fontWeight: 800, color: "#fff", margin: 0,
-                lineHeight: 1.15, letterSpacing: "-0.3px", textShadow: "0 2px 8px rgba(0,0,0,0.4)",
-                fontFamily: "'Inter', sans-serif", cursor: "pointer", maxWidth: "100%",
-              }}
-            >
-              {cleanDisplayName(property.propertyName, property.address1, property.city, property.state)}
-            </h1>
-          </div>
+          {(() => {
+            // Shared rename handler used by both the title click and the
+            // explicit pencil button. The pencil is what makes the
+            // rename affordance legible over the hero image — a hover-only
+            // affordance is invisible on mobile and the bare title alone
+            // gave no signal that it was editable.
+            const renameTitle = (e: any) => {
+              e?.stopPropagation?.();
+              const next = prompt("Rename deal", property.propertyName);
+              if (next && next.trim() && next.trim() !== property.propertyName) {
+                updateProperty(propertyId, { propertyName: next.trim() } as any)
+                  .then(() => {
+                    setProperty((prev: Property | null) => prev ? { ...prev, propertyName: next.trim() } : prev);
+                    if (typeof window !== "undefined") window.dispatchEvent(new Event("workspace-properties-changed"));
+                  })
+                  .catch(() => {});
+              }
+            };
+            return (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, color: "#fff" }}>
+                <h1
+                  onClick={renameTitle}
+                  style={{
+                    fontSize: 28, fontWeight: 800, color: "#fff", margin: 0,
+                    lineHeight: 1.15, letterSpacing: "-0.3px", textShadow: "0 2px 8px rgba(0,0,0,0.4)",
+                    fontFamily: "'Inter', sans-serif", cursor: "pointer", maxWidth: "100%",
+                  }}
+                >
+                  {cleanDisplayName(property.propertyName, property.address1, property.city, property.state)}
+                </h1>
+                <button
+                  onClick={renameTitle}
+                  title="Rename deal"
+                  aria-label="Rename deal"
+                  style={{
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+                    background: "rgba(255,255,255,0.18)",
+                    border: "1px solid rgba(255,255,255,0.35)",
+                    backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)",
+                    cursor: "pointer", color: "#fff",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.3)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.18)"; }}
+                >
+                  {/* Pencil icon */}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z" />
+                  </svg>
+                </button>
+              </div>
+            );
+          })()}
           {location && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.85 }}>
