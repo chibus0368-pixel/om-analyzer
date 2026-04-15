@@ -859,16 +859,25 @@ function PropertyDetail({
               {prop.documents.map(doc => (
                 <button key={doc.id}
                   onClick={async () => {
-                    if (!doc.storagePath) return;
+                    if (!doc.storagePath) {
+                      alert("No storage path recorded for this document.");
+                      return;
+                    }
                     try {
                       const res = await fetch(`/api/share/${shareId}/download?doc=${doc.id}`);
-                      const data = await res.json();
-                      if (data.url) {
+                      const data = await res.json().catch(() => ({}));
+                      if (res.ok && data.url) {
                         window.open(data.url, "_blank");
                       } else {
-                        alert(data.error || "Could not download file.");
+                        // Surface the server's actual error so we can diagnose
+                        // bucket/credential/missing-file issues from the client.
+                        console.error("[share/download] failed:", res.status, data);
+                        alert(data.error || `Download failed (HTTP ${res.status}).`);
                       }
-                    } catch { alert("Download failed."); }
+                    } catch (err) {
+                      console.error("[share/download] network error:", err);
+                      alert("Download failed. Network or server error.");
+                    }
                   }}
                   style={{
                     display: "flex", alignItems: "center", gap: 8, padding: "10px 14px",

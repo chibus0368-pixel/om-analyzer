@@ -82,16 +82,48 @@ export async function GET(
     }
 
     // 5. Generate signed URL (valid for 1 hour)
+    // Verify the file actually exists before signing so we return a clean 404
+    // instead of handing the caller a URL that Firebase will reject with an
+    // opaque XML error. This also surfaces bucket-mismatch issues early.
     const bucket = getAdminStorage().bucket();
     const file = bucket.file(storagePath);
 
-    const [signedUrl] = await file.getSignedUrl({
-      action: "read",
-      expires: Date.now() + 60 * 60 * 1000, // 1 hour
-      responseDisposition: `attachment; filename="${encodeURIComponent(docData.originalFilename || "document")}"`,
-    });
+    try {
+      const [exists] = await file.exists();
+      if (!exists) {
+        console.error("[share/download] File missing in storage:", {
+          bucket: bucket.name,
+          storagePath,
+          docId,
+        });
+        return NextResponse.json({
+          error: "File not found in storage. It may have been moved or deleted.",
+          debug: { bucket: bucket.name, storagePath },
+        }, { status: 404 });
+      }
+    } catch (existsErr: any) {
+      console.error("[share/download] exists() check failed:", existsErr);
+      return NextResponse.json({
+        error: `Storage access error: ${existsErr?.message || "unknown"}`,
+      }, { status: 500 });
+    }
 
-    return NextResponse.json({ url: signedUrl });
+    try {
+      const [signedUrl] = await file.getSignedUrl({
+        action: "read",
+        expires: Date.now() + 60 * 60 * 1000, // 1 hour
+        responseDisposition: `attachment; filename="${encodeURIComponent(docData.originalFilename || "document")}"`,
+      });
+      return NextResponse.json({ url: signedUrl });
+    } catch (signErr: any) {
+      // getSignedUrl requires a service-account-backed identity. If the admin
+      // SDK was initialized without FIREBASE_SERVICE_ACCOUNT_KEY, this is
+      // where it blows up - the error text usually mentions "iam.serviceAccounts.signBlob".
+      console.error("[share/download] getSignedUrl failed:", signErr);
+      return NextResponse.json({
+        error: `Could not sign download URL: ${signErr?.message || "unknown"}`,
+      }, { status: 500 });
+    }
   } catch (err: any) {
     console.error("[share/download] Error:", err);
     return NextResponse.json({ error: err?.message || "Download failed" }, { status: 500 });
