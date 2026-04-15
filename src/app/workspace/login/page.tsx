@@ -238,7 +238,19 @@ function WorkspaceLoginPageInner() {
       }
     } catch (err: any) {
       if (err?.code !== "auth/popup-closed-by-user") {
-        setError(friendlyError(err?.code, err?.message || "Google sign-in failed"));
+        // auth/invalid-credential coming from the Google flow almost
+        // always means the configured Google OAuth client ID does not
+        // belong to this Firebase project (e.g. after a project
+        // migration, the NEXT_PUBLIC_GOOGLE_CLIENT_ID on Vercel still
+        // points at the old project). Tell the user rather than
+        // recycling the generic "wrong password" copy.
+        if (err?.code === "auth/invalid-credential") {
+          setError(
+            "Google sign-in is misconfigured on this environment. The OAuth client ID does not match this Firebase project. An admin needs to update NEXT_PUBLIC_GOOGLE_CLIENT_ID on Vercel (or remove it so Firebase uses its default).",
+          );
+        } else {
+          setError(friendlyError(err?.code, err?.message || "Google sign-in failed"));
+        }
       }
     } finally {
       setGoogleLoading(false);
