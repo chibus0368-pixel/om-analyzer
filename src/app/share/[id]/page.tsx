@@ -863,17 +863,23 @@ function PropertyDetail({
                       alert("No storage path recorded for this document.");
                       return;
                     }
+                    // The endpoint now streams the file bytes directly (with
+                    // Content-Disposition: attachment), so we navigate to it
+                    // in a new tab and the browser handles the save dialog.
+                    // On error the endpoint returns JSON; we HEAD-check first
+                    // so we can surface a friendly alert instead of dropping
+                    // the user on a raw JSON error page.
+                    const url = `/api/share/${shareId}/download?doc=${doc.id}`;
                     try {
-                      const res = await fetch(`/api/share/${shareId}/download?doc=${doc.id}`);
-                      const data = await res.json().catch(() => ({}));
-                      if (res.ok && data.url) {
-                        window.open(data.url, "_blank");
-                      } else {
-                        // Surface the server's actual error so we can diagnose
-                        // bucket/credential/missing-file issues from the client.
+                      const head = await fetch(url, { method: "HEAD" });
+                      if (!head.ok) {
+                        const res = await fetch(url);
+                        const data = await res.json().catch(() => ({}));
                         console.error("[share/download] failed:", res.status, data);
                         alert(data.error || `Download failed (HTTP ${res.status}).`);
+                        return;
                       }
+                      window.open(url, "_blank");
                     } catch (err) {
                       console.error("[share/download] network error:", err);
                       alert("Download failed. Network or server error.");

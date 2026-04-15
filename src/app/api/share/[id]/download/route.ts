@@ -81,10 +81,16 @@ export async function GET(
       }
     }
 
-    // 5. Generate signed URL (valid for 1 hour)
-    // Verify the file actually exists before signing so we return a clean 404
-    // instead of handing the caller a URL that Firebase will reject with an
-    // opaque XML error. This also surfaces bucket-mismatch issues early.
+    // 5. Stream the file bytes directly through this route.
+    //
+    // We previously handed the caller a `getSignedUrl()` URL and let the
+    // browser download from GCS directly, but that requires the runtime
+    // service account to have `iam.serviceAccounts.signBlob` on itself.
+    // On Vercel that role is easy to miss, and the failure mode is either a
+    // signing error at request time or an opaque XML 403 when the browser
+    // opens the URL. Streaming avoids signing entirely: the server reads the
+    // bytes with its admin credentials (which clearly work, since the same
+    // credentials serve Firestore), then relays them.
     const bucket = getAdminStorage().bucket();
     const file = bucket.file(storagePath);
 
@@ -109,19 +115,55 @@ export async function GET(
     }
 
     try {
-      const [signedUrl] = await file.getSignedUrl({
-        action: "read",
-        expires: Date.now() + 60 * 60 * 1000, // 1 hour
-        responseDisposition: `attachment; filename="${encodeURIComponent(docData.originalFilename || "document")}"`,
+      // Pull metadata so we can set Content-Type and Content-Length precisely.
+      // Falls back to the Firestore-recorded mime type / size if the object
+      // metadata doesn't expose them (older uploads).
+      const [meta] = await file.getMetadata();
+      const contentType =
+        (meta?.contentType as string | undefined) ||
+        docData.mimeType ||
+        "application/octet-stream";
+      const contentLength =
+        meta?.size != null ? String(meta.size) :
+        docData.fileSizeBytes ? String(docData.fileSizeBytes) :
+        undefined;
+
+      const rawName = (docData.originalFilename || "document") as string;
+      const safeName = rawName.replace(/["\\]/g, "_");
+
+      // Bridge the GCS Node stream into a Web ReadableStream so we can hand it
+      // to a standard Response. We deliberately avoid file.download() here
+      // because that buffers the full object in memory on the serverless
+      // function, which would OOM on larger OMs.
+      const nodeStream = file.createReadStream();
+      const webStream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          nodeStream.on("data", (chunk: Buffer) => controller.enqueue(new Uint8Array(chunk)));
+          nodeStream.on("end", () => controller.close());
+          nodeStream.on("error", (err) => {
+            console.error("[share/download] stream error:", err);
+            controller.error(err);
+          });
+        },
+        cancel() {
+          nodeStream.destroy();
+        },
       });
-      return NextResponse.json({ url: signedUrl });
-    } catch (signErr: any) {
-      // getSignedUrl requires a service-account-backed identity. If the admin
-      // SDK was initialized without FIREBASE_SERVICE_ACCOUNT_KEY, this is
-      // where it blows up - the error text usually mentions "iam.serviceAccounts.signBlob".
-      console.error("[share/download] getSignedUrl failed:", signErr);
+
+      const headers: Record<string, string> = {
+        "Content-Type": contentType,
+        // Use RFC 5987 filename* so non-ASCII names survive; keep a plain
+        // filename for older clients that don't understand the extension.
+        "Content-Disposition": `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(rawName)}`,
+        "Cache-Control": "private, max-age=0, no-store",
+      };
+      if (contentLength) headers["Content-Length"] = contentLength;
+
+      return new Response(webStream, { status: 200, headers });
+    } catch (streamErr: any) {
+      console.error("[share/download] streaming failed:", streamErr);
       return NextResponse.json({
-        error: `Could not sign download URL: ${signErr?.message || "unknown"}`,
+        error: `Could not read file: ${streamErr?.message || "unknown"}`,
       }, { status: 500 });
     }
   } catch (err: any) {
@@ -129,3 +171,9 @@ export async function GET(
     return NextResponse.json({ error: err?.message || "Download failed" }, { status: 500 });
   }
 }
+
+// Ensure this route runs on the Node.js runtime (not Edge). The admin SDK
+// depends on Node crypto / streams that aren't available on Edge.
+export const runtime = "nodejs";
+// OMs can run tens of MB; give the function headroom past the 10s default.
+export const maxDuration = 60;
