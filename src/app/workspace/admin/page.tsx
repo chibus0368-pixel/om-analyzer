@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, type ReactNode } from "react";
 import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
 import Link from "next/link";
 import { getAuthInstance } from "@/lib/firebase";
@@ -21,7 +21,14 @@ interface UserRecord {
     tier: string;
     status: string;
     stripeCustomerId: string | null;
+    stripeSubscriptionId?: string | null;
+    stripePriceId?: string | null;
+    currentPeriodStart?: string | null;
     currentPeriodEnd: string | null;
+    uploadsUsed?: number;
+    uploadLimit?: number;
+    cancelAtPeriodEnd?: boolean;
+    updatedAt?: string | null;
   };
 }
 
@@ -70,6 +77,22 @@ export default function AdminPage() {
   const [leadsLoading, setLeadsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<{ uid: string; action: string; email: string } | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const copyToClipboard = (value: string, field: string) => {
+    navigator.clipboard.writeText(value);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 1200);
+  };
+
+  const formatDateTime = (dateStr: string | null | undefined): string => {
+    if (!dateStr) return "--";
+    return new Date(dateStr).toLocaleString("en-US", {
+      month: "short", day: "numeric", year: "numeric",
+      hour: "numeric", minute: "2-digit",
+    });
+  };
 
   const fetchUsers = useCallback(async () => {
     if (!user) return;
@@ -220,6 +243,172 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* User Detail Drawer */}
+      {selectedUser && (
+        <div
+          onClick={() => setSelectedUser(null)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 9998,
+            background: "rgba(17,24,39,0.35)", display: "flex", justifyContent: "flex-end",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: 480, maxWidth: "100%", height: "100%", background: "#fff",
+              boxShadow: "-8px 0 32px rgba(0,0,0,0.12)", overflowY: "auto",
+              display: "flex", flexDirection: "column",
+            }}
+          >
+            {/* Drawer header */}
+            <div style={{
+              padding: "20px 24px", borderBottom: "1px solid #F0F2F5",
+              display: "flex", alignItems: "center", gap: 14, background: "#FAFAFA",
+            }}>
+              <div style={{
+                width: 48, height: 48, borderRadius: "50%", background: "#F3F4F6",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 18, fontWeight: 700, color: "#6B7280", overflow: "hidden", flexShrink: 0,
+              }}>
+                {selectedUser.photoURL ? (
+                  <img src={selectedUser.photoURL} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  selectedUser.email.charAt(0).toUpperCase()
+                )}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: "#111827" }}>
+                  {selectedUser.displayName || selectedUser.email.split("@")[0]}
+                </div>
+                <div style={{ fontSize: 12, color: "#6B7280" }}>{selectedUser.email}</div>
+              </div>
+              <button
+                onClick={() => setSelectedUser(null)}
+                style={{
+                  background: "transparent", border: "none", cursor: "pointer",
+                  fontSize: 20, color: "#9CA3AF", padding: 4, lineHeight: 1,
+                }}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Drawer body */}
+            <div style={{ padding: "20px 24px", flex: 1 }}>
+              {(() => {
+                const s = selectedUser.subscription;
+                const tierStyle = TIER_COLORS[s.tier] || TIER_COLORS.free;
+                const tierLabel = TIER_LABELS[s.tier] || s.tier;
+
+                const Row = ({ label, value, mono, copyValue }: {
+                  label: string; value: ReactNode; mono?: boolean; copyValue?: string;
+                }) => (
+                  <div style={{
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                    padding: "10px 0", borderBottom: "1px solid #F3F4F6", gap: 16,
+                  }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.5, flexShrink: 0 }}>
+                      {label}
+                    </div>
+                    <div style={{
+                      fontSize: 12, color: "#111827", fontWeight: 600,
+                      fontFamily: mono ? "monospace" : "inherit",
+                      textAlign: "right", wordBreak: "break-all", display: "flex", alignItems: "center", gap: 8,
+                    }}>
+                      <span>{value}</span>
+                      {copyValue && (
+                        <button
+                          onClick={() => copyToClipboard(copyValue, label)}
+                          style={{
+                            fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4,
+                            border: "1px solid #E5E7EB", background: "#fff", color: "#6B7280",
+                            cursor: "pointer", fontFamily: "inherit", flexShrink: 0,
+                          }}
+                        >
+                          {copiedField === label ? "Copied" : "Copy"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+
+                const SectionHeader = ({ title }: { title: string }) => (
+                  <div style={{
+                    fontSize: 10, fontWeight: 800, color: "#6B7280", textTransform: "uppercase", letterSpacing: 1,
+                    marginTop: 20, marginBottom: 4, paddingBottom: 6, borderBottom: "2px solid #111827",
+                  }}>
+                    {title}
+                  </div>
+                );
+
+                return (
+                  <>
+                    <SectionHeader title="Identity" />
+                    <Row label="UID" value={selectedUser.uid} mono copyValue={selectedUser.uid} />
+                    <Row label="Email" value={selectedUser.email} copyValue={selectedUser.email} />
+                    <Row label="Name" value={selectedUser.displayName || "--"} />
+                    <Row label="Provider" value={selectedUser.provider} />
+                    <Row label="Status" value={
+                      <span style={{
+                        padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 700,
+                        background: selectedUser.disabled ? "#FEF2F2" : "#ECFDF5",
+                        color: selectedUser.disabled ? "#DC2626" : "#059669",
+                      }}>
+                        {selectedUser.disabled ? "Disabled" : "Active"}
+                      </span>
+                    } />
+
+                    <SectionHeader title="Activity" />
+                    <Row label="Signed Up" value={formatDateTime(selectedUser.createdAt)} />
+                    <Row label="Last Active" value={`${timeAgo(selectedUser.lastSignIn)} (${formatDateTime(selectedUser.lastSignIn)})`} />
+                    <Row label="DealBoards" value={String(selectedUser.dealboards)} />
+                    <Row label="Deals" value={String(selectedUser.deals)} />
+                    <Row label="Uploads Used" value={
+                      `${s.uploadsUsed ?? 0} / ${s.uploadLimit ?? 0}`
+                    } />
+
+                    <SectionHeader title="Billing" />
+                    <Row label="Plan" value={
+                      <span style={{
+                        padding: "2px 10px", borderRadius: 4, fontSize: 11, fontWeight: 700,
+                        background: tierStyle.bg, color: tierStyle.color,
+                      }}>
+                        {tierLabel}
+                      </span>
+                    } />
+                    <Row label="Sub Status" value={s.status || "active"} />
+                    <Row label="Cancel at End" value={s.cancelAtPeriodEnd ? "Yes" : "No"} />
+                    <Row label="Customer ID" value={s.stripeCustomerId || "--"} mono copyValue={s.stripeCustomerId || undefined} />
+                    <Row label="Subscription ID" value={s.stripeSubscriptionId || "--"} mono copyValue={s.stripeSubscriptionId || undefined} />
+                    <Row label="Price ID" value={s.stripePriceId || "--"} mono copyValue={s.stripePriceId || undefined} />
+                    <Row label="Period Start" value={formatDateTime(s.currentPeriodStart)} />
+                    <Row label="Period End" value={formatDateTime(s.currentPeriodEnd)} />
+                    <Row label="Billing Updated" value={formatDateTime(s.updatedAt)} />
+
+                    {s.stripeCustomerId && (
+                      <div style={{ marginTop: 20 }}>
+                        <a
+                          href={`https://dashboard.stripe.com/customers/${s.stripeCustomerId}`}
+                          target="_blank" rel="noopener noreferrer"
+                          style={{
+                            display: "inline-block", padding: "8px 14px", borderRadius: 6,
+                            background: "#635BFF", color: "#fff", fontSize: 12, fontWeight: 700,
+                            textDecoration: "none",
+                          }}
+                        >
+                          Open in Stripe →
+                        </a>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 28, fontWeight: 700, margin: "0 0 4px", color: "#111827", letterSpacing: -0.5 }}>
@@ -335,11 +524,15 @@ export default function AdminPage() {
                     const tierLabel = TIER_LABELS[u.subscription.tier] || u.subscription.tier;
                     const isMe = u.email === "chibus0368@gmail.com";
                     return (
-                      <tr key={u.uid} style={{
+                      <tr key={u.uid} onClick={() => setSelectedUser(u)} style={{
                         borderBottom: "1px solid #F0F2F5",
                         background: u.disabled ? "#FAFAFA" : "#fff",
                         opacity: u.disabled ? 0.6 : 1,
-                      }}>
+                        cursor: "pointer",
+                      }}
+                      onMouseEnter={(e) => { if (!u.disabled) e.currentTarget.style.background = "#F9FAFB"; }}
+                      onMouseLeave={(e) => { if (!u.disabled) e.currentTarget.style.background = "#fff"; }}
+                      >
                         {/* User */}
                         <td style={{ padding: "12px 16px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -413,7 +606,7 @@ export default function AdminPage() {
                         </td>
 
                         {/* Actions */}
-                        <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                        <td style={{ padding: "12px 16px", textAlign: "center" }} onClick={(e) => e.stopPropagation()}>
                           {isMe ? (
                             <span style={{ fontSize: 11, color: "#9CA3AF" }}>-</span>
                           ) : (

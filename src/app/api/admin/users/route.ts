@@ -67,9 +67,13 @@ export async function GET(req: NextRequest) {
         status: d.tierStatus || "active",
         stripeCustomerId: d.stripeCustomerId || null,
         stripeSubscriptionId: d.stripeSubscriptionId || null,
+        stripePriceId: d.stripePriceId || null,
+        currentPeriodStart: d.currentPeriodStart || null,
         currentPeriodEnd: d.currentPeriodEnd || null,
         uploadsUsed: d.uploadsUsed || 0,
         uploadLimit: d.uploadLimit || 0,
+        cancelAtPeriodEnd: d.cancelAtPeriodEnd || false,
+        updatedAt: d.updatedAt?.toDate?.()?.toISOString?.() || d.updatedAt || null,
       });
     });
 
