@@ -188,39 +188,55 @@ function generateAdminNotificationEmail(
   message: string,
   messageId: string
 ): string {
-  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/admin/messages/${messageId}`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://dealsignals.app';
+  const dashboardUrl = `${appUrl}/admin/messages/${messageId}`;
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>New Contact Form Submission</title>
+  <title>New Inbound - Deal Signals</title>
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto;">
+<body style="margin: 0; padding: 20px 0; background-color: #F5F5F5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF;">
     <tr>
-      <td style="padding: 40px 20px; background-color: #f5f5f5;">
-        <h2 style="margin: 0 0 20px 0; color: #06080F;">New Contact Form Submission</h2>
+      <td style="padding: 32px 28px 0;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+          <tr>
+            <td style="text-align: center; padding-bottom: 18px; border-bottom: 3px solid #06080F;">
+              <img src="${appUrl}/logo.png" alt="Deal Signals" width="200" style="max-width: 200px; height: auto; display: inline-block;" />
+              <p style="margin: 8px 0 0 0; color: #C49A3C; font-size: 11px; font-weight: bold; letter-spacing: 1.5px;">ADMIN NOTIFICATION</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0 28px 32px;">
+        <p style="margin: 0 0 4px 0; color: #DC3545; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.2px;">New inbound</p>
+        <h2 style="margin: 0 0 20px 0; color: #06080F; font-size: 20px;">Contact form submission</h2>
 
-        <div style="background-color: white; padding: 20px; border-left: 4px solid #DC3545;">
-          <p style="margin: 0 0 15px 0;"><strong>From:</strong> ${name}</p>
-          <p style="margin: 0 0 15px 0;"><strong>Email:</strong> ${email}</p>
-          <p style="margin: 0 0 15px 0;"><strong>Submission ID:</strong> ${messageId}</p>
+        <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #E5E5E5; border-radius: 6px; border-left: 4px solid #DC3545;">
+          <tr>
+            <td style="padding: 18px 20px;">
+              <p style="margin: 0 0 10px 0; font-size: 13px;"><strong style="color: #666;">From:</strong> <span style="color: #06080F;">${name}</span></p>
+              <p style="margin: 0 0 10px 0; font-size: 13px;"><strong style="color: #666;">Email:</strong> <a href="mailto:${email}" style="color: #DC3545; text-decoration: none;">${email}</a></p>
+              <p style="margin: 0 0 14px 0; font-size: 13px;"><strong style="color: #666;">Submission ID:</strong> <span style="color: #06080F; font-family: 'SF Mono', Menlo, monospace; font-size: 12px;">${messageId}</span></p>
 
-          <div style="margin: 20px 0; padding: 15px; background-color: #f9f9f9; border-radius: 4px;">
-            <h3 style="margin: 0 0 10px 0; color: #06080F;">Message:</h3>
-            <p style="margin: 0; white-space: pre-wrap; word-wrap: break-word;">
-              ${message}
-            </p>
-          </div>
+              <div style="margin: 16px 0 0 0; padding: 16px; background-color: #F5F5F5; border-radius: 4px;">
+                <p style="margin: 0 0 8px 0; color: #C49A3C; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.2px;">Message</p>
+                <p style="margin: 0; white-space: pre-wrap; word-wrap: break-word; font-size: 14px; color: #333; line-height: 1.65;">${message}</p>
+              </div>
 
-          <p style="margin: 20px 0 0 0;">
-            <a href="${dashboardUrl}" style="background-color: #DC3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">
-              View in Dashboard
-            </a>
-          </p>
-        </div>
+              <p style="margin: 22px 0 0 0;">
+                <a href="${dashboardUrl}" style="background-color: #DC3545; color: #FFFFFF; padding: 11px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold; font-size: 13px;">Open in Dashboard</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+
+        <p style="margin: 20px 0 0 0; color: #999; font-size: 11px;">Reply to this email to respond directly to ${name}.</p>
       </td>
     </tr>
   </table>
@@ -232,44 +248,62 @@ function generateAdminNotificationEmail(
  * Generate user confirmation email
  */
 function generateUserConfirmationEmail(name: string): string {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://dealsignals.app';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Message Received</title>
+  <title>Message Received - Deal Signals</title>
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto;">
+<body style="margin: 0; padding: 20px 0; background-color: #F5F5F5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF;">
     <tr>
-      <td style="padding: 40px 20px; background-color: #f5f5f5;">
-        <div style="background-color: white; padding: 40px;">
-          <h1 style="margin: 0 0 20px 0; color: #06080F; text-align: center;">Thank You!</h1>
+      <td style="padding: 40px 28px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+          <tr>
+            <td style="text-align: center; padding-bottom: 18px; border-bottom: 3px solid #06080F;">
+              <a href="${appUrl}" style="text-decoration: none;">
+                <img src="${appUrl}/logo.png" alt="Deal Signals" width="220" style="max-width: 220px; height: auto; display: inline-block;" />
+              </a>
+              <p style="margin: 8px 0 0 0; color: #C49A3C; font-size: 12px; font-weight: bold; letter-spacing: 1px;">MARKET INTELLIGENCE</p>
+            </td>
+          </tr>
+        </table>
 
-          <p style="margin: 0 0 15px 0; font-size: 16px;">
-            Hi ${name},
-          </p>
+        <p style="margin: 24px 0 6px 0; color: #C49A3C; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; text-align: center;">Message received</p>
+        <h2 style="margin: 0 0 20px 0; color: #06080F; text-align: center; font-size: 24px; letter-spacing: -0.01em;">Thanks, ${name}. We've got it.</h2>
 
-          <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.6;">
-            We've received your message and appreciate you reaching out to us.
-            Our team will review your message and get back to you as soon as possible,
-            typically within 24 hours.
-          </p>
+        <p style="margin: 0 0 15px 0; font-size: 14px; line-height: 1.7; color: #333;">
+          Your message is in front of the Deal Signals team. We read every inbound and we'll get back to you inside one business day, usually much faster.
+        </p>
 
-          <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.6;">
-            If you need immediate assistance, please don't hesitate to reach out
-            on our social media channels or call our support line.
-          </p>
+        <p style="margin: 0 0 15px 0; font-size: 14px; line-height: 1.7; color: #333;">
+          If you're in the middle of a deal and need a quick screen while you wait, you can upload an OM right now and the platform will hand you a Deal Score in about 3 minutes.
+        </p>
 
-          <p style="margin: 30px 0 0 0; font-size: 14px; color: #666;">
-            Best regards,<br/>
-            The Deal Signals Team
-          </p>
-        </div>
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin: 28px 0;">
+          <tr>
+            <td style="text-align: center;">
+              <a href="${appUrl}/workspace" style="background-color: #DC3545; color: #FFFFFF; padding: 13px 32px; font-weight: bold; font-size: 14px; text-decoration: none; border-radius: 4px; display: inline-block;">
+                Open My Workspace
+              </a>
+            </td>
+          </tr>
+        </table>
 
-        <div style="text-align: center; padding-top: 20px; font-size: 12px; color: #999;">
-          <p style="margin: 0;">© ${new Date().getFullYear()} Deal Signals. All rights reserved.</p>
-        </div>
+        <p style="margin: 24px 0 0 0; font-size: 13px; color: #666; line-height: 1.6;">
+          The Deal Signals team
+        </p>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 36px; padding-top: 20px; border-top: 1px solid #E5E5E5;">
+          <tr>
+            <td style="font-size: 11px; color: #999; text-align: center; padding: 16px 0;">
+              <p style="margin: 4px 0;">&copy; ${new Date().getFullYear()} Deal Signals. All rights reserved.</p>
+              <p style="margin: 4px 0;">Mequon, Wisconsin &middot; <a href="${appUrl}" style="color: #999; text-decoration: none;">dealsignals.app</a></p>
+            </td>
+          </tr>
+        </table>
       </td>
     </tr>
   </table>

@@ -271,19 +271,29 @@ export default function UploadPage() {
       }
     }
 
-    // Extract hero image from first PDF (non-blocking)
+    // Extract hero image from first PDF (non-blocking).
+    // Size threshold matches om-analyzer (> 5000 bytes) and the extractor's
+    // own internal floor. Previously this was 10000 which silently dropped
+    // valid hero candidates that rendered as smaller JPEGs (design-heavy OMs
+    // with lots of negative space, or pages with an inset photo on white bg).
     const pdfFile = files.find(f => f.file.name.toLowerCase().endsWith(".pdf"));
     if (pdfFile) {
       try {
         setStatusMsg("Extracting property image...");
+        console.log("[upload] Extracting hero image from:", pdfFile.file.name, `(${(pdfFile.file.size / 1024).toFixed(0)}KB)`);
         const heroBlob = await extractHeroImageFromPDF(pdfFile.file);
-        if (heroBlob && heroBlob.size > 10000) {
+        if (heroBlob && heroBlob.size > 5000) {
+          console.log(`[upload] Hero blob produced: ${(heroBlob.size / 1024).toFixed(0)}KB - uploading to Storage...`);
           const imgRef = ref(storage, `workspace/${user.uid}/${propertyId}/hero.jpg`);
           await uploadBytesResumable(imgRef, heroBlob);
           const imgUrl = await getDownloadURL(imgRef);
           const { updateProperty } = await import("@/lib/workspace/firestore");
           await updateProperty(propertyId, { heroImageUrl: imgUrl } as any);
           console.log("[upload] Hero image saved:", imgUrl);
+        } else if (heroBlob) {
+          console.warn(`[upload] Hero blob too small to use: ${heroBlob.size} bytes (min 5000). Using map fallback.`);
+        } else {
+          console.warn("[upload] Hero extractor returned null - no page scored above threshold. Using map fallback.");
         }
       } catch (imgErr) {
         console.warn("[upload] Hero image extraction failed:", imgErr);

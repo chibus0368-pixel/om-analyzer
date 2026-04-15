@@ -126,41 +126,47 @@ export function registrationWelcomeTemplate(data: { name: string; email: string 
   const content = `
     ${emailHeader()}
 
-    <h2 style="margin: 30px 0 20px 0; color: ${COLORS.navy}; text-align: center;">
-      Welcome to Deal Signals, ${displayName}!
+    <p style="margin: 30px 0 6px 0; color: ${COLORS.gold}; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; text-align: center;">Welcome to the desk</p>
+    <h2 style="margin: 0 0 20px 0; color: ${COLORS.navy}; text-align: center; font-size: 24px; letter-spacing: -0.01em;">
+      Your workspace is live, ${displayName}.
     </h2>
 
-    <p style="margin: 0 0 15px 0; color: ${COLORS.textGray}; font-size: 14px; line-height: 1.6;">
-      Your account has been created and your workspace is ready. You're all set to start analyzing commercial real estate deals with AI-powered intelligence.
+    <p style="margin: 0 0 15px 0; color: ${COLORS.textGray}; font-size: 14px; line-height: 1.7;">
+      Deal Signals turns offering memorandums into institutional-grade first-pass screens in minutes. Drop in an OM and we'll score the deal, pull the financials, flag the risks, and hand you an underwriting workbook ready to share with your partners.
+    </p>
+
+    <p style="margin: 0 0 15px 0; color: ${COLORS.textGray}; font-size: 14px; line-height: 1.7;">
+      No more late nights rebuilding the same rent roll in Excel. Let's get your first deal on the board.
     </p>
 
     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 25px 0; background-color: ${COLORS.lightGray}; border-radius: 6px;">
       <tr>
-        <td style="padding: 20px 24px;">
-          <h3 style="margin: 0 0 15px 0; color: ${COLORS.navy}; font-size: 15px;">Here's what you can do:</h3>
+        <td style="padding: 22px 26px;">
+          <p style="margin: 0 0 4px 0; color: ${COLORS.red}; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.2px;">Get Started</p>
+          <h3 style="margin: 0 0 16px 0; color: ${COLORS.navy}; font-size: 16px;">Your first 4 moves</h3>
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
-              <td style="padding: 6px 0; font-size: 14px; color: ${COLORS.textGray};">
+              <td style="padding: 7px 0; font-size: 14px; color: ${COLORS.textGray}; line-height: 1.5;">
                 <span style="color: ${COLORS.red}; font-weight: bold; margin-right: 8px;">1.</span>
-                Upload an offering memorandum to get a Deal Signals score
+                Upload an OM, flyer, or rent roll to get a Deal Score and grade in under 3 minutes
               </td>
             </tr>
             <tr>
-              <td style="padding: 6px 0; font-size: 14px; color: ${COLORS.textGray};">
+              <td style="padding: 7px 0; font-size: 14px; color: ${COLORS.textGray}; line-height: 1.5;">
                 <span style="color: ${COLORS.red}; font-weight: bold; margin-right: 8px;">2.</span>
-                Review extracted financials, tenant info, and risk factors
+                Review extracted rent roll, T-12 expenses, tenant credit, and risk flags
               </td>
             </tr>
             <tr>
-              <td style="padding: 6px 0; font-size: 14px; color: ${COLORS.textGray};">
+              <td style="padding: 7px 0; font-size: 14px; color: ${COLORS.textGray}; line-height: 1.5;">
                 <span style="color: ${COLORS.red}; font-weight: bold; margin-right: 8px;">3.</span>
-                Compare deals side-by-side on the scoreboard
+                Stack deals side-by-side on the scoreboard and filter by market, cap rate, or lens
               </td>
             </tr>
             <tr>
-              <td style="padding: 6px 0; font-size: 14px; color: ${COLORS.textGray};">
+              <td style="padding: 7px 0; font-size: 14px; color: ${COLORS.textGray}; line-height: 1.5;">
                 <span style="color: ${COLORS.red}; font-weight: bold; margin-right: 8px;">4.</span>
-                Share your analysis with partners and investors
+                Share a white-label link or export the underwriting workbook for your IC
               </td>
             </tr>
           </table>
@@ -172,7 +178,7 @@ export function registrationWelcomeTemplate(data: { name: string; email: string 
       <tr>
         <td style="text-align: center;">
           <a href="${appUrl}/workspace" style="background-color: ${COLORS.red}; color: ${COLORS.white}; padding: 14px 36px; font-weight: bold; font-size: 14px; text-decoration: none; border-radius: 4px; display: inline-block;">
-            Go to Your Workspace
+            Analyze Your First Deal
           </a>
         </td>
       </tr>
@@ -180,16 +186,16 @@ export function registrationWelcomeTemplate(data: { name: string; email: string 
 
     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 25px 0; background-color: ${COLORS.navy}; border-radius: 6px;">
       <tr>
-        <td style="padding: 20px 24px; text-align: center;">
+        <td style="padding: 22px 26px; text-align: center;">
           <p style="margin: 0 0 6px 0; color: ${COLORS.gold}; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px;">Your Plan</p>
-          <p style="margin: 0 0 8px 0; color: ${COLORS.white}; font-size: 16px; font-weight: bold;">Free Tier - 2 Deal Analyses / Month</p>
-          <p style="margin: 0; color: rgba(255,255,255,0.7); font-size: 13px;">
-            Upgrade to Pro for 40 analyses, Excel exports, and full workspace features.
+          <p style="margin: 0 0 8px 0; color: ${COLORS.white}; font-size: 17px; font-weight: bold;">Free Tier &middot; 5 Deal Analyses / Month</p>
+          <p style="margin: 0 0 4px 0; color: rgba(255,255,255,0.75); font-size: 13px; line-height: 1.6;">
+            Running more than a handful of deals? Pro unlocks 100 analyses per month, Excel exports, portfolio scoreboards, and white-label sharing. 7-day free trial, cancel anytime.
           </p>
-          <table cellpadding="0" cellspacing="0" style="margin: 12px auto 0;">
+          <table cellpadding="0" cellspacing="0" style="margin: 14px auto 0;">
             <tr>
               <td>
-                <a href="${appUrl}/pricing" style="display: inline-block; padding: 8px 20px; background-color: ${COLORS.gold}; color: ${COLORS.navy}; font-size: 12px; font-weight: bold; text-decoration: none; border-radius: 4px;">View Plans</a>
+                <a href="${appUrl}/pricing" style="display: inline-block; padding: 9px 22px; background-color: ${COLORS.gold}; color: ${COLORS.navy}; font-size: 12px; font-weight: bold; text-decoration: none; border-radius: 4px; letter-spacing: 0.04em;">View Plans</a>
               </td>
             </tr>
           </table>
@@ -197,8 +203,11 @@ export function registrationWelcomeTemplate(data: { name: string; email: string 
       </tr>
     </table>
 
-    <p style="margin: 20px 0 0 0; color: ${COLORS.darkGray}; font-size: 12px;">
-      Questions? Just reply to this email - we're happy to help.
+    <p style="margin: 22px 0 0 0; color: ${COLORS.darkGray}; font-size: 12px; line-height: 1.6;">
+      Questions, feedback, or a deal you'd like us to look at? Just reply. This inbox goes straight to the team.
+    </p>
+    <p style="margin: 6px 0 0 0; color: ${COLORS.darkGray}; font-size: 12px;">
+      The Deal Signals team
     </p>
 
     <!-- Footer -->
@@ -230,12 +239,13 @@ export function purchaseConfirmationTemplate(data: { name: string; email: string
   const content = `
     ${emailHeader()}
 
-    <h2 style="margin: 30px 0 20px 0; color: ${COLORS.navy}; text-align: center;">
-      You're Upgraded to ${planDisplay}!
+    <p style="margin: 30px 0 6px 0; color: ${COLORS.gold}; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; text-align: center;">You're on ${planDisplay}</p>
+    <h2 style="margin: 0 0 20px 0; color: ${COLORS.navy}; text-align: center; font-size: 24px; letter-spacing: -0.01em;">
+      Welcome to the full desk, ${displayName}.
     </h2>
 
-    <p style="margin: 0 0 15px 0; color: ${COLORS.textGray}; font-size: 14px; line-height: 1.6;">
-      Thanks for starting your ${planDisplay} trial, ${displayName}! You have 7 days of full access - your card won't be charged until the trial ends.
+    <p style="margin: 0 0 15px 0; color: ${COLORS.textGray}; font-size: 14px; line-height: 1.7;">
+      Your ${planDisplay} trial is live. You have 7 days of full workspace access with no charge until the trial ends, and you can cancel anytime from your profile. More deals, faster screens, and the tools to get them in front of your partners.
     </p>
 
     <!-- Order Summary -->
@@ -275,7 +285,8 @@ export function purchaseConfirmationTemplate(data: { name: string; email: string
     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 25px 0; background-color: ${COLORS.lightGray}; border-radius: 6px;">
       <tr>
         <td style="padding: 20px 24px;">
-          <h3 style="margin: 0 0 15px 0; color: ${COLORS.navy}; font-size: 15px;">What's included in ${planDisplay}:</h3>
+          <p style="margin: 0 0 4px 0; color: ${COLORS.red}; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.2px;">Included in ${planDisplay}</p>
+          <h3 style="margin: 0 0 15px 0; color: ${COLORS.navy}; font-size: 16px;">Everything you need to run more deals</h3>
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Up to ${uploadLimit} deal analyses per month</td></tr>
             <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: #28a745; margin-right: 8px;">&#10003;</span> Full Deal Signals scoring with category breakdowns</td></tr>
@@ -303,11 +314,14 @@ export function purchaseConfirmationTemplate(data: { name: string; email: string
       </tr>
     </table>
 
-    <p style="margin: 20px 0 5px 0; color: ${COLORS.darkGray}; font-size: 12px;">
-      You can manage your subscription anytime from your <a href="${appUrl}/workspace/profile" style="color: ${COLORS.red};">account profile</a>.
+    <p style="margin: 20px 0 5px 0; color: ${COLORS.darkGray}; font-size: 12px; line-height: 1.6;">
+      Manage your subscription, change plans, or cancel anytime from your <a href="${appUrl}/workspace/profile" style="color: ${COLORS.red};">account profile</a>.
     </p>
-    <p style="margin: 0; color: ${COLORS.darkGray}; font-size: 12px;">
-      Questions? Just reply to this email - we're happy to help.
+    <p style="margin: 0; color: ${COLORS.darkGray}; font-size: 12px; line-height: 1.6;">
+      Questions about billing or the platform? Reply to this email and the team will get back to you.
+    </p>
+    <p style="margin: 10px 0 0 0; color: ${COLORS.darkGray}; font-size: 12px;">
+      The Deal Signals team
     </p>
 
     <!-- Footer -->
