@@ -1512,6 +1512,23 @@ function PropertyDetailInner({
   /* ═══════════════════════════════════════════════════════ */
   return (
     <div className="pd-inner" style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
+      {(property as any)?.dealStructure === "syndication" && (
+        <div style={{
+          background: "#FEF3C7",
+          border: "1px solid #FCD34D",
+          borderRadius: 8,
+          padding: "12px 16px",
+          margin: "12px 0",
+          color: "#78350F",
+          fontSize: 14,
+          lineHeight: 1.5,
+        }}>
+          <strong>Heads up:</strong> This looks like an LP/GP syndication offering
+          {(property as any)?.dealStructureReason ? ` (matched: ${(property as any).dealStructureReason})` : ""}.
+          DealSignals is built for direct-asset underwriting, so the standard CRE analysis
+          below may not fully apply. Full syndication (LP/GP) support is on our roadmap.
+        </div>
+      )}
       <style>{`
         .card-hover { transition: all 0.2s cubic-bezier(0.4,0,0.2,1); }
         .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(21,27,43,0.08); }

@@ -25,6 +25,8 @@ export async function POST(req: NextRequest) {
       userId,
       documentText,
       analysisType = "retail",
+      dealStructure = "unknown",
+      dealStructureReason = "",
     } = body;
     propertyId = body.propertyId;
 
@@ -39,6 +41,8 @@ export async function POST(req: NextRequest) {
     await db.collection("workspace_properties").doc(propertyId).set({
       processingStatus: "parsing",
       updatedAt: new Date().toISOString(),
+      dealStructure,
+      ...(dealStructureReason ? { dealStructureReason } : {}),
     }, { merge: true }).catch(() => {});
 
     let fieldsExtracted = 0;

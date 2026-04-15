@@ -195,18 +195,27 @@ export async function runExtensionUploadPipeline(args: RunPipelineArgs): Promise
 
     // ── 2. Classify ──
     let analysisType = fallbackAnalysisType;
+    let dealStructure: "direct_asset" | "syndication" | "unknown" = "unknown";
+    let dealStructureReason = "";
     try {
       const classifyResult = await classifyDocument(documentText);
       if (classifyResult.confidence >= 0.5 && classifyResult.detected_type) {
         analysisType = classifyResult.detected_type;
       }
+      dealStructure = classifyResult.deal_structure || "unknown";
+      dealStructureReason = classifyResult.deal_structure_reason || "";
       console.log(
-        `[ext-pipeline] classify → ${classifyResult.detected_type} (confidence ${classifyResult.confidence})`,
+        `[ext-pipeline] classify → ${classifyResult.detected_type} (confidence ${classifyResult.confidence}), structure=${dealStructure}${dealStructureReason ? ` (${dealStructureReason})` : ""}`,
       );
     } catch (err: any) {
       console.warn("[ext-pipeline] classify failed, using fallback type:", err?.message);
     }
-    await setStatus({ analysisType, processingStatus: "parsing" });
+    await setStatus({
+      analysisType,
+      processingStatus: "parsing",
+      dealStructure,
+      ...(dealStructureReason ? { dealStructureReason } : {}),
+    });
 
     // ── 3. Parse ──
     let parsedData: any = null;

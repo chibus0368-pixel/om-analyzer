@@ -325,6 +325,8 @@ export default function UploadPage() {
 
     // ── Classify property type (quick check before server handoff) ──
     let detectedType = activeWorkspace?.analysisType || "retail";
+    let detectedDealStructure: "direct_asset" | "syndication" | "unknown" = "unknown";
+    let detectedDealStructureReason = "";
     if (extractedText) {
       try {
         setStatusMsg("Detecting property type...");
@@ -336,6 +338,8 @@ export default function UploadPage() {
         if (classifyRes.ok) {
           const classifyData = await classifyRes.json();
           detectedType = classifyData.detected_type || "retail";
+          detectedDealStructure = classifyData.deal_structure || "unknown";
+          detectedDealStructureReason = classifyData.deal_structure_reason || "";
           const classificationConfidence = classifyData.confidence || 0;
 
           if (!skipMismatchRef.current && classificationConfidence >= 0.70 && detectedType !== (activeWorkspace?.analysisType || "retail")) {
@@ -369,6 +373,8 @@ export default function UploadPage() {
             userId: user.uid,
             documentText: extractedText,
             analysisType: detectedType,
+            dealStructure: detectedDealStructure,
+            dealStructureReason: detectedDealStructureReason,
           }),
         });
 
