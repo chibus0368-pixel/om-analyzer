@@ -1884,14 +1884,20 @@ function PropertyDetailInner({
                 <circle cx="12" cy="10" r="3" />
               </svg>
               <span style={{ fontSize: 14, color: "#fff", textShadow: "0 1px 4px rgba(0,0,0,0.5)", fontWeight: 500 }}>{location}</span>
-              <a href={`https://www.google.com/maps/search/${encodedAddress}`} target="_blank" rel="noopener noreferrer"
+              <a href={`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`} target="_blank" rel="noopener noreferrer"
+                title="Open in Google Maps"
                 style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
                   fontSize: 11, color: "#fff", textDecoration: "none",
                   padding: "3px 10px", background: "rgba(255,255,255,0.18)",
                   border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6,
                   fontWeight: 600, backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)",
                 }}>
-                Map &rarr;
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                Google Maps
               </a>
             </div>
           )}
@@ -2009,9 +2015,19 @@ function PropertyDetailInner({
         {location && (
           <div className="pd-prop-location" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <p style={{ fontSize: 14, color: C.secondary, margin: 0 }}>{location}</p>
-            <a href={`https://www.google.com/maps/search/${encodedAddress}`} target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 11, color: C.secondary, textDecoration: "none", padding: "3px 10px", background: C.surfLow, borderRadius: 6, fontWeight: 500, border: `1px solid ${C.ghostBorder}` }}>
-              Map &rarr;
+            <a href={`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`} target="_blank" rel="noopener noreferrer"
+              title="Open in Google Maps"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 5,
+                fontSize: 11, color: C.secondary, textDecoration: "none",
+                padding: "3px 10px", background: C.surfLow, borderRadius: 6,
+                fontWeight: 500, border: `1px solid ${C.ghostBorder}`,
+              }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              Google Maps
             </a>
           </div>
         )}
