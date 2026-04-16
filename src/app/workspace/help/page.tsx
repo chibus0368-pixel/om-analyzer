@@ -217,7 +217,7 @@ const HELP_TOPICS: HelpTopic[] = [
           </div>
           <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
             <span style={{ width: 24, height: 24, borderRadius: "50%", background: C.primary, color: "#fff", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>4</span>
-            <div><strong style={{ color: C.onSurface }}>Compare & Decide</strong> - Use the Scoreboard to rank deals, the Map to visualize locations, and the Compare tool to put deals side by side.</div>
+            <div><strong style={{ color: C.onSurface }}>Compare & Decide</strong> - Use the Deal Scorecard to rank deals, the Map to visualize locations, and the Compare tool to put deals side by side.</div>
           </div>
         </div>
 
@@ -365,12 +365,12 @@ const HELP_TOPICS: HelpTopic[] = [
   },
   {
     id: "scoreboard",
-    title: "Scoreboard",
+    title: "Deal Scorecard",
     icon: "M4 6h16M4 10h16M4 14h16M4 18h16",
     content: (
       <div>
         <p style={{ fontSize: 14, color: C.secondary, lineHeight: 1.7 }}>
-          The Scoreboard provides a detailed metrics breakdown for all properties in your DealBoard, organized into financial categories.
+          The Deal Scorecard provides a detailed metrics breakdown for all properties in your DealBoard, organized into financial categories.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Metrics Categories</h4>
@@ -386,7 +386,7 @@ const HELP_TOPICS: HelpTopic[] = [
           <strong style={{ color: C.onSurface }}>Signals:</strong> AI-generated Value-Add Potential assessment and Overall Recommendation
         </div>
 
-        <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Reading the Scoreboard</h4>
+        <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Reading the Scorecard</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
           Each metric is formatted automatically: dollar amounts show $ signs, percentages show %, and ratios display as decimals. Fields that couldn't be extracted appear as blank - this usually means the source document didn't contain that data point.
         </p>
@@ -534,7 +534,7 @@ const HELP_TOPICS: HelpTopic[] = [
         <div style={{ background: C.surfLow, borderRadius: C.radius, padding: 16, fontSize: 13, color: C.secondary, lineHeight: 1.7 }}>
           <strong style={{ color: C.onSurface }}>Property cards</strong> - Name, location, score ring, and analysis status for each deal.
           <br /><br />
-          <strong style={{ color: C.onSurface }}>Scoreboard</strong> - The full comparative table with scores, pricing, cap rates, NOI, and signal ratings.
+          <strong style={{ color: C.onSurface }}>Deal Scorecard</strong> - The full comparative table with scores, pricing, cap rates, NOI, and signal ratings.
           <br /><br />
           <strong style={{ color: C.onSurface }}>Deal detail</strong> - Financial metrics, AI-generated deal summary, strengths and risks, and the investment recommendation.
           <br /><br />
@@ -770,7 +770,7 @@ const HELP_TOPICS: HelpTopic[] = [
           { q: "Can I upload multiple files for one property?", a: "Yes. Upload the OM first, then go to the property detail page and add rent rolls, T-12s, leases, or any additional documents. The AI incorporates all documents into the analysis." },
           { q: "What's the difference between dealboards?", a: "Each dealboard can have a different asset type (Retail, Industrial, Office, Land), which determines the scoring model used. You can also use dealboards to separate different pipelines or clients." },
           { q: "Why is my score low even though the deal looks good?", a: "The score is based only on data the AI could extract. If your document is missing key information (e.g., no cap rate, no tenant details), the Data Confidence category will pull the score down. Try uploading additional documents with more complete financial data." },
-          { q: "Can I export my analysis?", a: "Yes. Each property generates a downloadable Proforma XLSX and Underwriting Brief. You can also use the Scoreboard for a quick metrics overview across all properties." },
+          { q: "Can I export my analysis?", a: "Yes. Each property generates a downloadable Proforma XLSX and Underwriting Brief. You can also use the Deal Scorecard for a quick metrics overview across all properties." },
           { q: "Is my data secure?", a: "All documents are stored in Firebase with per-user access controls. Your data is not shared with other users or used to train AI models." },
           { q: "What file types give the best results?", a: "PDFs and Excel files (.xlsx, .xls) produce the most accurate extractions. PDFs are best for OMs and flyers. Excel is best for rent rolls and financial statements. Avoid low-resolution scans or heavily redacted documents." },
           { q: "Can I change the underwriting assumptions?", a: "Yes. Go to Settings to modify default assumptions (LTV, interest rate, amortization, hold period, exit cap, vacancy, rent/expense growth). Changes apply to all new proformas generated in that DealBoard." },

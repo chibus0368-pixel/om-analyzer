@@ -507,12 +507,12 @@ async function exportToXlsx(propertyData: PropertyData[], workspaceName: string)
     const saveAs = fileSaverMod.saveAs || fileSaverMod.default?.saveAs;
     const wb = new ExcelJS.Workbook();
     wb.creator = "Deal Signals";
-    const ws = wb.addWorksheet("Deal Scoreboard", { views: [{ state: "frozen", xSplit: 1, ySplit: 2 }] });
+    const ws = wb.addWorksheet("Deal Scorecard", { views: [{ state: "frozen", xSplit: 1, ySplit: 2 }] });
     const propCount = propertyData.length;
 
     ws.mergeCells(1, 1, 1, 1 + propCount);
     const titleCell = ws.getCell(1, 1);
-    titleCell.value = `${workspaceName || "Deal"} Scoreboard`;
+    titleCell.value = `${workspaceName || "Deal"} Scorecard`;
     titleCell.font = { name: "Arial", size: 14, bold: true, color: { argb: XL.white } };
     titleCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: XL.navy } };
     titleCell.alignment = { horizontal: "left", vertical: "middle" };
@@ -1060,7 +1060,7 @@ export default function ScoreboardPage() {
       <div className="sb-heading-area" style={{ marginBottom: 32 }}>
         <div style={{ marginBottom: 4 }}>
           <h1 className="sb-title" style={{ fontSize: 30, fontWeight: 700, margin: 0, color: "#111827", letterSpacing: -0.5 }}>
-            Portfolio Scoreboard
+            Deal Scorecard
           </h1>
         </div>
         <div className="sb-header-controls" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

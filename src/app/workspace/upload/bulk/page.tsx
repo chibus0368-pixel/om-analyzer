@@ -490,7 +490,7 @@ export default function BulkUploadPage() {
               padding: "10px 24px", background: "transparent", color: "#5A7091", border: "1px solid #D8DFE9",
               borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
             }}>
-              View Scoreboard
+              View Scorecard
             </button>
           </div>
         </div>

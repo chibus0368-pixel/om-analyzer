@@ -3048,7 +3048,7 @@ export default function OmAnalyzerPage() {
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Scoreboard header */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 0.8 }}>Deal Scoreboard</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 0.8 }}>Deal Scorecard</span>
                         <span style={{ fontSize: 9, color: "#6b7280" }}>Sorted by Score ↓</span>
                       </div>
                       {/* Column headers */}
