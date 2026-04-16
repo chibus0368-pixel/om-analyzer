@@ -9,8 +9,18 @@ import {
 } from "firebase/auth";
 import { getAuthInstance } from "@/lib/firebase";
 
+interface CachedAuthHint {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+}
+
 interface WorkspaceAuthState {
   user: User | null;
+  /** Minimal cached user info from localStorage for rendering the shell
+   *  before Firebase Auth initializes. NOT a real Firebase User -- has no
+   *  getIdToken() etc. Only use for UI display (name, email, avatar). */
+  cachedHint: CachedAuthHint | null;
   isAdmin: boolean;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
@@ -26,15 +36,14 @@ interface WorkspaceAuthState {
 // on cold loads while Firebase reads IndexedDB + refreshes the token).
 const _AUTH_CACHE_KEY = "nnn-auth-user";
 
-function getCachedAuthUser(): User | null {
+function getCachedAuthHint(): CachedAuthHint | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(_AUTH_CACHE_KEY);
     if (!raw) return null;
-    // We store a minimal user-like object. It's not a real Firebase User
-    // but has enough fields for the layout to render the shell (uid, email,
-    // displayName). The real User replaces it once onAuthStateChanged fires.
-    return JSON.parse(raw) as User;
+    const parsed = JSON.parse(raw);
+    if (!parsed?.uid) return null;
+    return { uid: parsed.uid, email: parsed.email ?? null, displayName: parsed.displayName ?? null };
   } catch { return null; }
 }
 
@@ -56,16 +65,24 @@ function setCachedAuthUser(user: User | null) {
 }
 
 export function useWorkspaceAuth(): WorkspaceAuthState {
-  // Seed from auth.currentUser (warm client-side nav) OR from localStorage
-  // (cold load). Without this, loading stays true for several seconds while
-  // Firebase reads IndexedDB and refreshes the token, showing the
-  // "Loading workspace..." skeleton on every page load.
+  // Seed from auth.currentUser (warm client-side nav). On cold loads
+  // currentUser is null until Firebase reads IndexedDB + refreshes the
+  // token (2-5s). In that case, check localStorage for a cached hint that
+  // a user was previously signed in. We use the hint ONLY to suppress the
+  // loading skeleton so the workspace shell renders instantly; the actual
+  // `user` state stays null until onAuthStateChanged fires with a real
+  // Firebase User (which has getIdToken() etc.). This prevents data-fetching
+  // code from trying to use a plain-object stub that lacks Firebase methods.
   const auth = getAuthInstance();
-  const initialUser = auth.currentUser || getCachedAuthUser();
-  const [user, setUser] = useState<User | null>(initialUser);
-  const [loading, setLoading] = useState(!initialUser);
-  const lastKnownUser = useRef<User | null>(initialUser);
-  const hasInitialized = useRef(!!initialUser);
+  const realInitialUser = auth.currentUser;
+  const [cachedHint] = useState<CachedAuthHint | null>(() =>
+    realInitialUser ? null : getCachedAuthHint(),
+  );
+  const [user, setUser] = useState<User | null>(realInitialUser);
+  // Skip the loading skeleton if we have either a real user OR a cached hint
+  const [loading, setLoading] = useState(!realInitialUser && !cachedHint);
+  const lastKnownUser = useRef<User | null>(realInitialUser);
+  const hasInitialized = useRef(!!realInitialUser);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -139,6 +156,7 @@ export function useWorkspaceAuth(): WorkspaceAuthState {
 
   return {
     user,
+    cachedHint: user ? null : cachedHint,
     isAdmin: !!user && user.email === ADMIN_EMAIL,
     loading,
     signIn,
