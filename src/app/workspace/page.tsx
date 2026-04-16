@@ -8,6 +8,7 @@ import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { Property, ProjectDocument, Workspace } from "@/lib/workspace/types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
+import { AnalysisTypeIcon } from "@/lib/workspace/AnalysisTypeIcon";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import PropertyHeroImage from "@/components/workspace/PropertyHeroImage";
 import { setPendingUploadFiles } from "@/lib/workspace/upload-handoff";
@@ -723,24 +724,20 @@ export default function WorkspaceDashboard() {
               </svg>
             </button>
 
-            {/* Analysis type badge - green for Retail */}
-            {activeWorkspace?.analysisType && (
-              <span className="db-type-badge" style={{
-                display: "inline-flex",
-                alignItems: "center",
-                padding: "5px 12px",
-                borderRadius: 20,
-                background: "#f0f9e8",
-                color: "#84CC16",
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                border: "1px solid rgba(132,204,22,0.1)",
-              }}>
-                {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}
-              </span>
-            )}
+            {/* Analysis type badge */}
+            {activeWorkspace?.analysisType && (() => {
+              const atColor = ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType] || "#6B7280";
+              return (
+                <span className="db-type-badge" style={{
+                  display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 6,
+                  background: `${atColor}15`, color: atColor,
+                  fontSize: 11, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase",
+                }}>
+                  <AnalysisTypeIcon type={activeWorkspace.analysisType} size={13} color={atColor} />
+                  {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}
+                </span>
+              );
+            })()}
           </div>
 
           {/* Properties count */}

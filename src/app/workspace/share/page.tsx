@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
 import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
+import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
+import { AnalysisTypeIcon } from "@/lib/workspace/AnalysisTypeIcon";
 
 interface ShareLink {
   id: string;
@@ -310,9 +312,24 @@ export default function ShareLinksPage() {
       {/* Header */}
       <div className="sh-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: C.onSurface, margin: 0, fontFamily: "'Inter', sans-serif" }}>
-            Shareable Links
-          </h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: C.onSurface, margin: 0, fontFamily: "'Inter', sans-serif" }}>
+              Shareable Links
+            </h1>
+            {activeWorkspace?.analysisType && (() => {
+              const atColor = ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType] || "#6B7280";
+              return (
+                <span style={{
+                  display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 6,
+                  background: `${atColor}15`, color: atColor,
+                  fontSize: 11, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase",
+                }}>
+                  <AnalysisTypeIcon type={activeWorkspace.analysisType} size={13} color={atColor} />
+                  {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}
+                </span>
+              );
+            })()}
+          </div>
           <p style={{ fontSize: 13, color: C.secondary, margin: "4px 0 0" }}>
             Create links to share DealBoard deals with clients and partners
           </p>

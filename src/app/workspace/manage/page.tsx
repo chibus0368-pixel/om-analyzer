@@ -81,16 +81,19 @@ export default function ManageWorkspacesPage() {
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#0B1120" }}>Manage DealBoards</h1>
-            {activeWorkspace?.analysisType && (
-              <span style={{
-                display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 4,
-                background: `${ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType]}15`,
-                color: ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType],
-                fontSize: 11, fontWeight: 600, letterSpacing: 0.3,
-              }}>
-                {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}
-              </span>
-            )}
+            {activeWorkspace?.analysisType && (() => {
+              const atColor = ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType] || "#6B7280";
+              return (
+                <span style={{
+                  display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 6,
+                  background: `${atColor}15`, color: atColor,
+                  fontSize: 11, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase",
+                }}>
+                  <AnalysisTypeIcon type={activeWorkspace.analysisType} size={13} color={atColor} />
+                  {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}
+                </span>
+              );
+            })()}
           </div>
           <p style={{ margin: "4px 0 0", fontSize: 13, color: "#5A7091" }}>Add, rename, clear data, or delete DealBoards.</p>
         </div>

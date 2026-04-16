@@ -1058,10 +1058,23 @@ export default function ScoreboardPage() {
 
       {/* HEADING AREA */}
       <div className="sb-heading-area" style={{ marginBottom: 32 }}>
-        <div style={{ marginBottom: 4 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
           <h1 className="sb-title" style={{ fontSize: 30, fontWeight: 700, margin: 0, color: "#111827", letterSpacing: -0.5 }}>
             Deal Scorecard
           </h1>
+          {activeWorkspace?.analysisType && (() => {
+            const atColor = ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType] || "#6B7280";
+            return (
+              <span style={{
+                display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 6,
+                background: `${atColor}15`, color: atColor,
+                fontSize: 11, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase",
+              }}>
+                <AnalysisTypeIcon type={activeWorkspace.analysisType} size={13} color={atColor} />
+                {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}
+              </span>
+            );
+          })()}
         </div>
         <div className="sb-header-controls" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <p className="sb-subtitle" style={{ fontSize: 14, fontWeight: 500, color: "#9CA3AF", margin: 0 }}>

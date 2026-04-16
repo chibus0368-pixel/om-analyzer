@@ -12,6 +12,7 @@ import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
 import { consumePendingUploadFiles } from "@/lib/workspace/upload-handoff";
 import type { Property, DocCategory, AnalysisType } from "@/lib/workspace/types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
+import { AnalysisTypeIcon } from "@/lib/workspace/AnalysisTypeIcon";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import UpgradeModal from "@/components/billing/UpgradeModal";
 import Link from "next/link";
@@ -600,16 +601,19 @@ export default function UploadPage() {
           <h1 className="ul-title" style={{ fontSize: 30, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>
             Upload Deal{activeWorkspace?.name ? ` · ${activeWorkspace.name}` : ""}
           </h1>
-          {activeWorkspace?.analysisType && (
-            <span style={{
-              display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: C.radius,
-              background: `${ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType]}15`,
-              color: ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType],
-              fontSize: 11, fontWeight: 600, letterSpacing: 0.3,
-            }}>
-              {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}
-            </span>
-          )}
+          {activeWorkspace?.analysisType && (() => {
+            const atColor = ANALYSIS_TYPE_COLORS[activeWorkspace.analysisType] || "#6B7280";
+            return (
+              <span style={{
+                display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 6,
+                background: `${atColor}15`, color: atColor,
+                fontSize: 11, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase",
+              }}>
+                <AnalysisTypeIcon type={activeWorkspace.analysisType} size={13} color={atColor} />
+                {ANALYSIS_TYPE_LABELS[activeWorkspace.analysisType]}
+              </span>
+            );
+          })()}
         </div>
         <Link
           href="/workspace/upload/bulk"
