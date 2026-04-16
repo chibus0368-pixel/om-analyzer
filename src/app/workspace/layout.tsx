@@ -40,6 +40,7 @@ function NavLink({ href, label, icon, active, collapsed, compact = false }: { hr
   return (
     <Link
       href={href}
+      prefetch={false}
       className="ws-nav"
       style={{
         display: "flex", alignItems: "center", gap: collapsed ? 0 : 8,
@@ -111,6 +112,7 @@ function _SidebarUserCard({ user, collapsed, userTier, usage, onUpgradeClick }: 
       {/* User info row */}
       <Link
         href="/workspace/profile"
+        prefetch={false}
         className="ws-nav"
         style={{
           display: "flex", alignItems: "center", gap: 10,
@@ -897,7 +899,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
       }}>
         {/* Left: Logo + DealBoard selector */}
         <div className="ws-header-inner" style={{ display: "flex", alignItems: "center", gap: 48 }}>
-          <Link href="/workspace" className="ws-header-logo" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
+          <Link href="/workspace" prefetch={false} className="ws-header-logo" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
             <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 36 }} />
           </Link>
 
@@ -1030,7 +1032,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               Upgrade to Pro
             </button>
           ) : (
-            <Link href="/workspace/profile?tab=account" className="ws-plan-pill" style={{
+            <Link href="/workspace/profile?tab=account" prefetch={false} className="ws-plan-pill" style={{
               padding: "6px 16px", background: "rgba(132,204,22,0.2)", color: "#84CC16",
               border: "1px solid rgba(132,204,22,0.3)", borderRadius: 9999,
               fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
@@ -1047,6 +1049,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           {user && (
             <Link
               href="/workspace/profile"
+              prefetch={false}
               onClick={() => router.push("/workspace/profile")}
               title="Account & Profile"
               className="ws-user-link"
@@ -1106,6 +1109,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                   <Link
                     key={item.href}
                     href={item.href}
+                    prefetch={false}
                     onClick={() => setShowMoreMenu(false)}
                     style={{
                       display: "flex", alignItems: "center", gap: 10,
@@ -1229,6 +1233,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                   <Link
                     key={item.href}
                     href={`${item.href}${activeWorkspace?.slug ? "?ws=" + activeWorkspace.slug : ""}`}
+                    prefetch={false}
                     onClick={() => setShowMobileMenu(false)}
                     style={{
                       display: "flex", alignItems: "center", gap: 12,
@@ -1258,6 +1263,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={false}
                   onClick={() => setShowMobileMenu(false)}
                   style={{
                     display: "flex", alignItems: "center", gap: 12,
@@ -1361,7 +1367,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           ].map(tab => {
             const active = tab.href === "/workspace" ? pathname === "/workspace" || pathname.startsWith("/workspace/properties") : pathname.startsWith(tab.href);
             return (
-              <Link key={tab.href} href={`${tab.href}${activeWorkspace?.slug ? "?ws=" + activeWorkspace.slug : ""}`} style={{
+              <Link key={tab.href} href={`${tab.href}${activeWorkspace?.slug ? "?ws=" + activeWorkspace.slug : ""}`} prefetch={false} style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 height: "100%",
                 fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "2.2px",
@@ -1385,6 +1391,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         {/* Right: Share DealBoard button + info icon */}
         <div className="ws-nav-right" style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Link href={`/workspace/share${activeWorkspace?.slug ? "?ws=" + activeWorkspace.slug : ""}`}
+            prefetch={false}
             className="ws-share-btn"
             style={{
               display: "inline-flex", alignItems: "center", gap: 8,
@@ -1431,7 +1438,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 1.6, marginBottom: 10 }}>
                 Generate a read-only link to share your DealBoard with investors, partners, or your team. Recipients can view property scores, financials, and AI analysis without needing an account.
               </div>
-              <Link href="/workspace/help#sharing" onClick={() => {
+              <Link href="/workspace/help#sharing" prefetch={false} onClick={() => {
                 const tip = document.getElementById("share-tooltip");
                 if (tip) { tip.style.opacity = "0"; tip.style.pointerEvents = "none"; }
               }} style={{
@@ -1596,7 +1603,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
           if (tab.isUpload) {
             return (
-              <Link key={tab.href} href={`${tab.href}${wsSlug}`} className="ws-bottom-tab ws-bottom-tab-upload" style={{ textDecoration: "none" }}>
+              <Link key={tab.href} href={`${tab.href}${wsSlug}`} prefetch={false} className="ws-bottom-tab ws-bottom-tab-upload" style={{ textDecoration: "none" }}>
                 <div className="ws-bottom-tab-upload-circle">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
                 </div>
@@ -1606,7 +1613,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           }
 
           return (
-            <Link key={tab.href} href={`${tab.href}${wsSlug}`} className={`ws-bottom-tab${active ? " active" : ""}`} style={{ textDecoration: "none" }}>
+            <Link key={tab.href} href={`${tab.href}${wsSlug}`} prefetch={false} className={`ws-bottom-tab${active ? " active" : ""}`} style={{ textDecoration: "none" }}>
               {tab.icon}
               <span>{tab.label}</span>
             </Link>

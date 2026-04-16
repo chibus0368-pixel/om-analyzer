@@ -66,6 +66,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
+        {/* Preconnect to Firebase Auth endpoints so the token validation
+            request doesn't queue behind JS chunk downloads. Without this,
+            accounts.lookup gets queued for 20-25s while Next.js page chunks
+            saturate the connection pool and main thread. */}
+        <link rel="preconnect" href="https://identitytoolkit.googleapis.com" />
+        <link rel="preconnect" href="https://securetoken.googleapis.com" />
+        <link rel="preconnect" href="https://www.googleapis.com" />
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500&display=swap"
           rel="stylesheet"
