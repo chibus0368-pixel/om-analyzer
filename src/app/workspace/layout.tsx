@@ -188,18 +188,7 @@ function _SidebarUserCard({ user, collapsed, userTier, usage, onUpgradeClick }: 
  */
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
-  const { user, cachedHint, loading: authLoading } = useWorkspaceAuth();
-  // For display purposes (name, email in header/sidebar), fall back to the
-  // cached hint while Firebase Auth is still initializing. This lets the
-  // shell render immediately on cold loads. Once onAuthStateChanged fires,
-  // `user` is populated and cachedHint becomes null.
-  const displayUser = user || (cachedHint ? {
-    uid: cachedHint.uid,
-    email: cachedHint.email,
-    displayName: cachedHint.displayName,
-    emailVerified: false,
-    photoURL: null,
-  } as any : null);
+  const { user, loading: authLoading } = useWorkspaceAuth();
   const pathname = usePathname();
   useEffect(() => setMounted(true), []);
 
@@ -254,7 +243,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <WorkspaceProvider userId={user?.uid || cachedHint?.uid || ""}>
+    <WorkspaceProvider userId={user?.uid || ""}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600;1,700&display=swap');
         /* Sidebar nav hover */
@@ -372,7 +361,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
           .ws-main-content { padding: 6px !important; padding-bottom: 76px !important; }
         }
       `}</style>
-      <WorkspaceLayoutInner user={user} displayUser={displayUser}>{children}</WorkspaceLayoutInner>
+      <WorkspaceLayoutInner user={user}>{children}</WorkspaceLayoutInner>
     </WorkspaceProvider>
   );
 }
@@ -630,7 +619,7 @@ function HeaderWorkspaceSwitcher({ onAddNew }: { onAddNew: () => void }) {
   );
 }
 
-function WorkspaceLayoutInner({ children, user, displayUser }: { children: React.ReactNode; user: import("firebase/auth").User | null; displayUser: any }) {
+function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; user: import("firebase/auth").User | null }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -873,12 +862,8 @@ function WorkspaceLayoutInner({ children, user, displayUser }: { children: React
     }
   };
 
-  // If not authenticated AND no cached hint: show login page or redirect spinner.
-  // When cachedHint exists, we know a user was previously signed in and Firebase
-  // Auth is still initializing. Render the workspace shell so the user sees the
-  // sidebar/header instantly; data-fetching hooks will wait for the real Firebase
-  // User to arrive before making API calls.
-  if (!user && !cachedHint) {
+  // If not authenticated: show login page without workspace chrome, or show loading while redirecting
+  if (!user) {
     if (isLoginPage) {
       // Render children (login page) without the workspace sidebar/header
       return <>{children}</>;
@@ -1081,10 +1066,10 @@ function WorkspaceLayoutInner({ children, user, displayUser }: { children: React
             >
               <div className="ws-user-text" style={{ textAlign: "right" }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", lineHeight: 1.2, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                  {displayUser?.displayName || displayUser?.email?.split("@")[0] || "User"}
+                  {user.displayName || user.email?.split("@")[0] || "User"}
                 </div>
                 <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", lineHeight: 1.3 }}>
-                  {displayUser?.email || ""}
+                  {user.email || ""}
                 </div>
               </div>
               <div className="ws-avatar" style={{
@@ -1093,7 +1078,7 @@ function WorkspaceLayoutInner({ children, user, displayUser }: { children: React
                 fontSize: 12, fontWeight: 700, color: "#000", flexShrink: 0,
                 border: "2px solid rgba(255,255,255,0.1)",
               }}>
-                {displayUser?.displayName ? displayUser.displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : (displayUser?.email?.split("@")[0] || "U").substring(0, 2).toUpperCase()}
+                {user.displayName ? user.displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : (user.email?.split("@")[0] || "U").substring(0, 2).toUpperCase()}
               </div>
             </Link>
           )}
@@ -1319,21 +1304,21 @@ function WorkspaceLayoutInner({ children, user, displayUser }: { children: React
                   </div>
                 )}
               </div>
-              {displayUser && (
+              {user && (
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                   <div style={{
                     width: 32, height: 32, borderRadius: "50%", background: "#84CC16",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     fontSize: 11, fontWeight: 700, color: "#000", flexShrink: 0,
                   }}>
-                    {displayUser.displayName ? displayUser.displayName.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2) : (displayUser.email?.split("@")[0] || "U").substring(0, 2).toUpperCase()}
+                    {user.displayName ? user.displayName.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2) : (user.email?.split("@")[0] || "U").substring(0, 2).toUpperCase()}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 12, fontWeight: 600, color: "#FFFFFF", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {displayUser.displayName || displayUser.email?.split("@")[0] || "User"}
+                      {user.displayName || user.email?.split("@")[0] || "User"}
                     </div>
                     <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {displayUser.email || ""}
+                      {user.email || ""}
                     </div>
                   </div>
                 </div>
