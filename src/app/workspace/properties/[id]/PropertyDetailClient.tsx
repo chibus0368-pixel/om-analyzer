@@ -928,24 +928,29 @@ export default function PropertyDetailClient() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // Fetch user tier for feature gating
+  // Fetch user tier for feature gating.
+  // Uses a one-shot fetch instead of an onAuthStateChanged listener to avoid
+  // leaking listeners: every mount used to register a new listener that was
+  // never unsubscribed, so after 3-4 property page visits there were 3-4
+  // stale listeners all firing duplicate /api/workspace/usage calls.
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
-        const { getAuth, onAuthStateChanged } = await import("firebase/auth");
+        const { getAuth } = await import("firebase/auth");
         const auth = getAuth();
-        onAuthStateChanged(auth, async (fbUser) => {
-          if (fbUser) {
-            const token = await fbUser.getIdToken();
-            const res = await fetch("/api/workspace/usage", { headers: { Authorization: `Bearer ${token}` } });
-            if (res.ok) {
-              const data = await res.json();
-              setUserTier(data.tier || "free");
-            }
+        const fbUser = auth.currentUser;
+        if (fbUser) {
+          const token = await fbUser.getIdToken();
+          const res = await fetch("/api/workspace/usage", { headers: { Authorization: `Bearer ${token}` } });
+          if (res.ok && !cancelled) {
+            const data = await res.json();
+            setUserTier(data.tier || "free");
           }
-        });
+        }
       } catch {}
     })();
+    return () => { cancelled = true; };
   }, []);
 
   // Load cached deep research on mount — disabled while Location Intel

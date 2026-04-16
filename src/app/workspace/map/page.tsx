@@ -138,13 +138,23 @@ export default function MapPage() {
     getWorkspaceProperties(userId, wsId).then(async (props) => {
       if (cancelled) return;
       setProperties(props);
+      // Fetch all extracted fields in PARALLEL instead of sequentially.
+      // The old for-of-await loop was an N+1: 14 properties = 14 sequential
+      // API calls = 7-28s. Promise.all fires them concurrently.
+      const entries = await Promise.all(
+        props.map(async (p) => {
+          try {
+            const fields = await getPropertyExtractedFields(p.id);
+            return [p.id, fields] as const;
+          } catch {
+            return [p.id, []] as const;
+          }
+        })
+      );
+      if (cancelled) return;
       const fieldsMap: Record<string, ExtractedField[]> = {};
-      for (const p of props) {
-        try {
-          fieldsMap[p.id] = await getPropertyExtractedFields(p.id);
-        } catch { fieldsMap[p.id] = []; }
-      }
-      if (!cancelled) setPropFields(fieldsMap);
+      for (const [id, fields] of entries) fieldsMap[id] = fields;
+      setPropFields(fieldsMap);
     }).catch(() => {});
     return () => { cancelled = true; };
   }, [userId, wsId]);
