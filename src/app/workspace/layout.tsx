@@ -446,12 +446,9 @@ function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean;
               onClick={() => {
                 switchWorkspace(ws.id);
                 setOpen(false);
-                // Hard nav to the dealboard home for the newly selected board.
-                // Using window.location guarantees navigation even when we're
-                // already under /workspace (e.g. on a property detail page),
-                // and the ?ws= slug keeps the context provider and the board
-                // page in sync on load.
-                window.location.href = `/workspace?ws=${encodeURIComponent(ws.slug)}`;
+                // Client-side nav to keep Firebase Auth in memory. Hard navs
+                // (window.location) re-init auth from IndexedDB which takes 20s+.
+                router.push(`/workspace?ws=${encodeURIComponent(ws.slug)}`);
               }}
               className="ws-nav"
               style={{
@@ -568,7 +565,7 @@ function HeaderWorkspaceSwitcher({ onAddNew }: { onAddNew: () => void }) {
               onClick={() => {
                 switchWorkspace(ws.id);
                 setOpen(false);
-                window.location.href = `/workspace?ws=${encodeURIComponent(ws.slug)}`;
+                router.push(`/workspace?ws=${encodeURIComponent(ws.slug)}`);
               }}
               className="ws-nav"
               style={{
@@ -959,9 +956,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                         onClick={() => {
                           switchWorkspace(ws.id);
                           setShowWsDropdown(false);
-                          // Hard nav so we don't strand the user on a sub-page
-                          // (property detail, manage, admin) after switching.
-                          window.location.href = `/workspace?ws=${encodeURIComponent(ws.slug)}`;
+                          router.push(`/workspace?ws=${encodeURIComponent(ws.slug)}`);
                         }}
                         style={{
                           display: "flex", alignItems: "center", gap: 12, width: "100%",

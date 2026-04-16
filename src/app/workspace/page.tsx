@@ -144,9 +144,10 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
       // Navigate to the target workspace to show the duplicated property
       const targetWs = workspaces.find(w => w.id === targetWorkspaceId);
       if (targetWs && targetWs.id !== activeWorkspaceId) {
-        window.location.href = `/workspace?ws=${encodeURIComponent(targetWs.slug)}`;
+        router.push(`/workspace?ws=${encodeURIComponent(targetWs.slug)}`);
       } else {
-        window.location.reload();
+        // Trigger a re-fetch instead of full page reload
+        window.dispatchEvent(new Event("workspace-properties-changed"));
       }
     } catch (err) {
       console.error("[duplicate] Failed:", err);

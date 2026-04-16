@@ -254,7 +254,7 @@ export default function ManageWorkspacesPage() {
                     {!isActive && (
                       <ActionButton label="Switch" onClick={() => {
                         switchWorkspace(ws.id);
-                        window.location.href = `/workspace?ws=${encodeURIComponent(ws.slug)}`;
+                        router.push(`/workspace?ws=${encodeURIComponent(ws.slug)}`);
                       }} color="#2563EB" />
                     )}
                     <ActionButton label="Rename" onClick={() => startEdit(ws)} color="#5A7091" />
