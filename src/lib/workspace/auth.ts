@@ -23,13 +23,19 @@ interface WorkspaceAuthState {
  * `loading` is true while Firebase Auth is initializing.
  */
 export function useWorkspaceAuth(): WorkspaceAuthState {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const lastKnownUser = useRef<User | null>(null);
-  const hasInitialized = useRef(false);
+  // Seed from auth.currentUser synchronously. After a client-side navigation
+  // (e.g. login page -> /workspace), Firebase already has the user in memory.
+  // Without this seed, loading stays true until onAuthStateChanged fires
+  // (which can take seconds while Firebase re-validates with IndexedDB/network),
+  // causing the "Loading workspace..." skeleton to flash on every page transition.
+  const auth = getAuthInstance();
+  const initialUser = auth.currentUser;
+  const [user, setUser] = useState<User | null>(initialUser);
+  const [loading, setLoading] = useState(!initialUser);
+  const lastKnownUser = useRef<User | null>(initialUser);
+  const hasInitialized = useRef(!!initialUser);
 
   useEffect(() => {
-    const auth = getAuthInstance();
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         // User is authenticated - update both state and cache
