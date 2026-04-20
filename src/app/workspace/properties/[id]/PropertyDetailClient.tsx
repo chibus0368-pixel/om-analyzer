@@ -22,6 +22,7 @@ import Link from "next/link";
 
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import PropertyHeroImage from "@/components/workspace/PropertyHeroImage";
+import DealQuickScreen from "@/components/workspace/DealQuickScreen";
 
 /* ── Design tokens ─────────────────────────────────────── */
 const C = {
@@ -1351,6 +1352,28 @@ function PropertyDetailInner({
   userTier,
 }: any) {
 
+  /* ── Pro Analysis tabs ─────────────────────────────────
+     URL-backed so a link into ?tab=om-reverse-pricing lands on that tab.
+     The tab bar sits directly below the hero; below it the existing
+     property detail sections continue to render as "Deal Details".     */
+  type ProTab = "quick-screen" | "om-reverse-pricing";
+  const [activeProTab, setActiveProTab] = useState<ProTab>(() => {
+    if (typeof window === "undefined") return "quick-screen";
+    const t = new URLSearchParams(window.location.search).get("tab");
+    return t === "om-reverse-pricing" ? "om-reverse-pricing" : "quick-screen";
+  });
+  const routerForTabs = useRouter();
+  const selectProTab = useCallback((next: ProTab) => {
+    setActiveProTab(next);
+    // Keep the URL in sync with a shallow push so refresh + share both land
+    // on the selected tab. router.push preserves auth state (CLAUDE.md rule).
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("tab", next);
+      routerForTabs.push(`${url.pathname}${url.search}`, { scroll: false });
+    }
+  }, [routerForTabs]);
+
   const priceState = usePurchasePriceOverride(omPurchasePrice);
   const { activePrice, isOverridden } = priceState;
 
@@ -1938,6 +1961,123 @@ function PropertyDetailInner({
             </div>
           )}
         </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════ */}
+      {/*  PRO ANALYSIS TABS                                  */}
+      {/*  Quick Screen is the default tab. OM Reverse Pricing */}
+      {/*  is stubbed for a future release. Existing property  */}
+      {/*  detail sections continue to render below the tabs.  */}
+      {/* ═══════════════════════════════════════════════════ */}
+      <div className="pd-pro-tabs" style={{
+        margin: "4px 0 18px",
+        background: C.surfLowest,
+        border: `1px solid ${C.ghostBorder}`,
+        borderRadius: C.radius,
+        padding: 4,
+        display: "inline-flex",
+        gap: 4,
+        boxShadow: "0 1px 3px rgba(15,23,43,0.04)",
+      }}>
+        {[
+          { id: "quick-screen" as const, label: "Deal Quick Screen", ready: true },
+          { id: "om-reverse-pricing" as const, label: "OM Reverse Pricing", ready: false },
+        ].map(tab => {
+          const isActive = tab.id === activeProTab;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => selectProTab(tab.id)}
+              style={{
+                padding: "8px 16px",
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: 0.3,
+                background: isActive ? C.primary : "transparent",
+                color: isActive ? "#fff" : C.secondary,
+                border: "none",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontFamily: "inherit",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                transition: "all 0.15s ease",
+              }}
+              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = C.surfLow; }}
+              onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
+            >
+              {tab.label}
+              {!tab.ready && (
+                <span style={{
+                  fontSize: 8,
+                  fontWeight: 800,
+                  letterSpacing: 0.6,
+                  padding: "2px 6px",
+                  borderRadius: 3,
+                  background: isActive ? "rgba(255,255,255,0.22)" : "#FEF3C7",
+                  color: isActive ? "#fff" : "#92400E",
+                  textTransform: "uppercase",
+                }}>Soon</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {activeProTab === "quick-screen" && (
+        <div style={{ marginBottom: 28 }}>
+          <DealQuickScreen property={property} fields={fields} />
+        </div>
+      )}
+
+      {activeProTab === "om-reverse-pricing" && (
+        <div style={{
+          marginBottom: 28,
+          background: C.surfLowest,
+          border: `1px dashed ${C.ghost}`,
+          borderRadius: C.radius,
+          padding: 40,
+          textAlign: "center",
+        }}>
+          <div style={{ fontSize: 34, marginBottom: 10 }}>🧮</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: C.onSurface, marginBottom: 6 }}>
+            OM Reverse Pricing is coming soon
+          </div>
+          <div style={{ fontSize: 13, color: C.secondary, maxWidth: 520, margin: "0 auto", lineHeight: 1.55 }}>
+            This tab will deconstruct the broker's embedded assumptions, reverse-engineer the
+            purchase price needed to hit your target returns, and output a defensible bid range.
+            For now, use the Deal Quick Screen tab for KEEP/KILL triage.
+          </div>
+          <button
+            onClick={() => selectProTab("quick-screen")}
+            style={{
+              marginTop: 18,
+              padding: "8px 18px",
+              fontSize: 12,
+              fontWeight: 700,
+              background: C.primary,
+              color: "#fff",
+              border: "none",
+              borderRadius: 8,
+              cursor: "pointer",
+              fontFamily: "inherit",
+            }}
+          >Back to Deal Quick Screen</button>
+        </div>
+      )}
+
+      {/* Deal Details heading marks the transition from Pro Analysis into
+          the full property detail view (OM fields, score, docs, notes).   */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 10,
+        margin: "8px 0 16px",
+      }}>
+        <span style={{
+          fontSize: 11, fontWeight: 800, color: C.secondary,
+          textTransform: "uppercase", letterSpacing: 1.2,
+        }}>Deal Details</span>
+        <span style={{ flex: 1, height: 1, background: C.ghost }} />
       </div>
 
       {/* ═══════════════════════════════════════════════════ */}
