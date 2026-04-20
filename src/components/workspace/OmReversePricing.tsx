@@ -35,7 +35,6 @@ import {
   type UnitType,
 } from "@/lib/analysis/om-reverse-pricing";
 import { useUnderwritingDefaults } from "@/lib/workspace/use-underwriting-defaults";
-import DealVerdictBox from "@/components/workspace/DealVerdictBox";
 
 /* ── Design tokens (shared with DealQuickScreen) ────── */
 const C = {
@@ -211,9 +210,6 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      {/* ── Slim verdict strip. Main page owns the full rationale. ── */}
-      <DealVerdictBox property={property} fields={fields} variant="slim" />
-
       {/* ── Pricing Scenarios (Broker / Adjusted / Max Bid) ───────── */}
       <SectionCard
         title="Pricing Scenarios"

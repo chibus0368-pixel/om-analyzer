@@ -297,11 +297,12 @@ export default function DealVerdictBox({ property, fields, variant = "main" }: D
 
   return (
     <div style={{
-      background: v.bg,
-      border: `1px solid ${v.border}`,
+      background: "#FFFFFF",
+      border: `1px solid ${C.ghost}`,
+      borderLeft: `4px solid ${v.pill}`,
       borderRadius: C.radius,
-      padding: "24px 26px",
-      marginBottom: 20,
+      padding: "22px 24px",
+      marginBottom: 12,
       boxShadow: "0 2px 10px rgba(15,23,43,0.05)",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
@@ -335,16 +336,15 @@ export default function DealVerdictBox({ property, fields, variant = "main" }: D
               fontSize: 10,
               fontWeight: 700,
               letterSpacing: 0.8,
-              color: v.accent,
+              color: C.secondary,
               textTransform: "uppercase",
-              opacity: 0.75,
             }}>{modeLine}</span>
           </div>
           <div style={{
             marginTop: 10,
             fontSize: 14,
             lineHeight: 1.55,
-            color: v.accent,
+            color: C.onSurface,
             fontWeight: 500,
           }}>{report.executiveSummary}</div>
         </div>
@@ -356,8 +356,8 @@ export default function DealVerdictBox({ property, fields, variant = "main" }: D
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
         gap: 10,
-        background: "rgba(255,255,255,0.55)",
-        border: `1px solid ${v.border}`,
+        background: "#F9FAFB",
+        border: `1px solid ${C.ghostBorder}`,
         borderRadius: 10,
         padding: "12px 14px",
       }}>
@@ -367,8 +367,7 @@ export default function DealVerdictBox({ property, fields, variant = "main" }: D
               fontSize: 10,
               fontWeight: 700,
               letterSpacing: 0.8,
-              color: v.accent,
-              opacity: 0.7,
+              color: C.secondary,
               textTransform: "uppercase",
             }}>{k.label}</div>
             <div style={{

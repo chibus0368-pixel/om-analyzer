@@ -11,7 +11,6 @@ import {
   type UnitType,
 } from "@/lib/analysis/quick-screen";
 import { useUnderwritingDefaults } from "@/lib/workspace/use-underwriting-defaults";
-import DealVerdictBox from "@/components/workspace/DealVerdictBox";
 
 /* ── Design tokens (mirror PropertyDetailClient's C object) ─── */
 const C = {
@@ -291,9 +290,6 @@ export default function DealQuickScreen({ property, fields, overrides }: DealQui
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      {/* ── Slim verdict repeat. Main page owns the full rationale. ─── */}
-      <DealVerdictBox property={property} fields={fields} variant="slim" />
-
       {/* ── Deal Snapshot (numbers only, no narrative) ─── */}
       <SectionCard title="Deal Snapshot" accent={C.primary}>
         <div className="qs-snapshot-grid" style={{

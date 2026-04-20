@@ -1981,7 +1981,7 @@ function PropertyDetailInner({
       {/*    Rent Roll          - tenant-level lease detail   */}
       {/* ═══════════════════════════════════════════════════ */}
       <div className="pd-pro-tabs" style={{
-        margin: "4px 0 18px",
+        margin: "0 0 16px",
         background: C.surfLowest,
         border: `1px solid ${C.ghostBorder}`,
         borderRadius: C.radius,
