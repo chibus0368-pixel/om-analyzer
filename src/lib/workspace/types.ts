@@ -121,6 +121,11 @@ export interface Property {
   cardBuildingSf?: number;
   cardTotalAcres?: number;
   cardPricePerAcre?: number;
+  // Scoring (written by score-engine, canonical across the app)
+  scoreTotal?: number;
+  scoreBand?: ScoreBand;
+  recommendation?: string;
+  scoredAt?: string;
 }
 
 export interface GalleryImage {

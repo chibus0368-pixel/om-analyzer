@@ -105,8 +105,35 @@ export async function getUnderwritingDefaults(
 }
 
 /**
+ * Read the timestamp of the last underwriting-defaults save. Used by the
+ * property page to decide whether a persisted score is stale relative to
+ * the current baseline.
+ *
+ * Returns null if the workspace has never saved defaults.
+ */
+export async function getUnderwritingDefaultsUpdatedAt(
+  workspaceId: string | null | undefined
+): Promise<string | null> {
+  if (!workspaceId) return null;
+  try {
+    const ws = await getWorkspaceDoc(workspaceId);
+    const ts = (ws as any)?.underwritingDefaultsUpdatedAt;
+    if (!ts) return null;
+    // Firestore timestamp → ISO
+    if (typeof ts.toDate === "function") return ts.toDate().toISOString();
+    if (typeof ts === "string") return ts;
+    if (ts instanceof Date) return ts.toISOString();
+  } catch {
+    /* fall through */
+  }
+  return null;
+}
+
+/**
  * Persist underwriting defaults on the workspace doc. Only the fields in
  * UnderwritingDefaults are written; other workspace fields are untouched.
+ * Also stamps `underwritingDefaultsUpdatedAt` so the property page can
+ * auto-recalc scores when the baseline changes.
  */
 export async function saveUnderwritingDefaults(
   workspaceId: string,
@@ -114,6 +141,7 @@ export async function saveUnderwritingDefaults(
 ): Promise<void> {
   await updateDoc(doc(db, 'workspaces', workspaceId), {
     underwritingDefaults: defaults,
+    underwritingDefaultsUpdatedAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
 }

@@ -20,7 +20,7 @@
  */
 
 import { useMemo } from "react";
-import type { Property, ExtractedField } from "@/lib/workspace/types";
+import type { Property, ExtractedField, ScoreBand } from "@/lib/workspace/types";
 import {
   runQuickScreen,
   type QuickScreenInput,
@@ -30,6 +30,23 @@ import {
   type Verdict,
 } from "@/lib/analysis/quick-screen";
 import { useUnderwritingDefaults } from "@/lib/workspace/use-underwriting-defaults";
+
+/** Map the persisted server-side band to the BUY / NEUTRAL / PASS tri-state
+ *  the verdict card renders. Strong_buy + buy collapse to BUY, hold is
+ *  NEUTRAL, pass + strong_reject collapse to PASS. */
+function bandToVerdict(band: ScoreBand | string | undefined | null): Verdict {
+  switch (band) {
+    case "strong_buy":
+    case "buy":
+      return "BUY";
+    case "pass":
+    case "strong_reject":
+      return "PASS";
+    case "hold":
+    default:
+      return "NEUTRAL";
+  }
+}
 
 /* ── Design tokens ────────────────────────────────────── */
 const C = {
@@ -169,6 +186,14 @@ export interface DealVerdictBoxProps {
    * the strengths/concerns render as a two-column list below the KPIs.
    */
   brief?: string | null;
+  /**
+   * Server-persisted score / band from the asset-type-aware score engine.
+   * When provided, overrides the client Quick Screen score so every
+   * surface (properties list, hero badge, verdict card) agrees. If null,
+   * the verdict card falls back to the live Quick Screen computation.
+   */
+  scoreTotal?: number | null;
+  scoreBand?: ScoreBand | string | null;
 }
 
 interface ParsedBrief {
@@ -188,7 +213,7 @@ function parseBrief(raw?: string | null): ParsedBrief | null {
   return { overview: trimmed };
 }
 
-export default function DealVerdictBox({ property, fields, variant = "main", brief }: DealVerdictBoxProps) {
+export default function DealVerdictBox({ property, fields, variant = "main", brief, scoreTotal, scoreBand }: DealVerdictBoxProps) {
   const workspaceId = property.workspaceId || null;
   const { defaults, loaded: baselineLoaded } = useUnderwritingDefaults(workspaceId);
 
@@ -232,9 +257,16 @@ export default function DealVerdictBox({ property, fields, variant = "main", bri
     );
   }
 
-  const v = verdictStyle(report.verdict);
-  const scoreColor = report.verdict === "BUY" ? "#059669"
-    : report.verdict === "PASS" ? "#DC2626"
+  // Prefer the server-side persisted score when available. That score is
+  // asset-type-aware (scoreByType dispatches by analysisType) and is the
+  // same number every other surface in the app reads from. Fall back to
+  // the live Quick Screen score only when no persisted score exists.
+  const effectiveScore: number = scoreTotal != null ? scoreTotal : report.score;
+  const effectiveVerdict: Verdict = scoreBand ? bandToVerdict(scoreBand) : report.verdict;
+
+  const v = verdictStyle(effectiveVerdict);
+  const scoreColor = effectiveVerdict === "BUY" ? "#059669"
+    : effectiveVerdict === "PASS" ? "#DC2626"
     : "#D97706";
 
   const modeLine = `${report.dealScale === "small-operator" ? "Small Operator Mode" : "Institutional Mode"} · ${baselineLoaded ? "Standardized Baseline" : "Loading baseline..."}`;
@@ -281,7 +313,7 @@ export default function DealVerdictBox({ property, fields, variant = "main", bri
           color: v.accent,
           opacity: 0.75,
         }}>
-          Score <span style={{ fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>{report.score}</span>/100
+          Score <span style={{ fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>{effectiveScore}</span>/100
         </span>
       </div>
     );
@@ -333,7 +365,7 @@ export default function DealVerdictBox({ property, fields, variant = "main", bri
       <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
         <div style={{
           width: 74, height: 74, borderRadius: "50%",
-          background: `conic-gradient(${scoreColor} ${(report.score / 100) * 360}deg, ${C.ghost} 0deg)`,
+          background: `conic-gradient(${scoreColor} ${(effectiveScore / 100) * 360}deg, ${C.ghost} 0deg)`,
           display: "grid", placeItems: "center", flexShrink: 0,
         }}>
           <div style={{
@@ -341,7 +373,7 @@ export default function DealVerdictBox({ property, fields, variant = "main", bri
             display: "grid", placeItems: "center",
             fontSize: 22, fontWeight: 800, color: scoreColor,
             fontVariantNumeric: "tabular-nums",
-          }}>{report.score}</div>
+          }}>{effectiveScore}</div>
         </div>
         <div style={{ flex: 1, minWidth: 240 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>

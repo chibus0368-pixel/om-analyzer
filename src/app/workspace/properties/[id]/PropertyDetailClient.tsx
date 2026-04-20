@@ -18,6 +18,7 @@ import { generateUnderwritingXLSX, generateBriefDownload, generateStrategyLensXL
 import { renderPropertyEmailHTML } from "@/lib/workspace/email-property-html";
 import { extractTextFromFiles } from "@/lib/workspace/file-reader";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
+import { useUnderwritingDefaults } from "@/lib/workspace/use-underwriting-defaults";
 import Link from "next/link";
 
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
@@ -869,6 +870,11 @@ export default function PropertyDetailClient() {
   const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
   const propertyId = params.id as string;
+  // Workspace-level underwriting baseline. `updatedAt` drives the
+  // auto-recalc-on-stale useEffect below so we reuse the same fetch.
+  const { updatedAt: defaultsUpdatedAt } = useUnderwritingDefaults(
+    (activeWorkspace?.id as string | undefined) || null
+  );
 
   const [loading, setLoading] = useState(true);
   const [property, setProperty] = useState<Property | null>(null);
@@ -1027,6 +1033,59 @@ export default function PropertyDetailClient() {
     }, 5000);
     return () => clearInterval(interval);
   }, [processingStatus, loadData, propertyId]);
+
+  /* ── Auto-recalc score when stale vs workspace defaults ─
+     The server scorer is the single source of truth. Trigger it when:
+       - the property has no persisted score yet, or
+       - the property's last-scored-at is older than the workspace's
+         last defaults save.
+     Quiet best-effort: one POST, then refetch the property doc.
+     Skips while processing is in-flight (the pipeline already scores on
+     complete) and when there's no usable field data yet. */
+  useEffect(() => {
+    if (!property || !user || !propertyId) return;
+    if (processingStatus && processingStatus !== "complete") return;
+    if (!fields || fields.length === 0) return;
+
+    const persistedScore = (property as any)?.scoreTotal;
+    const scoredAt = (property as any)?.scoredAt as string | undefined;
+    const needsScore = persistedScore == null;
+    const isStale =
+      !!scoredAt &&
+      !!defaultsUpdatedAt &&
+      new Date(scoredAt).getTime() < new Date(defaultsUpdatedAt).getTime();
+    if (!needsScore && !isStale) return;
+
+    const analysisType =
+      (property as any)?.analysisType ||
+      activeWorkspace?.analysisType ||
+      "retail";
+    let cancelled = false;
+    (async () => {
+      try {
+        await fetch("/api/workspace/score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ propertyId, userId: user.uid, analysisType }),
+        });
+        if (cancelled) return;
+        const fresh = await getProperty(propertyId);
+        if (!cancelled && fresh) setProperty(fresh);
+      } catch {
+        /* non-blocking */
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    propertyId,
+    user?.uid,
+    (property as any)?.scoreTotal,
+    (property as any)?.scoredAt,
+    defaultsUpdatedAt,
+    processingStatus,
+    fields.length,
+  ]);
 
   /* ── File upload handler ────────────────────────────── */
   async function handleFileUpload(fileList: FileList) {
@@ -1379,7 +1438,7 @@ function PropertyDetailInner({
   }, [routerForTabs]);
 
   const priceState = usePurchasePriceOverride(omPurchasePrice);
-  const { activePrice, isOverridden } = priceState;
+  const { activePrice } = priceState;
 
   /* ── Calculated metrics that react to purchase price ── */
   const noiOm = Number(g("expenses", "noi_om")) || 0;
@@ -1971,7 +2030,14 @@ function PropertyDetailInner({
       {/*  slim repeat of this same verdict so the signal      */}
       {/*  is never lost when a tab is shared in isolation.    */}
       {/* ═══════════════════════════════════════════════════ */}
-      <DealVerdictBox property={property} fields={fields} variant="main" brief={brief} />
+      <DealVerdictBox
+        property={property}
+        fields={fields}
+        variant="main"
+        brief={brief}
+        scoreTotal={scoreTotal}
+        scoreBand={scoreBand || null}
+      />
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  PRO ANALYSIS TABS                                  */}
@@ -2325,125 +2391,6 @@ function PropertyDetailInner({
         );
       })()}
 
-      {/* ═══════════════════════════════════════════════════ */}
-      {/*  2. DEAL SUMMARY + IMAGE + SCORE (COMBINED CARD)     */}
-      {/* ═══════════════════════════════════════════════════ */}
-      {/* ═══════════════════════════════════════════════════ */}
-      {/*  2A. DEALSIGNAL SCORE STRIP (horizontal)            */}
-      {/* ═══════════════════════════════════════════════════ */}
-      {scoreTotal && (() => {
-        const b = scoreBand.toLowerCase().replace(/_/g, " ");
-        const isGreen = b === "strong buy" || b === "buy";
-        const isYellow = b === "hold" || b === "neutral";
-        const verdict = isGreen
-          ? "Worth pursuing. Clean fundamentals, manageable risks."
-          : isYellow
-          ? "Not a clear winner. Proceed only if thesis fits."
-          : "Skip. Risk profile doesn't justify the price.";
-        const bandLabel = (() => {
-          const map: Record<string, string> = {
-            "strong buy": "Strong Buy", "buy": "Buy",
-            "hold": "Neutral", "neutral": "Neutral",
-            "pass": "Pass", "strong reject": "Strong Reject",
-          };
-          return map[b] || scoreBand.replace(/_/g, " ");
-        })();
-        const accent = isGreen ? "#059669" : isYellow ? "#D97706" : "#DC2626";
-        const stripSf = property.cardBuildingSf || property.buildingSf;
-        const stripSfStr = stripSf ? (stripSf >= 1000 ? `${(stripSf / 1000).toFixed(stripSf >= 10000 ? 0 : 1)}K SF` : `${stripSf.toLocaleString()} SF`) : null;
-        const stripAsk = property.cardAskingPrice ? fmt$(property.cardAskingPrice) : null;
-        return (
-          <div className="pd-score-strip" style={{
-            display: "flex", alignItems: "center", gap: 20,
-            background: "#FFFFFF", borderRadius: 12,
-            border: "1px solid rgba(0,0,0,0.05)",
-            boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
-            padding: "18px 24px", marginBottom: 16,
-          }}>
-            <DealSignalBadge score={scoreTotal} band={scoreBand} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.secondary, marginBottom: 4 }}>
-                DealSignal Score <span style={{ color: accent, marginLeft: 6 }}>· {bandLabel}</span>
-              </div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: "#0F172A", lineHeight: 1.5 }}>
-                {verdict}
-              </div>
-              {/* Mobile-only compact metrics row (hidden on desktop via
-                  inline display:none; CSS in the @media block flips it to
-                  a 2-col grid). Keeps building SF + asking price visible
-                  now that the upper Signal Score card is collapsed. */}
-              {(stripSfStr || stripAsk) && (
-                <div className="pd-score-strip-metrics" style={{ display: "none" }}>
-                  {stripSfStr && (
-                    <div style={{
-                      padding: "8px 10px", borderRadius: 8,
-                      background: "#F8FAFC", border: "1px solid rgba(0,0,0,0.04)",
-                    }}>
-                      <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#6B7280", marginBottom: 2 }}>Size</div>
-                      <div style={{ fontSize: 15, fontWeight: 800, color: "#0F172A", fontFamily: "monospace" }}>{stripSfStr}</div>
-                    </div>
-                  )}
-                  {stripAsk && (
-                    <div style={{
-                      padding: "8px 10px", borderRadius: 8,
-                      background: "#F8FAFC", border: "1px solid rgba(0,0,0,0.04)",
-                    }}>
-                      <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#6B7280", marginBottom: 2 }}>Asking Price</div>
-                      <div style={{ fontSize: 15, fontWeight: 800, color: "#0F172A", fontFamily: "monospace" }}>{stripAsk}</div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* ═══════════════════════════════════════════════════ */}
-      {/*  3. PRICE STRIP                                     */}
-      {/*  Cap, DSCR, IRR all live in the Verdict card above, */}
-      {/*  so this strip is just the editable price + the few */}
-      {/*  dollar figures that are fast glance-fuel (NOI,     */}
-      {/*  Price/SF).                                         */}
-      {/* ═══════════════════════════════════════════════════ */}
-      {hasData && wsType !== "land" && (() => {
-        const readOnlyMetrics = [
-          { label: "NOI", value: fmt$(noiOm) },
-          { label: "Price / SF", value: calc?.priceSf ? `$${calc.priceSf.toFixed(0)}/SF` : "--" },
-        ].filter(m => m.value !== "--");
-        return (
-          <div className="pd-metrics-strip" style={{
-            display: "flex", gap: 0, marginBottom: 24,
-            background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
-            overflow: "hidden",
-          }}>
-            {/* Editable Price Cell */}
-            <div style={{
-              flex: 1, padding: "16px 20px",
-              borderRight: "1px solid rgba(0,0,0,0.05)",
-            }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-                Price
-                {isOverridden && <span style={{ fontSize: 8, fontWeight: 700, background: "#DBEAFE", color: "#1E40AF", padding: "1px 5px", borderRadius: 3 }}>ADJUSTED</span>}
-              </div>
-              <PurchasePriceInline priceState={priceState} />
-            </div>
-            {readOnlyMetrics.map((m, i) => (
-              <div key={m.label} style={{
-                flex: 1, padding: "16px 20px",
-                borderRight: i < readOnlyMetrics.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
-              }}>
-                <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280", marginBottom: 4 }}>
-                  {m.label}
-                </div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>
-                  {m.value}
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-      })()}
 
       {/* Land metrics strip */}
       {hasData && wsType === "land" && (() => {

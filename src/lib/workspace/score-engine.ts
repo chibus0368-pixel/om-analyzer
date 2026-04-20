@@ -262,6 +262,7 @@ export async function runScoreEngine(params: {
             scoreTotal: result.totalScore,
             scoreBand: result.scoreBand,
             recommendation: result.recommendation,
+            scoredAt: now,
             updatedAt: now,
           }, { merge: true });
         } catch (e) { console.warn("[score-engine] Property update failed (non-retail):", e); }
@@ -570,6 +571,7 @@ export async function runScoreEngine(params: {
           scoreTotal: totalScore,
           scoreBand,
           recommendation,
+          scoredAt: now,
           updatedAt: now,
         };
         if (vaScore !== undefined) propScoreUpdate.valueAddScore = vaScore;

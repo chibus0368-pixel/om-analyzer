@@ -6,13 +6,9 @@
  * Owns ONE concern: "what's the right price?"
  *
  * Sections, in order:
- *   1. Slim verdict strip (mirrors the main page Buy / Neutral / Pass).
- *   2. Pricing Scenarios - 3 cards: Broker's projections at ask,
- *      Adjusted base case at ask, Max bid that clears target IRR.
- *   3. Sale Price Scenarios - the old price-sensitivity table redone as
- *      a card grid at ask +/- 15% so pass/fail-vs-target is visible at a
- *      glance. Replaces the dense tabular version.
- *   4. Exit Cap x Rent Growth heatmap.
+ *   1. Sale Price Scenarios - vertical table at ask +/- 15% with IRR
+ *      color-coded pass/fail against the workspace target.
+ *   2. Exit Cap x Rent Growth heatmap.
  *
  * Sections intentionally NOT here (live elsewhere, don't duplicate):
  *   - Buy/Neutral/Pass rationale        -> main page DealVerdictBox
@@ -28,7 +24,6 @@ import {
   runOmReversePricing,
   fmtCurrency,
   fmtPct,
-  fmtX,
   type OmReversePricingInput,
   type OmReversePricingReport,
   type AssetType,
@@ -210,87 +205,6 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      {/* ── Pricing Scenarios (Broker / Adjusted / Max Bid) ───────── */}
-      <SectionCard
-        title="Pricing Scenarios"
-        subtitle="Broker's projections at ask, adjusted assumptions at ask, and the price that hits the workspace target IRR."
-        accent="#7C3AED"
-      >
-        <div className="orp-scenarios" style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-          gap: 12,
-        }}>
-          {report.scenarios.map((sc, i) => {
-            const color = i === 0 ? "#2563EB" : i === 1 ? "#D97706" : "#059669";
-            const bg = i === 0 ? "#EFF6FF" : i === 1 ? "#FFFBEB" : "#ECFDF5";
-            return (
-              <div key={sc.label} style={{
-                background: bg,
-                borderRadius: 10,
-                padding: "14px 16px",
-                border: `1px solid ${color}30`,
-              }}>
-                <div style={{ fontSize: 10, fontWeight: 800, color, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 4 }}>
-                  {sc.label}
-                </div>
-                <div style={{ fontSize: 11, color: C.secondary, marginBottom: 10 }}>{sc.keyNote}</div>
-
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6 }}>
-                  <span style={{ fontSize: 11, color: C.secondary, fontWeight: 600 }}>Price</span>
-                  <span style={{ fontSize: 15, fontWeight: 800, color: C.onSurface, fontVariantNumeric: "tabular-nums" }}>
-                    {fmtCurrency(sc.purchasePrice)}
-                  </span>
-                </div>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6 }}>
-                  <span style={{ fontSize: 11, color: C.secondary, fontWeight: 600 }}>{`$ / ${unitLabel}`}</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: C.onSurface, fontVariantNumeric: "tabular-nums" }}>
-                    {fmtCurrency(sc.pricePerUnitOrSf)}
-                  </span>
-                </div>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6 }}>
-                  <span style={{ fontSize: 11, color: C.secondary, fontWeight: 600 }}>Going-in Cap</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: C.onSurface, fontVariantNumeric: "tabular-nums" }}>
-                    {fmtPct(sc.goingInCapPct, 2)}
-                  </span>
-                </div>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6 }}>
-                  <span style={{ fontSize: 11, color: C.secondary, fontWeight: 600 }}>Exit Cap</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: C.onSurface, fontVariantNumeric: "tabular-nums" }}>
-                    {fmtPct(sc.exitCapPct, 2)}
-                  </span>
-                </div>
-                <div style={{ borderTop: `1px dashed ${C.ghost}`, margin: "8px 0" }} />
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 4 }}>
-                  <span style={{ fontSize: 11, color: C.secondary, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.4 }}>Levered IRR</span>
-                  <span style={{ fontSize: 18, fontWeight: 800, color, fontVariantNumeric: "tabular-nums" }}>
-                    {fmtPct(sc.leveredIrrPct, 1)}
-                  </span>
-                </div>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 4 }}>
-                  <span style={{ fontSize: 11, color: C.secondary, fontWeight: 600 }}>Equity Multiple</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: C.onSurface, fontVariantNumeric: "tabular-nums" }}>
-                    {fmtX(sc.equityMultiple)}
-                  </span>
-                </div>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 4 }}>
-                  <span style={{ fontSize: 11, color: C.secondary, fontWeight: 600 }}>Yr-1 DSCR</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: C.onSurface, fontVariantNumeric: "tabular-nums" }}>
-                    {fmtX(sc.dscrYr1)}
-                  </span>
-                </div>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 11, color: C.secondary, fontWeight: 600 }}>Yr-1 Cash-on-Cash</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: C.onSurface, fontVariantNumeric: "tabular-nums" }}>
-                    {fmtPct(sc.cashOnCashYr1Pct, 1)}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </SectionCard>
-
       {/* ── Sale Price Scenarios (vertical table) ─────────────────── */}
       {/*    One row per price scenario. Pass/fail against target IRR   */}
       {/*    is color-coded on the IRR cell.                            */}
@@ -402,12 +316,6 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
         </div>
       </SectionCard>
 
-      {/* Responsive overrides */}
-      <style>{`
-        @media (max-width: 900px) {
-          .orp-scenarios { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
     </div>
   );
 }
