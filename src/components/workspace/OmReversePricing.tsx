@@ -291,69 +291,64 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
         </div>
       </SectionCard>
 
-      {/* ── Sale Price Scenarios (replaces the old Price Sensitivity table) ─ */}
-      {/*    Same card-grid visual language as the Pricing Scenarios above.  */}
-      {/*    Each card answers: "what happens to returns if we buy at this    */}
-      {/*    price?" Pass/fail against target IRR is color-coded.             */}
+      {/* ── Sale Price Scenarios (vertical table) ─────────────────── */}
+      {/*    One row per price scenario. Pass/fail against target IRR   */}
+      {/*    is color-coded on the IRR cell.                            */}
       <SectionCard
         title="Sale Price Scenarios"
         subtitle={`Returns under adjusted assumptions at asking +/- 15%. Green clears the ${baseline.targetLeveredIrrPct.toFixed(0)}% target IRR; red misses by more than 3 points.`}
         accent="#0891B2"
       >
-        <div className="orp-price-scenarios" style={{
-          display: "grid",
-          gridTemplateColumns: `repeat(${report.priceSensitivity.length}, minmax(0, 1fr))`,
-          gap: 10,
-        }}>
-          {report.priceSensitivity.map(row => {
-            const target = baseline.targetLeveredIrrPct;
-            const irr = row.leveredIrrPct;
-            const clears = irr != null && irr >= target;
-            const misses = irr != null && irr < target - 3;
-            const color = clears ? "#059669" : misses ? "#DC2626" : "#D97706";
-            const bg = clears ? "#ECFDF5" : misses ? "#FEF2F2" : "#FFFBEB";
-            const header =
-              row.purchasePriceDeltaPct === 0 ? "At Ask"
-              : row.purchasePriceDeltaPct > 0 ? `+${row.purchasePriceDeltaPct}%`
-              : `${row.purchasePriceDeltaPct}%`;
-            const verdict = clears ? "Clears Target" : misses ? "Misses Badly" : "Below Target";
-            return (
-              <div key={row.purchasePriceDeltaPct} style={{
-                background: bg,
-                borderRadius: 10,
-                padding: "12px 14px",
-                border: `1px solid ${color}30`,
-              }}>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 2 }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, color, letterSpacing: 0.8, textTransform: "uppercase" }}>
-                    {header}
-                  </span>
-                  <span style={{ fontSize: 9, fontWeight: 700, color, letterSpacing: 0.4, textTransform: "uppercase", opacity: 0.8 }}>
-                    {verdict}
-                  </span>
-                </div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: C.onSurface, fontVariantNumeric: "tabular-nums", marginTop: 6 }}>
-                  {fmtCurrency(row.purchasePrice)}
-                </div>
-                <div style={{ fontSize: 10, color: C.secondary, marginBottom: 10 }}>
-                  {fmtCurrency(row.purchasePrice / input.unitsOrSf)} / {unitLabel}
-                </div>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 4 }}>
-                  <span style={{ fontSize: 10, color: C.secondary, fontWeight: 600 }}>Going-in Cap</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: C.onSurface, fontVariantNumeric: "tabular-nums" }}>
-                    {fmtPct(row.goingInCapPct, 2)}
-                  </span>
-                </div>
-                <div style={{ borderTop: `1px dashed ${C.ghost}`, margin: "6px 0" }} />
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 10, color: C.secondary, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.4 }}>Levered IRR</span>
-                  <span style={{ fontSize: 17, fontWeight: 800, color, fontVariantNumeric: "tabular-nums" }}>
-                    {fmtPct(irr, 1)}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+        <div style={{ overflow: "auto" }}>
+          <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse", minWidth: 480 }}>
+            <thead>
+              <tr style={{ color: C.secondary, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, fontSize: 10 }}>
+                <th style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "left" }}>Scenario</th>
+                <th style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Purchase Price</th>
+                <th style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Price / {unitLabel}</th>
+                <th style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Going-in Cap</th>
+                <th style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Levered IRR</th>
+                <th style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Verdict</th>
+              </tr>
+            </thead>
+            <tbody>
+              {report.priceSensitivity.map(row => {
+                const target = baseline.targetLeveredIrrPct;
+                const irr = row.leveredIrrPct;
+                const clears = irr != null && irr >= target;
+                const misses = irr != null && irr < target - 3;
+                const color = clears ? "#059669" : misses ? "#DC2626" : "#D97706";
+                const bg = clears ? "#ECFDF5" : misses ? "#FEF2F2" : "#FFFBEB";
+                const header =
+                  row.purchasePriceDeltaPct === 0 ? "At Ask"
+                  : row.purchasePriceDeltaPct > 0 ? `+${row.purchasePriceDeltaPct}%`
+                  : `${row.purchasePriceDeltaPct}%`;
+                const verdict = clears ? "Clears Target" : misses ? "Misses Badly" : "Below Target";
+                return (
+                  <tr key={row.purchasePriceDeltaPct}>
+                    <td style={{ padding: "10px", borderBottom: `1px solid ${C.ghost}`, fontWeight: 800, color, letterSpacing: 0.4, textTransform: "uppercase", fontSize: 11 }}>
+                      {header}
+                    </td>
+                    <td style={{ padding: "10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700, color: C.onSurface }}>
+                      {fmtCurrency(row.purchasePrice)}
+                    </td>
+                    <td style={{ padding: "10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right", fontVariantNumeric: "tabular-nums", color: C.secondary }}>
+                      {fmtCurrency(row.purchasePrice / input.unitsOrSf)}
+                    </td>
+                    <td style={{ padding: "10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700, color: C.onSurface }}>
+                      {fmtPct(row.goingInCapPct, 2)}
+                    </td>
+                    <td style={{ padding: "10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 800, color, background: bg }}>
+                      {fmtPct(irr, 1)}
+                    </td>
+                    <td style={{ padding: "10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right", fontSize: 10, fontWeight: 700, color, letterSpacing: 0.4, textTransform: "uppercase" }}>
+                      {verdict}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </SectionCard>
 
@@ -409,17 +404,8 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
 
       {/* Responsive overrides */}
       <style>{`
-        @media (max-width: 1024px) {
-          .orp-price-scenarios { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-        }
         @media (max-width: 900px) {
           .orp-scenarios { grid-template-columns: 1fr !important; }
-        }
-        @media (max-width: 768px) {
-          .orp-price-scenarios { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-        }
-        @media (max-width: 480px) {
-          .orp-price-scenarios { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </div>

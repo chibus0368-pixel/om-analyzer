@@ -2121,19 +2121,6 @@ function PropertyDetailInner({
         </div>
       )}
 
-      {/* Deal Details heading marks the transition from Pro Analysis into
-          the full property detail view (OM fields, score, docs, notes).   */}
-      <div style={{
-        display: "flex", alignItems: "center", gap: 10,
-        margin: "8px 0 16px",
-      }}>
-        <span style={{
-          fontSize: 11, fontWeight: 800, color: C.secondary,
-          textTransform: "uppercase", letterSpacing: 1.2,
-        }}>Deal Details</span>
-        <span style={{ flex: 1, height: 1, background: C.ghost }} />
-      </div>
-
       {/* ═══════════════════════════════════════════════════ */}
       {/*  1. PROPERTY HEADER (mobile only - desktop uses     */}
       {/*     the modal-style hero above)                      */}

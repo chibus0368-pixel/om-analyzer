@@ -273,36 +273,8 @@ export default function DealQuickScreen({ property, fields, overrides }: DealQui
 
   const s = report.snapshot;
 
-  const snapshotRows: Array<[string, string, boolean?]> = [
-    ["Asking Price", fmt$(s.askingPrice), true],
-    [`Price / ${s.unitType === "units" ? "Unit" : "SF"}`, fmt$(s.pricePerUnitOrSf)],
-    ["Going-in Cap Rate", fmtPct(s.goingInCapRatePct), true],
-    ["Year 1 NOI", fmt$(s.year1NOI)],
-    ["Year 1 Cash-on-Cash", fmtPct(s.year1CashOnCashPct, 1), true],
-    ["DSCR at Market Debt", fmtX(s.dscr), true],
-    ["Max Loan at 1.25x DSCR", fmt$(s.maxLoanAt125Dscr)],
-    ["Implied LTV at Max Loan", fmtPct(s.impliedLtvAtMaxLoanPct, 1)],
-    [`Replacement Cost / ${s.unitType === "units" ? "Unit" : "SF"}`, fmt$(s.replacementCostPerUnit)],
-    ["Ask vs. Replacement Cost", fmtPct(s.askVsReplacementCostPct, 1)],
-    ["Unlevered IRR (est.)", fmtRange(s.unleveredIrrRange)],
-    ["Levered IRR (est.)", fmtRange(s.leveredIrrRange), true],
-  ];
-
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      {/* ── Deal Snapshot (numbers only, no narrative) ─── */}
-      <SectionCard title="Deal Snapshot" accent={C.primary}>
-        <div className="qs-snapshot-grid" style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-          columnGap: 24,
-        }}>
-          {snapshotRows.map(([label, value, emphasis]) => (
-            <MetricRow key={label} label={label} value={value} emphasis={emphasis} />
-          ))}
-        </div>
-      </SectionCard>
-
       {/* ── Back-of-napkin returns (3 scenarios) ───────── */}
       <SectionCard title="Back-of-Napkin Returns" subtitle="Ranges, not point estimates. Meant for triage, not underwriting." accent="#7C3AED">
         <div className="qs-scenario-grid" style={{
