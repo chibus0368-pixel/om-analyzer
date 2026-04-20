@@ -274,20 +274,46 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
         </div>
       </SectionCard>
 
-      {/* ── Exit Cap x Rent Growth heatmap ────────────────────────── */}
+      {/* ── Return Sensitivity: Exit Cap x Rent Growth heatmap ────── */}
       <SectionCard
-        title="Exit Cap x Rent Growth"
-        subtitle="Levered IRR at asking under a grid of exit cap and rent growth combinations. Green clears the target; red misses by more than 3 points."
+        title="Return Sensitivity: Exit Pricing & Rent Growth"
+        subtitle={`How your levered IRR holds up when the market exit cap shifts (rows) or rents grow slower than hoped (columns). Green clears the ${baseline.targetLeveredIrrPct.toFixed(0)}% target; amber is below target; red misses by more than 3 points. Hover any cell for a plain-English read.`}
         accent="#7C3AED"
       >
         <div style={{ overflow: "auto" }}>
-          <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse", minWidth: 360 }}>
+          <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse", minWidth: 420 }}>
             <thead>
+              {/* Axis banner: tells you what columns vs rows represent */}
+              <tr>
+                <th style={{
+                  padding: "8px 10px",
+                  borderBottom: `1px solid ${C.ghost}`,
+                  background: C.surfLow,
+                  textAlign: "left",
+                  fontSize: 9, fontWeight: 800, color: C.secondary,
+                  textTransform: "uppercase", letterSpacing: 0.6,
+                }}>
+                  Exit Cap <span style={{ opacity: 0.5 }}>↓</span>
+                </th>
+                <th colSpan={report.exitCapRentGrowthMatrix.rentGrowthsPct.length} style={{
+                  padding: "8px 10px",
+                  borderBottom: `1px solid ${C.ghost}`,
+                  background: C.surfLow,
+                  textAlign: "center",
+                  fontSize: 9, fontWeight: 800, color: C.secondary,
+                  textTransform: "uppercase", letterSpacing: 0.6,
+                }}>
+                  Annual Rent Growth <span style={{ opacity: 0.5 }}>→</span>
+                </th>
+              </tr>
+              {/* Value header row with unit-annotated labels */}
               <tr style={{ color: C.secondary, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, fontSize: 10 }}>
-                <th style={{ padding: "6px 8px", borderBottom: `1px solid ${C.ghost}`, textAlign: "left" }}>Exit Cap \ Rent Growth</th>
+                <th style={{ padding: "6px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "left" }}>
+                  Cap Rate at Sale
+                </th>
                 {report.exitCapRentGrowthMatrix.rentGrowthsPct.map(rg => (
                   <th key={rg} style={{ padding: "6px 8px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>
-                    {rg.toFixed(1)}%
+                    {rg.toFixed(1)}% / yr
                   </th>
                 ))}
               </tr>
@@ -295,32 +321,80 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
             <tbody>
               {report.exitCapRentGrowthMatrix.exitCapsPct.map(ec => (
                 <tr key={ec}>
-                  <td style={{ padding: "8px", borderBottom: `1px solid ${C.ghost}`, fontWeight: 700, color: C.onSurface }}>
+                  <td
+                    title={`Assumes the property sells at a ${ec.toFixed(2)}% exit cap rate. Higher exit caps = lower sale price.`}
+                    style={{
+                      padding: "8px 10px",
+                      borderBottom: `1px solid ${C.ghost}`,
+                      fontWeight: 700,
+                      color: C.onSurface,
+                      cursor: "help",
+                    }}
+                  >
                     {ec.toFixed(2)}%
                   </td>
                   {report.exitCapRentGrowthMatrix.rentGrowthsPct.map(rg => {
                     const cell = report.exitCapRentGrowthMatrix.cells.find(c => c.exitCapPct === ec && c.rentGrowthPct === rg);
                     const v = cell?.leveredIrrPct ?? null;
-                    const meetsTarget = v != null && v >= baseline.targetLeveredIrrPct;
-                    const miss = v != null && v < baseline.targetLeveredIrrPct - 3;
+                    const target = baseline.targetLeveredIrrPct;
+                    const meetsTarget = v != null && v >= target;
+                    const miss = v != null && v < target - 3;
                     const bg = v == null ? "transparent" : meetsTarget ? "#D1FAE5" : miss ? "#FEE2E2" : "#FEF3C7";
                     const fg = v == null ? C.secondary : meetsTarget ? "#065F46" : miss ? "#991B1B" : "#78350F";
+
+                    // Build a plain-English tooltip
+                    const verdictText =
+                      v == null ? "IRR could not be calculated for this combo."
+                      : meetsTarget ? `Clears your ${target.toFixed(0)}% target by ${(v - target).toFixed(1)} pts.`
+                      : miss ? `Misses your ${target.toFixed(0)}% target by ${(target - v).toFixed(1)} pts. Meaningful return risk.`
+                      : `Short of your ${target.toFixed(0)}% target by ${(target - v).toFixed(1)} pts.`;
+                    const tip = v == null
+                      ? `Sell at a ${ec.toFixed(2)}% exit cap with ${rg.toFixed(1)}% annual rent growth. ${verdictText}`
+                      : `If you sell at a ${ec.toFixed(2)}% exit cap and rents grow ${rg.toFixed(1)}% per year, levered IRR is ${v.toFixed(1)}%. ${verdictText}`;
+
                     return (
-                      <td key={rg} style={{
-                        padding: "8px",
-                        borderBottom: `1px solid ${C.ghost}`,
-                        textAlign: "right",
-                        fontVariantNumeric: "tabular-nums",
-                        fontWeight: 700,
-                        background: bg,
-                        color: fg,
-                      }}>{fmtPct(v, 1)}</td>
+                      <td
+                        key={rg}
+                        title={tip}
+                        style={{
+                          padding: "8px",
+                          borderBottom: `1px solid ${C.ghost}`,
+                          textAlign: "right",
+                          fontVariantNumeric: "tabular-nums",
+                          fontWeight: 700,
+                          background: bg,
+                          color: fg,
+                          cursor: v == null ? "default" : "help",
+                        }}
+                      >
+                        {fmtPct(v, 1)}
+                      </td>
                     );
                   })}
                 </tr>
               ))}
             </tbody>
           </table>
+          {/* Inline legend */}
+          <div style={{
+            display: "flex", flexWrap: "wrap", gap: 14,
+            marginTop: 10, paddingTop: 10,
+            borderTop: `1px dashed ${C.ghost}`,
+            fontSize: 11, color: C.secondary,
+          }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 10, height: 10, borderRadius: 2, background: "#D1FAE5", border: "1px solid #065F4633" }} />
+              Clears target
+            </span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 10, height: 10, borderRadius: 2, background: "#FEF3C7", border: "1px solid #78350F33" }} />
+              Below target (within 3 pts)
+            </span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 10, height: 10, borderRadius: 2, background: "#FEE2E2", border: "1px solid #991B1B33" }} />
+              Misses by more than 3 pts
+            </span>
+          </div>
         </div>
       </SectionCard>
 
