@@ -239,13 +239,13 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
                   : `${row.purchasePriceDeltaPct}%`;
                 const verdict = clears ? "Clears Target" : misses ? "Misses Badly" : "Below Target";
                 const isAtAsk = row.purchasePriceDeltaPct === 0;
-                const ACCENT = "#0891B2";
+                const BORDER_GREY = "#9CA3AF";
                 const baseBorder = `1px solid ${C.ghost}`;
-                const topBorder = isAtAsk ? `2px solid ${ACCENT}` : "none";
-                const bottomBorder = isAtAsk ? `2px solid ${ACCENT}` : baseBorder;
-                const leftBorder = isAtAsk ? `2px solid ${ACCENT}` : "none";
-                const rightBorder = isAtAsk ? `2px solid ${ACCENT}` : "none";
-                const rowTint = isAtAsk ? "#ECFEFF" : "transparent";
+                const topBorder = isAtAsk ? `1.5px solid ${BORDER_GREY}` : "none";
+                const bottomBorder = isAtAsk ? `1.5px solid ${BORDER_GREY}` : baseBorder;
+                const leftBorder = isAtAsk ? `1.5px solid ${BORDER_GREY}` : "none";
+                const rightBorder = isAtAsk ? `1.5px solid ${BORDER_GREY}` : "none";
+                const rowTint = "transparent";
                 return (
                   <tr key={row.purchasePriceDeltaPct}>
                     <td style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, borderLeft: leftBorder, background: rowTint, fontWeight: 800, color, letterSpacing: 0.4, textTransform: "uppercase", fontSize: 11 }}>
