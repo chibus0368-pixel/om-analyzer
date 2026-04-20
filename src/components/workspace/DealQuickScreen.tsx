@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { Property, ExtractedField } from "@/lib/workspace/types";
 import {
   runQuickScreen,
@@ -11,6 +11,7 @@ import {
   type UnitType,
   type Verdict,
 } from "@/lib/analysis/quick-screen";
+import { useUnderwritingDefaults } from "@/lib/workspace/use-underwriting-defaults";
 
 /* ── Design tokens (mirror PropertyDetailClient's C object) ─── */
 const C = {
@@ -49,25 +50,25 @@ function fmtX(val: number | null | undefined): string {
 
 /* ── Verdict banner ──────────────────────────────────── */
 function verdictStyle(verdict: Verdict) {
-  if (verdict === "KEEP") return {
+  if (verdict === "BUY") return {
     bg: "linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)",
     border: "#86EFAC",
     accent: "#065F46",
-    label: "KEEP",
+    label: "BUY",
     pill: "#059669",
   };
-  if (verdict === "KILL") return {
+  if (verdict === "PASS") return {
     bg: "linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%)",
     border: "#FCA5A5",
     accent: "#991B1B",
-    label: "KILL",
+    label: "PASS",
     pill: "#DC2626",
   };
   return {
     bg: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
     border: "#FCD34D",
     accent: "#78350F",
-    label: "KEEP WITH CONDITIONS",
+    label: "NEUTRAL",
     pill: "#D97706",
   };
 }
@@ -130,8 +131,26 @@ export interface DealQuickScreenProps {
   overrides?: Partial<QuickScreenInput>;
 }
 
+/**
+ * Debt + target-return assumptions that come from the workspace-wide
+ * standardized baseline (see Settings page). Passed in from the parent
+ * so the screen stays pure and testable.
+ */
+export interface StandardizedBaseline {
+  ltvPct: number;
+  interestRatePct: number;
+  amortYears: number;
+  holdYears: number;
+  targetLeveredIrrPct: number;
+}
+
 /* ── Map property + fields -> calculator input ───────── */
-function buildInput(property: Property, fields: ExtractedField[], overrides?: Partial<QuickScreenInput>): QuickScreenInput | null {
+function buildInput(
+  property: Property,
+  fields: ExtractedField[],
+  baseline: StandardizedBaseline,
+  overrides?: Partial<QuickScreenInput>,
+): QuickScreenInput | null {
   const askingPrice = Number(gf(fields, "pricing_deal_terms", "asking_price"))
     || (property as any)?.cardAskingPrice
     || 0;
@@ -184,10 +203,10 @@ function buildInput(property: Property, fields: ExtractedField[], overrides?: Pa
     || property.yearBuilt
     || null;
 
-  const ltvPct = Number(gf(fields, "debt_assumptions", "ltv"));
-  const interestRate = Number(gf(fields, "debt_assumptions", "interest_rate"));
-  const amortYears = Number(gf(fields, "debt_assumptions", "amortization_years"));
-
+  // Debt and target-return assumptions ALWAYS come from the workspace
+  // standardized baseline, never from the OM. This is what makes scoring
+  // comparable across deals. OM-stated debt terms are displayed as a
+  // read-only reference in the Assumptions block at the bottom.
   const marketRent = assetType === "multifamily"
     ? Number(gf(fields, "multifamily_addons", "avg_rent_per_unit")) || null
     : null;
@@ -207,10 +226,33 @@ function buildInput(property: Property, fields: ExtractedField[], overrides?: Pa
     inPlaceRentPerUnit: marketRent, // conservatively assume same unless data says otherwise
     statedCapRatePct: statedCapRate,
     yearBuilt,
-    ltv: ltvPct > 0 ? ltvPct / 100 : null,
-    interestRatePct: interestRate > 0 ? interestRate : null,
-    amortYears: amortYears > 0 ? amortYears : null,
+    ltv: baseline.ltvPct / 100,
+    interestRatePct: baseline.interestRatePct,
+    amortYears: baseline.amortYears,
+    holdYears: baseline.holdYears,
+    targetIrrPct: baseline.targetLeveredIrrPct,
     ...overrides,
+  };
+}
+
+/**
+ * Pull OM-stated debt terms out of the property fields so they can be
+ * displayed as read-only reference rows. These values do NOT feed the
+ * calculator; they exist only for the user to spot-check the delta
+ * against the standardized baseline.
+ */
+function readOmDebtTerms(fields: ExtractedField[]): {
+  ltvPct: number | null;
+  interestRatePct: number | null;
+  amortYears: number | null;
+} {
+  const ltv = Number(gf(fields, "debt_assumptions", "ltv"));
+  const rate = Number(gf(fields, "debt_assumptions", "interest_rate"));
+  const amort = Number(gf(fields, "debt_assumptions", "amortization_years"));
+  return {
+    ltvPct: Number.isFinite(ltv) && ltv > 0 ? ltv : null,
+    interestRatePct: Number.isFinite(rate) && rate > 0 ? rate : null,
+    amortYears: Number.isFinite(amort) && amort > 0 ? amort : null,
   };
 }
 
@@ -218,7 +260,23 @@ function buildInput(property: Property, fields: ExtractedField[], overrides?: Pa
 /*  MAIN COMPONENT                                            */
 /* ══════════════════════════════════════════════════════════ */
 export default function DealQuickScreen({ property, fields, overrides }: DealQuickScreenProps) {
-  const input = useMemo(() => buildInput(property, fields, overrides), [property, fields, overrides]);
+  const workspaceId = property.workspaceId || null;
+  const { defaults, loaded: baselineLoaded } = useUnderwritingDefaults(workspaceId);
+  const [assumptionsOpen, setAssumptionsOpen] = useState(false);
+
+  const baseline: StandardizedBaseline = useMemo(() => ({
+    ltvPct: defaults.ltv,
+    interestRatePct: defaults.interestRate,
+    amortYears: defaults.amortYears,
+    holdYears: defaults.holdYears,
+    targetLeveredIrrPct: defaults.targetLeveredIrr,
+  }), [defaults]);
+
+  const omDebt = useMemo(() => readOmDebtTerms(fields), [fields]);
+  const input = useMemo(
+    () => buildInput(property, fields, baseline, overrides),
+    [property, fields, baseline, overrides],
+  );
   const report: QuickScreenReport | null = useMemo(() => (input ? runQuickScreen(input) : null), [input]);
 
   if (!input || !report) {
@@ -232,7 +290,7 @@ export default function DealQuickScreen({ property, fields, overrides }: DealQui
           Quick Screen is waiting on core inputs
         </div>
         <div style={{ fontSize: 12, color: C.secondary, maxWidth: 420, margin: "0 auto", lineHeight: 1.5 }}>
-          A KEEP/KILL read needs at minimum an asking price and unit count (or building SF).
+          A Buy / Neutral / Pass read needs at minimum an asking price and unit count (or building SF).
           Upload the OM or fill those fields on the Details tab and this view will run automatically.
         </div>
       </div>
@@ -241,6 +299,7 @@ export default function DealQuickScreen({ property, fields, overrides }: DealQui
 
   const v = verdictStyle(report.verdict);
   const s = report.snapshot;
+  const scoreColor = report.verdict === "BUY" ? "#059669" : report.verdict === "PASS" ? "#DC2626" : "#D97706";
 
   const snapshotRows: Array<[string, string, boolean?]> = [
     ["Asking Price", fmt$(s.askingPrice), true],
@@ -259,88 +318,81 @@ export default function DealQuickScreen({ property, fields, overrides }: DealQui
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      {/* ── 1. Verdict Banner ──────────────────────────── */}
+      {/* ── 1. Executive Summary (verdict, score, positive prose only) ─── */}
+      {/*    Risks intentionally live below in "Three Ways This Deal Dies"  */}
+      {/*    so a given risk shows up exactly once on this tab.            */}
       <div style={{
         background: v.bg,
         border: `1px solid ${v.border}`,
         borderRadius: C.radius,
-        padding: "22px 24px",
+        padding: "24px 26px",
         marginBottom: 16,
         boxShadow: "0 2px 10px rgba(15,23,43,0.05)",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-          <span style={{
-            padding: "6px 14px",
-            background: v.pill,
-            color: "#fff",
-            fontSize: 12,
-            fontWeight: 800,
-            letterSpacing: 1.2,
-            borderRadius: 999,
-            textTransform: "uppercase",
-            whiteSpace: "nowrap",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-          }}>{v.label}</span>
-          <span style={{
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: 0.8,
-            color: v.accent,
-            textTransform: "uppercase",
-            opacity: 0.8,
+        <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
+          {/* Score gauge */}
+          <div style={{
+            width: 74, height: 74, borderRadius: "50%",
+            background: `conic-gradient(${scoreColor} ${(report.score / 100) * 360}deg, ${C.ghost} 0deg)`,
+            display: "grid", placeItems: "center", flexShrink: 0,
           }}>
-            {report.dealScale === "small-operator" ? "Small Operator Mode" : "Institutional Mode"}
-          </span>
-        </div>
-        <div style={{
-          marginTop: 12,
-          fontSize: 16,
-          lineHeight: 1.5,
-          color: v.accent,
-          fontWeight: 500,
-        }}>{report.headline}</div>
-      </div>
-
-      {/* ── Two-column layout: snapshot | assumptions ─── */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "minmax(0, 1.35fr) minmax(0, 1fr)",
-        gap: 16,
-      }}
-      className="qs-grid-12"
-      >
-        {/* Deal Snapshot Table */}
-        <SectionCard title="Deal Snapshot" accent={C.primary}>
-          <div>
-            {snapshotRows.map(([label, value, emphasis]) => (
-              <MetricRow key={label} label={label} value={value} emphasis={emphasis} />
-            ))}
+            <div style={{
+              width: 58, height: 58, borderRadius: "50%", background: "#fff",
+              display: "grid", placeItems: "center",
+              fontSize: 22, fontWeight: 800, color: scoreColor,
+              fontVariantNumeric: "tabular-nums",
+            }}>{report.score}</div>
           </div>
-        </SectionCard>
-
-        {/* Assumptions */}
-        <SectionCard title="Key Assumptions" subtitle="Source tagged. Edit on Details tab to re-run." accent={C.gold}>
-          <ol style={{ margin: 0, paddingLeft: 20, fontSize: 12, lineHeight: 1.7 }}>
-            {report.assumptions.map((a, i) => (
-              <li key={i} style={{ marginBottom: 4, color: C.onSurface }}>
-                <span style={{ fontWeight: 600 }}>{a.variable}:</span>{" "}
-                <span style={{ fontWeight: 500 }}>{a.value}</span>{" "}
-                <span style={{
-                  fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5,
-                  padding: "1px 6px", marginLeft: 4, borderRadius: 3,
-                  background: a.source === "user" ? "#DBEAFE" : a.source === "estimated" ? "#FEF3C7" : "#EEF2FF",
-                  color: a.source === "user" ? "#1E40AF" : a.source === "estimated" ? "#92400E" : "#4338CA",
-                }}>{a.source === "user" ? "From OM" : a.source === "estimated" ? "Estimated" : "Market Default"}</span>
-                {a.note && (
-                  <span style={{ fontSize: 11, color: C.secondary, marginLeft: 4, fontStyle: "italic" }}>
-                    ({a.note})
-                  </span>
-                )}
-              </li>
-            ))}
-          </ol>
-        </SectionCard>
+          <div style={{ flex: 1, minWidth: 240 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <span style={{
+                padding: "6px 14px",
+                background: v.pill,
+                color: "#fff",
+                fontSize: 12,
+                fontWeight: 800,
+                letterSpacing: 1.2,
+                borderRadius: 999,
+                textTransform: "uppercase",
+                whiteSpace: "nowrap",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+              }}>{v.label}</span>
+              <span style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: 0.8,
+                color: v.accent,
+                textTransform: "uppercase",
+                opacity: 0.75,
+              }}>
+                {report.dealScale === "small-operator" ? "Small Operator Mode" : "Institutional Mode"}
+                {" · "}
+                {baselineLoaded ? "Standardized Baseline" : "Loading baseline..."}
+              </span>
+            </div>
+            <div style={{
+              marginTop: 10,
+              fontSize: 14,
+              lineHeight: 1.55,
+              color: v.accent,
+              fontWeight: 500,
+            }}>{report.executiveSummary}</div>
+          </div>
+        </div>
       </div>
+
+      {/* ── 2. Deal Snapshot (numbers only, no narrative) ─── */}
+      <SectionCard title="Deal Snapshot" accent={C.primary}>
+        <div className="qs-snapshot-grid" style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+          columnGap: 24,
+        }}>
+          {snapshotRows.map(([label, value, emphasis]) => (
+            <MetricRow key={label} label={label} value={value} emphasis={emphasis} />
+          ))}
+        </div>
+      </SectionCard>
 
       {/* ── Back-of-napkin returns (3 scenarios) ───────── */}
       <SectionCard title="Back-of-Napkin Returns" subtitle="Ranges, not point estimates. Meant for triage, not underwriting." accent="#7C3AED">
@@ -416,53 +468,181 @@ export default function DealQuickScreen({ property, fields, overrides }: DealQui
         </p>
       </SectionCard>
 
-      {/* ── Missing info ───────────────────────────────── */}
-      {report.missingInfo.length > 0 && (
-        <SectionCard title="Missing Info to Pull" subtitle="These gaps are covered by assumptions. Fill them to tighten the read." accent="#D97706">
-          <div style={{ overflow: "auto", marginLeft: -4, marginRight: -4 }}>
-            <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ textAlign: "left", color: C.secondary, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, fontSize: 10 }}>
-                  <th style={{ padding: "6px 8px", borderBottom: `1px solid ${C.ghost}` }}>Item</th>
-                  <th style={{ padding: "6px 8px", borderBottom: `1px solid ${C.ghost}` }}>Why it matters</th>
-                  <th style={{ padding: "6px 8px", borderBottom: `1px solid ${C.ghost}` }}>Assumption used</th>
+      {/* ── Action Items (consolidates old "Missing Info" + "Next Diligence") ─ */}
+      {/*    One list. Items sourced from assumptions-in-use carry higher    */}
+      {/*    priority; standard diligence follows. Covers what the OM left   */}
+      {/*    open AND what we'd pull regardless, without re-stating risk.   */}
+      <SectionCard title="Action Items" subtitle="Everything to pull, verify, or confirm before hardening earnest money." accent={C.primary}>
+        <div style={{ overflow: "auto", marginLeft: -4, marginRight: -4 }}>
+          <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ textAlign: "left", color: C.secondary, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, fontSize: 10 }}>
+                <th style={{ padding: "6px 8px", borderBottom: `1px solid ${C.ghost}`, width: 32 }}></th>
+                <th style={{ padding: "6px 8px", borderBottom: `1px solid ${C.ghost}` }}>Item</th>
+                <th style={{ padding: "6px 8px", borderBottom: `1px solid ${C.ghost}` }}>Why it matters</th>
+                <th style={{ padding: "6px 8px", borderBottom: `1px solid ${C.ghost}` }}>Assumption in use</th>
+              </tr>
+            </thead>
+            <tbody>
+              {report.actionItems.map((row, i) => (
+                <tr key={i}>
+                  <td style={{ padding: "8px", borderBottom: `1px solid ${C.ghost}`, verticalAlign: "top" }}>
+                    <input
+                      type="checkbox"
+                      style={{ accentColor: C.primary, cursor: "pointer" }}
+                      aria-label={`Mark action item ${i + 1} complete`}
+                    />
+                  </td>
+                  <td style={{ padding: "8px", borderBottom: `1px solid ${C.ghost}`, fontWeight: 600, color: C.onSurface, verticalAlign: "top" }}>{row.item}</td>
+                  <td style={{ padding: "8px", borderBottom: `1px solid ${C.ghost}`, color: C.secondary, verticalAlign: "top" }}>{row.whyItMatters}</td>
+                  <td style={{ padding: "8px", borderBottom: `1px solid ${C.ghost}`, color: C.onSurface, fontVariantNumeric: "tabular-nums", verticalAlign: "top" }}>{row.assumptionUsed}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {report.missingInfo.map((row, i) => (
-                  <tr key={i}>
-                    <td style={{ padding: "8px", borderBottom: `1px solid ${C.ghost}`, fontWeight: 600, color: C.onSurface }}>{row.item}</td>
-                    <td style={{ padding: "8px", borderBottom: `1px solid ${C.ghost}`, color: C.secondary }}>{row.whyItMatters}</td>
-                    <td style={{ padding: "8px", borderBottom: `1px solid ${C.ghost}`, color: C.onSurface, fontVariantNumeric: "tabular-nums" }}>{row.assumptionUsed}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </SectionCard>
-      )}
-
-      {/* ── Next diligence checklist ───────────────────── */}
-      <SectionCard title="Next Diligence Checklist" subtitle="Ordered by priority for this specific deal profile." accent={C.primary}>
-        <ol style={{ margin: 0, paddingLeft: 20, fontSize: 13, lineHeight: 1.7, color: C.onSurface }}>
-          {report.nextDiligence.map((t, i) => (
-            <li key={i} style={{ marginBottom: 4 }}>
-              <input
-                type="checkbox"
-                style={{ marginRight: 8, accentColor: C.primary, cursor: "pointer" }}
-                aria-label={`Mark diligence item ${i + 1} complete`}
-              />
-              {t}
-            </li>
-          ))}
-        </ol>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </SectionCard>
+
+      {/* ── Assumptions footer (collapsed by default) ────── */}
+      {/*    Shows the standardized baseline the scoring used, plus OM-stated  */}
+      {/*    debt terms as reference-only rows so the user can spot-check the  */}
+      {/*    delta without those values ever feeding the calculator.           */}
+      <div style={{
+        background: C.surfLowest,
+        border: `1px solid ${C.ghostBorder}`,
+        borderRadius: C.radius,
+        marginBottom: 16,
+        boxShadow: "0 1px 3px rgba(15,23,43,0.04)",
+      }}>
+        <button
+          type="button"
+          onClick={() => setAssumptionsOpen(v => !v)}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            background: "transparent",
+            border: "none",
+            padding: "16px 20px",
+            cursor: "pointer",
+            fontFamily: "inherit",
+            textAlign: "left",
+          }}
+          aria-expanded={assumptionsOpen}
+        >
+          <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ width: 4, height: 16, borderRadius: 2, background: C.secondary, display: "inline-block" }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: C.onSurface, textTransform: "uppercase", letterSpacing: 0.6 }}>
+              Assumptions
+            </span>
+            <span style={{ fontSize: 11, color: C.secondary, fontWeight: 500, textTransform: "none", letterSpacing: 0 }}>
+              Standardized baseline used for scoring. OM-stated debt shown for reference only.
+            </span>
+          </span>
+          <span style={{ fontSize: 12, color: C.secondary, fontWeight: 600 }}>
+            {assumptionsOpen ? "Hide" : "Show"}
+          </span>
+        </button>
+
+        {assumptionsOpen && (
+          <div style={{ padding: "0 20px 20px", borderTop: `1px solid ${C.ghost}` }}>
+            {/* Standardized baseline used for scoring */}
+            <div style={{ marginTop: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: C.onSurface, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>
+                Standardized Baseline (drives scoring)
+              </div>
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                columnGap: 24,
+                marginBottom: 12,
+              }}>
+                {report.assumptions.map((a, i) => (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "7px 0", borderBottom: `1px solid ${C.ghost}`, gap: 10,
+                  }}>
+                    <span style={{ fontSize: 12, color: C.secondary, fontWeight: 500 }}>
+                      {a.variable}
+                      {a.source === "estimated" && (
+                        <span style={{ marginLeft: 6, fontSize: 9, padding: "1px 6px", borderRadius: 999, background: "#FEF3C7", color: "#92400E", fontWeight: 700, letterSpacing: 0.4 }}>
+                          EST
+                        </span>
+                      )}
+                      {a.source === "market_default" && (
+                        <span style={{ marginLeft: 6, fontSize: 9, padding: "1px 6px", borderRadius: 999, background: "#EDE9FE", color: "#5B21B6", fontWeight: 700, letterSpacing: 0.4 }}>
+                          MKT
+                        </span>
+                      )}
+                    </span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: C.onSurface, fontVariantNumeric: "tabular-nums", textAlign: "right" }}>
+                      {a.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* OM-stated debt terms: reference only, never fed to the calculator */}
+            <div style={{ marginTop: 8 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: C.onSurface, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>
+                OM-Stated Debt (reference only)
+              </div>
+              <div style={{ fontSize: 11, color: C.secondary, marginBottom: 8, lineHeight: 1.5 }}>
+                These values appear in the OM but do NOT drive scoring. They exist so you can compare the seller&apos;s assumed financing to the workspace baseline.
+              </div>
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                columnGap: 24,
+                background: "#FAFBFC",
+                border: `1px dashed ${C.ghost}`,
+                borderRadius: 8,
+                padding: "6px 14px",
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: `1px solid ${C.ghost}` }}>
+                  <span style={{ fontSize: 12, color: C.secondary }}>OM LTV</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: C.onSurface, fontVariantNumeric: "tabular-nums" }}>
+                    {omDebt.ltvPct != null ? `${omDebt.ltvPct.toFixed(0)}%` : "Not stated"}
+                  </span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: `1px solid ${C.ghost}` }}>
+                  <span style={{ fontSize: 12, color: C.secondary }}>OM Interest Rate</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: C.onSurface, fontVariantNumeric: "tabular-nums" }}>
+                    {omDebt.interestRatePct != null ? `${omDebt.interestRatePct.toFixed(2)}%` : "Not stated"}
+                  </span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "7px 0" }}>
+                  <span style={{ fontSize: 12, color: C.secondary }}>OM Amortization</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: C.onSurface, fontVariantNumeric: "tabular-nums" }}>
+                    {omDebt.amortYears != null ? `${omDebt.amortYears} yrs` : "Not stated"}
+                  </span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "7px 0" }}>
+                  <span style={{ fontSize: 12, color: C.secondary }}>Stated Cap Rate</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: C.onSurface, fontVariantNumeric: "tabular-nums" }}>
+                    {s.goingInCapRatePct != null && input.statedCapRatePct ? `${input.statedCapRatePct.toFixed(2)}%` : "Not stated"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 12, fontSize: 11, color: C.secondary, lineHeight: 1.5 }}>
+              Baseline is set workspace-wide on the{" "}
+              <a href="/workspace/settings" style={{ color: C.primary, textDecoration: "none", fontWeight: 600 }}>Settings page</a>.
+              Scoring stays comparable across deals as long as every property in a workspace uses the same baseline.
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Responsive overrides */}
       <style>{`
         @media (max-width: 768px) {
           .qs-grid-12 { grid-template-columns: 1fr !important; }
           .qs-scenario-grid { grid-template-columns: 1fr !important; }
+          .qs-snapshot-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </div>

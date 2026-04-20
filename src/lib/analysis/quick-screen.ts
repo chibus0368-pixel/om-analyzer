@@ -2,9 +2,14 @@
  * Deal Quick Screen calculator.
  *
  * Port of the deal-quick-screen skill's python reference into pure TS so the
- * Pro Property page can compute a KEEP/KILL verdict client-side without an
- * API round-trip. All inputs optional except purchasePrice + unitsOrSf;
- * anything missing falls back to the skill's conservative defaults.
+ * Pro Property page can compute a Buy / Neutral / Pass verdict client-side
+ * without an API round-trip. All inputs optional except purchasePrice +
+ * unitsOrSf; anything missing falls back to the skill's conservative defaults.
+ *
+ * Debt and target-return assumptions should be sourced from the workspace
+ * standardized baseline (see useUnderwritingDefaults), NOT from OM-extracted
+ * fields. Scoring only means anything if it's comparable across deals, and
+ * OM-sourced debt terms make every deal incomparable.
  *
  * Returns a fully-assembled report object that the DealQuickScreen
  * component renders directly. Every numeric output is either a finite
@@ -78,11 +83,25 @@ export interface ScenarioReturn {
   equityMultiple: number | null;
 }
 
-export type Verdict = "KEEP" | "KILL" | "KEEP_WITH_CONDITIONS";
+/**
+ * Verdict vocabulary matches the DealSignal scoring badge: Buy / Neutral / Pass.
+ * Legacy callers that referenced KEEP / KILL / KEEP_WITH_CONDITIONS should
+ * migrate; the enum values here are the authoritative ones.
+ */
+export type Verdict = "BUY" | "NEUTRAL" | "PASS";
 
 export interface QuickScreenReport {
   verdict: Verdict;
+  /** One-sentence rationale for the verdict (legacy callers). */
   headline: string;
+  /**
+   * Executive summary prose for the top of the tab. Positive framing and
+   * verdict rationale only; risks are intentionally NOT included here so
+   * the Ways It Dies column stays the single home for risk callouts.
+   */
+  executiveSummary: string;
+  /** 0 to 100 composite score mirroring DealSignalBadge. */
+  score: number;
 
   // Snapshot
   snapshot: {
@@ -109,8 +128,17 @@ export interface QuickScreenReport {
   waysItWorks: string[];
   waysItDies: string[];
   perUnitCompCheck: string;
+  /** Legacy field: kept so older callers don't break. New UI should render actionItems. */
   missingInfo: Array<{ item: string; whyItMatters: string; assumptionUsed: string }>;
+  /** Legacy field: kept so older callers don't break. New UI should render actionItems. */
   nextDiligence: string[];
+  /**
+   * Consolidated to-do list combining missing info and next diligence
+   * (which historically overlapped 80%+). Each item names the assumption
+   * currently in use so the reader knows what risk they're carrying until
+   * the item is resolved.
+   */
+  actionItems: Array<{ item: string; whyItMatters: string; assumptionUsed: string; priority: number }>;
 
   // Debug / traceability
   computedAt: string;
@@ -567,30 +595,30 @@ export function runQuickScreen(raw: QuickScreenInput): QuickScreenReport {
   const leveredIrrRange: [number, number] | null = leveredIrrs.length === 3 ? [Math.min(...leveredIrrs), Math.max(...leveredIrrs)] : null;
   const unleveredIrrRange: [number, number] | null = unleveredIrrs.length === 3 ? [Math.min(...unleveredIrrs), Math.max(...unleveredIrrs)] : null;
 
-  // Verdict logic per the skill spec
+  // Verdict logic per the skill spec, normalized to Buy/Neutral/Pass.
   const baseIrr = scenarios.find(s => s.label === "Base")?.leveredIrrPct ?? null;
-  let verdict: Verdict = "KEEP_WITH_CONDITIONS";
+  let verdict: Verdict = "NEUTRAL";
   let headline = "";
   const isValueAdd = resolved.businessPlan === "value-add" || resolved.businessPlan === "opportunistic";
   const spread = goingInCapPct != null ? goingInCapPct - resolved.interestRatePct : null;
 
-  // KILL cases
+  // Pass cases (hard kills in the skill spec).
   if (goingInCapPct != null && goingInCapPct < 5.0 && isValueAdd) {
-    verdict = "KILL";
+    verdict = "PASS";
     headline = `Going-in cap of ${goingInCapPct.toFixed(2)}% is below the 5% floor for value-add; no margin for execution risk.`;
   } else if (dscr != null && dscr < 1.15) {
-    verdict = "KILL";
-    headline = `DSCR of ${dscr.toFixed(2)}x at market debt is below 1.15x. Financing will not pencil.`;
+    verdict = "PASS";
+    headline = `DSCR of ${dscr.toFixed(2)}x at the standardized debt baseline is below 1.15x. Financing will not pencil.`;
   } else if (spread != null && spread < 0 && !isValueAdd) {
-    verdict = "KILL";
+    verdict = "PASS";
     headline = `Negative leverage of ${Math.abs(spread).toFixed(2)} pts with no value-add thesis to close the gap.`;
   } else if (goingInCapPct != null && goingInCapPct > 6.0 && dscr != null && dscr > 1.25 && askVsReplacement != null && askVsReplacement < 100 && baseIrr != null && baseIrr >= resolved.targetIrrPct - 2) {
-    verdict = "KEEP";
-    headline = `Cap ${goingInCapPct.toFixed(2)}%, DSCR ${dscr.toFixed(2)}x, basis below replacement, base IRR ${baseIrr.toFixed(1)}% within 200bps of target. Pursue.`;
+    verdict = "BUY";
+    headline = `Cap ${goingInCapPct.toFixed(2)}%, DSCR ${dscr.toFixed(2)}x, basis below replacement, base IRR ${baseIrr.toFixed(1)}% within 200bps of target.`;
   } else {
-    verdict = "KEEP_WITH_CONDITIONS";
+    verdict = "NEUTRAL";
     const conditions: string[] = [];
-    if (dscr != null && dscr < 1.25) conditions.push(`DSCR ${dscr.toFixed(2)}x needs higher rate cap or lower LTV`);
+    if (dscr != null && dscr < 1.25) conditions.push(`DSCR ${dscr.toFixed(2)}x needs a lower LTV or a rate cap`);
     if (goingInCapPct != null && goingInCapPct < 6.0) conditions.push("Submit below ask to force cap above 6%");
     if (askVsReplacement != null && askVsReplacement > 100) conditions.push("Verify $/unit comps support paying above replacement");
     if (baseIrr != null && baseIrr < resolved.targetIrrPct - 2) conditions.push(`Base IRR ${baseIrr.toFixed(1)}% falls short of ${resolved.targetIrrPct}% target`);
@@ -598,6 +626,50 @@ export function runQuickScreen(raw: QuickScreenInput): QuickScreenReport {
       ? `Pencils with conditions: ${conditions.join("; ")}.`
       : `Pencils at ask. Get comps and a PCA before hardening earnest money.`;
   }
+
+  /**
+   * Executive summary is POSITIVE FRAMING ONLY. Risks go in Ways It Dies.
+   * This is a deliberate rule to stop the same risk being echoed in the
+   * headline, the exec summary, the ways-it-dies column, and the action
+   * items. One risk, one home.
+   */
+  const execParts: string[] = [];
+  if (verdict === "BUY") {
+    execParts.push(`Buy signal. ${headline}`);
+  } else if (verdict === "PASS") {
+    execParts.push(`Pass at ask. ${headline}`);
+  } else {
+    execParts.push(`Neutral read at ask. ${headline}`);
+  }
+  if (verdict !== "PASS") {
+    if (goingInCapPct != null && goingInCapPct >= 6.5) {
+      execParts.push(`Going-in cap of ${goingInCapPct.toFixed(2)}% clears the standardized debt cost of ${resolved.interestRatePct.toFixed(2)}%.`);
+    }
+    if (baseIrr != null && baseIrr >= resolved.targetIrrPct) {
+      execParts.push(`Base-case levered IRR of ${baseIrr.toFixed(1)}% already clears the ${resolved.targetIrrPct.toFixed(0)}% workspace target.`);
+    } else if (baseIrr != null) {
+      execParts.push(`Base-case levered IRR of ${baseIrr.toFixed(1)}% runs against the ${resolved.targetIrrPct.toFixed(0)}% workspace target.`);
+    }
+    if (askVsReplacement != null && askVsReplacement < 90) {
+      execParts.push(`Basis lands ${(100 - askVsReplacement).toFixed(0)}% below estimated replacement cost, limiting new-supply risk.`);
+    }
+  }
+  const executiveSummary = execParts.join(" ");
+
+  /**
+   * Score 0 to 100. Composite of spread, DSCR, replacement-cost basis, and
+   * IRR-vs-target. Calibrated so a strong deal lands in the 80s, a coin-flip
+   * lands in the 50s, and a hard pass lands under 30.
+   */
+  const score = (() => {
+    if (verdict === "PASS") return Math.max(10, 30 - (dscr != null && dscr < 1.15 ? 10 : 0));
+    let s = 50;
+    if (spread != null) s += Math.min(20, Math.max(-20, spread * 8));
+    if (dscr != null) s += Math.min(15, Math.max(-15, (dscr - 1.25) * 40));
+    if (askVsReplacement != null) s += Math.min(10, Math.max(-10, (100 - askVsReplacement) / 3));
+    if (baseIrr != null) s += Math.min(15, Math.max(-15, (baseIrr - resolved.targetIrrPct) * 2));
+    return Math.round(Math.max(0, Math.min(100, s)));
+  })();
 
   const narrative = buildNarrative({
     resolved,
@@ -637,9 +709,40 @@ export function runQuickScreen(raw: QuickScreenInput): QuickScreenReport {
     assumptionUsed: `$${resolved.replacementCostPerUnit.toLocaleString()}/${resolved.unitType === "units" ? "unit" : "SF"} used`,
   });
 
+  /**
+   * Build actionItems by fusing missingInfo (things we had to assume) and
+   * nextDiligence (things we'd check regardless). Missing-info items get
+   * higher priority because they represent live assumption risk; diligence
+   * items get added in after, deduped on similar content.
+   */
+  const actionItems: QuickScreenReport["actionItems"] = [];
+  missingInfo.forEach((m, i) => {
+    actionItems.push({ ...m, priority: i + 1 });
+  });
+  const seenTitles = new Set(actionItems.map(a => a.item.toLowerCase()));
+  narrative.diligence.forEach((d, i) => {
+    // Collapse overlap with existing missing-info entries by keyword match.
+    const lower = d.toLowerCase();
+    const overlap = [...seenTitles].some(t => {
+      const tokens = t.split(/\W+/).filter(w => w.length > 4);
+      return tokens.some(tok => lower.includes(tok));
+    });
+    if (!overlap) {
+      actionItems.push({
+        item: d,
+        whyItMatters: "Standard first-pass diligence item",
+        assumptionUsed: "--",
+        priority: actionItems.length + 1,
+      });
+      seenTitles.add(lower);
+    }
+  });
+
   return {
     verdict,
     headline,
+    executiveSummary,
+    score,
     snapshot: {
       askingPrice: resolved.purchasePrice,
       pricePerUnitOrSf,
@@ -662,6 +765,7 @@ export function runQuickScreen(raw: QuickScreenInput): QuickScreenReport {
     perUnitCompCheck: narrative.compCheck,
     missingInfo,
     nextDiligence: narrative.diligence.slice(0, 10),
+    actionItems: actionItems.slice(0, 12),
     computedAt: new Date().toISOString(),
     dealScale: resolved.dealScale,
   };

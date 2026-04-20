@@ -195,6 +195,18 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
+    // The `workspaces` collection holds the per-workspace settings doc
+    // (name, analysisType, underwritingDefaults baseline, etc.). Reads
+    // happen client-side on every workspace switch; writes happen from
+    // the Settings page and from the workspace rename flow.
+    match /workspaces/{wsId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /workspace_members/{memberId} {
+      allow read, write: if isAuthenticated();
+    }
+
     // ===== USERS (for profile/billing data) =====
     match /users/{userId} {
       allow read: if isAuthenticated() && request.auth.uid == userId;

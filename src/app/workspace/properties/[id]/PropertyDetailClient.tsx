@@ -23,6 +23,7 @@ import Link from "next/link";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import PropertyHeroImage from "@/components/workspace/PropertyHeroImage";
 import DealQuickScreen from "@/components/workspace/DealQuickScreen";
+import OmReversePricing from "@/components/workspace/OmReversePricing";
 
 /* ── Design tokens ─────────────────────────────────────── */
 const C = {
@@ -1356,11 +1357,13 @@ function PropertyDetailInner({
      URL-backed so a link into ?tab=om-reverse-pricing lands on that tab.
      The tab bar sits directly below the hero; below it the existing
      property detail sections continue to render as "Deal Details".     */
-  type ProTab = "quick-screen" | "om-reverse-pricing";
+  type ProTab = "quick-screen" | "om-reverse-pricing" | "rent-roll";
   const [activeProTab, setActiveProTab] = useState<ProTab>(() => {
     if (typeof window === "undefined") return "quick-screen";
     const t = new URLSearchParams(window.location.search).get("tab");
-    return t === "om-reverse-pricing" ? "om-reverse-pricing" : "quick-screen";
+    if (t === "om-reverse-pricing") return "om-reverse-pricing";
+    if (t === "rent-roll") return "rent-roll";
+    return "quick-screen";
   });
   const routerForTabs = useRouter();
   const selectProTab = useCallback((next: ProTab) => {
@@ -1981,7 +1984,8 @@ function PropertyDetailInner({
       }}>
         {[
           { id: "quick-screen" as const, label: "Deal Quick Screen", ready: true },
-          { id: "om-reverse-pricing" as const, label: "OM Reverse Pricing", ready: false },
+          { id: "om-reverse-pricing" as const, label: "OM Reverse Pricing", ready: true },
+          { id: "rent-roll" as const, label: "Rent Roll", ready: true },
         ].map(tab => {
           const isActive = tab.id === activeProTab;
           return (
@@ -2032,38 +2036,80 @@ function PropertyDetailInner({
       )}
 
       {activeProTab === "om-reverse-pricing" && (
-        <div style={{
-          marginBottom: 28,
-          background: C.surfLowest,
-          border: `1px dashed ${C.ghost}`,
-          borderRadius: C.radius,
-          padding: 40,
-          textAlign: "center",
-        }}>
-          <div style={{ fontSize: 34, marginBottom: 10 }}>🧮</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: C.onSurface, marginBottom: 6 }}>
-            OM Reverse Pricing is coming soon
-          </div>
-          <div style={{ fontSize: 13, color: C.secondary, maxWidth: 520, margin: "0 auto", lineHeight: 1.55 }}>
-            This tab will deconstruct the broker's embedded assumptions, reverse-engineer the
-            purchase price needed to hit your target returns, and output a defensible bid range.
-            For now, use the Deal Quick Screen tab for KEEP/KILL triage.
-          </div>
-          <button
-            onClick={() => selectProTab("quick-screen")}
-            style={{
-              marginTop: 18,
-              padding: "8px 18px",
-              fontSize: 12,
-              fontWeight: 700,
-              background: C.primary,
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              cursor: "pointer",
-              fontFamily: "inherit",
-            }}
-          >Back to Deal Quick Screen</button>
+        <div style={{ marginBottom: 28 }}>
+          <OmReversePricing property={property} fields={fields} />
+        </div>
+      )}
+
+      {activeProTab === "rent-roll" && (
+        <div style={{ marginBottom: 28 }}>
+          {wsType !== "land" && tenants.length > 0 ? (
+            /* Mirror the Deal Details rent roll layout exactly so both views
+               render identically. Change in one, change in both.              */
+            <div style={{
+              background: "#FFFFFF", borderRadius: C.radius, overflow: "hidden",
+              border: `1px solid rgba(0,0,0,0.06)`,
+            }}>
+              <div style={{ padding: "12px 18px", borderBottom: `1px solid rgba(0,0,0,0.04)`, background: "#F9FAFB" }}>
+                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Rent Roll</h3>
+              </div>
+              <div className="pd-table-wrap" style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 500 }}>
+                  <thead>
+                    <tr style={{ background: "#F9FAFB" }}>
+                      <th style={{ padding: "8px 16px", textAlign: "left", fontWeight: 600, color: C.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Tenant</th>
+                      <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: C.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>SF</th>
+                      <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: C.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Annual Rent</th>
+                      <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: C.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Type</th>
+                      <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: C.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Lease End</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tenants.map((t: any, i: number) => (
+                      <tr key={i} style={{ borderBottom: `1px solid rgba(0,0,0,0.04)`, background: "#FFFFFF" }}>
+                        <td style={{ padding: "8px 16px", fontWeight: 600, color: C.onSurface }}>{t.name}</td>
+                        <td style={{ padding: "8px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{t.sf ? Math.round(Number(t.sf)).toLocaleString() : "--"}</td>
+                        <td style={{ padding: "8px 12px", textAlign: "right", fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>{fmt$(t.rent)}</td>
+                        <td style={{ padding: "8px 12px", color: C.secondary }}>{t.type || "--"}</td>
+                        <td style={{ padding: "8px 12px", color: C.secondary }}>{t.end || "--"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  {tenants.length > 1 && (() => {
+                    const totalSf = tenants.reduce((sum: number, t: any) => sum + (Number(t.sf) || 0), 0);
+                    const totalRent = tenants.reduce((sum: number, t: any) => sum + (Number(t.rent) || 0), 0);
+                    return (
+                      <tfoot>
+                        <tr style={{ background: "#F9FAFB", borderTop: `2px solid rgba(0,0,0,0.04)` }}>
+                          <td style={{ padding: "8px 16px", fontWeight: 700, color: C.onSurface }}>Total ({tenants.length} tenants)</td>
+                          <td style={{ padding: "8px 12px", textAlign: "right", fontWeight: 700, fontVariantNumeric: "tabular-nums", color: C.onSurface }}>{totalSf > 0 ? totalSf.toLocaleString() : "--"}</td>
+                          <td style={{ padding: "8px 12px", textAlign: "right", fontWeight: 700, fontVariantNumeric: "tabular-nums", color: C.onSurface }}>{totalRent > 0 ? fmt$(totalRent) : "--"}</td>
+                          <td colSpan={2} style={{ padding: "8px 12px", color: C.secondary, fontSize: 11 }}>
+                            {totalSf > 0 && totalRent > 0 ? `Avg $${(totalRent / totalSf).toFixed(2)}/SF` : ""}
+                          </td>
+                        </tr>
+                      </tfoot>
+                    );
+                  })()}
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div style={{
+              background: C.surfLowest, border: `1px dashed rgba(0,0,0,0.08)`,
+              borderRadius: C.radius, padding: 32, textAlign: "center",
+            }}>
+              <div style={{ fontSize: 28, marginBottom: 8 }}>🏢</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, marginBottom: 6 }}>
+                {wsType === "land" ? "Rent roll does not apply to land deals" : "No tenants extracted yet"}
+              </div>
+              <div style={{ fontSize: 12, color: C.secondary, maxWidth: 420, margin: "0 auto", lineHeight: 1.5 }}>
+                {wsType === "land"
+                  ? "Land deals have no rent roll. Use the Quick Screen tab for basis-driven triage."
+                  : "Upload a rent roll (XLS/PDF) or an OM with a tenant table on the Deal Details section and tenants will populate here automatically."}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
