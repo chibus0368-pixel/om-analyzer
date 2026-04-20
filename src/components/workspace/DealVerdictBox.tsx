@@ -162,9 +162,33 @@ export interface DealVerdictBoxProps {
   property: Property;
   fields: ExtractedField[];
   variant?: "main" | "slim";
+  /**
+   * Optional investment-thesis brief (LLM-generated JSON string with
+   * `overview`, `strengths`, `concerns`). When provided on the main
+   * variant, its overview replaces the short engine summary line and
+   * the strengths/concerns render as a two-column list below the KPIs.
+   */
+  brief?: string | null;
 }
 
-export default function DealVerdictBox({ property, fields, variant = "main" }: DealVerdictBoxProps) {
+interface ParsedBrief {
+  overview?: string;
+  strengths?: string[];
+  concerns?: string[];
+}
+
+function parseBrief(raw?: string | null): ParsedBrief | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  try {
+    const obj = JSON.parse(trimmed);
+    if (obj && typeof obj.overview === "string") return obj as ParsedBrief;
+  } catch { /* legacy plain text */ }
+  return { overview: trimmed };
+}
+
+export default function DealVerdictBox({ property, fields, variant = "main", brief }: DealVerdictBoxProps) {
   const workspaceId = property.workspaceId || null;
   const { defaults, loaded: baselineLoaded } = useUnderwritingDefaults(workspaceId);
 
@@ -184,6 +208,7 @@ export default function DealVerdictBox({ property, fields, variant = "main" }: D
     () => (input ? runQuickScreen(input) : null),
     [input],
   );
+  const parsedBrief = useMemo(() => parseBrief(brief), [brief]);
 
   if (!input || !report) {
     // Quiet empty state. Main page keeps its normal layout; tabs don't need
@@ -343,10 +368,10 @@ export default function DealVerdictBox({ property, fields, variant = "main" }: D
           <div style={{
             marginTop: 10,
             fontSize: 14,
-            lineHeight: 1.55,
+            lineHeight: 1.6,
             color: C.onSurface,
             fontWeight: 500,
-          }}>{report.executiveSummary}</div>
+          }}>{parsedBrief?.overview || report.executiveSummary}</div>
         </div>
       </div>
 
@@ -380,6 +405,55 @@ export default function DealVerdictBox({ property, fields, variant = "main" }: D
           </div>
         ))}
       </div>
+
+      {/* Strengths / Concerns from the investment-thesis brief. Two columns
+          on wide screens, stacked on narrow. Rendered only when the brief
+          provides them. */}
+      {parsedBrief && ((parsedBrief.strengths?.length ?? 0) > 0 || (parsedBrief.concerns?.length ?? 0) > 0) && (
+        <div style={{
+          marginTop: 16,
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+          gap: 16,
+        }}>
+          {parsedBrief.strengths && parsedBrief.strengths.length > 0 && (
+            <div>
+              <div style={{
+                fontSize: 11,
+                fontWeight: 800,
+                letterSpacing: 0.9,
+                color: "#15803D",
+                textTransform: "uppercase",
+                marginBottom: 8,
+              }}>Key Strengths</div>
+              {parsedBrief.strengths.map((s, i) => (
+                <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 6 }}>
+                  <span style={{ color: "#22C55E", fontSize: 14, lineHeight: "20px", flexShrink: 0 }}>✓</span>
+                  <span style={{ fontSize: 13, color: "#374151", lineHeight: "20px" }}>{s}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {parsedBrief.concerns && parsedBrief.concerns.length > 0 && (
+            <div>
+              <div style={{
+                fontSize: 11,
+                fontWeight: 800,
+                letterSpacing: 0.9,
+                color: "#B45309",
+                textTransform: "uppercase",
+                marginBottom: 8,
+              }}>Primary Concerns</div>
+              {parsedBrief.concerns.map((c, i) => (
+                <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 6 }}>
+                  <span style={{ color: "#F59E0B", fontSize: 14, lineHeight: "20px", flexShrink: 0 }}>△</span>
+                  <span style={{ fontSize: 13, color: "#374151", lineHeight: "20px" }}>{c}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

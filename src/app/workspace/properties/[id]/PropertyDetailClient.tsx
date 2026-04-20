@@ -1971,7 +1971,7 @@ function PropertyDetailInner({
       {/*  slim repeat of this same verdict so the signal      */}
       {/*  is never lost when a tab is shared in isolation.    */}
       {/* ═══════════════════════════════════════════════════ */}
-      <DealVerdictBox property={property} fields={fields} variant="main" />
+      <DealVerdictBox property={property} fields={fields} variant="main" brief={brief} />
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  PRO ANALYSIS TABS                                  */}
@@ -2411,70 +2411,6 @@ function PropertyDetailInner({
           </div>
         );
       })()}
-
-      {/* ═══════════════════════════════════════════════════ */}
-      {/*  2B. EXECUTIVE SUMMARY (standalone card)            */}
-      {/* ═══════════════════════════════════════════════════ */}
-      {brief && (
-        <div style={{
-          background: "#FFFFFF", borderRadius: 12,
-          border: "1px solid rgba(0,0,0,0.05)",
-          boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
-          padding: "22px 26px", marginBottom: 24,
-        }}>
-          {(() => {
-            let parsed: { overview?: string; strengths?: string[]; concerns?: string[] } | null = null;
-            try {
-              const obj = JSON.parse(brief);
-              if (obj && typeof obj.overview === "string") parsed = obj;
-            } catch { /* legacy plain text */ }
-
-            if (parsed) {
-              return (
-                <>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", marginBottom: 12 }}>Executive Summary</div>
-                  <p style={{ fontSize: 14, color: "#0F172A", lineHeight: 1.75, margin: "0 0 16px" }}>{parsed.overview}</p>
-
-                  {parsed.strengths && parsed.strengths.length > 0 && (
-                    <div style={{ marginBottom: 14 }}>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", marginBottom: 8 }}>Key Strengths</div>
-                      {parsed.strengths.map((s: string, i: number) => (
-                        <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 6 }}>
-                          <span style={{ color: "#22C55E", fontSize: 14, lineHeight: "20px", flexShrink: 0 }}>✓</span>
-                          <span style={{ fontSize: 13, color: "#374151", lineHeight: "20px" }}>{s}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {parsed.concerns && parsed.concerns.length > 0 && (
-                    <div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", marginBottom: 8 }}>Primary Concerns</div>
-                      {parsed.concerns.map((c: string, i: number) => (
-                        <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 6 }}>
-                          <span style={{ color: "#F59E0B", fontSize: 14, lineHeight: "20px", flexShrink: 0 }}>△</span>
-                          <span style={{ fontSize: 13, color: "#374151", lineHeight: "20px" }}>{c}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              );
-            }
-
-            return (
-              <>
-                <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", marginBottom: 12 }}>Executive Summary</div>
-                <div style={{ fontSize: 14, color: "#0F172A", lineHeight: 1.75 }}>
-                  {brief.split("\n").filter((p: string) => p.trim()).slice(0, 4).map((p: string, i: number) => (
-                    <p key={i} style={{ margin: "0 0 8px" }}>{p}</p>
-                  ))}
-                </div>
-              </>
-            );
-          })()}
-        </div>
-      )}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  3. PRICE STRIP                                     */}
