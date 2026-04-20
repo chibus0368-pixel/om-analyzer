@@ -24,6 +24,7 @@ import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import PropertyHeroImage from "@/components/workspace/PropertyHeroImage";
 import DealQuickScreen from "@/components/workspace/DealQuickScreen";
 import OmReversePricing from "@/components/workspace/OmReversePricing";
+import DealVerdictBox from "@/components/workspace/DealVerdictBox";
 
 /* ── Design tokens ─────────────────────────────────────── */
 const C = {
@@ -1530,15 +1531,6 @@ function PropertyDetailInner({
     ]).filter(([, v]) => v);
   }, [fields, wsType]);
 
-  /* ── Price sensitivity mini ────────────────────────── */
-  const priceSensitivity = useMemo(() => {
-    if (!omPurchasePrice || noiOm <= 0) return null;
-    const omCap = (noiOm / omPurchasePrice) * 100;
-    const curCap = activePrice ? (noiOm / activePrice) * 100 : omCap;
-    const per100k = activePrice && activePrice > 100000 ? (noiOm / (activePrice - 100000)) * 100 : null;
-    return { omCap, curCap, per100k };
-  }, [omPurchasePrice, activePrice, noiOm]);
-
   /* Data counts */
   const pulledCount = pulledFields.length;
   const calcCount = calculatedFields.length;
@@ -1967,10 +1959,20 @@ function PropertyDetailInner({
       </div>
 
       {/* ═══════════════════════════════════════════════════ */}
+      {/*  DEAL VERDICT                                       */}
+      {/*  Single source of truth for the Buy / Neutral / Pass */}
+      {/*  read. The Pro Analysis tabs below each render a     */}
+      {/*  slim repeat of this same verdict so the signal      */}
+      {/*  is never lost when a tab is shared in isolation.    */}
+      {/* ═══════════════════════════════════════════════════ */}
+      <DealVerdictBox property={property} fields={fields} variant="main" />
+
+      {/* ═══════════════════════════════════════════════════ */}
       {/*  PRO ANALYSIS TABS                                  */}
-      {/*  Quick Screen is the default tab. OM Reverse Pricing */}
-      {/*  is stubbed for a future release. Existing property  */}
-      {/*  detail sections continue to render below the tabs.  */}
+      {/*  Each tab owns one concern:                         */}
+      {/*    Quick Screen       - scoring + reasons           */}
+      {/*    OM Reverse Pricing - pricing solve               */}
+      {/*    Rent Roll          - tenant-level lease detail   */}
       {/* ═══════════════════════════════════════════════════ */}
       <div className="pd-pro-tabs" style={{
         margin: "4px 0 18px",
@@ -2654,78 +2656,7 @@ function PropertyDetailInner({
       })()}
 
 
-      {/* ═══════════════════════════════════════════════════ */}
-      {/*  3. PRICE SENSITIVITY PANEL                        */}
-      {/* ═══════════════════════════════════════════════════ */}
-      {hasData && wsType !== "land" && activePrice && noiOm > 0 && (() => {
-        const omPrice = priceState.omPrice || activePrice;
-        const steps = [-0.30, -0.20, -0.10, -0.05, 0, 0.05, 0.10];
-        const rows = steps.map(pct => {
-          const price = Math.round(omPrice * (1 + pct));
-          const capRate = noiOm > 0 ? (noiOm / price) * 100 : 0;
-          const loanAmt = price * ltvPct;
-          const downPayment = price * (1 - ltvPct);
-          const closingCosts = price * closingPct;
-          const totalEquity = downPayment + closingCosts;
-          const mRate = (intRate / 100) / 12;
-          const annualDS = loanAmt > 0 ? (loanAmt * mRate) / (1 - Math.pow(1 + mRate, -12 * amortYrs)) * 12 : 0;
-          const dscr = annualDS > 0 && noiOm > 0 ? noiOm / annualDS : 0;
-          const cashOnCash = totalEquity > 0 && noiOm > 0 ? ((noiOm - annualDS) / totalEquity) * 100 : 0;
-          const isActive = Math.abs(price - activePrice) < 1000;
-          const isOm = pct === 0;
-          return { pct, price, capRate, dscr, cashOnCash, isActive, isOm };
-        });
-        return (
-          <div style={{
-            background: "#FFFFFF", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
-            overflow: "hidden", marginBottom: 24,
-          }}>
-            <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(0,0,0,0.04)", background: "#F9FAFB" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
-                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Sale Price Scenarios</h3>
-              </div>
-              <p style={{ fontSize: 12, color: C.secondary, margin: "4px 0 0 11px", lineHeight: 1.4 }}>See how purchase price impacts returns</p>
-            </div>
-            <div className="pd-scenarios-wrap" style={{ overflowX: "auto" }}>
-              <table className="pd-scenarios-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: "'Inter', sans-serif" }}>
-                <thead>
-                  <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-                    {["Scenario", "Purchase Price", "Cap Rate", "DSCR", "Cash-on-Cash"].map(h => (
-                      <th key={h} style={{ padding: "10px 16px", textAlign: h === "Scenario" ? "left" : "right", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#6B7280" }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map(r => (
-                    <tr key={r.pct} style={{
-                      borderBottom: "1px solid rgba(0,0,0,0.03)",
-                      background: r.isActive ? "rgba(132,204,22,0.06)" : r.isOm ? "rgba(59,130,246,0.04)" : "transparent",
-                    }}>
-                      <td style={{ padding: "10px 16px", fontWeight: r.isActive ? 700 : 500, color: r.isActive ? "#84CC16" : r.isOm ? "#3B82F6" : C.onSurface }}>
-                        {r.pct === 0 ? "OM Price" : `${r.pct > 0 ? "+" : ""}${(r.pct * 100).toFixed(0)}%`}
-                        {r.isActive && !r.isOm && <span style={{ fontSize: 9, marginLeft: 6, padding: "1px 5px", background: "rgba(132,204,22,0.15)", borderRadius: 3, fontWeight: 700, color: "#84CC16" }}>CURRENT</span>}
-                        {r.isActive && r.isOm && <span style={{ fontSize: 9, marginLeft: 6, padding: "1px 5px", background: "rgba(132,204,22,0.15)", borderRadius: 3, fontWeight: 700, color: "#84CC16" }}>CURRENT</span>}
-                      </td>
-                      <td style={{ padding: "10px 16px", textAlign: "right", fontWeight: 700, color: C.onSurface, fontVariantNumeric: "tabular-nums" }}>{fmt$(r.price)}</td>
-                      <td style={{ padding: "10px 16px", textAlign: "right", fontWeight: 600, color: r.capRate >= 7 ? "#059669" : r.capRate >= 5.5 ? "#D97706" : "#DC2626", fontVariantNumeric: "tabular-nums" }}>{r.capRate.toFixed(2)}%</td>
-                      <td style={{ padding: "10px 16px", textAlign: "right", fontWeight: 600, color: r.dscr >= 1.25 ? "#059669" : r.dscr >= 1.0 ? "#D97706" : "#DC2626", fontVariantNumeric: "tabular-nums" }}>{r.dscr.toFixed(2)}x</td>
-                      <td style={{ padding: "10px 16px", textAlign: "right", fontWeight: 600, color: r.cashOnCash >= 8 ? "#059669" : r.cashOnCash >= 5 ? "#D97706" : "#DC2626", fontVariantNumeric: "tabular-nums" }}>{r.cashOnCash.toFixed(1)}%</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {priceSensitivity?.per100k && (
-              <div style={{ padding: "10px 20px", borderTop: "1px solid rgba(0,0,0,0.04)", background: "#F9FAFB" }}>
-                <span style={{ fontSize: 11, color: "#6B7280" }}>
-                  Every $100K lower in price &rarr; ~{priceSensitivity.per100k.toFixed(2)}% cap rate
-                </span>
-              </div>
-            )}
-          </div>
-        );
-      })()}
+      {/* Sale Price Scenarios panel moved to OM Reverse Pricing tab. */}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  3b. VALUE-ADD OPPORTUNITIES                       */}
@@ -3006,59 +2937,7 @@ function PropertyDetailInner({
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════ */}
-      {/*  7. TENANT SUMMARY                                  */}
-      {/* ═══════════════════════════════════════════════════ */}
-      {wsType !== "land" && tenants.length > 0 && (
-        <div style={{
-          background: "#FFFFFF", borderRadius: C.radius, overflow: "hidden",
-          border: `1px solid rgba(0,0,0,0.06)`, marginBottom: 16,
-        }}>
-          <div style={{ padding: "12px 18px", borderBottom: `1px solid rgba(0,0,0,0.04)`, background: "#F9FAFB" }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Rent Roll</h3>
-          </div>
-          <div className="pd-table-wrap" style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 500 }}>
-            <thead>
-              <tr style={{ background: "#F9FAFB" }}>
-                <th style={{ padding: "8px 16px", textAlign: "left", fontWeight: 600, color: C.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Tenant</th>
-                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: C.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>SF</th>
-                <th style={{ padding: "8px 12px", textAlign: "right", fontWeight: 600, color: C.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Annual Rent</th>
-                <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: C.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Type</th>
-                <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: C.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>Lease End</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tenants.map((t: any, i: number) => (
-                <tr key={i} style={{ borderBottom: `1px solid rgba(0,0,0,0.04)`, background: "#FFFFFF" }}>
-                  <td style={{ padding: "8px 16px", fontWeight: 600, color: C.onSurface }}>{t.name}</td>
-                  <td style={{ padding: "8px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{t.sf ? Math.round(Number(t.sf)).toLocaleString() : "--"}</td>
-                  <td style={{ padding: "8px 12px", textAlign: "right", fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>{fmt$(t.rent)}</td>
-                  <td style={{ padding: "8px 12px", color: C.secondary }}>{t.type || "--"}</td>
-                  <td style={{ padding: "8px 12px", color: C.secondary }}>{t.end || "--"}</td>
-                </tr>
-              ))}
-            </tbody>
-            {tenants.length > 1 && (() => {
-              const totalSf = tenants.reduce((sum: number, t: any) => sum + (Number(t.sf) || 0), 0);
-              const totalRent = tenants.reduce((sum: number, t: any) => sum + (Number(t.rent) || 0), 0);
-              return (
-                <tfoot>
-                  <tr style={{ background: "#F9FAFB", borderTop: `2px solid rgba(0,0,0,0.04)` }}>
-                    <td style={{ padding: "8px 16px", fontWeight: 700, color: C.onSurface }}>Total ({tenants.length} tenants)</td>
-                    <td style={{ padding: "8px 12px", textAlign: "right", fontWeight: 700, fontVariantNumeric: "tabular-nums", color: C.onSurface }}>{totalSf > 0 ? totalSf.toLocaleString() : "--"}</td>
-                    <td style={{ padding: "8px 12px", textAlign: "right", fontWeight: 700, fontVariantNumeric: "tabular-nums", color: C.onSurface }}>{totalRent > 0 ? fmt$(totalRent) : "--"}</td>
-                    <td colSpan={2} style={{ padding: "8px 12px", color: C.secondary, fontSize: 11 }}>
-                      {totalSf > 0 && totalRent > 0 ? `Avg $${(totalRent / totalSf).toFixed(2)}/SF` : ""}
-                    </td>
-                  </tr>
-                </tfoot>
-              );
-            })()}
-          </table>
-          </div>{/* close pd-table-wrap */}
-        </div>
-      )}
+      {/* Rent Roll table moved to dedicated Rent Roll tab above. */}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  8. SOURCE DOCUMENTS                                */}

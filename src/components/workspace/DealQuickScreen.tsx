@@ -9,9 +9,9 @@ import {
   type QuickScreenReport,
   type AssetType,
   type UnitType,
-  type Verdict,
 } from "@/lib/analysis/quick-screen";
 import { useUnderwritingDefaults } from "@/lib/workspace/use-underwriting-defaults";
+import DealVerdictBox from "@/components/workspace/DealVerdictBox";
 
 /* ── Design tokens (mirror PropertyDetailClient's C object) ─── */
 const C = {
@@ -46,31 +46,6 @@ function fmtPct(val: number | null | undefined, digits = 2): string {
 function fmtX(val: number | null | undefined): string {
   if (val == null || !Number.isFinite(val)) return "--";
   return `${val.toFixed(2)}x`;
-}
-
-/* ── Verdict banner ──────────────────────────────────── */
-function verdictStyle(verdict: Verdict) {
-  if (verdict === "BUY") return {
-    bg: "linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)",
-    border: "#86EFAC",
-    accent: "#065F46",
-    label: "BUY",
-    pill: "#059669",
-  };
-  if (verdict === "PASS") return {
-    bg: "linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%)",
-    border: "#FCA5A5",
-    accent: "#991B1B",
-    label: "PASS",
-    pill: "#DC2626",
-  };
-  return {
-    bg: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
-    border: "#FCD34D",
-    accent: "#78350F",
-    label: "NEUTRAL",
-    pill: "#D97706",
-  };
 }
 
 /* ── Small building blocks ───────────────────────────── */
@@ -261,7 +236,7 @@ function readOmDebtTerms(fields: ExtractedField[]): {
 /* ══════════════════════════════════════════════════════════ */
 export default function DealQuickScreen({ property, fields, overrides }: DealQuickScreenProps) {
   const workspaceId = property.workspaceId || null;
-  const { defaults, loaded: baselineLoaded } = useUnderwritingDefaults(workspaceId);
+  const { defaults } = useUnderwritingDefaults(workspaceId);
   const [assumptionsOpen, setAssumptionsOpen] = useState(false);
 
   const baseline: StandardizedBaseline = useMemo(() => ({
@@ -297,9 +272,7 @@ export default function DealQuickScreen({ property, fields, overrides }: DealQui
     );
   }
 
-  const v = verdictStyle(report.verdict);
   const s = report.snapshot;
-  const scoreColor = report.verdict === "BUY" ? "#059669" : report.verdict === "PASS" ? "#DC2626" : "#D97706";
 
   const snapshotRows: Array<[string, string, boolean?]> = [
     ["Asking Price", fmt$(s.askingPrice), true],
@@ -318,70 +291,10 @@ export default function DealQuickScreen({ property, fields, overrides }: DealQui
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      {/* ── 1. Executive Summary (verdict, score, positive prose only) ─── */}
-      {/*    Risks intentionally live below in "Three Ways This Deal Dies"  */}
-      {/*    so a given risk shows up exactly once on this tab.            */}
-      <div style={{
-        background: v.bg,
-        border: `1px solid ${v.border}`,
-        borderRadius: C.radius,
-        padding: "24px 26px",
-        marginBottom: 16,
-        boxShadow: "0 2px 10px rgba(15,23,43,0.05)",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
-          {/* Score gauge */}
-          <div style={{
-            width: 74, height: 74, borderRadius: "50%",
-            background: `conic-gradient(${scoreColor} ${(report.score / 100) * 360}deg, ${C.ghost} 0deg)`,
-            display: "grid", placeItems: "center", flexShrink: 0,
-          }}>
-            <div style={{
-              width: 58, height: 58, borderRadius: "50%", background: "#fff",
-              display: "grid", placeItems: "center",
-              fontSize: 22, fontWeight: 800, color: scoreColor,
-              fontVariantNumeric: "tabular-nums",
-            }}>{report.score}</div>
-          </div>
-          <div style={{ flex: 1, minWidth: 240 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              <span style={{
-                padding: "6px 14px",
-                background: v.pill,
-                color: "#fff",
-                fontSize: 12,
-                fontWeight: 800,
-                letterSpacing: 1.2,
-                borderRadius: 999,
-                textTransform: "uppercase",
-                whiteSpace: "nowrap",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-              }}>{v.label}</span>
-              <span style={{
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: 0.8,
-                color: v.accent,
-                textTransform: "uppercase",
-                opacity: 0.75,
-              }}>
-                {report.dealScale === "small-operator" ? "Small Operator Mode" : "Institutional Mode"}
-                {" · "}
-                {baselineLoaded ? "Standardized Baseline" : "Loading baseline..."}
-              </span>
-            </div>
-            <div style={{
-              marginTop: 10,
-              fontSize: 14,
-              lineHeight: 1.55,
-              color: v.accent,
-              fontWeight: 500,
-            }}>{report.executiveSummary}</div>
-          </div>
-        </div>
-      </div>
+      {/* ── Slim verdict repeat. Main page owns the full rationale. ─── */}
+      <DealVerdictBox property={property} fields={fields} variant="slim" />
 
-      {/* ── 2. Deal Snapshot (numbers only, no narrative) ─── */}
+      {/* ── Deal Snapshot (numbers only, no narrative) ─── */}
       <SectionCard title="Deal Snapshot" accent={C.primary}>
         <div className="qs-snapshot-grid" style={{
           display: "grid",
@@ -460,48 +373,6 @@ export default function DealQuickScreen({ property, fields, overrides }: DealQui
           </ul>
         </SectionCard>
       </div>
-
-      {/* ── Per-unit comp check ────────────────────────── */}
-      <SectionCard title={`Per-${s.unitType === "units" ? "Unit" : "SF"} Comp Check`} accent="#0891B2">
-        <p style={{ fontSize: 13, lineHeight: 1.6, color: C.onSurface, margin: 0 }}>
-          {report.perUnitCompCheck}
-        </p>
-      </SectionCard>
-
-      {/* ── Action Items (consolidates old "Missing Info" + "Next Diligence") ─ */}
-      {/*    One list. Items sourced from assumptions-in-use carry higher    */}
-      {/*    priority; standard diligence follows. Covers what the OM left   */}
-      {/*    open AND what we'd pull regardless, without re-stating risk.   */}
-      <SectionCard title="Action Items" subtitle="Everything to pull, verify, or confirm before hardening earnest money." accent={C.primary}>
-        <div style={{ overflow: "auto", marginLeft: -4, marginRight: -4 }}>
-          <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ textAlign: "left", color: C.secondary, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, fontSize: 10 }}>
-                <th style={{ padding: "6px 8px", borderBottom: `1px solid ${C.ghost}`, width: 32 }}></th>
-                <th style={{ padding: "6px 8px", borderBottom: `1px solid ${C.ghost}` }}>Item</th>
-                <th style={{ padding: "6px 8px", borderBottom: `1px solid ${C.ghost}` }}>Why it matters</th>
-                <th style={{ padding: "6px 8px", borderBottom: `1px solid ${C.ghost}` }}>Assumption in use</th>
-              </tr>
-            </thead>
-            <tbody>
-              {report.actionItems.map((row, i) => (
-                <tr key={i}>
-                  <td style={{ padding: "8px", borderBottom: `1px solid ${C.ghost}`, verticalAlign: "top" }}>
-                    <input
-                      type="checkbox"
-                      style={{ accentColor: C.primary, cursor: "pointer" }}
-                      aria-label={`Mark action item ${i + 1} complete`}
-                    />
-                  </td>
-                  <td style={{ padding: "8px", borderBottom: `1px solid ${C.ghost}`, fontWeight: 600, color: C.onSurface, verticalAlign: "top" }}>{row.item}</td>
-                  <td style={{ padding: "8px", borderBottom: `1px solid ${C.ghost}`, color: C.secondary, verticalAlign: "top" }}>{row.whyItMatters}</td>
-                  <td style={{ padding: "8px", borderBottom: `1px solid ${C.ghost}`, color: C.onSurface, fontVariantNumeric: "tabular-nums", verticalAlign: "top" }}>{row.assumptionUsed}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </SectionCard>
 
       {/* ── Assumptions footer (collapsed by default) ────── */}
       {/*    Shows the standardized baseline the scoring used, plus OM-stated  */}

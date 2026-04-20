@@ -1,0 +1,322 @@
+"use client";
+
+/**
+ * DealVerdictBox
+ *
+ * Shared Buy / Neutral / Pass verdict banner, driven by the Quick Screen
+ * engine. Renders in two densities:
+ *
+ *   variant="main"  - Large hero box at the top of the property overview.
+ *                     Shows score gauge + full executive-summary rationale.
+ *                     This is the single source of truth for the verdict.
+ *
+ *   variant="slim"  - Short single-line repeat at the top of each Pro
+ *                     Analysis tab. Keeps the verdict visible when the tab
+ *                     is shared in isolation, without duplicating rationale.
+ *
+ * Both variants read from the same `runQuickScreen()` call so there is zero
+ * chance of the verdict on the main page disagreeing with the verdict
+ * repeated inside a tab.
+ */
+
+import { useMemo } from "react";
+import type { Property, ExtractedField } from "@/lib/workspace/types";
+import {
+  runQuickScreen,
+  type QuickScreenInput,
+  type QuickScreenReport,
+  type AssetType,
+  type UnitType,
+  type Verdict,
+} from "@/lib/analysis/quick-screen";
+import { useUnderwritingDefaults } from "@/lib/workspace/use-underwriting-defaults";
+
+/* ── Design tokens ────────────────────────────────────── */
+const C = {
+  onSurface: "#0F172A",
+  secondary: "#6B7280",
+  ghost: "rgba(0,0,0,0.06)",
+  ghostBorder: "rgba(0,0,0,0.04)",
+  radius: 12,
+};
+
+function gf(fields: ExtractedField[], group: string, name: string): any {
+  const f = fields.find(x => x.fieldGroup === group && x.fieldName === name);
+  if (!f) return null;
+  return f.isUserOverridden ? f.userOverrideValue : f.normalizedValue || f.rawValue;
+}
+
+function verdictStyle(verdict: Verdict) {
+  if (verdict === "BUY") return {
+    bg: "linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)",
+    border: "#86EFAC",
+    accent: "#065F46",
+    label: "BUY",
+    pill: "#059669",
+  };
+  if (verdict === "PASS") return {
+    bg: "linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%)",
+    border: "#FCA5A5",
+    accent: "#991B1B",
+    label: "PASS",
+    pill: "#DC2626",
+  };
+  return {
+    bg: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
+    border: "#FCD34D",
+    accent: "#78350F",
+    label: "NEUTRAL",
+    pill: "#D97706",
+  };
+}
+
+/** Same mapping used by DealQuickScreen. Kept here so the verdict box is
+ *  self-contained and can be dropped in anywhere without rewiring. */
+function buildQuickScreenInput(
+  property: Property,
+  fields: ExtractedField[],
+  baseline: {
+    ltvPct: number; interestRatePct: number; amortYears: number;
+    holdYears: number; targetLeveredIrrPct: number;
+  },
+): QuickScreenInput | null {
+  const askingPrice = Number(gf(fields, "pricing_deal_terms", "asking_price"))
+    || (property as any)?.cardAskingPrice
+    || 0;
+
+  const analysisType = ((property as any)?.analysisType as string | undefined) || "multifamily";
+  const assetType: AssetType = (() => {
+    switch (analysisType) {
+      case "retail": return "retail";
+      case "industrial": return "industrial";
+      case "office": return "office";
+      case "multifamily": return "multifamily";
+      case "land": return "land";
+      default: return "other";
+    }
+  })();
+
+  let unitType: UnitType = "sf";
+  let unitsOrSf = 0;
+
+  if (assetType === "multifamily") {
+    unitType = "units";
+    unitsOrSf = Number(gf(fields, "multifamily_addons", "unit_count"))
+      || property.suiteCount
+      || 0;
+  } else {
+    unitType = "sf";
+    unitsOrSf = Number(gf(fields, "property_basics", "building_sf"))
+      || property.buildingSf
+      || (property as any)?.cardBuildingSf
+      || 0;
+  }
+
+  if (!askingPrice || !unitsOrSf) return null;
+
+  const noi = Number(gf(fields, "expenses", "noi_om"))
+    || Number(gf(fields, "expenses", "noi_adjusted"))
+    || (property as any)?.cardNoi
+    || null;
+
+  const statedCapRate = Number(gf(fields, "pricing_deal_terms", "cap_rate_om"))
+    || (property as any)?.cardCapRate
+    || null;
+
+  const occupancy = Number(gf(fields, "property_basics", "occupancy_pct"))
+    || property.occupancyPct
+    || null;
+
+  const yearBuilt = Number(gf(fields, "property_basics", "year_built"))
+    || property.yearBuilt
+    || null;
+
+  const marketRent = assetType === "multifamily"
+    ? Number(gf(fields, "multifamily_addons", "avg_rent_per_unit")) || null
+    : null;
+
+  return {
+    purchasePrice: askingPrice,
+    unitsOrSf,
+    unitType,
+    assetType,
+    market: property.market,
+    submarket: property.submarket,
+    city: property.city,
+    state: property.state,
+    noi,
+    occupancyPct: occupancy,
+    marketRentPerUnit: marketRent,
+    inPlaceRentPerUnit: marketRent,
+    statedCapRatePct: statedCapRate,
+    yearBuilt,
+    ltv: baseline.ltvPct / 100,
+    interestRatePct: baseline.interestRatePct,
+    amortYears: baseline.amortYears,
+    holdYears: baseline.holdYears,
+    targetIrrPct: baseline.targetLeveredIrrPct,
+  };
+}
+
+export interface DealVerdictBoxProps {
+  property: Property;
+  fields: ExtractedField[];
+  variant?: "main" | "slim";
+}
+
+export default function DealVerdictBox({ property, fields, variant = "main" }: DealVerdictBoxProps) {
+  const workspaceId = property.workspaceId || null;
+  const { defaults, loaded: baselineLoaded } = useUnderwritingDefaults(workspaceId);
+
+  const baseline = useMemo(() => ({
+    ltvPct: defaults.ltv,
+    interestRatePct: defaults.interestRate,
+    amortYears: defaults.amortYears,
+    holdYears: defaults.holdYears,
+    targetLeveredIrrPct: defaults.targetLeveredIrr,
+  }), [defaults]);
+
+  const input = useMemo(
+    () => buildQuickScreenInput(property, fields, baseline),
+    [property, fields, baseline],
+  );
+  const report: QuickScreenReport | null = useMemo(
+    () => (input ? runQuickScreen(input) : null),
+    [input],
+  );
+
+  if (!input || !report) {
+    // Quiet empty state. Main page keeps its normal layout; tabs don't need
+    // a second "waiting on inputs" card since the tab body will show one.
+    if (variant === "slim") return null;
+    return (
+      <div style={{
+        background: "#fff",
+        border: `1px dashed ${C.ghost}`,
+        borderRadius: C.radius,
+        padding: 20,
+        marginBottom: 16,
+        fontSize: 13,
+        color: C.secondary,
+        lineHeight: 1.5,
+      }}>
+        <strong style={{ color: C.onSurface }}>Verdict pending.</strong>{" "}
+        The screen needs at least an asking price and unit count (or building SF).
+        Upload the OM or fill those fields on the Details tab.
+      </div>
+    );
+  }
+
+  const v = verdictStyle(report.verdict);
+  const scoreColor = report.verdict === "BUY" ? "#059669"
+    : report.verdict === "PASS" ? "#DC2626"
+    : "#D97706";
+
+  const modeLine = `${report.dealScale === "small-operator" ? "Small Operator Mode" : "Institutional Mode"} · ${baselineLoaded ? "Standardized Baseline" : "Loading baseline..."}`;
+
+  if (variant === "slim") {
+    // One-line strip. No gauge, no rationale prose. Just the verdict pill
+    // plus mode so the reader who jumped straight to a deep tab still
+    // knows the current read on the deal.
+    return (
+      <div style={{
+        background: v.bg,
+        border: `1px solid ${v.border}`,
+        borderRadius: 10,
+        padding: "8px 14px",
+        marginBottom: 14,
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        flexWrap: "wrap",
+      }}>
+        <span style={{
+          padding: "3px 10px",
+          background: v.pill,
+          color: "#fff",
+          fontSize: 10,
+          fontWeight: 800,
+          letterSpacing: 1.1,
+          borderRadius: 999,
+          textTransform: "uppercase",
+          whiteSpace: "nowrap",
+        }}>{v.label}</span>
+        <span style={{
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: 0.7,
+          color: v.accent,
+          textTransform: "uppercase",
+          opacity: 0.8,
+        }}>{modeLine}</span>
+        <span style={{
+          marginLeft: "auto",
+          fontSize: 11,
+          fontWeight: 600,
+          color: v.accent,
+          opacity: 0.75,
+        }}>
+          Score <span style={{ fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>{report.score}</span>/100
+        </span>
+      </div>
+    );
+  }
+
+  // Main variant: hero banner. Score gauge + full executive-summary prose.
+  return (
+    <div style={{
+      background: v.bg,
+      border: `1px solid ${v.border}`,
+      borderRadius: C.radius,
+      padding: "24px 26px",
+      marginBottom: 20,
+      boxShadow: "0 2px 10px rgba(15,23,43,0.05)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
+        <div style={{
+          width: 74, height: 74, borderRadius: "50%",
+          background: `conic-gradient(${scoreColor} ${(report.score / 100) * 360}deg, ${C.ghost} 0deg)`,
+          display: "grid", placeItems: "center", flexShrink: 0,
+        }}>
+          <div style={{
+            width: 58, height: 58, borderRadius: "50%", background: "#fff",
+            display: "grid", placeItems: "center",
+            fontSize: 22, fontWeight: 800, color: scoreColor,
+            fontVariantNumeric: "tabular-nums",
+          }}>{report.score}</div>
+        </div>
+        <div style={{ flex: 1, minWidth: 240 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <span style={{
+              padding: "6px 14px",
+              background: v.pill,
+              color: "#fff",
+              fontSize: 12,
+              fontWeight: 800,
+              letterSpacing: 1.2,
+              borderRadius: 999,
+              textTransform: "uppercase",
+              whiteSpace: "nowrap",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+            }}>{v.label}</span>
+            <span style={{
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: 0.8,
+              color: v.accent,
+              textTransform: "uppercase",
+              opacity: 0.75,
+            }}>{modeLine}</span>
+          </div>
+          <div style={{
+            marginTop: 10,
+            fontSize: 14,
+            lineHeight: 1.55,
+            color: v.accent,
+            fontWeight: 500,
+          }}>{report.executiveSummary}</div>
+        </div>
+      </div>
+    </div>
+  );
+}

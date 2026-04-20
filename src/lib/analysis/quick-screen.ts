@@ -16,17 +16,17 @@
  * number, null (not computable), or a range tuple, never NaN.
  */
 
+import {
+  getAssetProfile,
+  capexFloorFor,
+  replacementCostFor,
+  type AssetType as ProfileAssetType,
+  type UnitType as ProfileUnitType,
+} from "./asset-profiles";
+
 export type DealScale = "institutional" | "small-operator";
-export type UnitType = "units" | "sf";
-export type AssetType =
-  | "multifamily"
-  | "retail"
-  | "industrial"
-  | "office"
-  | "medical_office"
-  | "mixed_use"
-  | "land"
-  | "other";
+export type UnitType = ProfileUnitType;
+export type AssetType = ProfileAssetType;
 
 export interface QuickScreenInput {
   // Required
@@ -154,19 +154,10 @@ function annualDebtService(loan: number, annualRatePct: number, amortYears: numb
   return monthly * 12;
 }
 
-/** Replacement cost / unit heuristics by asset type and deal scale. */
+/** Replacement cost per unit or per SF is sourced from the asset profile.
+ *  See asset-profiles.ts for the full class-by-class table. */
 function replacementCostEstimate(asset: AssetType, scale: DealScale, unitType: UnitType): number {
-  if (asset === "multifamily") {
-    return scale === "small-operator" ? 125_000 : 250_000;
-  }
-  if (unitType === "sf") {
-    // Per-SF values expressed as per-unit so the same "unit cost" math works.
-    if (asset === "industrial") return 175;
-    if (asset === "office") return 325;
-    if (asset === "retail") return 225;
-    return 200;
-  }
-  return scale === "small-operator" ? 120_000 : 225_000;
+  return replacementCostFor(asset, unitType, scale);
 }
 
 /** Fully resolved input with defaults filled in. No nulls. */
@@ -280,20 +271,27 @@ function resolveInputs(input: QuickScreenInput): {
     source: input.targetIrrPct != null ? "user" : "estimated",
   });
 
-  const opexRatio =
-    input.opexRatio ?? (assetType === "industrial" ? 0.35 : 0.45);
+  const profile = getAssetProfile(assetType);
+
+  const opexRatio = input.opexRatio ?? profile.opexRatioDefault;
   assumptions.push({
     variable: "OpEx ratio",
     value: `${(opexRatio * 100).toFixed(0)}% of EGI`,
     source: input.opexRatio != null ? "user" : "estimated",
+    note: input.opexRatio != null ? undefined : profile.opexRatioNote,
   });
 
   const capexPerUnitPerYear =
-    input.capexPerUnitPerYear ?? (dealScale === "small-operator" ? 400 : 500);
+    input.capexPerUnitPerYear ?? capexFloorFor(assetType, unitType, input.yearBuilt ?? null);
+  const capexLabel = unitType === "units" ? "unit" : "SF";
+  const capexValueFmt = unitType === "sf"
+    ? `$${capexPerUnitPerYear.toFixed(2)}/${capexLabel}/yr`
+    : `$${Math.round(capexPerUnitPerYear).toLocaleString()}/${capexLabel}/yr`;
   assumptions.push({
     variable: "Capex reserve",
-    value: `$${capexPerUnitPerYear.toLocaleString()}/${unitType === "units" ? "unit" : "SF"}/yr`,
+    value: capexValueFmt,
     source: input.capexPerUnitPerYear != null ? "user" : "estimated",
+    note: input.capexPerUnitPerYear != null ? undefined : profile.capexRationale,
   });
 
   const replacementCostPerUnit =
@@ -445,34 +443,42 @@ function buildNarrative(args: {
   const { resolved, year1NOI, goingInCapPct, dscr, askVsReplacement, scenarios, cashOnCash, pricePerUnitOrSf } = args;
   const baseLeveredIrr = scenarios.find(s => s.label === "Base")?.leveredIrrPct ?? null;
   const unit = resolved.unitType === "units" ? "unit" : "SF";
+  const profile = getAssetProfile(resolved.assetType);
+  const capCushionThreshold = Math.max(profile.capBandLowPct + 0.5, resolved.interestRatePct + 1.0);
+  const dscrGood = profile.dscrTarget;
+  const dscrWarn = profile.dscrPassFloor + 0.05; // halfway between pass-floor and target
   const worksBullets: string[] = [];
   const diesBullets: string[] = [];
 
-  if (goingInCapPct != null && goingInCapPct >= 6.5) {
-    worksBullets.push(`Going-in cap ${goingInCapPct.toFixed(2)}% has enough cushion above debt cost to absorb a 75bps cap expansion at exit.`);
+  if (goingInCapPct != null && goingInCapPct >= capCushionThreshold) {
+    worksBullets.push(`Going-in cap ${goingInCapPct.toFixed(2)}% sits inside the ${profile.capBandDesc} and clears debt cost with cushion to absorb cap expansion at exit.`);
   } else if (goingInCapPct != null) {
-    worksBullets.push(`Cap compression or rent growth must carry the returns; going-in ${goingInCapPct.toFixed(2)}% is thin versus current debt cost.`);
+    worksBullets.push(`Cap compression or rent growth must carry the returns; going-in ${goingInCapPct.toFixed(2)}% is thin against the ${profile.capBandDesc}.`);
   }
 
   if (askVsReplacement != null && askVsReplacement < 85) {
-    worksBullets.push(`Ask is ${(100 - askVsReplacement).toFixed(0)}% below replacement cost, which limits new-supply risk in the submarket.`);
+    worksBullets.push(`Ask is ${(100 - askVsReplacement).toFixed(0)}% below estimated replacement cost, which limits new-supply risk in the submarket.`);
   }
-  if (resolved.inPlaceRentPerUnit > 0 && resolved.marketRentPerUnit > resolved.inPlaceRentPerUnit) {
+  if (resolved.assetType === "multifamily" && resolved.inPlaceRentPerUnit > 0 && resolved.marketRentPerUnit > resolved.inPlaceRentPerUnit) {
     const gap = ((resolved.marketRentPerUnit - resolved.inPlaceRentPerUnit) / resolved.inPlaceRentPerUnit) * 100;
     worksBullets.push(`Loss-to-lease of ${gap.toFixed(0)}% at turnover is a concrete lever, not a cap-compression bet.`);
   }
   if (baseLeveredIrr != null && baseLeveredIrr >= resolved.targetIrrPct) {
-    worksBullets.push(`Base case already clears the ${resolved.targetIrrPct}% target, so a bear case doesn't need heroic rescue assumptions.`);
+    worksBullets.push(`Base case already clears the ${resolved.targetIrrPct}% target, so a bear case does not need heroic rescue assumptions.`);
+  }
+  // Class-specific strength (one bullet, kept after deal-specific positives).
+  if (profile.assetStrengths.length > 0) {
+    worksBullets.push(profile.assetStrengths[0]);
   }
   if (worksBullets.length < 3) {
-    worksBullets.push(`Hold period of ${resolved.holdYears} years gives room to burn off capex before the refi/sale window.`);
+    worksBullets.push(`Hold period of ${resolved.holdYears} years gives room to burn off capex before the refi or sale window.`);
   }
 
-  if (dscr != null && dscr < 1.2) {
-    diesBullets.push(`DSCR ${dscr.toFixed(2)}x is below the 1.25x threshold; one bad quarter and you're tapping reserves.`);
+  if (dscr != null && dscr < dscrWarn) {
+    diesBullets.push(`DSCR ${dscr.toFixed(2)}x sits below the ${dscrGood.toFixed(2)}x floor we expect for ${profile.label.toLowerCase()}; one bad quarter and reserves carry the service.`);
   }
   if (goingInCapPct != null && goingInCapPct < resolved.interestRatePct) {
-    diesBullets.push(`Negative leverage: going-in cap ${goingInCapPct.toFixed(2)}% sits below ${resolved.interestRatePct.toFixed(2)}% debt cost. Growth must do all the work.`);
+    diesBullets.push(`Negative leverage: going-in cap ${goingInCapPct.toFixed(2)}% sits below ${resolved.interestRatePct.toFixed(2)}% debt cost. Rent growth has to do all the work.`);
   }
   if (askVsReplacement != null && askVsReplacement > 100) {
     diesBullets.push(`Paying above replacement cost means new supply can undercut you on rent if the submarket attracts development.`);
@@ -480,8 +486,16 @@ function buildNarrative(args: {
   if (cashOnCash != null && cashOnCash < 4) {
     diesBullets.push(`Year-1 cash-on-cash ${cashOnCash.toFixed(1)}% leaves no room for CapEx surprises or property-tax reassessment.`);
   }
-  if (resolved.yearBuilt < 1985) {
-    diesBullets.push(`Vintage ${resolved.yearBuilt} assets carry plumbing, roof, and electrical capex that the stated NOI likely doesn't fully reserve for.`);
+  if (resolved.assetType === "multifamily" && resolved.yearBuilt < 1985) {
+    diesBullets.push(`Vintage ${resolved.yearBuilt} product carries plumbing, roof, and electrical capex the stated NOI likely does not fully reserve for.`);
+  }
+  // Always include at least one class-specific risk bullet so the reader sees
+  // the top asset-class kill vector, not just the deal-level math.
+  if (profile.assetRisks.length > 0) {
+    diesBullets.push(profile.assetRisks[0]);
+  }
+  if (diesBullets.length < 3 && profile.assetRisks.length > 1) {
+    diesBullets.push(profile.assetRisks[1]);
   }
   if (diesBullets.length < 3) {
     diesBullets.push(`Exit cap has to hold within 50bps of going-in for the base case to clear; not guaranteed in a higher-for-longer rate regime.`);
@@ -558,11 +572,13 @@ export function runQuickScreen(raw: QuickScreenInput): QuickScreenReport {
   const askVsReplacement =
     replacementCostTotal > 0 ? (resolved.purchasePrice / replacementCostTotal) * 100 : null;
 
-  // Scenarios
+  // Scenarios. Rent-growth anchors come from the asset profile so office
+  // and retail don't get underwritten against multifamily growth defaults.
+  const scenarioProfile = getAssetProfile(resolved.assetType);
   const scenarioInputs: Array<{ label: string; rent: number; exitBps: number; occDelta: number }> = [
-    { label: "Bull", rent: 3.5, exitBps: -25, occDelta: +3 },
-    { label: "Base", rent: 2.5, exitBps: +25, occDelta: 0 },
-    { label: "Bear", rent: 0, exitBps: +75, occDelta: -5 },
+    { label: "Bull", rent: scenarioProfile.rentGrowthBull, exitBps: -25, occDelta: +3 },
+    { label: "Base", rent: scenarioProfile.rentGrowthBase, exitBps: +25, occDelta: 0 },
+    { label: "Bear", rent: scenarioProfile.rentGrowthBear, exitBps: +75, occDelta: -5 },
   ];
 
   const scenarios: ScenarioReturn[] = goingInCapPct != null ? scenarioInputs.map(s => {
@@ -596,35 +612,41 @@ export function runQuickScreen(raw: QuickScreenInput): QuickScreenReport {
   const unleveredIrrRange: [number, number] | null = unleveredIrrs.length === 3 ? [Math.min(...unleveredIrrs), Math.max(...unleveredIrrs)] : null;
 
   // Verdict logic per the skill spec, normalized to Buy/Neutral/Pass.
+  // Thresholds pulled from the asset profile so retail, office, etc. aren't
+  // judged on multifamily cap and DSCR targets.
+  const profile = getAssetProfile(resolved.assetType);
   const baseIrr = scenarios.find(s => s.label === "Base")?.leveredIrrPct ?? null;
   let verdict: Verdict = "NEUTRAL";
   let headline = "";
   const isValueAdd = resolved.businessPlan === "value-add" || resolved.businessPlan === "opportunistic";
   const spread = goingInCapPct != null ? goingInCapPct - resolved.interestRatePct : null;
+  const capFloor = Math.max(profile.capBandLowPct - 0.5, 4.5); // "too tight" threshold
+  const capBuy = profile.capBandLowPct;                         // "comfortably in band"
+  const capUnit = resolved.unitType === "units" ? "unit" : "SF";
 
-  // Pass cases (hard kills in the skill spec).
-  if (goingInCapPct != null && goingInCapPct < 5.0 && isValueAdd) {
+  // Pass cases.
+  if (goingInCapPct != null && goingInCapPct < capFloor && isValueAdd) {
     verdict = "PASS";
-    headline = `Going-in cap of ${goingInCapPct.toFixed(2)}% is below the 5% floor for value-add; no margin for execution risk.`;
-  } else if (dscr != null && dscr < 1.15) {
+    headline = `Going-in cap of ${goingInCapPct.toFixed(2)}% is below the ${capFloor.toFixed(2)}% floor we expect for ${profile.label.toLowerCase()} value-add; no margin for execution risk.`;
+  } else if (dscr != null && dscr < profile.dscrPassFloor) {
     verdict = "PASS";
-    headline = `DSCR of ${dscr.toFixed(2)}x at the standardized debt baseline is below 1.15x. Financing will not pencil.`;
+    headline = `DSCR of ${dscr.toFixed(2)}x at the standardized debt baseline is below the ${profile.dscrPassFloor.toFixed(2)}x floor for ${profile.label.toLowerCase()}. Financing will not pencil.`;
   } else if (spread != null && spread < 0 && !isValueAdd) {
     verdict = "PASS";
     headline = `Negative leverage of ${Math.abs(spread).toFixed(2)} pts with no value-add thesis to close the gap.`;
-  } else if (goingInCapPct != null && goingInCapPct > 6.0 && dscr != null && dscr > 1.25 && askVsReplacement != null && askVsReplacement < 100 && baseIrr != null && baseIrr >= resolved.targetIrrPct - 2) {
+  } else if (goingInCapPct != null && goingInCapPct > capBuy && dscr != null && dscr > profile.dscrTarget && askVsReplacement != null && askVsReplacement < 100 && baseIrr != null && baseIrr >= resolved.targetIrrPct - 2) {
     verdict = "BUY";
-    headline = `Cap ${goingInCapPct.toFixed(2)}%, DSCR ${dscr.toFixed(2)}x, basis below replacement, base IRR ${baseIrr.toFixed(1)}% within 200bps of target.`;
+    headline = `Cap ${goingInCapPct.toFixed(2)}% inside the ${profile.capBandDesc}, DSCR ${dscr.toFixed(2)}x, basis below replacement, base IRR ${baseIrr.toFixed(1)}% within 200bps of target.`;
   } else {
     verdict = "NEUTRAL";
     const conditions: string[] = [];
-    if (dscr != null && dscr < 1.25) conditions.push(`DSCR ${dscr.toFixed(2)}x needs a lower LTV or a rate cap`);
-    if (goingInCapPct != null && goingInCapPct < 6.0) conditions.push("Submit below ask to force cap above 6%");
-    if (askVsReplacement != null && askVsReplacement > 100) conditions.push("Verify $/unit comps support paying above replacement");
+    if (dscr != null && dscr < profile.dscrTarget) conditions.push(`DSCR ${dscr.toFixed(2)}x needs a lower LTV or a rate cap to clear the ${profile.dscrTarget.toFixed(2)}x ${profile.label.toLowerCase()} target`);
+    if (goingInCapPct != null && goingInCapPct < capBuy) conditions.push(`Submit below ask to force cap above ${capBuy.toFixed(1)}% (${profile.label.toLowerCase()} band low)`);
+    if (askVsReplacement != null && askVsReplacement > 100) conditions.push(`Verify $/${capUnit} comps support paying above replacement`);
     if (baseIrr != null && baseIrr < resolved.targetIrrPct - 2) conditions.push(`Base IRR ${baseIrr.toFixed(1)}% falls short of ${resolved.targetIrrPct}% target`);
     headline = conditions.length
       ? `Pencils with conditions: ${conditions.join("; ")}.`
-      : `Pencils at ask. Get comps and a PCA before hardening earnest money.`;
+      : `Pencils at ask for ${profile.label.toLowerCase()}. Pull comps and PCA before hardening earnest money.`;
   }
 
   /**
@@ -642,8 +664,8 @@ export function runQuickScreen(raw: QuickScreenInput): QuickScreenReport {
     execParts.push(`Neutral read at ask. ${headline}`);
   }
   if (verdict !== "PASS") {
-    if (goingInCapPct != null && goingInCapPct >= 6.5) {
-      execParts.push(`Going-in cap of ${goingInCapPct.toFixed(2)}% clears the standardized debt cost of ${resolved.interestRatePct.toFixed(2)}%.`);
+    if (goingInCapPct != null && goingInCapPct >= Math.max(capBuy, resolved.interestRatePct + 0.75)) {
+      execParts.push(`Going-in cap of ${goingInCapPct.toFixed(2)}% clears the standardized debt cost of ${resolved.interestRatePct.toFixed(2)}% and sits inside the ${profile.capBandDesc}.`);
     }
     if (baseIrr != null && baseIrr >= resolved.targetIrrPct) {
       execParts.push(`Base-case levered IRR of ${baseIrr.toFixed(1)}% already clears the ${resolved.targetIrrPct.toFixed(0)}% workspace target.`);

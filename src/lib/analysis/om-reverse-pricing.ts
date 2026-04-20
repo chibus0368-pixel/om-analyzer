@@ -20,20 +20,18 @@
  */
 
 import type { Verdict } from "./quick-screen";
+import {
+  getAssetProfile,
+  capexFloorFor,
+  replacementCostFor,
+  type AssetType as ProfileAssetType,
+  type UnitType as ProfileUnitType,
+} from "./asset-profiles";
 
 /* ── Input schema ─────────────────────────────────────── */
 
-export type AssetType =
-  | "multifamily"
-  | "retail"
-  | "industrial"
-  | "office"
-  | "medical_office"
-  | "mixed_use"
-  | "land"
-  | "other";
-
-export type UnitType = "units" | "sf";
+export type AssetType = ProfileAssetType;
+export type UnitType = ProfileUnitType;
 
 export interface OmReversePricingInput {
   // Required identity
@@ -251,20 +249,14 @@ function irr(cashflows: number[], guess = 0.12): number | null {
 }
 
 /**
- * Replacement cost / unit-or-SF heuristics. Same scale as quick-screen
- * so both tabs agree on the anchor. If the OM called out a more precise
- * construction budget, the user can override in the Settings page.
+ * Replacement cost / unit-or-SF heuristics delegate to the shared asset
+ * profile so Quick Screen, OM Reverse Pricing, and Settings all agree.
  */
 function replacementCostEstimate(asset: AssetType, unitType: UnitType): number {
-  if (asset === "multifamily") return 200_000;
-  if (unitType === "sf") {
-    if (asset === "industrial") return 175;
-    if (asset === "office") return 325;
-    if (asset === "retail") return 225;
-    if (asset === "medical_office") return 375;
-    return 200;
-  }
-  return 200_000;
+  // Pass institutional as the default scale here; per-deal scale is already
+  // baked into QuickScreen's path, and OM reverse pricing tends to run on
+  // institutional inputs (workspace baseline).
+  return replacementCostFor(asset, unitType, "institutional");
 }
 
 /** Annualized, straight-line pro forma from a starting NOI. */
@@ -482,23 +474,24 @@ function critiqueVacancy(
   assetType: AssetType,
   baselineVac: number,
 ): AssumptionCritique {
-  const floor = assetType === "multifamily" ? 5 : 7;
+  const profile = getAssetProfile(assetType);
+  const floor = profile.vacancyFloorPct;
   const adjusted = Math.max(baselineVac, floor, brokerVac ?? 0);
   let verdict: AssumptionVerdict = "REASONABLE";
-  let rationale = `${assetType === "multifamily" ? "5%" : "7%"} economic vacancy floor applied for this asset class.`;
+  let rationale = `${floor.toFixed(0)}% economic vacancy floor applied for ${profile.label.toLowerCase()} (class-specific).`;
   if (brokerVac != null && brokerVac < floor - 0.5) {
     verdict = "UNREALISTIC";
-    rationale = `Broker uses ${brokerVac.toFixed(1)}% economic vacancy, below the ${floor}% floor for ${assetType}. Credit loss + downtime is rarely below this even in tight markets.`;
+    rationale = `Broker uses ${brokerVac.toFixed(1)}% economic vacancy, below the ${floor.toFixed(0)}% floor for ${profile.label.toLowerCase()}. Credit loss plus downtime is rarely below this even in tight markets.`;
   } else if (brokerVac != null && brokerVac < floor) {
     verdict = "AGGRESSIVE";
-    rationale = `Broker uses ${brokerVac.toFixed(1)}% vacancy; raise to ${floor}% to cover credit loss + turnover downtime.`;
+    rationale = `Broker uses ${brokerVac.toFixed(1)}% vacancy; raise to the ${floor.toFixed(0)}% ${profile.label.toLowerCase()} floor to cover credit loss plus turnover downtime.`;
   } else if (brokerVac == null) {
-    rationale = `OM did not state vacancy. Applying ${floor}% floor.`;
+    rationale = `OM did not state vacancy. Applying ${floor.toFixed(0)}% ${profile.label.toLowerCase()} floor.`;
   }
   return {
     metric: "Economic Vacancy",
     brokerValue: brokerVac != null ? `${brokerVac.toFixed(1)}%` : "Not stated",
-    benchmark: `>= ${floor}% floor`,
+    benchmark: `>= ${floor.toFixed(0)}% (${profile.label.toLowerCase()})`,
     adjustedValue: `${adjusted.toFixed(1)}%`,
     verdict,
     rationale,
@@ -510,27 +503,36 @@ function critiqueCapex(
   brokerCapex: number | null,
   yearBuilt: number | null,
   unitType: UnitType,
+  assetType: AssetType,
 ): AssumptionCritique {
   const age = yearBuilt ? new Date().getFullYear() - yearBuilt : 35;
-  const floor = age > 20 ? 500 : 300;
+  const isSf = unitType === "sf";
+  const unitLabel = isSf ? "SF" : "unit";
+  const profile = getAssetProfile(assetType);
+  // Floors now come from the asset profile, which specializes per asset type
+  // and vintage (new vs > 20 yrs). Retail, office, industrial, medical get
+  // per-SF floors; multifamily gets per-unit floors.
+  const floor = capexFloorFor(assetType, unitType, yearBuilt);
   const adjusted = Math.max(floor, brokerCapex ?? 0);
+  const fmt = (v: number) =>
+    isSf ? `$${v.toFixed(2)}` : `$${Math.round(v).toLocaleString()}`;
+  const unrealisticDelta = isSf ? Math.max(floor * 0.5, 0.05) : 100;
   let verdict: AssumptionVerdict = "REASONABLE";
-  const unitLabel = unitType === "units" ? "unit" : "SF";
-  let rationale = `Age ${age} years => $${floor}/${unitLabel}/yr reserve floor.`;
-  if (brokerCapex != null && brokerCapex < floor - 100) {
+  let rationale = `${profile.label} age ${age} yrs: ${fmt(floor)}/${unitLabel}/yr reserve floor. ${profile.capexRationale}`;
+  if (brokerCapex != null && brokerCapex < floor - unrealisticDelta) {
     verdict = "UNREALISTIC";
-    rationale = `Broker reserves only $${brokerCapex.toFixed(0)}/${unitLabel}/yr for a ${age}-year-old property. Deferred maintenance will surface within hold. Floor at $${floor}.`;
+    rationale = `Broker reserves only ${fmt(brokerCapex)}/${unitLabel}/yr for a ${age}-year-old ${profile.label.toLowerCase()} asset. Deferred maintenance will surface within hold. Floor at ${fmt(floor)}. ${profile.capexRationale}`;
   } else if (brokerCapex != null && brokerCapex < floor) {
     verdict = "AGGRESSIVE";
-    rationale = `Broker reserves $${brokerCapex.toFixed(0)}/${unitLabel}/yr vs. $${floor} industry floor for ${age}-year vintage.`;
+    rationale = `Broker reserves ${fmt(brokerCapex)}/${unitLabel}/yr vs. ${fmt(floor)} industry floor for ${profile.label.toLowerCase()} at ${age}-year vintage.`;
   } else if (brokerCapex == null) {
-    rationale = `OM did not state capex reserve. Applying $${floor}/${unitLabel}/yr floor for ${age}-year vintage.`;
+    rationale = `OM did not state capex reserve. Applying ${fmt(floor)}/${unitLabel}/yr floor for ${profile.label.toLowerCase()} ${age}-year vintage. ${profile.capexRationale}`;
   }
   return {
     metric: "CapEx Reserve",
-    brokerValue: brokerCapex != null ? `$${Math.round(brokerCapex).toLocaleString()}/${unitLabel}/yr` : "Not stated",
-    benchmark: `>= $${floor}/${unitLabel}/yr`,
-    adjustedValue: `$${Math.round(adjusted).toLocaleString()}/${unitLabel}/yr`,
+    brokerValue: brokerCapex != null ? `${fmt(brokerCapex)}/${unitLabel}/yr` : "Not stated",
+    benchmark: `>= ${fmt(floor)}/${unitLabel}/yr (${profile.label.toLowerCase()})`,
+    adjustedValue: `${fmt(adjusted)}/${unitLabel}/yr`,
     verdict,
     rationale,
     dollarImpactAnnualNOI: null,
@@ -551,8 +553,11 @@ export function runOmReversePricing(input: OmReversePricingInput): OmReversePric
 
   const goingInCapPct = year1NOI > 0 && askingPrice > 0 ? (year1NOI / askingPrice) * 100 : null;
 
-  // OpEx ratio fallback: industrial runs leaner, everything else ~45%.
-  const opexRatio = assetType === "industrial" ? 0.35 : 0.45;
+  // OpEx ratio fallback sourced from the asset profile. Retail and industrial
+  // NNN assets run dramatically leaner than office/multifamily gross leases,
+  // so a single flat default would misstate NOI by 20+ points for the extremes.
+  const profile = getAssetProfile(assetType);
+  const opexRatio = profile.opexRatioDefault;
 
   // Build the critique for the 5 embedded broker assumptions.
   const critiques: AssumptionCritique[] = [
@@ -560,22 +565,26 @@ export function runOmReversePricing(input: OmReversePricingInput): OmReversePric
     critiqueExpenseGrowth(input.brokerExpenseGrowthPct ?? null, input.brokerRentGrowthPct ?? null, input.marketCpiPct ?? null, baseline.expenseGrowthPct),
     critiqueExitCap(input.brokerExitCapPct ?? null, goingInCapPct, baseline.exitCapPct),
     critiqueVacancy(input.brokerVacancyPct ?? null, assetType, baseline.vacancyPct),
-    critiqueCapex(input.brokerCapexPerUnit ?? null, input.yearBuilt ?? null, unitType),
+    critiqueCapex(input.brokerCapexPerUnit ?? null, input.yearBuilt ?? null, unitType, assetType),
   ];
 
   // Resolve adjusted values from the critiques (they live in `adjustedValue`
   // as a formatted string; we re-derive numbers here so downstream math is
   // unambiguous). Fall back to baseline if parsing fails.
   const parseNum = (s: string) => {
-    const m = s.match(/-?[0-9]+(?:\.[0-9]+)?/);
+    // Strip commas before matching so "$1,200/unit/yr" parses as 1200 not 1.
+    const m = s.replace(/,/g, "").match(/-?[0-9]+(?:\.[0-9]+)?/);
     return m ? Number(m[0]) : null;
   };
+  // CapEx fallback uses the profile's vintage-aware floor so retail, office,
+  // medical, etc. each get their own default rather than a flat $0.25/SF.
+  const capexFallback = capexFloorFor(assetType, unitType, input.yearBuilt ?? null);
   const adjusted = {
     rentGrowthPct: parseNum(critiques[0].adjustedValue) ?? baseline.rentGrowthPct,
     expenseGrowthPct: parseNum(critiques[1].adjustedValue) ?? baseline.expenseGrowthPct,
     exitCapPct: parseNum(critiques[2].adjustedValue) ?? baseline.exitCapPct,
     vacancyPct: parseNum(critiques[3].adjustedValue) ?? baseline.vacancyPct,
-    capexPerUnit: parseNum(critiques[4].adjustedValue) ?? 500,
+    capexPerUnit: parseNum(critiques[4].adjustedValue) ?? capexFallback,
   };
 
   // Broker scenario: keep the broker's stated values where given.
@@ -830,14 +839,19 @@ export function runOmReversePricing(input: OmReversePricingInput): OmReversePric
   if (goingInCapPct != null && goingInCapPct >= baseline.interestRatePct + 0.75) {
     topStrengths.push(`Positive leverage at ${goingInCapPct.toFixed(2)}% going-in vs. ${baseline.interestRatePct.toFixed(2)}% debt cost.`);
   }
-  if (s2.dscrYr1 != null && s2.dscrYr1 >= 1.25) {
-    topStrengths.push(`DSCR holds at ${s2.dscrYr1.toFixed(2)}x even under adjusted assumptions.`);
+  if (s2.dscrYr1 != null && s2.dscrYr1 >= profile.dscrTarget) {
+    topStrengths.push(`DSCR holds at ${s2.dscrYr1.toFixed(2)}x even under adjusted assumptions (above the ${profile.dscrTarget.toFixed(2)}x ${profile.label.toLowerCase()} target).`);
   }
   if (askingAsPctOfRepl != null && askingAsPctOfRepl < 90) {
     topStrengths.push(`Basis at ${askingAsPctOfRepl.toFixed(0)}% of replacement cost limits new-supply risk.`);
   }
   if (s2.leveredIrrPct != null && s2.leveredIrrPct >= baseline.targetLeveredIrrPct) {
     topStrengths.push(`Adjusted base IRR ${s2.leveredIrrPct.toFixed(1)}% still clears the ${baseline.targetLeveredIrrPct}% target.`);
+  }
+  // Always carry at least one asset-class strength so the reader sees what
+  // is structurally appealing about the asset type, not just deal math.
+  if (topStrengths.length < 3 && profile.assetStrengths.length > 0) {
+    topStrengths.push(`${profile.label}: ${profile.assetStrengths[0]}`);
   }
   while (topStrengths.length < 3) {
     topStrengths.push("Sponsor still has room to negotiate on earnest money, timeline, and contingencies.");
@@ -854,11 +868,19 @@ export function runOmReversePricing(input: OmReversePricingInput): OmReversePric
       topConcerns.push(`${c.metric}: ${c.rationale}`);
     }
   });
-  if (topConcerns.length < 3 && s2.dscrYr1 != null && s2.dscrYr1 < 1.25) {
-    topConcerns.push(`DSCR drops to ${s2.dscrYr1.toFixed(2)}x under adjusted assumptions. Lender cushion is thin.`);
+  if (topConcerns.length < 3 && s2.dscrYr1 != null && s2.dscrYr1 < profile.dscrTarget) {
+    topConcerns.push(`DSCR drops to ${s2.dscrYr1.toFixed(2)}x under adjusted assumptions, below the ${profile.dscrTarget.toFixed(2)}x ${profile.label.toLowerCase()} target.`);
   }
   if (topConcerns.length < 3 && askingAsPctOfRepl != null && askingAsPctOfRepl > 105) {
     topConcerns.push(`Ask is ${(askingAsPctOfRepl - 100).toFixed(0)}% above replacement cost.`);
+  }
+  // Always surface at least one asset-class-specific kill vector so retail
+  // rollover / office TI / industrial tenant credit etc. don't get lost.
+  if (topConcerns.length < 3 && profile.assetRisks.length > 0) {
+    topConcerns.push(`${profile.label} class risk: ${profile.assetRisks[0]}`);
+  }
+  if (topConcerns.length < 3 && profile.assetRisks.length > 1) {
+    topConcerns.push(`${profile.label} class risk: ${profile.assetRisks[1]}`);
   }
   while (topConcerns.length < 3) {
     topConcerns.push("Broker's stated projections lack a stated operational basis.");
