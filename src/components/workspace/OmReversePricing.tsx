@@ -238,24 +238,32 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
                   : row.purchasePriceDeltaPct > 0 ? `+${row.purchasePriceDeltaPct}%`
                   : `${row.purchasePriceDeltaPct}%`;
                 const verdict = clears ? "Clears Target" : misses ? "Misses Badly" : "Below Target";
+                const isAtAsk = row.purchasePriceDeltaPct === 0;
+                const ACCENT = "#0891B2";
+                const baseBorder = `1px solid ${C.ghost}`;
+                const topBorder = isAtAsk ? `2px solid ${ACCENT}` : "none";
+                const bottomBorder = isAtAsk ? `2px solid ${ACCENT}` : baseBorder;
+                const leftBorder = isAtAsk ? `2px solid ${ACCENT}` : "none";
+                const rightBorder = isAtAsk ? `2px solid ${ACCENT}` : "none";
+                const rowTint = isAtAsk ? "#ECFEFF" : "transparent";
                 return (
                   <tr key={row.purchasePriceDeltaPct}>
-                    <td style={{ padding: "10px", borderBottom: `1px solid ${C.ghost}`, fontWeight: 800, color, letterSpacing: 0.4, textTransform: "uppercase", fontSize: 11 }}>
+                    <td style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, borderLeft: leftBorder, background: rowTint, fontWeight: 800, color, letterSpacing: 0.4, textTransform: "uppercase", fontSize: 11 }}>
                       {header}
                     </td>
-                    <td style={{ padding: "10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700, color: C.onSurface }}>
+                    <td style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, background: rowTint, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700, color: C.onSurface }}>
                       {fmtCurrency(row.purchasePrice)}
                     </td>
-                    <td style={{ padding: "10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right", fontVariantNumeric: "tabular-nums", color: C.secondary }}>
+                    <td style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, background: rowTint, textAlign: "right", fontVariantNumeric: "tabular-nums", color: C.secondary }}>
                       {fmtCurrency(row.purchasePrice / input.unitsOrSf)}
                     </td>
-                    <td style={{ padding: "10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700, color: C.onSurface }}>
+                    <td style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, background: rowTint, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700, color: C.onSurface }}>
                       {fmtPct(row.goingInCapPct, 2)}
                     </td>
-                    <td style={{ padding: "10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 800, color, background: bg }}>
+                    <td style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 800, color, background: bg }}>
                       {fmtPct(irr, 1)}
                     </td>
-                    <td style={{ padding: "10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right", fontSize: 10, fontWeight: 700, color, letterSpacing: 0.4, textTransform: "uppercase" }}>
+                    <td style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, borderRight: rightBorder, background: rowTint, textAlign: "right", fontSize: 10, fontWeight: 700, color, letterSpacing: 0.4, textTransform: "uppercase" }}>
                       {verdict}
                     </td>
                   </tr>

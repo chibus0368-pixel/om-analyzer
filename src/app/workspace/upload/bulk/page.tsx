@@ -43,6 +43,7 @@ export default function BulkUploadPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [completedCount, setCompletedCount] = useState(0);
+  const [factIdx, setFactIdx] = useState(0);
 
   // Warn user before leaving while uploads are in flight
   useEffect(() => {
@@ -54,6 +55,13 @@ export default function BulkUploadPage() {
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [processing]);
+
+  // Cycle through encouraging status messages during bulk processing
+  useEffect(() => {
+    if (!processing) return;
+    const id = setInterval(() => setFactIdx(i => (i + 1) % 8), 3200);
+    return () => clearInterval(id);
   }, [processing]);
 
   const addFiles = useCallback((newFiles: FileList | File[]) => {
@@ -357,88 +365,319 @@ export default function BulkUploadPage() {
       )}
 
       {/* Processing view */}
-      {processing && (
-        <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EDF0F5", padding: 24 }}>
-          <style>{`@keyframes spin { to { transform: rotate(360deg) } }
-            @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.5 } }`}</style>
+      {processing && (() => {
+        const factMessages = [
+          "Scanning document structure...",
+          "Extracting financial data points...",
+          "Calculating cap rate and NOI...",
+          "Running sale price scenarios...",
+          "Scoring tenant credit quality...",
+          "Mapping location intelligence...",
+          "Benchmarking against your targets...",
+          "Building your deal analyses...",
+        ];
+        const perItemPct = (it: BulkItem): number => {
+          if (it.status === "done" || it.status === "error") return 100;
+          if (it.status === "queued") return 0;
+          if (it.status === "uploading") return Math.min(60, Math.round(it.progress * 0.6));
+          if (it.status === "analyzing") return 60 + Math.min(35, Math.round((it.progress || 0) * 0.35));
+          return 0;
+        };
+        const overallPct = items.length === 0 ? 0 : Math.round(items.reduce((s, it) => s + perItemPct(it), 0) / items.length);
+        const radius = 54;
+        const circumference = 2 * Math.PI * radius;
 
+        // Active item and current pipeline stage (mirrors single upload's chip rail)
+        const activeItem = items.find(i => i.status === "uploading" || i.status === "analyzing");
+        const activeIdx = activeItem ? items.findIndex(i => i.id === activeItem.id) : -1;
+        const currentItem = activeItem || items.find(i => i.status === "queued") || items[items.length - 1];
 
-          {/* Stay on page warning */}
+        // Build chip rail stages from the currently in-flight item's state.
+        const upStatus = currentItem?.status;
+        const stages = [
+          { label: "UPLOAD",   done: upStatus === "analyzing" || upStatus === "done" },
+          { label: "EXTRACT",  done: upStatus === "analyzing" || upStatus === "done" },
+          { label: "READ",     done: upStatus === "analyzing" || upStatus === "done" },
+          { label: "ANALYZE",  done: upStatus === "done" },
+          { label: "GENERATE", done: completedCount >= items.length },
+        ];
+
+        return (
+        <div className="ws-bulk-processing-card" style={{
+          position: "relative",
+          background: "linear-gradient(180deg, #ffffff 0%, #f7faf1 100%)",
+          borderRadius: 14,
+          boxShadow: "0 2px 14px rgba(15, 23, 42, 0.06)",
+          padding: "56px 32px 44px",
+          overflow: "hidden",
+          textAlign: "center",
+        }}>
+          <style>{`
+            @keyframes wsBulkPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.55; transform: scale(0.94); } }
+            @keyframes wsBulkFactSwap { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: translateY(0); } }
+            @keyframes wsBulkRingGlow { 0%, 100% { filter: drop-shadow(0 0 6px rgba(132,204,22,0.35)); } 50% { filter: drop-shadow(0 0 14px rgba(132,204,22,0.55)); } }
+            @keyframes wsBulkShimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+            @media (max-width: 768px) {
+              .ws-bulk-processing-card { padding: 40px 20px 32px !important; }
+              .ws-bulk-headline { font-size: 18px !important; }
+              .ws-bulk-fact { font-size: 13px !important; margin-bottom: 20px !important; }
+              .ws-bulk-stage-rail { gap: 4px !important; margin-bottom: 18px !important; }
+              .ws-bulk-stage-chip { padding: 5px 10px !important; font-size: 9px !important; }
+              .ws-bulk-stage-icon { width: 12px !important; height: 12px !important; }
+              .ws-bulk-stage-dot { width: 3px !important; height: 3px !important; }
+            }
+            @media (max-width: 480px) {
+              .ws-bulk-processing-card { padding: 32px 16px 24px !important; }
+              .ws-bulk-headline { font-size: 16px !important; }
+              .ws-bulk-fact { font-size: 12px !important; margin-bottom: 16px !important; }
+              .ws-bulk-stage-rail { gap: 3px !important; }
+              .ws-bulk-stage-chip { padding: 4px 8px !important; }
+              .ws-bulk-stage-connector { width: 6px !important; }
+            }
+          `}</style>
+
+          {/* Soft green radial glow behind the ring */}
           <div style={{
-            display: "flex", alignItems: "center", gap: 10, padding: "12px 16px",
-            background: "#FFF8E1", border: "1px solid #FFD54F", borderRadius: 10, marginBottom: 16,
-          }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
-            </svg>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "#78590B" }}>
-              Please stay on this page until all uploads are complete. Leaving will stop remaining uploads.
-            </span>
-          </div>
+            position: "absolute", top: -60, left: "50%",
+            transform: "translateX(-50%)",
+            width: 420, height: 420,
+            background: "radial-gradient(circle, rgba(132,204,22,0.14) 0%, rgba(132,204,22,0) 65%)",
+            borderRadius: "50%", pointerEvents: "none", zIndex: 0,
+          }} />
 
-          <div style={{ textAlign: "center", marginBottom: 20 }}>
-            <p style={{ fontSize: 15, fontWeight: 700, color: "#253352", margin: "0 0 4px" }}>
-              Processing {completedCount}/{items.length} properties...
-            </p>
-            <p style={{ fontSize: 12, color: "#8899B0", margin: 0 }}>
-              Each property takes 30-60 seconds for full analysis.
-            </p>
-            {/* Overall progress bar */}
-            <div style={{ marginTop: 12, height: 10, background: "#E0F2F1", borderRadius: 5, overflow: "hidden" }}>
+          <div style={{ position: "relative", zIndex: 1, maxWidth: 620, margin: "0 auto" }}>
+            {/* Current-property pill (mirrors single upload's file-name pill) */}
+            {currentItem && (
               <div style={{
-                height: "100%", background: "#0D9488", borderRadius: 5,
-                width: `${items.length > 0 ? (completedCount / items.length) * 100 : 0}%`,
-                transition: "width 0.5s",
-              }} />
-            </div>
-          </div>
-
-          {items.map((item, idx) => (
-            <div key={item.id} style={{
-              display: "flex", alignItems: "center", gap: 10, padding: "8px 0",
-              borderBottom: idx < items.length - 1 ? "1px solid #F6F8FB" : "none",
-            }}>
-              <span style={{
-                width: 22, height: 22, borderRadius: "50%", display: "flex",
-                alignItems: "center", justifyContent: "center", flexShrink: 0,
-                background: item.status === "done" ? "#D1FAE5"
-                  : item.status === "error" ? "#FDE8EA"
-                  : item.status === "queued" ? "#F6F8FB" : "#DBEAFE",
-                animation: (item.status === "uploading" || item.status === "analyzing") ? "pulse 1.5s ease-in-out infinite" : "none",
+                display: "inline-flex", alignItems: "center", gap: 8,
+                padding: "6px 14px",
+                background: "rgba(132,204,22,0.1)",
+                border: "1px solid rgba(132,204,22,0.25)",
+                borderRadius: 999,
+                fontSize: 12,
+                marginBottom: 24,
+                maxWidth: "100%",
               }}>
-                {item.status === "done" ? (
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>
-                ) : item.status === "error" ? (
-                  <span style={{ fontSize: 11, color: "#DC3545", fontWeight: 700 }}>!</span>
-                ) : (
-                  <span style={{ fontSize: 10, fontWeight: 700, color: item.status === "queued" ? "#B4C1D1" : "#2563EB" }}>{idx + 1}</span>
+                <span style={{
+                  padding: "2px 7px",
+                  background: "rgba(132,204,22,0.22)",
+                  borderRadius: 4,
+                  fontSize: 9, fontWeight: 800,
+                  color: "#4D7C0F",
+                  textTransform: "uppercase",
+                  letterSpacing: 0.4,
+                }}>
+                  {activeIdx >= 0 ? `${activeIdx + 1}/${items.length}` : `${completedCount}/${items.length}`}
+                </span>
+                <span style={{
+                  maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis",
+                  whiteSpace: "nowrap", color: "#4D5466", fontWeight: 600,
+                }}>
+                  {currentItem.propertyName}
+                </span>
+                {items.length > 1 && (
+                  <span style={{
+                    padding: "2px 7px",
+                    background: "rgba(21,27,43,0.06)",
+                    borderRadius: 4,
+                    fontSize: 9, fontWeight: 800,
+                    color: "#151b2b",
+                    textTransform: "uppercase",
+                    letterSpacing: 0.4,
+                  }}>
+                    +{items.length - 1}
+                  </span>
                 )}
-              </span>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              </div>
+            )}
+
+            {/* Progress ring with percentage */}
+            <div style={{
+              position: "relative", width: 128, height: 128,
+              margin: "0 auto 24px",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <svg width="128" height="128" viewBox="0 0 128 128" style={{
+                position: "absolute", inset: 0,
+                animation: "wsBulkRingGlow 2.4s ease-in-out infinite",
+              }}>
+                <circle cx="64" cy="64" r={radius} fill="none"
+                  stroke="rgba(132,204,22,0.12)" strokeWidth="4" />
+                <circle cx="64" cy="64" r={radius} fill="none"
+                  stroke="#84CC16" strokeWidth="4"
+                  strokeDasharray={`${circumference}`}
+                  strokeDashoffset={`${circumference * (1 - overallPct / 100)}`}
+                  strokeLinecap="round"
+                  style={{
+                    transition: "stroke-dashoffset 0.2s linear",
+                    transformOrigin: "64px 64px",
+                    transform: "rotate(-90deg)",
+                  }}
+                />
+              </svg>
+              <div style={{ position: "relative", zIndex: 1, lineHeight: 1 }}>
                 <div style={{
-                  fontSize: 13, fontWeight: 500, color: "#253352",
-                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                }}>{item.propertyName}</div>
-                <div style={{ fontSize: 10, color: "#8899B0" }}>
-                  {item.status === "queued" && "Waiting..."}
-                  {item.status === "uploading" && `Uploading ${item.progress}%`}
-                  {item.status === "analyzing" && "AI analyzing..."}
-                  {item.status === "done" && "Complete"}
-                  {item.status === "error" && (item.error || "Failed")}
+                  fontSize: 30, fontWeight: 800, color: "#151b2b",
+                  fontVariantNumeric: "tabular-nums",
+                  fontFamily: "'Inter', sans-serif",
+                }}>
+                  {overallPct}
+                  <span style={{ fontSize: 16, color: "#84CC16", fontWeight: 700, marginLeft: 2 }}>%</span>
+                </div>
+                <div style={{
+                  fontSize: 9, fontWeight: 700, color: "#9CA3AF",
+                  textTransform: "uppercase", letterSpacing: 0.8, marginTop: 4,
+                }}>
+                  Underwriting
                 </div>
               </div>
-              {(item.status === "uploading") && (
-                <div style={{ width: 80, flexShrink: 0, display: "flex", alignItems: "center", gap: 6 }}>
-                  <div style={{ flex: 1, height: 6, background: "#E0F2F1", borderRadius: 3, overflow: "hidden" }}>
-                    <div style={{ height: "100%", background: "#0D9488", borderRadius: 3, width: `${item.progress}%`, transition: "width 0.3s" }} />
-                  </div>
-                  <span style={{ fontSize: 10, fontWeight: 600, color: "#0D9488", minWidth: 28, textAlign: "right" }}>{item.progress}%</span>
-                </div>
-              )}
             </div>
-          ))}
+
+            {/* Headline */}
+            <h2 className="ws-bulk-headline" style={{
+              fontSize: 22, fontWeight: 800, color: "#151b2b",
+              margin: "0 0 6px", letterSpacing: -0.2,
+              fontFamily: "'Inter', sans-serif",
+            }}>
+              Analyzing your deals
+            </h2>
+            <p className="ws-bulk-fact" key={`ws-bulk-fact-${factIdx}`} style={{
+              fontSize: 14, fontWeight: 600, color: "#4D7C0F",
+              margin: "0 0 28px",
+              animation: "wsBulkFactSwap 0.5s ease-out",
+            }}>
+              {factMessages[factIdx]}
+            </p>
+
+            {/* Stage chip rail */}
+            <div className="ws-bulk-stage-rail" style={{
+              display: "flex", gap: 6,
+              justifyContent: "center", alignItems: "center",
+              flexWrap: "wrap", marginBottom: 24,
+            }}>
+              {stages.map((stage, i, arr) => {
+                const isCurrent = !stage.done && (i === 0 || arr[i - 1].done);
+                return (
+                  <div key={stage.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <div className="ws-bulk-stage-chip" style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      padding: "6px 12px", borderRadius: 999,
+                      background: stage.done
+                        ? "rgba(132,204,22,0.14)"
+                        : isCurrent
+                          ? "rgba(132,204,22,0.08)"
+                          : "#F3F4F6",
+                      border: `1px solid ${
+                        stage.done ? "rgba(132,204,22,0.4)"
+                        : isCurrent ? "#84CC16"
+                        : "rgba(0,0,0,0.06)"
+                      }`,
+                      transition: "all 0.25s",
+                    }}>
+                      <div className="ws-bulk-stage-icon" style={{
+                        width: 14, height: 14, borderRadius: "50%",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        background: stage.done
+                          ? "#84CC16"
+                          : isCurrent ? "rgba(132,204,22,0.3)" : "rgba(0,0,0,0.08)",
+                        animation: isCurrent ? "wsBulkPulse 1.4s ease-in-out infinite" : "none",
+                      }}>
+                        {stage.done ? (
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none"
+                            stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          <div className="ws-bulk-stage-dot" style={{
+                            width: 5, height: 5, borderRadius: "50%",
+                            background: isCurrent ? "#84CC16" : "rgba(0,0,0,0.25)",
+                          }} />
+                        )}
+                      </div>
+                      <span style={{
+                        fontSize: 10, fontWeight: 800,
+                        color: stage.done ? "#4D7C0F" : isCurrent ? "#4D7C0F" : "#9CA3AF",
+                        textTransform: "uppercase", letterSpacing: 0.6,
+                      }}>
+                        {stage.label}
+                      </span>
+                    </div>
+                    {i < arr.length - 1 && (
+                      <div className="ws-bulk-stage-connector" style={{
+                        width: 10, height: 2, borderRadius: 1,
+                        background: stage.done ? "#84CC16" : "rgba(0,0,0,0.08)",
+                      }} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Shimmering progress bar */}
+            <div style={{
+              position: "relative",
+              height: 6, borderRadius: 999,
+              background: "rgba(132,204,22,0.12)",
+              overflow: "hidden",
+              maxWidth: 440, margin: "0 auto 16px",
+            }}>
+              <div style={{
+                height: "100%",
+                width: `${overallPct}%`,
+                background: "linear-gradient(90deg, #84CC16, #65A30D)",
+                borderRadius: 999,
+                transition: "width 0.2s linear",
+              }} />
+              <div style={{
+                position: "absolute", top: 0, bottom: 0, width: "40%",
+                background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)",
+                animation: "wsBulkShimmer 1.8s linear infinite",
+              }} />
+            </div>
+
+            {/* Count of completed properties */}
+            <p style={{ fontSize: 12, color: "#8899B0", margin: "0 0 20px" }}>
+              {completedCount} of {items.length} propert{items.length !== 1 ? "ies" : "y"} complete  ·  30-60s each
+            </p>
+
+            {/* Compact dot strip showing all properties at a glance */}
+            <div style={{
+              display: "flex", justifyContent: "center", alignItems: "center",
+              gap: 6, flexWrap: "wrap", marginBottom: 4,
+            }}>
+              {items.map((item, idx) => {
+                const isActive = item.status === "uploading" || item.status === "analyzing";
+                const isDone = item.status === "done";
+                const isError = item.status === "error";
+                const bg = isDone ? "#84CC16"
+                  : isError ? "#DC2626"
+                  : isActive ? "rgba(132,204,22,0.85)"
+                  : "rgba(0,0,0,0.1)";
+                return (
+                  <div
+                    key={item.id}
+                    title={`${idx + 1}. ${item.propertyName}  -  ${item.status}`}
+                    style={{
+                      width: isActive ? 10 : 8,
+                      height: isActive ? 10 : 8,
+                      borderRadius: "50%",
+                      background: bg,
+                      animation: isActive ? "wsBulkPulse 1.4s ease-in-out infinite" : "none",
+                      transition: "all 0.3s",
+                    }}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Subtle stay-on-page hint (no yellow warning box) */}
+            <p style={{ fontSize: 10, color: "#B4C1D1", margin: "16px 0 0", letterSpacing: 0.2 }}>
+              Stay on this page while your deals finish analyzing
+            </p>
+          </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* All done */}
       {allDone && !processing && (
