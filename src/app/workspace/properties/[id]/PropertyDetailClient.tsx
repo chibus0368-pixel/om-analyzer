@@ -2040,84 +2040,112 @@ function PropertyDetailInner({
       />
 
       {/* ═══════════════════════════════════════════════════ */}
-      {/*  PRO ANALYSIS TABS                                  */}
+      {/*  PRO ANALYSIS SUB-SECTION                           */}
+      {/*  Tabs + content are wrapped in a single card so the */}
+      {/*  whole block reads as one sub-section. The tab row  */}
+      {/*  sits flush on top of the content panel and the     */}
+      {/*  active tab visually merges into the panel below    */}
+      {/*  (file-folder metaphor).                            */}
       {/*  Each tab owns one concern:                         */}
       {/*    Quick Screen       - scoring + reasons           */}
       {/*    OM Reverse Pricing - pricing solve               */}
       {/*    Rent Roll          - tenant-level lease detail   */}
       {/* ═══════════════════════════════════════════════════ */}
-      <div className="pd-pro-tabs" style={{
-        margin: "0 0 16px",
-        background: C.surfLowest,
-        border: `1px solid ${C.ghostBorder}`,
+      <div className="pd-pro-section" style={{
+        marginBottom: 28,
+        background: "#FFFFFF",
+        border: `1px solid ${C.ghost}`,
         borderRadius: C.radius,
-        padding: 4,
-        display: "inline-flex",
-        gap: 4,
-        boxShadow: "0 1px 3px rgba(15,23,43,0.04)",
+        boxShadow: "0 2px 10px rgba(15,23,43,0.05)",
+        overflow: "hidden",
       }}>
-        {[
-          { id: "quick-screen" as const, label: "Deal Quick Screen", ready: true },
-          { id: "om-reverse-pricing" as const, label: "OM Reverse Pricing", ready: true },
-          { id: "rent-roll" as const, label: "Rent Roll", ready: true },
-        ].map(tab => {
-          const isActive = tab.id === activeProTab;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => selectProTab(tab.id)}
-              style={{
-                padding: "8px 16px",
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: 0.3,
-                background: isActive ? C.primary : "transparent",
-                color: isActive ? "#fff" : C.secondary,
-                border: "none",
-                borderRadius: 8,
-                cursor: "pointer",
-                fontFamily: "inherit",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                transition: "all 0.15s ease",
-              }}
-              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = C.surfLow; }}
-              onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
-            >
-              {tab.label}
-              {!tab.ready && (
-                <span style={{
-                  fontSize: 8,
-                  fontWeight: 800,
-                  letterSpacing: 0.6,
-                  padding: "2px 6px",
-                  borderRadius: 3,
-                  background: isActive ? "rgba(255,255,255,0.22)" : "#FEF3C7",
-                  color: isActive ? "#fff" : "#92400E",
-                  textTransform: "uppercase",
-                }}>Soon</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {activeProTab === "quick-screen" && (
-        <div style={{ marginBottom: 28 }}>
-          <DealQuickScreen property={property} fields={fields} />
+        {/* Tab strip - file folder style. `marginBottom: -1` on the active
+           tab lets its bottom edge overlap the strip's border so it appears
+           to flow directly into the white content panel below. */}
+        <div className="pd-pro-tabs" style={{
+          display: "flex",
+          alignItems: "flex-end",
+          background: "#F9FAFB",
+          borderBottom: `1px solid ${C.ghost}`,
+          padding: "8px 12px 0",
+          gap: 2,
+        }}>
+          {[
+            { id: "quick-screen" as const, label: "Deal Quick Screen", ready: true },
+            { id: "om-reverse-pricing" as const, label: "OM Reverse Pricing", ready: true },
+            { id: "rent-roll" as const, label: "Rent Roll", ready: true },
+          ].map(tab => {
+            const isActive = tab.id === activeProTab;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => selectProTab(tab.id)}
+                style={{
+                  position: "relative",
+                  padding: "10px 18px 11px",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  letterSpacing: 0.3,
+                  background: isActive ? "#FFFFFF" : "transparent",
+                  color: isActive ? C.onSurface : C.secondary,
+                  border: `1px solid ${isActive ? C.ghost : "transparent"}`,
+                  borderBottom: isActive ? "1px solid #FFFFFF" : "1px solid transparent",
+                  borderTopLeftRadius: 8,
+                  borderTopRightRadius: 8,
+                  marginBottom: -1,
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  transition: "background 0.15s ease, color 0.15s ease",
+                }}
+                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "rgba(15,23,43,0.04)"; }}
+                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
+              >
+                {/* Accent bar on the active tab reinforces the folder metaphor */}
+                {isActive && (
+                  <span aria-hidden style={{
+                    position: "absolute",
+                    top: -1, left: -1, right: -1,
+                    height: 2,
+                    background: C.primary,
+                    borderTopLeftRadius: 8,
+                    borderTopRightRadius: 8,
+                  }} />
+                )}
+                {tab.label}
+                {!tab.ready && (
+                  <span style={{
+                    fontSize: 8,
+                    fontWeight: 800,
+                    letterSpacing: 0.6,
+                    padding: "2px 6px",
+                    borderRadius: 3,
+                    background: "#FEF3C7",
+                    color: "#92400E",
+                    textTransform: "uppercase",
+                  }}>Soon</span>
+                )}
+              </button>
+            );
+          })}
         </div>
-      )}
 
-      {activeProTab === "om-reverse-pricing" && (
-        <div style={{ marginBottom: 28 }}>
-          <OmReversePricing property={property} fields={fields} />
-        </div>
-      )}
+        {/* Content panel - same white surface as the active tab so the two
+           read as one continuous card. */}
+        <div className="pd-pro-panel" style={{ padding: "20px 20px 22px" }}>
+          {activeProTab === "quick-screen" && (
+            <DealQuickScreen property={property} fields={fields} />
+          )}
 
-      {activeProTab === "rent-roll" && (
-        <div style={{ marginBottom: 28 }}>
-          {wsType !== "land" && tenants.length > 0 ? (
+          {activeProTab === "om-reverse-pricing" && (
+            <OmReversePricing property={property} fields={fields} />
+          )}
+
+          {activeProTab === "rent-roll" && (
+            <>
+              {wsType !== "land" && tenants.length > 0 ? (
             /* Mirror the Deal Details rent roll layout exactly so both views
                render identically. Change in one, change in both.              */
             <div style={{
@@ -2184,8 +2212,10 @@ function PropertyDetailInner({
               </div>
             </div>
           )}
+            </>
+          )}
         </div>
-      )}
+      </div>
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  1. PROPERTY HEADER (mobile only - desktop uses     */}
