@@ -1541,6 +1541,12 @@ function PropertyDetailInner({
   /* ═══════════════════════════════════════════════════════ */
   return (
     <div className="pd-inner" style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px" }}>
+      <style>{`
+        .pd-accordion > summary::-webkit-details-marker { display: none; }
+        .pd-accordion > summary::marker { content: ""; }
+        .pd-accordion > summary:hover { background: #F3F4F6 !important; }
+        .pd-accordion[open] .pd-chev { transform: rotate(180deg); }
+      `}</style>
       {(property as any)?.dealStructure === "syndication" && (
         <div style={{
           background: "#FEF3C7",
@@ -2471,15 +2477,16 @@ function PropertyDetailInner({
       )}
 
       {/* ═══════════════════════════════════════════════════ */}
-      {/*  3. METRICS STRIP (INLINE, NOT CARDS)               */}
+      {/*  3. PRICE STRIP                                     */}
+      {/*  Cap, DSCR, IRR all live in the Verdict card above, */}
+      {/*  so this strip is just the editable price + the few */}
+      {/*  dollar figures that are fast glance-fuel (NOI,     */}
+      {/*  Price/SF).                                         */}
       {/* ═══════════════════════════════════════════════════ */}
       {hasData && wsType !== "land" && (() => {
         const readOnlyMetrics = [
-          { label: "Cap Rate", value: calc?.capRate ? `${calc.capRate.toFixed(2)}%` : "--" },
           { label: "NOI", value: fmt$(noiOm) },
-          { label: "DSCR", value: calc?.dscr ? `${calc.dscr.toFixed(2)}x` : "--" },
           { label: "Price / SF", value: calc?.priceSf ? `$${calc.priceSf.toFixed(0)}/SF` : "--" },
-          { label: "Cash-on-Cash", value: calc?.cashOnCash ? `${calc.cashOnCash.toFixed(1)}%` : "--" },
         ].filter(m => m.value !== "--");
         return (
           <div className="pd-metrics-strip" style={{
@@ -2658,6 +2665,44 @@ function PropertyDetailInner({
 
       {/* Sale Price Scenarios panel moved to OM Reverse Pricing tab. */}
 
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/*  DEAL CONTEXT (collapsible)                                  */}
+      {/*  Second-level analysis: value-add levers + qualitative       */}
+      {/*  strengths / risks. Collapsed by default so the verdict +    */}
+      {/*  tabs stay the focus.                                        */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <details className="pd-accordion" style={{
+        background: "#FFFFFF",
+        borderRadius: C.radius,
+        border: "1px solid rgba(0,0,0,0.06)",
+        marginBottom: 16,
+        overflow: "hidden",
+      }}>
+        <summary style={{
+          padding: "14px 20px",
+          cursor: "pointer",
+          listStyle: "none",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          userSelect: "none",
+          background: "#F9FAFB",
+          borderBottom: "1px solid rgba(0,0,0,0.04)",
+        }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ width: 3, height: 16, background: "#059669", borderRadius: 2 }} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: C.onSurface }}>Deal Context</span>
+            <span style={{ fontSize: 11, color: C.secondary, fontWeight: 500 }}>
+              value-add levers, strengths &amp; risks
+            </span>
+          </span>
+          <span className="pd-chev" style={{
+            fontSize: 12, color: C.secondary, fontWeight: 700,
+            transition: "transform 0.2s ease",
+          }}>▾</span>
+        </summary>
+        <div style={{ padding: 16 }}>
+
       {/* ═══════════════════════════════════════════════════ */}
       {/*  3b. VALUE-ADD OPPORTUNITIES                       */}
       {/* ═══════════════════════════════════════════════════ */}
@@ -2755,41 +2800,7 @@ function PropertyDetailInner({
         );
       })()}
 
-      {/* ═══════════════════════════════════════════════════ */}
-      {/*  4. WHAT TO DOUBLE CHECK (Review Panel)            */}
-      {/* ═══════════════════════════════════════════════════ */}
-      {reviewItems.length > 0 && (
-        <div style={{
-          background: "#FFFBF0", borderRadius: C.radius, overflow: "hidden",
-          border: "1px solid #F3E8C8", marginBottom: 16,
-        }}>
-          <div style={{ padding: "14px 18px", borderBottom: "1px solid #F3E8C8", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
-              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#92400E", fontFamily: "'Inter', sans-serif" }}>Needs Review</h3>
-            </div>
-            {reviewItems.length > 3 && (
-              <button onClick={() => setReviewExpanded(!reviewExpanded)} style={{
-                fontSize: 11, color: "#92400E", background: "none", border: "none", cursor: "pointer",
-                fontWeight: 600, fontFamily: "inherit",
-              }}>
-                {reviewExpanded ? "Show less" : `+${reviewItems.length - 3} more`}
-              </button>
-            )}
-          </div>
-          <div style={{ padding: "10px 18px" }}>
-            <p style={{ fontSize: 11, color: "#78350F", margin: "0 0 8px", opacity: 0.7 }}>
-              These are the parts of the deal most likely to benefit from a quick human review.
-            </p>
-            {(reviewExpanded ? reviewItems : reviewItems.slice(0, 3)).map((note: string, i: number) => (
-              <div key={i} style={{ fontSize: 12, color: "#78350F", padding: "5px 0", display: "flex", alignItems: "flex-start", gap: 8, lineHeight: 1.5 }}>
-                <span style={{ color: "#D97706", fontWeight: 700, flexShrink: 0 }}>•</span>
-                <span>{note}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Needs Review moved into the Inputs & Assumptions accordion below. */}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  4B. STRENGTHS & RISKS (moved here from section 6C) */}
@@ -2839,12 +2850,95 @@ function PropertyDetailInner({
         ) : null;
 
         return (
-          <div className="pd-signal-cards" style={{ display: "flex", gap: 16, marginBottom: 16, flexWrap: "wrap" }}>
+          <div className="pd-signal-cards" style={{ display: "flex", gap: 16, marginBottom: 0, flexWrap: "wrap" }}>
             {renderSignalCard("Strengths", positives, "#059669", "#F0FDF4", "✅")}
             {renderSignalCard("Risks", negatives, "#DC2626", "#FEF2F2", "⚠️")}
           </div>
         );
       })()}
+        </div>
+      </details>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/*  INPUTS & ASSUMPTIONS (collapsible)                          */}
+      {/*  Raw data audit: items flagged for human review, the fields  */}
+      {/*  pulled directly from the OM, and the values derived from    */}
+      {/*  them. Collapsed by default to keep the decision surface     */}
+      {/*  uncluttered.                                                */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <details className="pd-accordion" style={{
+        background: "#FFFFFF",
+        borderRadius: C.radius,
+        border: "1px solid rgba(0,0,0,0.06)",
+        marginBottom: 16,
+        overflow: "hidden",
+      }}>
+        <summary style={{
+          padding: "14px 20px",
+          cursor: "pointer",
+          listStyle: "none",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          userSelect: "none",
+          background: "#F9FAFB",
+          borderBottom: "1px solid rgba(0,0,0,0.04)",
+        }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ width: 3, height: 16, background: "#4338CA", borderRadius: 2 }} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: C.onSurface }}>Inputs &amp; Assumptions</span>
+            <span style={{ fontSize: 11, color: C.secondary, fontWeight: 500 }}>
+              {pulledCount} pulled
+              <span style={{ opacity: 0.4, margin: "0 6px" }}>·</span>
+              {calcCount} calculated
+              {reviewCount > 0 && (
+                <>
+                  <span style={{ opacity: 0.4, margin: "0 6px" }}>·</span>
+                  <span style={{ color: "#92400E", fontWeight: 600 }}>{reviewCount} review</span>
+                </>
+              )}
+            </span>
+          </span>
+          <span className="pd-chev" style={{
+            fontSize: 12, color: C.secondary, fontWeight: 700,
+            transition: "transform 0.2s ease",
+          }}>▾</span>
+        </summary>
+        <div style={{ padding: 16 }}>
+
+      {/* ── Needs Review (was section 4) ───────────────────── */}
+      {reviewItems.length > 0 && (
+        <div style={{
+          background: "#FFFBF0", borderRadius: C.radius, overflow: "hidden",
+          border: "1px solid #F3E8C8", marginBottom: 16,
+        }}>
+          <div style={{ padding: "14px 18px", borderBottom: "1px solid #F3E8C8", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#92400E", fontFamily: "'Inter', sans-serif" }}>Needs Review</h3>
+            </div>
+            {reviewItems.length > 3 && (
+              <button onClick={() => setReviewExpanded(!reviewExpanded)} style={{
+                fontSize: 11, color: "#92400E", background: "none", border: "none", cursor: "pointer",
+                fontWeight: 600, fontFamily: "inherit",
+              }}>
+                {reviewExpanded ? "Show less" : `+${reviewItems.length - 3} more`}
+              </button>
+            )}
+          </div>
+          <div style={{ padding: "10px 18px" }}>
+            <p style={{ fontSize: 11, color: "#78350F", margin: "0 0 8px", opacity: 0.7 }}>
+              These are the parts of the deal most likely to benefit from a quick human review.
+            </p>
+            {(reviewExpanded ? reviewItems : reviewItems.slice(0, 3)).map((note: string, i: number) => (
+              <div key={i} style={{ fontSize: 12, color: "#78350F", padding: "5px 0", display: "flex", alignItems: "flex-start", gap: 8, lineHeight: 1.5 }}>
+                <span style={{ color: "#D97706", fontWeight: 700, flexShrink: 0 }}>•</span>
+                <span>{note}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  6A. PULLED FROM OM                                 */}
@@ -2936,6 +3030,9 @@ function PropertyDetailInner({
           </div>
         </div>
       )}
+
+        </div>
+      </details>
 
       {/* Rent Roll table moved to dedicated Rent Roll tab above. */}
 
@@ -3042,317 +3139,7 @@ function PropertyDetailInner({
       </div>
 
       {/* ═══════════════════════════════════════════════════ */}
-      {/*  9. DEEP RESEARCH PANEL — disabled                  */}
-      {/*  Temporarily hidden while Location Intel v2 is      */}
-      {/*  reworked. Flip the `false` below to `true` to       */}
-      {/*  re-enable without deleting the implementation.     */}
-      {/* ═══════════════════════════════════════════════════ */}
-      {false && (
-        <div style={{
-          background: "#FFFFFF", borderRadius: C.radius, overflow: "hidden",
-          border: `1px solid rgba(0,0,0,0.06)`, marginBottom: 16,
-        }}>
-          <div style={{ padding: "20px 24px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4338CA" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /><path d="M11 8v6M8 11h6" /></svg>
-              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Location Intel</h3>
-                <div style={{ fontSize: 11, color: C.secondary, lineHeight: 1.3 }}>Deep research on the trade area, comps, and rooftops</div>
-              </div>
-            </div>
-
-            {!deepResearch ? (
-              <>
-                <p style={{ fontSize: 13, color: C.secondary, margin: "0 0 16px", lineHeight: 1.5 }}>
-                  Live research on what{"'"}s happening around this property - nearby developments, civic activity, area demographics, and recent news.
-                </p>
-                {/* Location Intelligence is universally available: no tier
-                    gate. The auto-fetch effect above populates deepResearch
-                    on mount, so this button only shows if the initial fetch
-                    hasn't completed or failed, as a manual retry. */}
-                {true ? (
-                  <button
-                    onClick={async () => {
-                      setDeepResearchLoading(true);
-                      try {
-                        console.log("[LocationIntel] Sending:", { propertyId, propertyName: property.propertyName, address: location, locationParts: { address1: property.address1, city: property.city, state: property.state } });
-                        const res = await fetch("/api/workspace/deep-research", {
-                          method: "POST", headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ propertyId, propertyName: property.propertyName, address: location || property.propertyName, tenants: tenants.map((t: any) => t.name), analysisType: wsType }),
-                        });
-                        if (res.ok) {
-                          const data = await res.json();
-                          setDeepResearch(data);
-                        } else {
-                          const err = await res.json().catch(() => ({}));
-                          console.error("Deep research failed:", err);
-                          alert(err.error || "Deep research failed. Check console.");
-                        }
-                      } catch (err) { console.error("Deep research failed:", err); }
-                      setDeepResearchLoading(false);
-                    }}
-                    disabled={deepResearchLoading}
-                    className="ws-btn-gold"
-                    style={{
-                      padding: "10px 24px",
-                      background: deepResearchLoading ? C.surfLow : "#6366F1",
-                      color: deepResearchLoading ? C.secondary : "#fff", border: "none", borderRadius: 8,
-                      fontSize: 13, fontWeight: 600, cursor: deepResearchLoading ? "not-allowed" : "pointer",
-                      fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8,
-                    }}>
-                    {deepResearchLoading && (
-                      <span style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite", display: "inline-block" }} />
-                    )}
-                    {deepResearchLoading ? "Searching area... (30-60s)" : "Research This Location"}
-                  </button>
-                ) : (
-                  <div style={{
-                    padding: "14px 18px", background: "rgba(99,102,241,0.04)", borderRadius: 8,
-                    border: "1px solid rgba(99,102,241,0.12)", display: "flex", alignItems: "center", gap: 12,
-                  }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0110 0v4" />
-                    </svg>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#312E81" }}>Pro Feature</div>
-                      <div style={{ fontSize: 11, color: "#585e70", marginTop: 2 }}>Location Intelligence is available on the Pro plan ($40/mo).</div>
-                    </div>
-                    <a href="/workspace/profile" style={{
-                      padding: "6px 14px", background: "linear-gradient(135deg, #6366F1, #4F46E5)", color: "#fff",
-                      border: "none", borderRadius: 6, fontSize: 11, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap",
-                    }}>Upgrade</a>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div>
-                {/* ── Row 1: Grade badge + Summary ── */}
-                <div style={{ display: "flex", gap: 14, marginBottom: 16, alignItems: "flex-start" }}>
-                  {/* Location Grade */}
-                  {deepResearch.locationGrade && (() => {
-                    const grade = deepResearch.locationGrade;
-                    const gradeColor = grade.startsWith("A") ? "#059669" : grade.startsWith("B") ? "#2563EB" : grade.startsWith("C") ? "#D97706" : "#DC2626";
-                    const gradeBg = grade.startsWith("A") ? "#D1FAE5" : grade.startsWith("B") ? "#DBEAFE" : grade.startsWith("C") ? "#FEF3C7" : "#FEE2E2";
-                    return (
-                      <div style={{
-                        minWidth: 64, textAlign: "center", padding: "10px 12px",
-                        background: gradeBg, borderRadius: 10, border: `1.5px solid ${gradeColor}20`, flexShrink: 0,
-                      }}>
-                        <div style={{ fontSize: 28, fontWeight: 800, color: gradeColor, lineHeight: 1 }}>{grade}</div>
-                        <div style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: gradeColor, marginTop: 2 }}>Location</div>
-                      </div>
-                    );
-                  })()}
-                  <div style={{ flex: 1 }}>
-                    {deepResearch.summary && (
-                      <div style={{ fontSize: 13, color: "#312E81", lineHeight: 1.55, marginBottom: 4 }}>
-                        {deepResearch.summary}
-                      </div>
-                    )}
-                    {deepResearch.gradeRationale && (
-                      <div style={{ fontSize: 11, color: C.secondary, lineHeight: 1.4 }}>
-                        {deepResearch.gradeRationale}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* ── Row 2: Tile strip ──
-                    Preference order:
-                      1. New typed tiles[] from the route (confidence-gated, type-aware).
-                      2. Fall back to raw census (for cached research created before
-                         the route started emitting tiles[]).
-                    Either way, filter out any row with no value so we never render
-                    an empty box. */}
-                {(() => {
-                  const typedTiles: Array<{ label: string; value: string }> | null =
-                    Array.isArray(deepResearch.tiles) && deepResearch.tiles.length > 0
-                      ? deepResearch.tiles
-                          .filter((t: any) => t && t.value)
-                          .map((t: any) => ({ label: t.label || t.key, value: String(t.value) }))
-                      : null;
-                  const legacyTiles = deepResearch.census
-                    ? [
-                        { label: "Population", value: deepResearch.census.population?.toLocaleString() },
-                        { label: "Median HHI", value: deepResearch.census.medianIncome ? `$${(deepResearch.census.medianIncome / 1000).toFixed(0)}K` : null },
-                        { label: "Median Age", value: deepResearch.census.medianAge },
-                        { label: "Home Value", value: deepResearch.census.medianHomeValue ? `$${(deepResearch.census.medianHomeValue / 1000).toFixed(0)}K` : null },
-                        { label: "Unemployment", value: deepResearch.census.unemploymentRate !== null && deepResearch.census.unemploymentRate !== undefined ? `${deepResearch.census.unemploymentRate}%` : null },
-                      ].filter(d => d.value)
-                    : [];
-                  const tiles = typedTiles || legacyTiles;
-                  if (tiles.length === 0) return null;
-                  return (
-                    <div style={{
-                      display: "grid", gridTemplateColumns: `repeat(${Math.min(tiles.length, 5)}, 1fr)`,
-                      gap: 10, marginBottom: 16,
-                    }}>
-                      {tiles.map((d: any, i: number) => (
-                        <div key={i} style={{
-                          padding: "12px 14px", background: "#FFFFFF",
-                          border: "1px solid rgba(0,0,0,0.06)", borderRadius: 10,
-                        }}>
-                          <div style={{ fontSize: 10, color: C.secondary, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4, fontWeight: 700 }}>{d.label}</div>
-                          <div style={{ fontSize: 18, fontWeight: 800, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>{d.value}</div>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })()}
-
-                {/* ── Row 3: Map ── */}
-                {deepResearch.mapData?.center && (
-                  <div style={{ marginBottom: 16 }}>
-                    <div style={{
-                      width: "100%", height: 240, borderRadius: 8, overflow: "hidden",
-                      border: `1px solid ${C.ghostBorder}`,
-                    }}>
-                      <LocationIntelMap mapData={deepResearch.mapData} />
-                    </div>
-                    {/* Map legend */}
-                    <div style={{ display: "flex", gap: 10, marginTop: 6, flexWrap: "wrap" }}>
-                      {[
-                        { label: "Property", color: "#4338CA" },
-                        { label: "Anchors", color: "#DC2626", count: deepResearch.sourceCounts?.categoryCounts?.anchors },
-                        { label: "Dining", color: "#EA580C", count: deepResearch.sourceCounts?.categoryCounts?.restaurants },
-                        { label: "Retail", color: "#2563EB", count: deepResearch.sourceCounts?.categoryCounts?.retail },
-                        { label: "Services", color: "#059669", count: deepResearch.sourceCounts?.categoryCounts?.services },
-                      ].filter(d => !d.count || d.count > 0).map((d, i) => (
-                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                          <span style={{ width: 7, height: 7, borderRadius: d.label === "Property" ? 7 : "50%", background: d.color, border: d.label === "Property" ? "1.5px solid #fff" : "none", boxShadow: d.label === "Property" ? "0 0 0 1px #4338CA" : "none" }} />
-                          <span style={{ fontSize: 9, color: C.secondary }}>{d.label}{d.count ? ` (${d.count})` : ""}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* ── Row 4: Nearby Anchors ──
-                    Uses the new typed anchors[] (mid/high confidence only,
-                    already gated server-side) and falls back to topAnchors for
-                    cached legacy docs. If we genuinely have no anchors, we
-                    surface "Anchor coverage is sparse in this dataset" rather
-                    than asserting "No nearby anchors" - users flagged false
-                    negatives there. */}
-                {(() => {
-                  type AnchorItem = { name: string };
-                  const typedAnchors: AnchorItem[] = Array.isArray(deepResearch.anchors)
-                    ? deepResearch.anchors.filter((a: any) => a && a.name).map((a: any) => ({ name: a.name }))
-                    : [];
-                  const legacyAnchors: AnchorItem[] = typedAnchors.length === 0 && Array.isArray(deepResearch.topAnchors)
-                    ? deepResearch.topAnchors.map((n: string) => ({ name: n }))
-                    : [];
-                  const anchors = typedAnchors.length > 0 ? typedAnchors : legacyAnchors;
-                  const quality = deepResearch.anchorDataQuality as string | undefined;
-                  if (anchors.length === 0 && quality !== "sparse") return null;
-                  return (
-                    <div style={{ marginBottom: 16 }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: C.secondary, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
-                        Nearby Anchors
-                      </div>
-                      {anchors.length > 0 ? (
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                          {anchors.map((a, i) => (
-                            <span key={i} style={{
-                              display: "inline-flex", alignItems: "center", gap: 6,
-                              padding: "5px 12px", background: "#FFFFFF", borderRadius: 999,
-                              border: "1px solid rgba(0,0,0,0.08)",
-                              fontSize: 12, fontWeight: 600, color: C.onSurface,
-                            }}>
-                              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#84CC16" }} />
-                              {a.name}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <div style={{ fontSize: 11, color: C.secondary, fontStyle: "italic" }}>
-                          Anchor coverage is sparse in this dataset — absence here does not imply absence on the ground.
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
-
-                {/* ── Row 5: Key Signals (band-labeled cards) ──
-                    Card style matches the Location Intel mockup: colored
-                    label + verdict on the left, STRONG/WATCH/CAUTION band
-                    pill on the right. Maps the new `band` field with a
-                    graceful fallback to the legacy `signal` green/yellow/red. */}
-                {(deepResearch.signals || []).length > 0 && (
-                  <>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: C.secondary, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
-                      Key Signals
-                    </div>
-                    <div style={{
-                      display: "grid", gap: 10, marginBottom: 16,
-                      gridTemplateColumns: `repeat(auto-fit, minmax(220px, 1fr))`,
-                    }}>
-                      {(deepResearch.signals || []).map((sig: any, i: number) => {
-                        // Normalize band from either new `band` field or legacy `signal`.
-                        const rawBand = (sig.band || "").toString().toLowerCase();
-                        const rawSignal = (sig.signal || "").toString().toLowerCase();
-                        const band: "strong" | "watch" | "caution" =
-                          rawBand === "strong" || rawSignal === "green" ? "strong"
-                          : rawBand === "caution" || rawSignal === "red" ? "caution"
-                          : "watch";
-                        const theme = {
-                          strong:  { bg: "#F3FCE4", border: "#D9F29B", label: "#4D7C0F", dot: "#84CC16" },
-                          watch:   { bg: "#FEFCE8", border: "#FEF08A", label: "#A16207", dot: "#EAB308" },
-                          caution: { bg: "#FEF2F2", border: "#FECACA", label: "#B91C1C", dot: "#EF4444" },
-                        }[band];
-                        const bandLabel = band === "strong" ? "STRONG" : band === "caution" ? "CAUTION" : "WATCH";
-                        return (
-                          <div key={i} style={{
-                            padding: "12px 14px", background: theme.bg,
-                            border: `1px solid ${theme.border}`, borderRadius: 10,
-                          }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
-                              <span style={{ fontSize: 13, fontWeight: 700, color: C.onSurface }}>{sig.label}</span>
-                              <span style={{ fontSize: 9, fontWeight: 800, color: theme.label, letterSpacing: 0.9 }}>{bandLabel}</span>
-                            </div>
-                            <div style={{ fontSize: 12, color: "#374151", lineHeight: 1.5 }}>{sig.detail}</div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
-
-                {/* ── Bottom Line ── */}
-                {deepResearch.bottomLine && (
-                  <div style={{
-                    padding: "12px 16px", background: "#F8FAFC", borderRadius: 8,
-                    border: `1px solid ${C.ghostBorder}`, fontSize: 12, color: C.onSurface, lineHeight: 1.5, fontWeight: 500,
-                  }}>
-                    {deepResearch.bottomLine}
-                  </div>
-                )}
-
-                {/* Re-run */}
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
-                  <button
-                    onClick={() => setDeepResearch(null)}
-                    style={{
-                      padding: "5px 14px", background: "transparent",
-                      border: `1px solid ${C.ghostBorder}`, borderRadius: 6,
-                      fontSize: 10, color: C.secondary, cursor: "pointer", fontFamily: "inherit",
-                    }}>
-                    Refresh
-                  </button>
-                  {deepResearch.createdAt && (
-                    <span style={{ fontSize: 9, color: C.secondary }}>
-                      {new Date(deepResearch.createdAt).toLocaleDateString()}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ═══════════════════════════════════════════════════ */}
-      {/*  10. FEEDBACK MODULE                                */}
+      {/*  9. FEEDBACK MODULE                                 */}
       {/* ═══════════════════════════════════════════════════ */}
       {hasData && (
         <div style={{

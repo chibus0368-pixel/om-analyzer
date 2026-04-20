@@ -262,7 +262,39 @@ export default function DealVerdictBox({ property, fields, variant = "main" }: D
     );
   }
 
-  // Main variant: hero banner. Score gauge + full executive-summary prose.
+  // Main variant: hero banner. Score gauge + verdict + four headline KPIs
+  // that matter for the current asset class. The Pro Analysis tabs below
+  // own the detail; this card is the 3-second read.
+  const cap = report.snapshot.goingInCapRatePct;
+  const dscr = report.snapshot.dscr;
+  const askVsRepl = report.snapshot.askVsReplacementCostPct;
+  const baseIrr = report.scenarios.find(s => s.label === "Base")?.leveredIrrPct ?? null;
+
+  const kpis = [
+    {
+      label: "Going-in Cap",
+      value: cap != null ? `${cap.toFixed(2)}%` : "--",
+      tone: cap == null ? "neutral" : cap >= 6.5 ? "good" : cap >= 5.0 ? "warn" : "bad",
+    },
+    {
+      label: "DSCR",
+      value: dscr != null ? `${dscr.toFixed(2)}x` : "--",
+      tone: dscr == null ? "neutral" : dscr >= 1.30 ? "good" : dscr >= 1.15 ? "warn" : "bad",
+    },
+    {
+      label: "Price / Replacement",
+      value: askVsRepl != null ? `${Math.round(askVsRepl)}%` : "--",
+      tone: askVsRepl == null ? "neutral" : askVsRepl <= 90 ? "good" : askVsRepl <= 105 ? "warn" : "bad",
+    },
+    {
+      label: "Base IRR",
+      value: baseIrr != null ? `${baseIrr.toFixed(1)}%` : "--",
+      tone: baseIrr == null ? "neutral" : baseIrr >= 15 ? "good" : baseIrr >= 10 ? "warn" : "bad",
+    },
+  ];
+
+  const toneColor = (t: string) => t === "good" ? "#059669" : t === "warn" ? "#D97706" : t === "bad" ? "#DC2626" : "#475569";
+
   return (
     <div style={{
       background: v.bg,
@@ -316,6 +348,38 @@ export default function DealVerdictBox({ property, fields, variant = "main" }: D
             fontWeight: 500,
           }}>{report.executiveSummary}</div>
         </div>
+      </div>
+
+      {/* Four-KPI headline strip. Same numbers the tabs render in detail. */}
+      <div style={{
+        marginTop: 18,
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+        gap: 10,
+        background: "rgba(255,255,255,0.55)",
+        border: `1px solid ${v.border}`,
+        borderRadius: 10,
+        padding: "12px 14px",
+      }}>
+        {kpis.map(k => (
+          <div key={k.label} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <div style={{
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: 0.8,
+              color: v.accent,
+              opacity: 0.7,
+              textTransform: "uppercase",
+            }}>{k.label}</div>
+            <div style={{
+              fontSize: 20,
+              fontWeight: 800,
+              color: toneColor(k.tone),
+              fontVariantNumeric: "tabular-nums",
+              lineHeight: 1.1,
+            }}>{k.value}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
