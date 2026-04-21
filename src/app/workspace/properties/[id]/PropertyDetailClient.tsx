@@ -2072,7 +2072,7 @@ function PropertyDetailInner({
         }}>
           {[
             { id: "quick-screen" as const, label: "Deal Quick Screen", ready: true },
-            { id: "om-reverse-pricing" as const, label: "OM Reverse Pricing", ready: true },
+            { id: "om-reverse-pricing" as const, label: "Offer Scenarios", ready: true },
             { id: "rent-roll" as const, label: "Rent Roll", ready: true },
           ].map(tab => {
             const isActive = tab.id === activeProTab;
