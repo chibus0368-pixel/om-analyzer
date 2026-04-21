@@ -1,4 +1,5 @@
 "use client";
+// Deployment marker: 2026-04-21 — force Vercel rebuild after inline-rename fix.
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
