@@ -677,7 +677,7 @@ export default function RentRollDetailAnalysis({
       )}
 
       {showAsset && (
-        <SectionCard title={`${detectedLabel} Flags`} accent={C.primaryText}>
+        <SectionCard title={`${detectedLabel} Flags`} accent={C.warn}>
           <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: C.onSurface, lineHeight: 1.6 }}>
             {assetFlags.map((n, i) => <li key={i}>{n}</li>)}
           </ul>
