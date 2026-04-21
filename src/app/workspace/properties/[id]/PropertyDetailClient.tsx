@@ -26,6 +26,7 @@ import PropertyHeroImage from "@/components/workspace/PropertyHeroImage";
 import DealQuickScreen from "@/components/workspace/DealQuickScreen";
 import OmReversePricing from "@/components/workspace/OmReversePricing";
 import DealVerdictBox from "@/components/workspace/DealVerdictBox";
+import RentRollDetailAnalysis from "@/components/workspace/RentRollDetailAnalysis";
 
 /* ── Design tokens ─────────────────────────────────────── */
 const C = {
@@ -2146,8 +2147,9 @@ function PropertyDetailInner({
           {activeProTab === "rent-roll" && (
             <>
               {wsType !== "land" && tenants.length > 0 ? (
-            /* Mirror the Deal Details rent roll layout exactly so both views
-               render identically. Change in one, change in both.              */
+            <>
+            {/* Mirror the Deal Details rent roll layout exactly so both views
+               render identically. Change in one, change in both.              */}
             <div style={{
               background: "#FFFFFF", borderRadius: C.radius, overflow: "hidden",
               border: `1px solid rgba(0,0,0,0.06)`,
@@ -2196,6 +2198,8 @@ function PropertyDetailInner({
                 </table>
               </div>
             </div>
+            <RentRollDetailAnalysis property={property} fields={fields} wsType={wsType} />
+            </>
           ) : (
             <div style={{
               background: C.surfLowest, border: `1px dashed rgba(0,0,0,0.08)`,
