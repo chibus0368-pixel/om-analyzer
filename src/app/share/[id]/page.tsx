@@ -1,7 +1,11 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useParams } from "next/navigation";
+import DealQuickScreen from "@/components/workspace/DealQuickScreen";
+import OmReversePricing from "@/components/workspace/OmReversePricing";
+import RentRollDetailAnalysis from "@/components/workspace/RentRollDetailAnalysis";
+import type { Property as InternalProperty, ExtractedField as InternalExtractedField } from "@/lib/workspace/types";
 
 
 interface ExtractedField {
@@ -167,6 +171,20 @@ export default function SharedViewPage() {
     setTimeout(fitAllBounds, 100);
   }
 
+  // Esc key returns to the map from the detail view. Ignored while typing
+  // in inputs so field editing (if ever added) doesn't fight the shortcut.
+  useEffect(() => {
+    if (viewMode !== "detail") return;
+    function handler(e: KeyboardEvent) {
+      if (e.key !== "Escape") return;
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      backToList();
+    }
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [viewMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Initialize map
   useEffect(() => {
     if (loading || error || properties.length === 0 || !mapRef.current) return;
@@ -323,6 +341,76 @@ export default function SharedViewPage() {
         .share-card:hover { box-shadow: 0 8px 24px rgba(21,27,43,0.1) !important; transform: translateY(-1px); }
         .detail-slide { animation: slideIn 0.2s ease-out; }
         @keyframes slideIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+        /* On narrow screens, collapse the map and let the detail panel take
+           the full width so the Quick Screen / Offer Scenarios tabs are
+           actually usable. The "Back to Map" pill at the top of the detail
+           panel returns to list mode which restores the map. */
+        @media (max-width: 900px) {
+          .share-sidebar-detail {
+            width: 100% !important;
+            min-width: 0 !important;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 20;
+            box-shadow: 0 0 40px rgba(15,23,43,0.15);
+          }
+        }
+        .back-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 14px 8px 10px;
+          background: #0F172A;
+          color: #fff;
+          border: none;
+          border-radius: 999px;
+          cursor: pointer;
+          font-family: 'Inter', sans-serif;
+          font-size: 12.5px;
+          font-weight: 700;
+          letter-spacing: 0.2px;
+          box-shadow: 0 2px 6px rgba(15,23,43,0.22);
+          transition: transform 0.1s ease, box-shadow 0.15s ease;
+        }
+        .back-pill:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(15,23,43,0.28); }
+        .back-pill:active { transform: translateY(0); }
+        .pd-tab {
+          padding: 9px 14px;
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 0.2px;
+          background: transparent;
+          color: #64748B;
+          border: 1px solid transparent;
+          border-bottom: none;
+          border-top-left-radius: 8px;
+          border-top-right-radius: 8px;
+          cursor: pointer;
+          margin-bottom: -1px;
+          font-family: inherit;
+          white-space: nowrap;
+          transition: color 0.12s ease, background 0.12s ease;
+        }
+        .pd-tab:hover { color: #0F172A; background: rgba(15,23,43,0.04); }
+        .pd-tab.active {
+          background: #FFFFFF;
+          color: #0F172A;
+          border: 1px solid #e5e7eb;
+          border-bottom-color: #FFFFFF;
+          position: relative;
+        }
+        .pd-tab.active::before {
+          content: "";
+          position: absolute;
+          top: -1px; left: -1px; right: -1px;
+          height: 2px;
+          background: #84CC16;
+          border-top-left-radius: 8px;
+          border-top-right-radius: 8px;
+        }
       `}</style>
 
       {/* Header - dark branded bar matching workspace */}
@@ -409,10 +497,16 @@ export default function SharedViewPage() {
           </div>
         </div>
 
-        {/* Sidebar - list or detail view */}
-        <div style={{
-          width: 420, minWidth: 420, background: "#fff", overflow: "auto",
+        {/* Sidebar - list or detail view. In detail mode we widen the panel
+            to ~680px so the Quick Screen / Offer Scenarios / Rent Roll tabs
+            have room to breathe. On narrow screens the panel goes full-width
+            as an overlay (see the @media rule in the <style> block above). */}
+        <div className={`share-sidebar ${viewMode === "detail" ? "share-sidebar-detail" : ""}`} style={{
+          width: viewMode === "detail" ? 680 : 420,
+          minWidth: viewMode === "detail" ? 680 : 420,
+          background: "#fff", overflow: "auto",
           borderLeft: "1px solid #e5e7eb",
+          transition: "width 0.25s ease, min-width 0.25s ease",
         }}>
           {viewMode === "detail" && detailProp ? (
             /* ─── Property Detail View ─── */
@@ -647,31 +741,82 @@ function PropertyDetail({
     color: "#94a3b8", marginBottom: 10, paddingBottom: 6, borderBottom: "1px solid #f1f5f9",
   };
 
+  // Tab state. "summary" is the lightweight overview (current metric cards).
+  // The other tabs reuse the exact components that render inside the logged-in
+  // workspace so the public recipient sees the same diagnostics. We default
+  // to "summary" because that's the lowest-friction read.
+  type Tab = "summary" | "quick-screen" | "scenarios" | "rent-roll";
+  const [tab, setTab] = useState<Tab>("summary");
+
+  // Reset to Summary whenever the viewer navigates to a new property so we
+  // don't leave them on a tab that has no data for the next deal.
+  useEffect(() => { setTab("summary"); }, [prop.id]);
+
+  // Components from the workspace expect the internal Property + ExtractedField
+  // shape. The API spreads the full property row into SharedProperty, so the
+  // cast is safe at runtime. We null out workspaceId so useUnderwritingDefaults
+  // skips the Firestore read (public visitors have no auth context) and just
+  // uses DEFAULT_UNDERWRITING. This keeps the math consistent across deals.
+  const internalProperty = useMemo<InternalProperty>(
+    () => ({ ...(prop as unknown as InternalProperty), workspaceId: undefined }),
+    [prop],
+  );
+  const internalFields = useMemo<InternalExtractedField[]>(
+    () => fields as unknown as InternalExtractedField[],
+    [fields],
+  );
+
+  // Decide which tabs to show. A tab only appears if the underlying content
+  // has at least something to render; otherwise we suppress it rather than
+  // show an empty "Waiting on inputs" placeholder to the recipient.
+  const showSummary = pricingMetrics.length + basicsMetrics.length + incomeMetrics.length > 0
+    || tenantName || tenantRows.length > 0 || signalItems.length > 0
+    || (prop.documents?.length ?? 0) > 0;
+  const askingPrice = g("pricing_deal_terms", "asking_price");
+  const hasPricing = !!askingPrice;
+  const showQuickScreen = hasPricing;
+  const showScenarios = hasPricing;
+  const showRentRoll = tenantRows.length > 0;
+
+  const tabDefs: { id: Tab; label: string; visible: boolean }[] = [
+    { id: "summary", label: "Summary", visible: !!showSummary },
+    { id: "quick-screen", label: "Quick Screen", visible: showQuickScreen },
+    { id: "scenarios", label: "Offer Scenarios", visible: showScenarios },
+    { id: "rent-roll", label: "Rent Roll", visible: showRentRoll },
+  ];
+  const visibleTabs = tabDefs.filter(t => t.visible);
+
+  // If the current tab isn't applicable to this property (e.g. switching from
+  // a multi-tenant deal to a single-tenant one), fall back to Summary.
+  useEffect(() => {
+    if (!visibleTabs.find(t => t.id === tab)) setTab("summary");
+  }, [tab, visibleTabs]);
+
   return (
     <div className="detail-slide" style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      {/* Sticky nav bar */}
+      {/* Sticky nav bar. The Back to Map pill is deliberately the most
+          prominent affordance because the user's primary mental model is
+          "map with deals I drill into and come back from", so the pill makes
+          that return trip a single obvious click. Esc also returns. */}
       <div style={{
-        padding: "10px 16px", borderBottom: "1px solid #e5e7eb", background: "#fff",
-        display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 5,
+        padding: "12px 16px", borderBottom: "1px solid #e5e7eb", background: "#fff",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: 10, position: "sticky", top: 0, zIndex: 5,
       }}>
-        <button onClick={onBack} style={{
-          display: "flex", alignItems: "center", gap: 6, background: "none", border: "none",
-          cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#2563EB", padding: 0,
-          fontFamily: "'Inter', sans-serif",
-        }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <button onClick={onBack} className="back-pill" title="Back to map (Esc)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
           </svg>
-          All Properties
+          Back to Map
         </button>
 
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          {/* Locate on map */}
+          {/* Locate on map - re-centers without leaving the detail view */}
           <button onClick={onLocate} title="Locate on map" style={{
-            width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center",
-            background: "#f2f3ff", border: "1px solid #e5e7eb", borderRadius: 6, cursor: "pointer", color: "#2563EB",
+            width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center",
+            background: "#F8FAFC", border: "1px solid #e5e7eb", borderRadius: 8, cursor: "pointer", color: "#0F172A",
           }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
             </svg>
           </button>
@@ -681,14 +826,14 @@ function PropertyDetail({
             disabled={!prevProp}
             title="Previous property"
             style={{
-              width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center",
-              background: "#fff", border: "1px solid #e5e7eb", borderRadius: 6,
+              width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center",
+              background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8,
               cursor: prevProp ? "pointer" : "default", color: prevProp ? "#374151" : "#d1d5db",
             }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M15 18l-6-6 6-6" /></svg>
           </button>
-          <span style={{ fontSize: 11, color: "#94a3b8", minWidth: 40, textAlign: "center" }}>
+          <span style={{ fontSize: 11, color: "#94a3b8", minWidth: 40, textAlign: "center", fontVariantNumeric: "tabular-nums" }}>
             {currentIdx + 1} / {properties.length}
           </span>
           <button
@@ -696,8 +841,8 @@ function PropertyDetail({
             disabled={!nextProp}
             title="Next property"
             style={{
-              width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center",
-              background: "#fff", border: "1px solid #e5e7eb", borderRadius: 6,
+              width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center",
+              background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8,
               cursor: nextProp ? "pointer" : "default", color: nextProp ? "#374151" : "#d1d5db",
             }}
           >
@@ -706,24 +851,148 @@ function PropertyDetail({
         </div>
       </div>
 
-      {/* Scrollable content */}
-      <div style={{ flex: 1, overflow: "auto", padding: "16px 18px" }}>
-        {/* Hero image */}
+      {/* Property header - name + address surfaced above the tab strip so the
+          viewer always knows which deal they're looking at regardless of tab. */}
+      <div style={{
+        padding: "14px 18px 0",
+        background: "#fff",
+      }}>
         {prop.heroImageUrl && (
           <div style={{
-            height: 160, borderRadius: 10, overflow: "hidden", marginBottom: 16,
+            height: 140, borderRadius: 10, overflow: "hidden", marginBottom: 14,
             background: `url(${prop.heroImageUrl}) center/cover no-repeat`,
           }} />
         )}
-
-        {/* Property name & address */}
-        <h2 style={{ fontSize: 18, fontWeight: 800, color: "#151b2b", margin: "0 0 4px" }}>
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: "#151b2b", margin: "0 0 4px", letterSpacing: "-0.01em" }}>
           {prop.propertyName}
         </h2>
-        <p style={{ fontSize: 12, color: "#585e70", margin: "0 0 20px", lineHeight: 1.4 }}>
+        <p style={{ fontSize: 12.5, color: "#585e70", margin: "0 0 14px", lineHeight: 1.4 }}>
           {addr || "-"}
         </p>
+      </div>
 
+      {/* Tab strip - only shows tabs that have real data. Sticky under the
+          top bar so the viewer can switch views without scrolling back up. */}
+      {visibleTabs.length > 1 && (
+        <div style={{
+          display: "flex",
+          alignItems: "flex-end",
+          background: "#F9FAFB",
+          borderTop: "1px solid #F1F5F9",
+          borderBottom: "1px solid #e5e7eb",
+          padding: "8px 12px 0",
+          gap: 2,
+          position: "sticky",
+          top: 62,
+          zIndex: 4,
+          overflowX: "auto",
+        }}>
+          {visibleTabs.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`pd-tab ${tab === t.id ? "active" : ""}`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Scrollable content */}
+      <div style={{ flex: 1, overflow: "auto", padding: "16px 18px", background: "#fff" }}>
+        {/* ═══ QUICK SCREEN TAB ═══ */}
+        {tab === "quick-screen" && (
+          <div>
+            <DealQuickScreen property={internalProperty} fields={internalFields} />
+          </div>
+        )}
+
+        {/* ═══ OFFER SCENARIOS TAB ═══ */}
+        {tab === "scenarios" && (
+          <div>
+            <OmReversePricing property={internalProperty} fields={internalFields} />
+          </div>
+        )}
+
+        {/* ═══ RENT ROLL TAB ═══ */}
+        {tab === "rent-roll" && (
+          <div>
+            {/* Primary tenant + lease info card (if populated) */}
+            {(tenantName || leaseExpiry || leaseType) && (
+              <div style={{ padding: "14px 16px", background: "#f8fafc", borderRadius: 8, border: "1px solid #f1f5f9", marginBottom: 14 }}>
+                {tenantName && (
+                  <div style={{ marginBottom: 8 }}>
+                    <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", color: "#94a3b8" }}>Primary Tenant</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#151b2b" }}>{tenantName}</div>
+                  </div>
+                )}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  {leaseType && (
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", color: "#94a3b8" }}>Lease Type</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#151b2b" }}>{leaseType}</div>
+                    </div>
+                  )}
+                  {leaseStart && (
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", color: "#94a3b8" }}>Lease Start</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#151b2b" }}>{leaseStart}</div>
+                    </div>
+                  )}
+                  {leaseExpiry && (
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", color: "#94a3b8" }}>Lease Expiry</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#151b2b" }}>{leaseExpiry}</div>
+                    </div>
+                  )}
+                  {rentEsc && (
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", color: "#94a3b8" }}>Escalations</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#151b2b" }}>{rentEsc}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Tenant rent roll table */}
+            {tenantRows.length > 0 && (
+              <div style={{ overflow: "hidden", borderRadius: 8, border: "1px solid #e5e7eb", marginBottom: 8 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                  <thead>
+                    <tr style={{ background: "#f8fafc" }}>
+                      <th style={{ textAlign: "left", padding: "8px 10px", fontWeight: 600, color: "#64748b", fontSize: 10, textTransform: "uppercase" }}>Tenant</th>
+                      <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600, color: "#64748b", fontSize: 10, textTransform: "uppercase" }}>SF</th>
+                      <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600, color: "#64748b", fontSize: 10, textTransform: "uppercase" }}>Rent</th>
+                      <th style={{ textAlign: "right", padding: "8px 10px", fontWeight: 600, color: "#64748b", fontSize: 10, textTransform: "uppercase" }}>Lease End</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tenantRows.map((t, i) => (
+                      <tr key={i} style={{ background: i % 2 === 0 ? "#fff" : "#fafbfc", borderTop: "1px solid #f1f5f9" }}>
+                        <td style={{ padding: "7px 10px", fontWeight: 600, color: "#151b2b" }}>{t.name}</td>
+                        <td style={{ padding: "7px 10px", textAlign: "right", color: "#585e70" }}>{t.sf ? fmtSF(t.sf) : "--"}</td>
+                        <td style={{ padding: "7px 10px", textAlign: "right", color: "#585e70" }}>{t.rent ? fmt$(t.rent) : "--"}</td>
+                        <td style={{ padding: "7px 10px", textAlign: "right", color: "#585e70" }}>{t.end || "--"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Multi-tenant diagnostics - component self-suppresses on 1-tenant deals */}
+            <RentRollDetailAnalysis
+              property={internalProperty}
+              fields={internalFields}
+              wsType={(internalProperty.analysisType as any) || "retail"}
+            />
+          </div>
+        )}
+
+        {/* ═══ SUMMARY TAB ═══ */}
+        {tab === "summary" && (<>
         {/* ── Pricing & Deal Terms ── */}
         {pricingMetrics.length > 0 && (
           <div style={{ marginBottom: 24 }}>
@@ -918,6 +1187,7 @@ function PropertyDetail({
             </div>
           </div>
         )}
+        </>)}
       </div>
     </div>
   );
