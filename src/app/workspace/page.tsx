@@ -4,8 +4,6 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
 import { getWorkspaceProperties, deleteProperty, updateProperty } from "@/lib/workspace/firestore";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
-import { doc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import type { Property, ProjectDocument, Workspace } from "@/lib/workspace/types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
 import { AnalysisTypeIcon } from "@/lib/workspace/AnalysisTypeIcon";
@@ -474,70 +472,38 @@ function EmptyDealboardDropZone({ onFiles }: { onFiles: (files: FileList) => voi
   );
 }
 
-/* ========== Editable Workspace Title ========== */
-function EditableWorkspaceTitle({ name, workspaceId }: { name: string; workspaceId: string }) {
-  const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(name);
-  const inputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => { setValue(name); }, [name]);
-  useEffect(() => { if (editing && inputRef.current) inputRef.current.focus(); }, [editing]);
-
-  async function save() {
-    const trimmed = value.trim();
-    if (!trimmed || trimmed === name || !workspaceId) { setEditing(false); setValue(name); return; }
-    try {
-      await updateDoc(doc(db, "workspaces", workspaceId), { name: trimmed });
-      window.location.reload();
-    } catch { setValue(name); }
-    setEditing(false);
-  }
-
-  if (editing) {
-    return (
-      <input ref={inputRef} value={value}
-        onChange={e => setValue(e.target.value)}
-        onBlur={save}
-        onKeyDown={e => { if (e.key === "Enter") save(); if (e.key === "Escape") { setEditing(false); setValue(name); } }}
-        style={{
-          fontSize: 30,
-          fontWeight: 700,
-          color: "#111827",
-          background: "#f3f4f6",
-          border: "2px solid #84CC16",
-          borderRadius: 8,
-          padding: "4px 12px",
-          margin: 0,
-          lineHeight: 1.2,
-          outline: "none",
-          fontFamily: "inherit",
-          minWidth: 300,
-        }}
-      />
-    );
-  }
-
-  return (
-    <div
-      data-editable-title
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        cursor: "pointer",
-      }}
-      onClick={() => setEditing(true)}
-      title="Click to edit workspace name"
-    />
-  );
-}
-
 /* ========== Main Dashboard ========== */
+// NOTE: Inline-rename for the DealBoard title lives inside WorkspaceDashboard
+// itself (state: editingTitle/titleDraft). It calls renameWorkspace() from
+// WorkspaceContext so the cached workspace list updates without a full reload.
 export default function WorkspaceDashboard() {
   const { user } = useAuth();
-  const { activeWorkspace, workspaces } = useWorkspace();
+  const { activeWorkspace, workspaces, renameWorkspace } = useWorkspace();
   const router = useRouter();
   const [properties, setProperties] = useState<Property[]>([]);
   const [docCounts, setDocCounts] = useState<Record<string, number>>({});
+  // Inline rename state for the DealBoard title. The pencil icon next to the
+  // name toggles `editingTitle`; while editing we render an input that writes
+  // through WorkspaceContext.renameWorkspace on Enter/blur.
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState("");
+  const titleInputRef = useRef<HTMLInputElement | null>(null);
+  useEffect(() => {
+    if (editingTitle && titleInputRef.current) {
+      titleInputRef.current.focus();
+      titleInputRef.current.select();
+    }
+  }, [editingTitle]);
+  const commitTitle = useCallback(() => {
+    const trimmed = titleDraft.trim();
+    if (!activeWorkspace) { setEditingTitle(false); return; }
+    if (!trimmed || trimmed === activeWorkspace.name) {
+      setEditingTitle(false);
+      return;
+    }
+    renameWorkspace(activeWorkspace.id, trimmed);
+    setEditingTitle(false);
+  }, [titleDraft, activeWorkspace, renameWorkspace]);
   // `loading` gates only the property grid area, not the whole page. The
   // dashboard shell (header, nav, empty state) renders immediately so the
   // user sees something within a frame instead of a blank "Loading..." page.
@@ -688,43 +654,87 @@ export default function WorkspaceDashboard() {
         <div>
           {/* Workspace name + Edit icon + Type badge */}
           <div className="db-title-row" style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-            <h1 className="db-title" style={{
-              fontSize: 30,
-              fontWeight: 700,
-              color: "#111827",
-              margin: 0,
-              lineHeight: 1.2,
-            }}>
-              {activeWorkspace?.name || "Default Dealboard"}
-            </h1>
+            {editingTitle ? (
+              <input
+                ref={titleInputRef}
+                className="db-title"
+                value={titleDraft}
+                onChange={e => setTitleDraft(e.target.value)}
+                onBlur={commitTitle}
+                onKeyDown={e => {
+                  if (e.key === "Enter") { e.preventDefault(); commitTitle(); }
+                  if (e.key === "Escape") { e.preventDefault(); setEditingTitle(false); }
+                }}
+                style={{
+                  fontSize: 30,
+                  fontWeight: 700,
+                  color: "#111827",
+                  background: "#F9FAFB",
+                  border: "2px solid #84CC16",
+                  borderRadius: 8,
+                  padding: "4px 12px",
+                  margin: 0,
+                  lineHeight: 1.2,
+                  outline: "none",
+                  fontFamily: "inherit",
+                  minWidth: 280,
+                }}
+              />
+            ) : (
+              <h1
+                className="db-title"
+                style={{
+                  fontSize: 30,
+                  fontWeight: 700,
+                  color: "#111827",
+                  margin: 0,
+                  lineHeight: 1.2,
+                  cursor: activeWorkspace ? "pointer" : "default",
+                }}
+                onDoubleClick={() => {
+                  if (!activeWorkspace) return;
+                  setTitleDraft(activeWorkspace.name);
+                  setEditingTitle(true);
+                }}
+                title={activeWorkspace ? "Double-click to rename" : undefined}
+              >
+                {activeWorkspace?.name || "Default Dealboard"}
+              </h1>
+            )}
 
-            {/* Edit icon button */}
-            <button
-              className="db-edit-btn"
-              onClick={() => {
-                const titleEl = document.querySelector("[data-editable-title]");
-                if (titleEl) (titleEl as HTMLElement).click();
-              }}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: "4px 8px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#9CA3AF",
-                transition: "color 0.2s",
-              }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#6B7280"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#9CA3AF"; }}
-              title="Edit workspace name"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-              </svg>
-            </button>
+            {/* Edit icon button — opens inline rename. Disabled while editing
+                so the click can't fight the input's focus/blur lifecycle. */}
+            {!editingTitle && (
+              <button
+                className="db-edit-btn"
+                onClick={() => {
+                  if (!activeWorkspace) return;
+                  setTitleDraft(activeWorkspace.name);
+                  setEditingTitle(true);
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: activeWorkspace ? "pointer" : "default",
+                  padding: "4px 8px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#9CA3AF",
+                  transition: "color 0.2s",
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#4D7C0F"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#9CA3AF"; }}
+                title="Rename dealboard"
+                aria-label="Rename dealboard"
+                disabled={!activeWorkspace}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+              </button>
+            )}
 
             {/* Analysis type badge */}
             {activeWorkspace?.analysisType && (() => {
