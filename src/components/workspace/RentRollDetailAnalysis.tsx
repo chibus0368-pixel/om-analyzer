@@ -534,23 +534,30 @@ export default function RentRollDetailAnalysis({
   const detectedLabel = assetLabel[wsType] || "General CRE";
 
   return (
-    <div style={{ marginTop: 18 }}>
+    <div style={{ marginTop: 48 }}>
+      {/* Prominent section break. Clear visual separation from the rent
+          roll table above, large headline, with the detected asset-type
+          module surfaced as a small eyebrow tag. */}
       <div style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        flexWrap: "wrap", gap: 10,
-        padding: "10px 14px",
-        background: "linear-gradient(135deg, #F8FAFC, #F1F5F9)",
-        border: `1px solid ${C.ghost}`,
-        borderRadius: 10,
-        marginBottom: 12,
+        display: "flex", alignItems: "flex-end", justifyContent: "space-between",
+        gap: 14, flexWrap: "wrap",
+        padding: "0 2px 14px 2px",
+        marginBottom: 18,
+        borderBottom: `2px solid ${C.primary}`,
       }}>
-        <div>
+        <div style={{ minWidth: 0 }}>
           <div style={{
-            fontSize: 11, fontWeight: 800, letterSpacing: 0.8,
-            textTransform: "uppercase", color: C.primary, marginBottom: 2,
-          }}>Detail Analysis</div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: C.onSurface }}>
-            {detectedLabel} module applied to {rows.length} tenant{rows.length === 1 ? "" : "s"}
+            fontSize: 11, fontWeight: 800, letterSpacing: 1.4,
+            textTransform: "uppercase", color: C.primary, marginBottom: 6,
+          }}>{detectedLabel} Module</div>
+          <h2 style={{
+            margin: 0,
+            fontSize: 30, fontWeight: 800, letterSpacing: -0.5,
+            color: C.onSurface, lineHeight: 1.1,
+            fontFamily: "'Inter', sans-serif",
+          }}>Detail Analysis</h2>
+          <div style={{ fontSize: 12.5, color: C.secondary, fontWeight: 500, marginTop: 6 }}>
+            Tenant-level diagnostics across {rows.length} tenant{rows.length === 1 ? "" : "s"}
           </div>
         </div>
       </div>
