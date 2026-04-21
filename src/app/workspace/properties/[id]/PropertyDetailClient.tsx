@@ -31,6 +31,7 @@ import RentRollDetailAnalysis from "@/components/workspace/RentRollDetailAnalysi
 /* ── Design tokens ─────────────────────────────────────── */
 const C = {
   primary: "#84CC16",
+  primaryText: "#4D7C0F",
   primaryContainer: "#84CC16",
   onSurface: "#0F172A",
   secondary: "#6B7280",
@@ -520,7 +521,7 @@ function PurchasePriceInline({ priceState }: { priceState: ReturnType<typeof use
   if (editing) {
     return (
       <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: "#84CC16" }}>$</span>
+        <span style={{ fontSize: 18, fontWeight: 700, color: C.primaryText }}>$</span>
         <input
           ref={inputRef}
           value={inputVal}
@@ -809,7 +810,7 @@ function PurchasePriceControl({ priceState }: {
 
       {editing ? (
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 24, fontWeight: 800, color: C.primary }}>$</span>
+          <span style={{ fontSize: 24, fontWeight: 800, color: C.primaryText }}>$</span>
           <input
             ref={inputRef}
             value={inputVal}
@@ -817,7 +818,7 @@ function PurchasePriceControl({ priceState }: {
             onBlur={commitEdit}
             onKeyDown={e => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") setEditing(false); }}
             style={{
-              fontSize: 24, fontWeight: 800, color: C.primary, background: C.surfLow,
+              fontSize: 24, fontWeight: 800, color: C.primaryText, background: C.surfLow,
               border: `1px solid ${C.ghost}`, borderRadius: 6, padding: "2px 8px",
               outline: "none", width: "100%", fontFamily: "'Inter', sans-serif",
               fontVariantNumeric: "tabular-nums",
@@ -827,7 +828,7 @@ function PurchasePriceControl({ priceState }: {
       ) : (
         <div onClick={startEdit} style={{ cursor: "pointer", display: "flex", alignItems: "baseline", gap: 8 }}>
           <span style={{
-            fontSize: 28, fontWeight: 800, color: C.primary,
+            fontSize: 28, fontWeight: 800, color: C.primaryText,
             fontVariantNumeric: "tabular-nums", letterSpacing: -0.5,
           }}>
             {fmt$(activePrice)}
@@ -1744,7 +1745,7 @@ function PropertyDetailInner({
       {/* ── Breadcrumb ──────────────────────────────────── */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 12, color: C.secondary }}>
-          <Link href={`/workspace?ws=${activeWorkspace?.slug || "default-dealboard"}`} style={{ color: "#84CC16", fontWeight: 600, textDecoration: "none" }}>
+          <Link href={`/workspace?ws=${activeWorkspace?.slug || "default-dealboard"}`} style={{ color: C.primaryText, fontWeight: 600, textDecoration: "none" }}>
             {activeWorkspace?.name || "DealBoard"}
           </Link>
           <span style={{ margin: "0 6px", opacity: 0.4 }}>/</span>

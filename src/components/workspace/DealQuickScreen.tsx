@@ -15,6 +15,7 @@ import { useUnderwritingDefaults } from "@/lib/workspace/use-underwriting-defaul
 /* ── Design tokens (mirror PropertyDetailClient's C object) ─── */
 const C = {
   primary: "#84CC16",
+  primaryText: "#4D7C0F",
   onSurface: "#0F172A",
   secondary: "#6B7280",
   gold: "#C49A3C",
@@ -469,7 +470,7 @@ export default function DealQuickScreen({ property, fields, overrides }: DealQui
 
             <div style={{ marginTop: 12, fontSize: 11, color: C.secondary, lineHeight: 1.5 }}>
               Baseline is set workspace-wide on the{" "}
-              <a href="/workspace/settings" style={{ color: C.primary, textDecoration: "none", fontWeight: 600 }}>Settings page</a>.
+              <a href="/workspace/settings" style={{ color: C.primaryText, textDecoration: "none", fontWeight: 600 }}>Settings page</a>.
               Scoring stays comparable across deals as long as every property in a workspace uses the same baseline.
             </div>
           </div>

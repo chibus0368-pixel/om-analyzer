@@ -23,6 +23,7 @@ import type { Property, ExtractedField } from "@/lib/workspace/types";
 /* Design tokens */
 const C = {
   primary: "#84CC16",
+  primaryText: "#4D7C0F",
   onSurface: "#0F172A",
   secondary: "#6B7280",
   surfLow: "#F3F4F6",
@@ -543,12 +544,12 @@ export default function RentRollDetailAnalysis({
         gap: 14, flexWrap: "wrap",
         padding: "0 2px 14px 2px",
         marginBottom: 18,
-        borderBottom: `2px solid ${C.primary}`,
+        borderBottom: `2px solid ${C.primaryText}`,
       }}>
         <div style={{ minWidth: 0 }}>
           <div style={{
             fontSize: 11, fontWeight: 800, letterSpacing: 1.4,
-            textTransform: "uppercase", color: C.primary, marginBottom: 6,
+            textTransform: "uppercase", color: C.primaryText, marginBottom: 6,
           }}>{detectedLabel} Module</div>
           <h2 style={{
             margin: 0,
@@ -563,7 +564,7 @@ export default function RentRollDetailAnalysis({
       </div>
 
       {showCore && (
-        <SectionCard title="Core Metrics" accent={C.primary}>
+        <SectionCard title="Core Metrics" accent={C.primaryText}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
             {coreTiles.map((t, i) => (
               <StatTile key={i} label={t.label} value={t.value} note={t.note} tone={t.tone} />
@@ -684,7 +685,7 @@ export default function RentRollDetailAnalysis({
       )}
 
       {showAsset && (
-        <SectionCard title={`${detectedLabel} Flags`} accent={C.primary}>
+        <SectionCard title={`${detectedLabel} Flags`} accent={C.primaryText}>
           <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: C.onSurface, lineHeight: 1.6 }}>
             {assetFlags.map((n, i) => <li key={i}>{n}</li>)}
           </ul>
