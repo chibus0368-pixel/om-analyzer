@@ -444,20 +444,12 @@ export default function RentRollDetailAnalysis({
   }, [concentration, walt, rollover12Pct, mtmRentPct, mtm, dq]);
 
   /* Render */
-  if (rows.length === 0) {
-    return (
-      <div style={{
-        marginTop: 14,
-        padding: 14,
-        background: C.surfLowest,
-        border: `1px dashed ${C.ghost}`,
-        borderRadius: C.radius,
-        fontSize: 12,
-        color: C.secondary,
-      }}>
-        Detail Analysis is unavailable until tenants are parsed from the rent roll or OM.
-      </div>
-    );
+  // Suppress entirely for single-tenant (or empty) rent rolls — Detail
+  // Analysis is about multi-tenant dynamics (rollover, concentration, WALT,
+  // MTM). A single tenant has nothing to analyze at this level; the table
+  // above already tells that story.
+  if (rows.length < 2) {
+    return null;
   }
 
   const coreTiles: Array<{ label: string; value: string; note?: string; tone?: "warn" | "bad" | "good" | "neutral" }> = [];
@@ -558,7 +550,7 @@ export default function RentRollDetailAnalysis({
             fontFamily: "'Inter', sans-serif",
           }}>Detail Analysis</h2>
           <div style={{ fontSize: 12.5, color: C.secondary, fontWeight: 500, marginTop: 6 }}>
-            Tenant-level diagnostics across {rows.length} tenant{rows.length === 1 ? "" : "s"}
+            Tenant-level diagnostics across {rows.length} tenants
           </div>
         </div>
       </div>
