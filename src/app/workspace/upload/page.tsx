@@ -621,10 +621,10 @@ export default function UploadPage() {
           style={{
             display: "inline-flex", alignItems: "center", gap: 8,
             padding: "10px 16px", borderRadius: 10,
-            background: C.primary, color: "#fff",
+            background: "#0F172A", color: "#fff",
             fontSize: 13, fontWeight: 600, textDecoration: "none",
             fontFamily: "'Inter', sans-serif",
-            boxShadow: "0 2px 8px rgba(132, 204, 22, 0.25)",
+            boxShadow: "0 2px 8px rgba(15, 23, 42, 0.18)",
             whiteSpace: "nowrap",
           }}
         >
@@ -742,7 +742,7 @@ export default function UploadPage() {
                 `}</style>
                 <div className="ul-filelist-header" style={{ padding: "10px 16px", borderBottom: `1px solid ${C.ghost}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: C.secondary }}>{files.length} file{files.length !== 1 ? "s" : ""} ready</span>
-                  <button onClick={() => setFiles([])} style={{ fontSize: 11, color: C.primary, background: "none", border: "none", cursor: "pointer", fontWeight: 600, minHeight: 32 }}>Clear</button>
+                  <button onClick={() => setFiles([])} style={{ fontSize: 11, color: "#4D7C0F", background: "none", border: "none", cursor: "pointer", fontWeight: 600, minHeight: 32 }}>Clear</button>
                 </div>
                 {files.map(f => (
                   <div key={f.id} className="ul-file-row" style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 16px", borderBottom: `1px solid ${C.ghost}`, fontSize: 12 }}>

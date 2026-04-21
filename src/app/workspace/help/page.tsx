@@ -905,7 +905,7 @@ export default function HelpPage() {
                 {next ? (
                   <button onClick={() => setActiveId(next.id)} style={{
                     display: "flex", alignItems: "center", gap: 6, background: "none",
-                    border: "none", cursor: "pointer", color: C.primary, fontSize: 13, fontWeight: 600, fontFamily: "'Inter', sans-serif",
+                    border: "none", cursor: "pointer", color: "#4D7C0F", fontSize: 13, fontWeight: 600, fontFamily: "'Inter', sans-serif",
                   }}>
                     {next.title}
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>

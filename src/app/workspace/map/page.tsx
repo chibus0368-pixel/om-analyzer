@@ -307,7 +307,7 @@ export default function MapPage() {
               ` : ""}
               ${scoreTotal > 0 ? `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:${pinColor};color:#fff;font-size:12px;font-weight:800;">${scoreTotal}</span><span style="font-size:12px;font-weight:600;color:#151b2b;">${scoreBand === "strong_buy" ? "Strong Buy" : scoreBand === "buy" ? "Buy" : scoreBand === "hold" ? "Neutral" : scoreBand === "pass" ? "Pass" : scoreBand === "strong_reject" ? "Reject" : ""}</span></div>` : ""}
               ${signal ? `<div style="font-size:11px;margin-bottom:8px;color:#585e70;">${signal}</div>` : ""}
-              <a href="/workspace/properties/${prop.id}" style="display:inline-block;padding:6px 16px;background:#84CC16;color:#0F172A;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600;">View Deal</a>
+              <a href="/workspace/properties/${prop.id}" style="display:inline-block;padding:6px 16px;background:#0F172A;color:#ffffff;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600;">View Deal</a>
             </div>
           `;
 

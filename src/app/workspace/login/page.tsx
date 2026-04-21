@@ -470,8 +470,8 @@ function WorkspaceLoginPageInner() {
             disabled={loading}
             style={{
               width: "100%", padding: "13px 0",
-              background: loading ? "#999" : "#84CC16",
-              color: loading ? "#fff" : "#0F172A", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 700,
+              background: loading ? "#999" : "#0F172A",
+              color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 700,
               cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1,
               marginTop: 2, fontFamily: "'Inter', sans-serif",
               transition: "all 0.2s",
@@ -491,7 +491,7 @@ function WorkspaceLoginPageInner() {
             <>
               No account?{" "}
               <button onClick={() => { setMode("register"); setError(""); }}
-                style={{ background: "none", border: "none", color: "#84CC16", fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "'Inter', sans-serif" }}>
+                style={{ background: "none", border: "none", color: "#4D7C0F", fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "'Inter', sans-serif" }}>
                 Create Account
               </button>
             </>
@@ -499,7 +499,7 @@ function WorkspaceLoginPageInner() {
             <>
               Already have an account?{" "}
               <button onClick={() => { setMode("login"); setError(""); }}
-                style={{ background: "none", border: "none", color: "#84CC16", fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "'Inter', sans-serif" }}>
+                style={{ background: "none", border: "none", color: "#4D7C0F", fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "'Inter', sans-serif" }}>
                 Sign In
               </button>
             </>

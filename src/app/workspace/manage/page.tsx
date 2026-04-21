@@ -185,7 +185,7 @@ export default function ManageWorkspacesPage() {
               onClick={handleAdd}
               disabled={!newName.trim()}
               style={{
-                padding: "9px 22px", background: newName.trim() ? "#84CC16" : "#D8DFE9", color: newName.trim() ? "#0F172A" : "#fff",
+                padding: "9px 22px", background: newName.trim() ? "#0F172A" : "#D8DFE9", color: "#fff",
                 border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600,
                 cursor: newName.trim() ? "pointer" : "default", fontFamily: "inherit",
               }}
@@ -234,7 +234,7 @@ export default function ManageWorkspacesPage() {
                           border: "1px solid #C49A3C", outline: "none", fontFamily: "inherit",
                         }}
                       />
-                      <button onClick={saveEdit} className="ws-btn-gold" style={{ padding: "6px 14px", background: "#65A30D", color: "#fff", border: "none", borderRadius: 5, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Save</button>
+                      <button onClick={saveEdit} className="ws-btn-gold" style={{ padding: "6px 14px", background: "#0F172A", color: "#fff", border: "none", borderRadius: 5, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Save</button>
                       <button onClick={() => setEditingId(null)} style={{ padding: "6px 12px", background: "transparent", border: "1px solid #D8DFE9", borderRadius: 5, fontSize: 12, cursor: "pointer", color: "#5A7091", fontFamily: "inherit" }}>Cancel</button>
                     </div>
                   ) : (

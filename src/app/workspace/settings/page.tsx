@@ -172,7 +172,7 @@ export default function SettingsPage() {
         onClick={handleSave}
         disabled={rescoring || !hydrated}
         className="ws-btn-red"
-        style={{ padding: "10px 28px", background: saved ? "#10B981" : rescoring ? "#585e70" : "#65A30D", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: (rescoring || !hydrated) ? "not-allowed" : "pointer", transition: "background 0.3s" }}
+        style={{ padding: "10px 28px", background: saved ? "#059669" : rescoring ? "#585e70" : "#0F172A", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: (rescoring || !hydrated) ? "not-allowed" : "pointer", transition: "background 0.3s" }}
       >
         {saved ? "Saved!" : rescoring ? "Re-scoring..." : "Save Settings"}
       </button>

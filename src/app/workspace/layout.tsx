@@ -166,7 +166,7 @@ function _SidebarUserCard({ user, collapsed, userTier, usage, onUpgradeClick }: 
             style={{
               width: "100%", marginTop: 6, padding: "5px 0",
               background: "none", border: "1px solid #e2e8f0", borderRadius: 6,
-              fontSize: 11, fontWeight: 600, color: "#84CC16", cursor: "pointer",
+              fontSize: 11, fontWeight: 600, color: "#4D7C0F", cursor: "pointer",
               fontFamily: "inherit", transition: "all 0.15s",
             }}
             onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.08)"; e.currentTarget.style.borderColor = "#84CC16"; }}
@@ -1284,8 +1284,8 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                   <button
                     onClick={() => { setShowMobileMenu(false); setShowUpgrade(true); }}
                     style={{
-                      width: "100%", padding: "10px 0", background: "rgba(132,204,22,0.15)", color: "#84CC16",
-                      border: "1px solid rgba(132,204,22,0.25)", borderRadius: 8,
+                      width: "100%", padding: "10px 0", background: "#0F172A", color: "#ffffff",
+                      border: "1px solid #0F172A", borderRadius: 8,
                       fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
                       cursor: "pointer", fontFamily: "inherit",
                     }}
@@ -1395,8 +1395,8 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             className="ws-share-btn"
             style={{
               display: "inline-flex", alignItems: "center", gap: 8,
-              padding: "8px 16px", background: "rgba(132,204,22,0.1)", color: "#84CC16",
-              border: "1px solid rgba(132,204,22,0.2)", borderRadius: 6,
+              padding: "8px 16px", background: "#0F172A", color: "#ffffff",
+              border: "1px solid #0F172A", borderRadius: 6,
               fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase",
               cursor: "pointer", fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
               textDecoration: "none",
@@ -1576,8 +1576,8 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                 disabled={!newWsName.trim()}
                 className="ws-btn-gold"
                 style={{
-                  padding: "8px 20px", background: newWsName.trim() ? "#84CC16" : "#D8DFE9",
-                  color: newWsName.trim() ? "#0F172A" : "#ffffff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600,
+                  padding: "8px 20px", background: newWsName.trim() ? "#0F172A" : "#D8DFE9",
+                  color: "#ffffff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600,
                   cursor: newWsName.trim() ? "pointer" : "default", fontFamily: "inherit",
                 }}
               >

@@ -2606,10 +2606,10 @@ function PropertyDetailInner({
               </button>
             )}
             <button onClick={() => fileRef.current?.click()} style={{
-              padding: "8px 18px", background: "#84CC16",
-              color: "#0F172A", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600,
+              padding: "8px 18px", background: "#0F172A",
+              color: "#ffffff", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600,
               cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
-              boxShadow: `0 2px 8px rgba(132, 204, 22, 0.3)`,
+              boxShadow: `0 2px 8px rgba(15, 23, 42, 0.22)`,
             }}>
               {uploading ? "Uploading..." : "+ Add Files"}
             </button>
@@ -2719,9 +2719,9 @@ function PropertyDetailInner({
             Also accepts: flyers, rent rolls (XLS), T-12s, leases, and property images.
           </p>
           <button onClick={() => fileRef.current?.click()} style={{
-            padding: "12px 28px", background: "#84CC16",
-            color: "#0F172A", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700,
-            cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 12px rgba(132, 204, 22, 0.3)`,
+            padding: "12px 28px", background: "#0F172A",
+            color: "#ffffff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700,
+            cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 12px rgba(15, 23, 42, 0.22)`,
           }}>
             Upload Documents
           </button>
