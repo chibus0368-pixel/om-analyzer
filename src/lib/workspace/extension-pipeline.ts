@@ -5,6 +5,7 @@ import { classifyDocument } from "@/lib/workspace/classify";
 import {
   buildSmartPropertyName,
   extractShortStreetAddress,
+  extractPropertyNameFromText,
 } from "@/lib/workspace/propertyNameUtils";
 
 /**
@@ -238,12 +239,20 @@ export async function runExtensionUploadPipeline(args: RunPipelineArgs): Promise
           const parsedAddress = p.address;
           const parsedCity = p.city;
           const parsedState = p.state;
+          // Three-step fallback: (1) short street address if we have one,
+          // (2) structured name from parsed fields, (3) heuristic name pulled
+          // from the raw OM text (cover pages, headings, anchor tenants).
+          // Only fall through to the filename if all three come up empty.
           const shortStreet = extractShortStreetAddress(parsedAddress);
-          const finalName =
-            shortStreet ||
-            (parsedName && parsedName !== "Unknown Property"
-              ? buildSmartPropertyName(parsedName, parsedAddress, parsedCity, parsedState)
-              : null);
+          const hasUsableParsedName = parsedName && parsedName !== "Unknown Property";
+          const textExtracted = !shortStreet && !hasUsableParsedName
+            ? extractPropertyNameFromText(documentText)
+            : "";
+          const finalName = shortStreet
+            ? shortStreet
+            : (hasUsableParsedName
+                ? buildSmartPropertyName(parsedName, parsedAddress, parsedCity, parsedState)
+                : (textExtracted || null));
           if (finalName) await setStatus({ propertyName: finalName });
         }
       } else {
