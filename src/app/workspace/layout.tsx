@@ -1401,8 +1401,17 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               cursor: "pointer", fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
               textDecoration: "none",
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.2)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "rgba(132,204,22,0.1)"; }}
+            onMouseEnter={e => {
+              // Keep the navy surface on hover so the white text stays legible.
+              // Previously we transitioned to a translucent lime which made the
+              // white label disappear over the dark header bar.
+              e.currentTarget.style.background = "#1E293B";
+              e.currentTarget.style.boxShadow = "0 2px 8px rgba(132,204,22,0.25)";
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = "#0F172A";
+              e.currentTarget.style.boxShadow = "none";
+            }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
             Share DealBoard

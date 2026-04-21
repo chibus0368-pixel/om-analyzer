@@ -65,11 +65,13 @@ function gf(fields: ExtractedField[], group: string, name: string): any {
 
 function verdictStyle(verdict: Verdict) {
   if (verdict === "BUY") return {
-    bg: "linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)",
-    border: "#86EFAC",
-    accent: "#065F46",
+    // Canonical brand green (lime): matches the Pro tab accent, asset pills,
+    // and Bull scenario so "positive / good" reads as one color across the app.
+    bg: "linear-gradient(135deg, #F7FEE7 0%, #ECFCCB 100%)",
+    border: "#BEF264",
+    accent: "#365314",
     label: "BUY",
-    pill: "#059669",
+    pill: "#84CC16",
   };
   if (verdict === "PASS") return {
     bg: "linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%)",
@@ -265,7 +267,7 @@ export default function DealVerdictBox({ property, fields, variant = "main", bri
   const effectiveVerdict: Verdict = scoreBand ? bandToVerdict(scoreBand) : report.verdict;
 
   const v = verdictStyle(effectiveVerdict);
-  const scoreColor = effectiveVerdict === "BUY" ? "#059669"
+  const scoreColor = effectiveVerdict === "BUY" ? "#4D7C0F"
     : effectiveVerdict === "PASS" ? "#DC2626"
     : "#D97706";
 
@@ -350,7 +352,7 @@ export default function DealVerdictBox({ property, fields, variant = "main", bri
     },
   ];
 
-  const toneColor = (t: string) => t === "good" ? "#059669" : t === "warn" ? "#D97706" : t === "bad" ? "#DC2626" : "#475569";
+  const toneColor = (t: string) => t === "good" ? "#4D7C0F" : t === "warn" ? "#D97706" : t === "bad" ? "#DC2626" : "#475569";
 
   return (
     <div style={{

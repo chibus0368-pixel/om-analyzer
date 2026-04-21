@@ -250,7 +250,7 @@ export default function SharedViewPage() {
         const signal = gf(fields, "signals", "overall_signal") || "";
 
         let pinColor = "#2563EB";
-        if (signal.includes("\u{1F7E2}")) pinColor = "#10B981";
+        if (signal.includes("\u{1F7E2}")) pinColor = "#84CC16";
         else if (signal.includes("\u{1F534}")) pinColor = "#EF4444";
         else if (signal.includes("\u{1F7E1}")) pinColor = "#F59E0B";
 

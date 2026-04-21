@@ -392,7 +392,9 @@ export const ANALYSIS_TYPE_ICONS: Record<AnalysisType, string> = {
 };
 
 export const ANALYSIS_TYPE_COLORS: Record<AnalysisType, string> = {
-  retail: "#10B981",
+  // Retail uses the brand lime so it matches the canonical "good / positive"
+  // green that tabs, BUY verdict, Bull scenario, and status pills share.
+  retail: "#84CC16",
   industrial: "#F59E0B",
   office: "#3B82F6",
   land: "#8B5CF6",

@@ -102,8 +102,10 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
   }
 
   const bandColors: Record<string, { bg: string; text: string; label: string }> = {
-    strong_buy: { bg: "#F0FDF4", text: "#059669", label: "Strong Buy" },
-    buy: { bg: "#F0FDF4", text: "#059669", label: "Buy" },
+    // Canonical brand lime (#84CC16) as the single "good" green for pills,
+    // dark lime (#4D7C0F) text so labels stay readable on the pale bg.
+    strong_buy: { bg: "#F7FEE7", text: "#4D7C0F", label: "Strong Buy" },
+    buy: { bg: "#F7FEE7", text: "#4D7C0F", label: "Buy" },
     hold: { bg: "#FFFBEB", text: "#D97706", label: "Neutral" },
     pass: { bg: "#FEF2F2", text: "#EF4444", label: "Pass" },
     strong_reject: { bg: "#FEF2F2", text: "#EF4444", label: "Strong Reject" },
@@ -165,22 +167,22 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
   const bandIsYellow = bandNorm === "hold" || bandNorm === "neutral";
   const bandIsRed = bandNorm === "pass" || bandNorm === "strong reject";
   const scoreColor = bandIsGreen
-    ? "#059669"
+    ? "#4D7C0F"
     : bandIsYellow
       ? "#D97706"
       : bandIsRed
         ? "#DC2626"
         : score != null
-          ? score >= 75 ? "#059669" : score >= 50 ? "#D97706" : "#DC2626"
+          ? score >= 75 ? "#4D7C0F" : score >= 50 ? "#D97706" : "#DC2626"
           : "#9CA3AF";
   const scoreBg = bandIsGreen
-    ? "rgba(5,150,105,0.08)"
+    ? "rgba(132,204,22,0.12)"
     : bandIsYellow
       ? "rgba(217,119,6,0.08)"
       : bandIsRed
         ? "rgba(220,38,38,0.08)"
         : score != null
-          ? score >= 75 ? "rgba(5,150,105,0.08)" : score >= 50 ? "rgba(217,119,6,0.08)" : "rgba(220,38,38,0.08)"
+          ? score >= 75 ? "rgba(132,204,22,0.12)" : score >= 50 ? "rgba(217,119,6,0.08)" : "rgba(220,38,38,0.08)"
           : "rgba(156,163,175,0.06)";
 
   return (

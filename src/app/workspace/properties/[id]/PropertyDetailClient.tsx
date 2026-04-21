@@ -568,8 +568,8 @@ function DealSignalBadge({ score, band }: { score: number | null; band: string }
   const b = band.toLowerCase().replace(/_/g, " ");
   const isGreen = b === "strong buy" || b === "buy" || b === "strong_buy";
   const isYellow = b === "hold" || b === "neutral";
-  const color = isGreen ? "#059669" : isYellow ? "#D97706" : "#DC2626";
-  const bgColor = isGreen ? "#D1FAE5" : isYellow ? "#FEF3C7" : "#FDE8EA";
+  const color = isGreen ? "#4D7C0F" : isYellow ? "#D97706" : "#DC2626";
+  const bgColor = isGreen ? "#ECFCCB" : isYellow ? "#FEF3C7" : "#FDE8EA";
   // Use the same human-readable labels as the dealboard so "hold" and
   // "neutral" render consistently across pages. The dealboard shows "Neutral"
   // for the hold band — match that here instead of the raw "Hold" string.
@@ -1311,12 +1311,12 @@ export default function PropertyDetailClient() {
               // numeric threshold. Falls back to numeric if band is missing.
               const spBandNorm = ((sp as any).scoreBand || "").toLowerCase().replace(/_/g, " ");
               const spSColor = spBandNorm === "strong buy" || spBandNorm === "buy"
-                ? "#059669"
+                ? "#4D7C0F"
                 : spBandNorm === "hold" || spBandNorm === "neutral"
                   ? "#D97706"
                   : spBandNorm === "pass" || spBandNorm === "strong reject"
                     ? "#DC2626"
-                    : spScore >= 75 ? "#059669" : spScore >= 50 ? "#D97706" : "#DC2626";
+                    : spScore >= 75 ? "#4D7C0F" : spScore >= 50 ? "#D97706" : "#DC2626";
               const spHero = (sp as any).heroImageUrl;
               const spName = cleanDisplayName(sp.propertyName, sp.address1, sp.city, sp.state);
               const spCity = [sp.city, sp.state].filter(Boolean).join(", ");
@@ -2363,7 +2363,7 @@ function PropertyDetailInner({
         const b = scoreBand.toLowerCase().replace(/_/g, " ");
         const isGreen = b === "strong buy" || b === "buy";
         const isYellow = b === "hold" || b === "neutral";
-        const sColor = isGreen ? "#059669" : isYellow ? "#D97706" : "#DC2626";
+        const sColor = isGreen ? "#4D7C0F" : isYellow ? "#D97706" : "#DC2626";
         const mobileCapRate = calc?.capRate ? `${calc.capRate.toFixed(2)}%` : (property.cardCapRate ? `${Number(property.cardCapRate).toFixed(2)}%` : null);
         const mobileSf = property.cardBuildingSf || property.buildingSf;
         const mobileSfStr = mobileSf ? (mobileSf >= 1000 ? `${(mobileSf / 1000).toFixed(mobileSf >= 10000 ? 0 : 1)}K SF` : `${mobileSf.toLocaleString()} SF`) : null;
