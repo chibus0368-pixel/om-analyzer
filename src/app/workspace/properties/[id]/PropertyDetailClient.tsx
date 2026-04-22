@@ -2054,6 +2054,26 @@ function PropertyDetailInner({
       {/*    OM Reverse Pricing - pricing solve               */}
       {/*    Rent Roll          - tenant-level lease detail   */}
       {/* ═══════════════════════════════════════════════════ */}
+      {/* Shared section header so the Pro Analysis block has a
+         clear "you are here" label consistent with the Detail
+         Analysis + Source Documents headings elsewhere on this
+         page. Eyebrow adapts to the detected asset type so the
+         header doubles as confirmation of the scoring lens. */}
+      <SectionHeader
+        eyebrow={`${(() => {
+          const t = (wsType || "").toLowerCase();
+          if (t === "multifamily") return "Multifamily";
+          if (t === "retail") return "Retail";
+          if (t === "industrial") return "Industrial";
+          if (t === "office") return "Office";
+          if (t === "land") return "Land";
+          return "Asset";
+        })()} Lens`}
+        title="Deal Analysis"
+        subtitle="Three lenses on one deal: triage score, reverse-priced offer scenarios, and tenant-level rent roll"
+        topGap={8}
+        bottomGap={14}
+      />
       <div className="pd-pro-section" style={{
         marginBottom: 28,
         background: "#FFFFFF",
@@ -2156,8 +2176,17 @@ function PropertyDetailInner({
               background: "#FFFFFF", borderRadius: C.radius, overflow: "hidden",
               border: `1px solid rgba(0,0,0,0.06)`,
             }}>
-              <div style={{ padding: "12px 18px", borderBottom: `1px solid rgba(0,0,0,0.04)`, background: "#F9FAFB" }}>
-                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>Rent Roll</h3>
+              <div style={{ padding: "14px 18px 0", background: "#F9FAFB" }}>
+                {/* Inline SectionHeader keeps the tenant table header
+                    consistent with the Detail Analysis + Source Documents
+                    headings elsewhere: lime eyebrow + navy title + rule. */}
+                <SectionHeader
+                  eyebrow="Tenant-Level Data"
+                  title="Rent Roll"
+                  subtitle={`${tenants.length} ${tenants.length === 1 ? "tenant" : "tenants"} listed`}
+                  size="md"
+                  bottomGap={0}
+                />
               </div>
               <div className="pd-table-wrap" style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 500 }}>
