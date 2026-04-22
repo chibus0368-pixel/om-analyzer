@@ -1912,6 +1912,31 @@ export default function OmAnalyzerPage() {
     if (fileRef.current) fileRef.current.value = "";
   }, [heroImageUrl]);
 
+  // Nav links on the landing page point at #examples / #how-it-works / etc.
+  // Those anchors are inside `view === "upload"` and get unmounted the moment
+  // a deal is analyzed, so a plain Link would silently no-op. DealSignalNav
+  // fires `ds-scroll-to-section` whenever a result is visible; we flip back
+  // to the upload view and scroll the target into view on the next frame.
+  useEffect(() => {
+    function handleNavScroll(e: Event) {
+      const detail = (e as CustomEvent<{ sectionId: string }>).detail;
+      const sectionId = detail?.sectionId;
+      if (!sectionId) return;
+      setView("upload");
+      // Two rAFs to wait for React to flush the upload-view tree and for
+      // layout to settle before we scroll. 120ms is a belt-and-suspenders
+      // fallback for slower devices.
+      const scroll = () => {
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+      requestAnimationFrame(() => requestAnimationFrame(scroll));
+      window.setTimeout(scroll, 120);
+    }
+    window.addEventListener("ds-scroll-to-section", handleNavScroll);
+    return () => window.removeEventListener("ds-scroll-to-section", handleNavScroll);
+  }, []);
+
   return (
     <div className="ds-page-wrapper"
       onDragEnter={e => { e.preventDefault(); dragCounter.current++; if (view === "upload") setGlobalDragging(true); }}

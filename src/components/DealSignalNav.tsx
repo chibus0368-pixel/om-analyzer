@@ -132,6 +132,24 @@ export default function DealSignalNav() {
                 key={sectionId}
                 href={href}
                 className="ds-nav-link"
+                // On the om-analyzer page the landing sections (#examples,
+                // #how-it-works, #pricing, #faq) live inside `view === "upload"`
+                // and are unmounted once a deal is analyzed. A bare hash link
+                // then silently no-ops. We broadcast a custom event the page
+                // listens for: it flips back to the upload view first, then
+                // scrolls to the section. The footer already does this; the
+                // nav was the missing half.
+                onClick={(e) => {
+                  if (typeof window === "undefined") return;
+                  const resultShowing = !!document.querySelector("[data-ds-result]");
+                  if (!resultShowing) return;
+                  e.preventDefault();
+                  window.dispatchEvent(new CustomEvent("ds-scroll-to-section", { detail: { sectionId } }));
+                  // Update the URL hash so back/forward history still works.
+                  if (window.location.hash !== `#${sectionId}`) {
+                    window.history.replaceState(null, "", `#${sectionId}`);
+                  }
+                }}
                 style={{
                   fontSize: 14, fontWeight: 600, textDecoration: "none",
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -271,7 +289,17 @@ export default function DealSignalNav() {
             <Link
               key={sectionId}
               href={href}
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={(e) => {
+                setMobileMenuOpen(false);
+                if (typeof window === "undefined") return;
+                const resultShowing = !!document.querySelector("[data-ds-result]");
+                if (!resultShowing) return;
+                e.preventDefault();
+                window.dispatchEvent(new CustomEvent("ds-scroll-to-section", { detail: { sectionId } }));
+                if (window.location.hash !== `#${sectionId}`) {
+                  window.history.replaceState(null, "", `#${sectionId}`);
+                }
+              }}
               style={{
                 color: activeSection === sectionId ? "#84CC16" : "#e0e0e6",
                 fontSize: 15, fontWeight: 600, padding: "12px 0",
