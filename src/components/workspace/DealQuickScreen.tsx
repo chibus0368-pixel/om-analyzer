@@ -390,11 +390,8 @@ export default function DealQuickScreen({ property, fields, overrides }: DealQui
 
         {assumptionsOpen && (
           <div style={{ padding: "0 20px 20px", borderTop: `1px solid ${C.ghost}` }}>
-            {/* Standardized baseline used for scoring */}
+            {/* Baseline assumptions used for scoring */}
             <div style={{ marginTop: 14 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: C.onSurface, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>
-                Standardized Baseline (drives scoring)
-              </div>
               <div style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(2, minmax(0, 1fr))",

@@ -267,11 +267,11 @@ export default function DealVerdictBox({ property, fields, variant = "main", bri
   const effectiveVerdict: Verdict = scoreBand ? bandToVerdict(scoreBand) : report.verdict;
 
   const v = verdictStyle(effectiveVerdict);
-  const scoreColor = effectiveVerdict === "BUY" ? "#4D7C0F"
+  const scoreColor = effectiveVerdict === "BUY" ? "#84CC16"
     : effectiveVerdict === "PASS" ? "#DC2626"
     : "#D97706";
 
-  const modeLine = `${report.dealScale === "small-operator" ? "Small Operator Mode" : "Institutional Mode"} · ${baselineLoaded ? "Standardized Baseline" : "Loading baseline..."}`;
+  const modeLine = `${report.dealScale === "small-operator" ? "Small Operator Mode" : "Institutional Mode"}${baselineLoaded ? "" : " · Loading baseline..."}`;
 
   if (variant === "slim") {
     // One-line strip. No gauge, no rationale prose. Just the verdict pill
@@ -352,7 +352,7 @@ export default function DealVerdictBox({ property, fields, variant = "main", bri
     },
   ];
 
-  const toneColor = (t: string) => t === "good" ? "#4D7C0F" : t === "warn" ? "#D97706" : t === "bad" ? "#DC2626" : "#475569";
+  const toneColor = (t: string) => t === "good" ? "#84CC16" : t === "warn" ? "#D97706" : t === "bad" ? "#DC2626" : "#475569";
 
   return (
     <div style={{

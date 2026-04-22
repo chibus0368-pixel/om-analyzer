@@ -19,7 +19,6 @@
 
 import { useMemo } from "react";
 import type { Property, ExtractedField } from "@/lib/workspace/types";
-import SectionHeader from "./SectionHeader";
 
 /* Design tokens */
 const C = {
@@ -529,14 +528,11 @@ export default function RentRollDetailAnalysis({
 
   return (
     <div style={{ marginTop: 48 }}>
-      {/* Uses the shared SectionHeader so the "lime eyebrow + navy title +
-          dark-lime rule" look stays consistent with every other major
-          section across the app (property detail, share view, etc.). */}
-      <SectionHeader
-        eyebrow={`${detectedLabel} Module`}
-        title="Detail Analysis"
-        subtitle={`Tenant-level diagnostics across ${rows.length} tenants`}
-      />
+      {/* Section header intentionally omitted: the parent page already renders
+          a SectionHeader above this block (e.g. "Retail Lens / Deal Analysis"
+          on the property detail rent-roll tab). Stamping a second
+          "{Asset} Module / Detail Analysis" header here was reading as a
+          duplicate title on screen. */}
 
       {showCore && (
         <SectionCard title="Core Metrics" accent={C.primaryText}>

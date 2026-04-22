@@ -2071,7 +2071,7 @@ function PropertyDetailInner({
         })()} Lens`}
         title="Deal Analysis"
         subtitle="Three lenses on one deal: triage score, reverse-priced offer scenarios, and tenant-level rent roll"
-        topGap={8}
+        topGap={40}
         bottomGap={14}
       />
       <div className="pd-pro-section" style={{
