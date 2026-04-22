@@ -27,6 +27,7 @@ import DealQuickScreen from "@/components/workspace/DealQuickScreen";
 import OmReversePricing from "@/components/workspace/OmReversePricing";
 import DealVerdictBox from "@/components/workspace/DealVerdictBox";
 import RentRollDetailAnalysis from "@/components/workspace/RentRollDetailAnalysis";
+import SectionHeader from "@/components/workspace/SectionHeader";
 
 /* ── Design tokens ─────────────────────────────────────── */
 const C = {
@@ -2579,44 +2580,44 @@ function PropertyDetailInner({
         background: "#FFFFFF", borderRadius: C.radius, border: `1px solid rgba(0,0,0,0.06)`,
         padding: 20, marginBottom: 16,
       }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: documents.length > 0 ? 14 : 0 }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: C.onSurface, fontFamily: "'Inter', sans-serif" }}>
-                Source Documents
-              </h3>
-              <span style={{ fontSize: 11, color: C.secondary, fontWeight: 500 }}>({documents.length})</span>
-              {(reparsing || reparseStatus) && (
-                <span style={{ fontSize: 11, color: reparseStatus.includes("failed") || reparseStatus.includes("Could not") ? "#DC2626" : "#2563EB", fontWeight: 500 }}>
-                  {reparseStatus || "Scanning..."}
-                </span>
+        {/* Shared section header — lime eyebrow + navy title + rule. The
+            per-doc count and any reparse status become the subtitle so
+            everything reads as one line of metadata under the heading. */}
+        <SectionHeader
+          eyebrow="Inputs"
+          title="Source Documents"
+          size="md"
+          bottomGap={documents.length > 0 ? 14 : 6}
+          subtitle={
+            `${documents.length} file${documents.length === 1 ? "" : "s"}` +
+            (reparsing || reparseStatus ? ` · ${reparseStatus || "Scanning..."}` : "")
+          }
+          right={
+            <>
+              {/* Only show Re-analyze if: property has docs but no extracted fields (scan failed/incomplete) */}
+              {documents.length > 0 && !hasData && (
+                <button onClick={handleReAnalyze} style={{
+                  padding: "8px 14px", background: C.surfLow, border: `1px solid rgba(0,0,0,0.06)`,
+                  borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: reparsing ? "not-allowed" : "pointer",
+                  fontFamily: "inherit", whiteSpace: "nowrap", color: C.secondary,
+                  opacity: reparsing ? 0.5 : 1,
+                }}>
+                  {reparsing ? "Scanning..." : "Re-analyze"}
+                </button>
               )}
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            {/* Only show Re-analyze if: property has docs but no extracted fields (scan failed/incomplete) */}
-            {documents.length > 0 && !hasData && (
-              <button onClick={handleReAnalyze} style={{
-                padding: "8px 14px", background: C.surfLow, border: `1px solid rgba(0,0,0,0.06)`,
-                borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: reparsing ? "not-allowed" : "pointer",
-                fontFamily: "inherit", whiteSpace: "nowrap", color: C.secondary,
-                opacity: reparsing ? 0.5 : 1,
+              <button onClick={() => fileRef.current?.click()} style={{
+                padding: "8px 18px", background: "#0F172A",
+                color: "#ffffff", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600,
+                cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
+                boxShadow: `0 2px 8px rgba(15, 23, 42, 0.22)`,
               }}>
-                {reparsing ? "Scanning..." : "Re-analyze"}
+                {uploading ? "Uploading..." : "+ Add Files"}
               </button>
-            )}
-            <button onClick={() => fileRef.current?.click()} style={{
-              padding: "8px 18px", background: "#0F172A",
-              color: "#ffffff", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600,
-              cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
-              boxShadow: `0 2px 8px rgba(15, 23, 42, 0.22)`,
-            }}>
-              {uploading ? "Uploading..." : "+ Add Files"}
-            </button>
-          </div>
-          <input ref={fileRef} type="file" multiple accept={ACCEPTED_EXT} style={{ display: "none" }}
-            onChange={(e: any) => { if (e.target.files) handleFileUpload(e.target.files); e.target.value = ""; }} />
-        </div>
+              <input ref={fileRef} type="file" multiple accept={ACCEPTED_EXT} style={{ display: "none" }}
+                onChange={(e: any) => { if (e.target.files) handleFileUpload(e.target.files); e.target.value = ""; }} />
+            </>
+          }
+        />
 
         {/* Accepted file types hint */}
         {documents.length === 0 && (

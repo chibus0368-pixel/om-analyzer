@@ -19,6 +19,7 @@
 
 import { useMemo } from "react";
 import type { Property, ExtractedField } from "@/lib/workspace/types";
+import SectionHeader from "./SectionHeader";
 
 /* Design tokens */
 const C = {
@@ -528,32 +529,14 @@ export default function RentRollDetailAnalysis({
 
   return (
     <div style={{ marginTop: 48 }}>
-      {/* Prominent section break. Clear visual separation from the rent
-          roll table above, large headline, with the detected asset-type
-          module surfaced as a small eyebrow tag. */}
-      <div style={{
-        display: "flex", alignItems: "flex-end", justifyContent: "space-between",
-        gap: 14, flexWrap: "wrap",
-        padding: "0 2px 14px 2px",
-        marginBottom: 18,
-        borderBottom: `2px solid ${C.primaryText}`,
-      }}>
-        <div style={{ minWidth: 0 }}>
-          <div style={{
-            fontSize: 11, fontWeight: 800, letterSpacing: 1.4,
-            textTransform: "uppercase", color: C.primaryText, marginBottom: 6,
-          }}>{detectedLabel} Module</div>
-          <h2 style={{
-            margin: 0,
-            fontSize: 30, fontWeight: 800, letterSpacing: -0.5,
-            color: C.onSurface, lineHeight: 1.1,
-            fontFamily: "'Inter', sans-serif",
-          }}>Detail Analysis</h2>
-          <div style={{ fontSize: 12.5, color: C.secondary, fontWeight: 500, marginTop: 6 }}>
-            Tenant-level diagnostics across {rows.length} tenants
-          </div>
-        </div>
-      </div>
+      {/* Uses the shared SectionHeader so the "lime eyebrow + navy title +
+          dark-lime rule" look stays consistent with every other major
+          section across the app (property detail, share view, etc.). */}
+      <SectionHeader
+        eyebrow={`${detectedLabel} Module`}
+        title="Detail Analysis"
+        subtitle={`Tenant-level diagnostics across ${rows.length} tenants`}
+      />
 
       {showCore && (
         <SectionCard title="Core Metrics" accent={C.primaryText}>
