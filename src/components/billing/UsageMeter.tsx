@@ -59,7 +59,7 @@ export default function UsageMeter({ collapsed }: { collapsed: boolean }) {
   const nearLimit = uploadsUsed >= uploadLimit - 1 && !atLimit;
   const pct = Math.min(100, Math.round((uploadsUsed / uploadLimit) * 100));
 
-  const barColor = atLimit ? "#84CC16" : nearLimit ? "#eab308" : "#10b981";
+  const barColor = atLimit ? "#4D7C0F" : nearLimit ? "#eab308" : "#10b981";
 
   return (
     <div style={{ padding: "0 14px", marginBottom: 4 }}>
@@ -72,7 +72,7 @@ export default function UsageMeter({ collapsed }: { collapsed: boolean }) {
           <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#585e70" }}>
             Usage
           </span>
-          <span style={{ fontSize: 11, fontWeight: 600, color: atLimit ? "#84CC16" : "#585e70" }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: atLimit ? "#4D7C0F" : "#585e70" }}>
             {uploadsUsed} / {uploadLimit}
           </span>
         </div>
@@ -105,7 +105,7 @@ export default function UsageMeter({ collapsed }: { collapsed: boolean }) {
               textAlign: "center",
               fontSize: 11,
               fontWeight: 600,
-              color: "#84CC16",
+              color: "#4D7C0F",
               textDecoration: "none",
               borderRadius: 4,
               background: "rgba(132, 204, 22, 0.06)",

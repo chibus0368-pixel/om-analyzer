@@ -17,7 +17,7 @@
   --gold-400: #D4B255;
   --gold-300: #E5CA7A;
   --green-600: #4D7C0F;
-  --green-500: #84CC16;
+  --green-500: #4D7C0F;
   --green-100: #f0ffe0;
   --blue-500: #2563EB;
   --blue-100: #DBEAFE;
@@ -288,7 +288,7 @@ body {
 .ticker-item .val { font-size: 12px; color: var(--white); font-weight: 700; font-variant-numeric: tabular-nums; }
 .ticker-item .change { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; }
 .change.up { background: rgba(16,185,129,0.15); color: #34D399; }
-.change.down { background: rgba(132,204,22,0.15); color: #65A30D; }
+.change.down { background: rgba(132,204,22,0.15); color: #3F6212; }
 .change.hold { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.4); }
 
 /* ===== SUBSCRIBE BAR ===== */

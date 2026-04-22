@@ -21,8 +21,8 @@ const ACCEPTED_EXT = ".pdf,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.webp";
 
 /* ===== DESIGN.md Tokens ===== */
 const C = {
-  primary: "#84CC16",
-  primaryGradient: "#84CC16",
+  primary: "#4D7C0F",
+  primaryGradient: "#4D7C0F",
   onSurface: "#151b2b",
   secondary: "#585e70",
   tertiary: "#C49A3C",
@@ -572,10 +572,10 @@ export default function UploadPage() {
         >
           <div style={{
             padding: "48px 64px", borderRadius: 20,
-            border: "2px dashed #84CC16", background: "rgba(132,204,22,0.05)",
+            border: "2px dashed #4D7C0F", background: "rgba(132,204,22,0.05)",
             textAlign: "center",
           }}>
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }}>
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
             </svg>
             <div style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", marginBottom: 6 }}>Drop your file anywhere</div>
@@ -976,7 +976,7 @@ export default function UploadPage() {
                   <circle cx="64" cy="64" r={radius} fill="none"
                     stroke="rgba(132,204,22,0.12)" strokeWidth="4" />
                   <circle cx="64" cy="64" r={radius} fill="none"
-                    stroke="#84CC16" strokeWidth="4"
+                    stroke="#4D7C0F" strokeWidth="4"
                     strokeDasharray={`${circumference}`}
                     strokeDashoffset={`${circumference * (1 - processingPct / 100)}`}
                     strokeLinecap="round"
@@ -994,7 +994,7 @@ export default function UploadPage() {
                     fontFamily: "'Inter', sans-serif",
                   }}>
                     {processingPct}
-                    <span style={{ fontSize: 16, color: "#84CC16", fontWeight: 700, marginLeft: 2 }}>%</span>
+                    <span style={{ fontSize: 16, color: "#4D7C0F", fontWeight: 700, marginLeft: 2 }}>%</span>
                   </div>
                   <div style={{
                     fontSize: 9, fontWeight: 700, color: "#9CA3AF",
@@ -1064,7 +1064,7 @@ export default function UploadPage() {
                             : "#F3F4F6",
                         border: `1px solid ${
                           stage.done ? "rgba(132,204,22,0.4)"
-                          : isCurrent ? "#84CC16"
+                          : isCurrent ? "#4D7C0F"
                           : "rgba(0,0,0,0.06)"
                         }`,
                         transition: "all 0.25s",
@@ -1073,7 +1073,7 @@ export default function UploadPage() {
                           width: 14, height: 14, borderRadius: "50%",
                           display: "flex", alignItems: "center", justifyContent: "center",
                           background: stage.done
-                            ? "#84CC16"
+                            ? "#4D7C0F"
                             : isCurrent ? "rgba(132,204,22,0.3)" : "rgba(0,0,0,0.08)",
                           animation: isCurrent ? "wsUploadPulse 1.4s ease-in-out infinite" : "none",
                         }}>
@@ -1085,7 +1085,7 @@ export default function UploadPage() {
                           ) : (
                             <div className="ul-stage-dot" style={{
                               width: 5, height: 5, borderRadius: "50%",
-                              background: isCurrent ? "#84CC16" : "rgba(0,0,0,0.25)",
+                              background: isCurrent ? "#4D7C0F" : "rgba(0,0,0,0.25)",
                             }} />
                           )}
                         </div>
@@ -1100,7 +1100,7 @@ export default function UploadPage() {
                       {i < arr.length - 1 && (
                         <div className="ul-stage-connector" style={{
                           width: 10, height: 2, borderRadius: 1,
-                          background: stage.done ? "#84CC16" : "rgba(0,0,0,0.08)",
+                          background: stage.done ? "#4D7C0F" : "rgba(0,0,0,0.08)",
                         }} />
                       )}
                     </div>
@@ -1119,7 +1119,7 @@ export default function UploadPage() {
                 <div style={{
                   height: "100%",
                   width: `${processingPct}%`,
-                  background: "linear-gradient(90deg, #84CC16, #65A30D)",
+                  background: "linear-gradient(90deg, #4D7C0F, #3F6212)",
                   borderRadius: 999,
                   transition: "width 0.2s linear",
                 }} />
@@ -1169,7 +1169,7 @@ export default function UploadPage() {
                       {f.status === "uploading" && (
                         <div style={{ width: 110, flexShrink: 0, display: "flex", alignItems: "center", gap: 6 }}>
                           <div style={{ flex: 1, height: 4, background: "rgba(132,204,22,0.15)", borderRadius: 2, overflow: "hidden" }}>
-                            <div style={{ height: "100%", background: "#84CC16", borderRadius: 2, width: `${f.progress}%`, transition: "width 0.3s" }} />
+                            <div style={{ height: "100%", background: "#4D7C0F", borderRadius: 2, width: `${f.progress}%`, transition: "width 0.3s" }} />
                           </div>
                           <span style={{ fontSize: 10, fontWeight: 700, color: "#4D7C0F", minWidth: 30, textAlign: "right" }}>{f.progress}%</span>
                         </div>

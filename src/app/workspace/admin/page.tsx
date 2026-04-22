@@ -232,7 +232,7 @@ export default function AdminPage() {
       <div style={{ padding: 48, textAlign: "center" }}>
         <h2 style={{ fontSize: 20, fontWeight: 700, color: "#111827" }}>Admin Access Required</h2>
         <p style={{ fontSize: 14, color: "#6B7280", marginTop: 8 }}>You don't have permission to view this page.</p>
-        <Link href="/workspace" style={{ color: "#84CC16", fontSize: 14, fontWeight: 600, textDecoration: "none" }}>Back to Dashboard</Link>
+        <Link href="/workspace" style={{ color: "#4D7C0F", fontSize: 14, fontWeight: 600, textDecoration: "none" }}>Back to Dashboard</Link>
       </div>
     );
   }
@@ -658,7 +658,7 @@ export default function AdminPage() {
                             <div>
                               <div style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>
                                 {u.displayName || u.email.split("@")[0]}
-                                {isMe && <span style={{ fontSize: 10, color: "#84CC16", marginLeft: 6 }}>YOU</span>}
+                                {isMe && <span style={{ fontSize: 10, color: "#4D7C0F", marginLeft: 6 }}>YOU</span>}
                               </div>
                               <div style={{ fontSize: 11, color: "#9CA3AF" }}>{u.email}</div>
                             </div>

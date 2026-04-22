@@ -71,7 +71,10 @@ function verdictStyle(verdict: Verdict) {
     border: "#BEF264",
     accent: "#365314",
     label: "BUY",
-    pill: "#84CC16",
+    pill: "#4D7C0F",
+    pillBg: "#DCFCE7",
+    pillText: "#166534",
+    pillBorder: "#86EFAC",
   };
   if (verdict === "PASS") return {
     bg: "linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%)",
@@ -79,6 +82,9 @@ function verdictStyle(verdict: Verdict) {
     accent: "#991B1B",
     label: "PASS",
     pill: "#DC2626",
+    pillBg: "#FEE2E2",
+    pillText: "#991B1B",
+    pillBorder: "#FCA5A5",
   };
   return {
     bg: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
@@ -86,6 +92,9 @@ function verdictStyle(verdict: Verdict) {
     accent: "#78350F",
     label: "NEUTRAL",
     pill: "#D97706",
+    pillBg: "#FEF3C7",
+    pillText: "#78350F",
+    pillBorder: "#FCD34D",
   };
 }
 
@@ -267,7 +276,7 @@ export default function DealVerdictBox({ property, fields, variant = "main", bri
   const effectiveVerdict: Verdict = scoreBand ? bandToVerdict(scoreBand) : report.verdict;
 
   const v = verdictStyle(effectiveVerdict);
-  const scoreColor = effectiveVerdict === "BUY" ? "#84CC16"
+  const scoreColor = effectiveVerdict === "BUY" ? "#4D7C0F"
     : effectiveVerdict === "PASS" ? "#DC2626"
     : "#D97706";
 
@@ -291,8 +300,9 @@ export default function DealVerdictBox({ property, fields, variant = "main", bri
       }}>
         <span style={{
           padding: "3px 10px",
-          background: v.pill,
-          color: "#fff",
+          background: v.pillBg,
+          color: v.pillText,
+          border: `1px solid ${v.pillBorder}`,
           fontSize: 10,
           fontWeight: 800,
           letterSpacing: 1.1,
@@ -352,7 +362,7 @@ export default function DealVerdictBox({ property, fields, variant = "main", bri
     },
   ];
 
-  const toneColor = (t: string) => t === "good" ? "#84CC16" : t === "warn" ? "#D97706" : t === "bad" ? "#DC2626" : "#475569";
+  const toneColor = (t: string) => t === "good" ? "#4D7C0F" : t === "warn" ? "#D97706" : t === "bad" ? "#DC2626" : "#475569";
 
   return (
     <div style={{
@@ -381,15 +391,15 @@ export default function DealVerdictBox({ property, fields, variant = "main", bri
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <span style={{
               padding: "6px 14px",
-              background: v.pill,
-              color: "#fff",
+              background: v.pillBg,
+              color: v.pillText,
+              border: `1px solid ${v.pillBorder}`,
               fontSize: 12,
               fontWeight: 800,
               letterSpacing: 1.2,
               borderRadius: 999,
               textTransform: "uppercase",
               whiteSpace: "nowrap",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
             }}>{v.label}</span>
             <span style={{
               fontSize: 10,

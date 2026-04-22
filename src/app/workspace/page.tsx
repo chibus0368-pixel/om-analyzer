@@ -46,7 +46,7 @@ function ClearAllButton({ onClear, workspaceId, workspaceName }: { onClear: () =
   }
   return (
     <button onClick={handleClear} disabled={clearing} style={{
-      padding: "6px 14px", background: "rgba(132, 204, 22, 0.1)", color: "#84CC16", border: "1px solid #84CC16",
+      padding: "6px 14px", background: "rgba(132, 204, 22, 0.1)", color: "#4D7C0F", border: "1px solid #4D7C0F",
       borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: clearing ? "not-allowed" : "pointer", fontFamily: "inherit",
     }}>
       {clearing ? "Clearing..." : "Clear All Data"}
@@ -101,7 +101,7 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
   }
 
   const bandColors: Record<string, { bg: string; text: string; label: string }> = {
-    // Canonical brand lime (#84CC16) as the single "good" green for pills,
+    // Canonical brand lime (#4D7C0F) as the single "good" green for pills,
     // dark lime (#4D7C0F) text so labels stay readable on the pale bg.
     strong_buy: { bg: "#F7FEE7", text: "#4D7C0F", label: "Strong Buy" },
     buy: { bg: "#F7FEE7", text: "#4D7C0F", label: "Buy" },
@@ -263,7 +263,7 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
               overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
               transition: "color 0.15s",
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#84CC16"; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#4D7C0F"; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#111827"; }}
           >
             {displayName}
@@ -300,7 +300,7 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
                 padding: "4px 8px", borderRadius: 6,
                 background: "#F8FAFC", border: "1px solid rgba(0,0,0,0.04)",
               }}>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d={m.icon} /></svg>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d={m.icon} /></svg>
                 <div style={{ fontSize: 10, color: "#6B7280", fontWeight: 600, lineHeight: 1 }}>{m.label}</div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#111827", lineHeight: 1 }}>{m.value}</div>
               </div>
@@ -331,7 +331,7 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
               textTransform: "uppercase", transition: "color 0.2s",
               opacity: duplicating ? 0.5 : 1, display: "flex", alignItems: "center", gap: 4,
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#84CC16"; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#4D7C0F"; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#D1D5DB"; }}
             title="Duplicate to dealboard"
           >
@@ -437,7 +437,7 @@ function EmptyDealboardDropZone({ onFiles }: { onFiles: (files: FileList) => voi
       }}
       style={{
         background: "#FFFFFF", borderRadius: 6,
-        border: `2px dashed ${hover ? "#84CC16" : "#D8DFE9"}`,
+        border: `2px dashed ${hover ? "#4D7C0F" : "#D8DFE9"}`,
         padding: "48px 20px", textAlign: "center", cursor: "pointer",
         boxShadow: "0 4px 20px rgba(0,0,0,0.05)", transition: "all 0.2s",
       }}
@@ -452,7 +452,7 @@ function EmptyDealboardDropZone({ onFiles }: { onFiles: (files: FileList) => voi
         width: 56, height: 56, borderRadius: "50%", background: "rgba(132, 204, 22, 0.1)",
         display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
       }}>
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9v.01M9 12v.01M9 15v.01M9 18v.01" />
         </svg>
       </div>
@@ -604,10 +604,10 @@ export default function WorkspaceDashboard() {
         >
           <div style={{
             padding: "48px 64px", borderRadius: 20,
-            border: "2px dashed #84CC16", background: "rgba(132,204,22,0.05)",
+            border: "2px dashed #4D7C0F", background: "rgba(132,204,22,0.05)",
             textAlign: "center",
           }}>
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }}>
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
             </svg>
             <div style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", marginBottom: 6 }}>Drop your file anywhere</div>
@@ -671,7 +671,7 @@ export default function WorkspaceDashboard() {
                   fontWeight: 700,
                   color: "#111827",
                   background: "#F9FAFB",
-                  border: "2px solid #84CC16",
+                  border: "2px solid #4D7C0F",
                   borderRadius: 8,
                   padding: "4px 12px",
                   margin: 0,
@@ -825,7 +825,7 @@ export default function WorkspaceDashboard() {
             }}
             onMouseLeave={e => {
               const el = e.currentTarget as HTMLElement;
-              el.style.background = "#84CC16";
+              el.style.background = "#4D7C0F";
               el.style.transform = "none";
             }}
           >
@@ -880,7 +880,7 @@ export default function WorkspaceDashboard() {
           padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
           <div>
-            <span style={{ fontSize: 12, fontWeight: 600, color: "#84CC16" }}>Clear DealBoard</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#4D7C0F" }}>Clear DealBoard</span>
             <span style={{ fontSize: 11, color: "#585e70", marginLeft: 8 }}>Delete all properties in &ldquo;{activeWorkspace?.name}&rdquo;</span>
           </div>
           <ClearAllButton onClear={() => window.location.reload()} workspaceId={activeWorkspace?.id || ""} workspaceName={activeWorkspace?.name || "this DealBoard"} />

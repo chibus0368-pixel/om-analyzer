@@ -31,9 +31,9 @@ import SectionHeader from "@/components/workspace/SectionHeader";
 
 /* ── Design tokens ─────────────────────────────────────── */
 const C = {
-  primary: "#84CC16",
+  primary: "#4D7C0F",
   primaryText: "#4D7C0F",
-  primaryContainer: "#84CC16",
+  primaryContainer: "#4D7C0F",
   onSurface: "#0F172A",
   secondary: "#6B7280",
   tertiary: "#785800",
@@ -547,7 +547,7 @@ function PurchasePriceInline({ priceState }: { priceState: ReturnType<typeof use
         <span style={{ fontSize: 18, fontWeight: 700, color: isOverridden ? "#3B82F6" : "#0F172A", fontVariantNumeric: "tabular-nums" }}>
           {fmt$(activePrice)}
         </span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5, flexShrink: 0 }}>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5, flexShrink: 0 }}>
           <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
           <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
         </svg>
@@ -2660,7 +2660,7 @@ function PropertyDetailInner({
             </div>
             <div style={{ display: "flex", gap: 4, marginTop: 6 }}>
               {["PDF", "XLS", "XLSX", "DOCX", "CSV"].map(ext => (
-                <span key={ext} style={{ padding: "2px 6px", background: ext === "PDF" ? "#84CC16" : "#F3F4F6", color: ext === "PDF" ? "#0F172A" : C.secondary, borderRadius: 3, fontSize: 9, fontWeight: 700 }}>
+                <span key={ext} style={{ padding: "2px 6px", background: ext === "PDF" ? "#4D7C0F" : "#F3F4F6", color: ext === "PDF" ? "#0F172A" : C.secondary, borderRadius: 3, fontSize: 9, fontWeight: 700 }}>
                   {ext}
                 </span>
               ))}

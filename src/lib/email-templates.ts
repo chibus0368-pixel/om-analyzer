@@ -1,14 +1,14 @@
 /**
  * Email template functions for Deal Signals.
- * Brand-aligned with the live site: dark #0d0d14 header, lime #84CC16 accent,
+ * Brand-aligned with the live site: dark #0d0d14 header, lime #4D7C0F accent,
  * white body. All styling is inline + table-based for email client compat.
  */
 
 const COLORS = {
   ink: '#0d0d14',        // deep app background
   inkSoft: '#1a1b24',    // slightly lifted dark (section blocks)
-  lime: '#84CC16',       // primary accent
-  limeDark: '#65A30D',   // button hover / shadow
+  lime: '#4D7C0F',       // primary accent
+  limeDark: '#3F6212',   // button hover / shadow
   white: '#FFFFFF',
   pageBg: '#F5F7FA',
   cardBg: '#FFFFFF',

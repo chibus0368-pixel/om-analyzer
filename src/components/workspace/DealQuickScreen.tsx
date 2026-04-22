@@ -14,7 +14,7 @@ import { useUnderwritingDefaults } from "@/lib/workspace/use-underwriting-defaul
 
 /* ── Design tokens (mirror PropertyDetailClient's C object) ─── */
 const C = {
-  primary: "#84CC16",
+  primary: "#4D7C0F",
   primaryText: "#4D7C0F",
   onSurface: "#0F172A",
   secondary: "#6B7280",
@@ -283,7 +283,7 @@ export default function DealQuickScreen({ property, fields, overrides }: DealQui
         }}>
           {report.scenarios.map(sc => {
             // Canonical greens: all "good / bull / positive" uses the brand lime
-            // family (#84CC16) with a dark-lime text (#4D7C0F) so it reads as
+            // family (#4D7C0F) with a dark-lime text (#4D7C0F) so it reads as
             // one color across tabs, pills, and scenario cards.
             const color = sc.label === "Bull" ? "#4D7C0F" : sc.label === "Base" ? "#2563EB" : "#DC2626";
             const bg = sc.label === "Bull" ? "#F7FEE7" : sc.label === "Base" ? "#EFF6FF" : "#FEF2F2";

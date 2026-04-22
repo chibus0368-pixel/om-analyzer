@@ -294,7 +294,7 @@ function WorkspaceLoginPageInner() {
     marginBottom: 6, fontFamily: "'Inter', sans-serif",
   };
   const focusIn = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.currentTarget.style.borderColor = "#84CC16";
+    e.currentTarget.style.borderColor = "#4D7C0F";
     e.currentTarget.style.boxShadow = "0 0 0 3px rgba(132,204,22,0.1)";
   };
   const focusOut = (e: React.FocusEvent<HTMLInputElement>) => {
@@ -324,7 +324,7 @@ function WorkspaceLoginPageInner() {
               letterSpacing: -0.5, lineHeight: 1,
             }} aria-label="DealSignals">
               <span style={{ color: "#0B1120" }}>Deal</span>
-              <span style={{ color: "#84CC16" }}>Signals</span>
+              <span style={{ color: "#4D7C0F" }}>Signals</span>
             </span>
           </div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0B1120", margin: 0, fontFamily: "'Inter', sans-serif" }}>

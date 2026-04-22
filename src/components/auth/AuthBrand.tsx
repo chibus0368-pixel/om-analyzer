@@ -1,7 +1,7 @@
 /**
  * AuthBrand - canonical DealSignals wordmark for auth screens.
  *
- * Renders "Deal" (#0B1120) + "Signals" (#84CC16) in Plus Jakarta Sans
+ * Renders "Deal" (#0B1120) + "Signals" (#4D7C0F) in Plus Jakarta Sans
  * 800 weight, followed by a small tagline. Used on login, register,
  * forgot-password, reset-password, verify-email, and any other
  * unauthenticated screen so branding is pixel-consistent everywhere.
@@ -37,7 +37,7 @@ export function AuthBrand({
         aria-label="DealSignals"
       >
         <span style={{ color: "#0B1120" }}>Deal</span>
-        <span style={{ color: "#84CC16" }}>Signals</span>
+        <span style={{ color: "#4D7C0F" }}>Signals</span>
       </span>
       {tagline ? (
         <p

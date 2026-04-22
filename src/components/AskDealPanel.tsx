@@ -248,7 +248,7 @@ export default function AskDealPanel({ propertyId, userTier }: AskDealPanelProps
                     disabled={disabled}
                     style={{
                       padding: "12px 14px", borderRadius: 12,
-                      border: isActive ? "1.5px solid #84CC16" : "1.5px solid #e2e8f0",
+                      border: isActive ? "1.5px solid #4D7C0F" : "1.5px solid #e2e8f0",
                       background: isActive ? "rgba(132,204,22,0.04)" : "#fff",
                       cursor: disabled ? "not-allowed" : "pointer",
                       textAlign: "left", position: "relative",
@@ -256,7 +256,7 @@ export default function AskDealPanel({ propertyId, userTier }: AskDealPanelProps
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
                       <span style={{ fontSize: 14 }}>{a.icon}</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: isActive ? "#84CC16" : "#1e293b" }}>{a.label}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: isActive ? "#4D7C0F" : "#1e293b" }}>{a.label}</span>
                     </div>
                     <div style={{ fontSize: 10, color: "#94a3b8" }}>{a.desc}</div>
                     {cached && (
@@ -305,7 +305,7 @@ export default function AskDealPanel({ propertyId, userTier }: AskDealPanelProps
               }}>
                 <div style={{
                   width: 28, height: 28,
-                  border: "3px solid #e2e8f0", borderTopColor: "#84CC16",
+                  border: "3px solid #e2e8f0", borderTopColor: "#4D7C0F",
                   borderRadius: "50%", animation: "spin 0.8s linear infinite",
                 }} />
                 <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -417,7 +417,7 @@ export default function AskDealPanel({ propertyId, userTier }: AskDealPanelProps
                     disabled={!chatInput.trim() || chatLoading || isFree}
                     style={{
                       width: 30, height: 30, borderRadius: 8,
-                      background: chatInput.trim() && !chatLoading && !isFree ? "#84CC16" : "#e2e8f0",
+                      background: chatInput.trim() && !chatLoading && !isFree ? "#4D7C0F" : "#e2e8f0",
                       border: "none", cursor: chatInput.trim() && !chatLoading && !isFree ? "pointer" : "not-allowed",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       flexShrink: 0, transition: "background 0.15s",

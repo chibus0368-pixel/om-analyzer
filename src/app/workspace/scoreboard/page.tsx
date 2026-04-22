@@ -346,7 +346,7 @@ function LeaderboardRow({ pd, rank, totalCount, maxScore, expanded, onToggle }: 
             }}>
               {recommendation.replace(/🟢|🟡|🔴/g, "").trim()}
               {totalCount > 1 && score > 0 && (
-                <span style={{ color: "#84CC16", fontWeight: 600 }}> · Rank {rank}/{totalCount}</span>
+                <span style={{ color: "#4D7C0F", fontWeight: 600 }}> · Rank {rank}/{totalCount}</span>
               )}
             </div>
           )}
@@ -1170,7 +1170,7 @@ export default function ScoreboardPage() {
             width: 56, height: 56, borderRadius: "50%", background: "rgba(132, 204, 22, 0.08)",
             display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
           }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9v.01M9 12v.01M9 15v.01M9 18v.01" />
             </svg>
           </div>

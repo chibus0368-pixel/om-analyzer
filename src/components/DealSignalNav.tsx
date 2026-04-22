@@ -115,7 +115,7 @@ export default function DealSignalNav() {
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
               style={{
                 fontSize: 12, fontWeight: 700, color: "#0d0d14",
-                background: "#84CC16", border: "none", cursor: "pointer",
+                background: "#4D7C0F", border: "none", cursor: "pointer",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
                 height: 28, display: "inline-flex", alignItems: "center",
                 padding: "0 14px", borderRadius: 6,
@@ -153,21 +153,21 @@ export default function DealSignalNav() {
                 style={{
                   fontSize: 14, fontWeight: 600, textDecoration: "none",
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  color: isActive ? "#84CC16" : "#e0e0e6",
+                  color: isActive ? "#4D7C0F" : "#e0e0e6",
                   position: "relative",
                   height: 64, display: "inline-flex", alignItems: "center",
                   transition: "color 0.2s",
                 }}
                 onMouseEnter={e => {
                   const el = e.currentTarget as HTMLElement;
-                  el.style.color = "#84CC16";
+                  el.style.color = "#4D7C0F";
                   const line = el.querySelector(".nav-underline") as HTMLElement;
                   if (line) { line.style.transform = "scaleX(1)"; line.style.opacity = "1"; }
                 }}
                 onMouseLeave={e => {
                   const el = e.currentTarget as HTMLElement;
                   const stillActive = isOnLanding && activeSection === sectionId;
-                  el.style.color = stillActive ? "#84CC16" : "#e0e0e6";
+                  el.style.color = stillActive ? "#4D7C0F" : "#e0e0e6";
                   const line = el.querySelector(".nav-underline") as HTMLElement;
                   if (line && !stillActive) { line.style.transform = "scaleX(0)"; line.style.opacity = "0"; }
                 }}
@@ -178,7 +178,7 @@ export default function DealSignalNav() {
                   className="nav-underline"
                   style={{
                     position: "absolute", bottom: 0, left: 0, right: 0, height: 2,
-                    background: "#84CC16", borderRadius: 1,
+                    background: "#4D7C0F", borderRadius: 1,
                     transform: isActive ? "scaleX(1)" : "scaleX(0)",
                     opacity: isActive ? 1 : 0,
                     transition: "transform 0.2s ease, opacity 0.2s ease",
@@ -196,7 +196,7 @@ export default function DealSignalNav() {
             <Link href="/workspace" style={{
               display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
               fontSize: 14, fontWeight: 600, color: "#0d0d14", textDecoration: "none",
-              padding: "0 14px", borderRadius: 8, background: "#84CC16",
+              padding: "0 14px", borderRadius: 8, background: "#4D7C0F",
               height: 32, transition: "all 0.2s",
               fontFamily: "'Plus Jakarta Sans', sans-serif",
               boxShadow: "0 0 20px rgba(132,204,22,0.3), 0 0 40px rgba(132,204,22,0.1)",
@@ -214,14 +214,14 @@ export default function DealSignalNav() {
                 transition: "color 0.15s",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#84CC16"; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#4D7C0F"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#e0e0e6"; }}
               >Sign in</Link>
               {!resultShowing && (
                 <Link href="/workspace/login" style={{
                   display: "inline-flex", alignItems: "center", justifyContent: "center",
                   fontSize: 14, fontWeight: 600, color: "#0d0d14", textDecoration: "none",
-                  padding: "0 14px", borderRadius: 8, background: "#84CC16",
+                  padding: "0 14px", borderRadius: 8, background: "#4D7C0F",
                   height: 32, transition: "all 0.2s",
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                   boxShadow: "0 0 20px rgba(132,204,22,0.3), 0 0 40px rgba(132,204,22,0.1)",
@@ -277,7 +277,7 @@ export default function DealSignalNav() {
             <button
               onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setMobileMenuOpen(false); }}
               style={{
-                background: "none", border: "none", color: "#84CC16",
+                background: "none", border: "none", color: "#4D7C0F",
                 fontSize: 15, fontWeight: 700, padding: "12px 0", cursor: "pointer",
                 textAlign: "left", fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}
@@ -301,7 +301,7 @@ export default function DealSignalNav() {
                 }
               }}
               style={{
-                color: activeSection === sectionId ? "#84CC16" : "#e0e0e6",
+                color: activeSection === sectionId ? "#4D7C0F" : "#e0e0e6",
                 fontSize: 15, fontWeight: 600, padding: "12px 0",
                 textDecoration: "none", borderBottom: "1px solid rgba(255,255,255,0.04)",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -314,7 +314,7 @@ export default function DealSignalNav() {
             {authedUser ? (
               <Link href="/workspace" onClick={() => setMobileMenuOpen(false)} style={{
                 flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                padding: "10px 0", background: "#84CC16", color: "#0d0d14",
+                padding: "10px 0", background: "#4D7C0F", color: "#0d0d14",
                 borderRadius: 8, fontSize: 14, fontWeight: 700, textDecoration: "none",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}>
@@ -333,7 +333,7 @@ export default function DealSignalNav() {
                 </Link>
                 <Link href="/workspace/login" onClick={() => setMobileMenuOpen(false)} style={{
                   flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
-                  padding: "10px 0", background: "#84CC16", color: "#0d0d14",
+                  padding: "10px 0", background: "#4D7C0F", color: "#0d0d14",
                   borderRadius: 8, fontSize: 14, fontWeight: 700, textDecoration: "none",
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                 }}>

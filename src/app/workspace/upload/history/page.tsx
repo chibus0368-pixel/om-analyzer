@@ -526,7 +526,7 @@ export default function UploadHistoryPage() {
           </button>
           <div className="uh-progress-flex" style={{ flex: 1 }}>
             {progress && (
-              <span className="uh-progress-text" style={{ fontSize: 12, color: "#84CC16" }}>{progress}</span>
+              <span className="uh-progress-text" style={{ fontSize: 12, color: "#4D7C0F" }}>{progress}</span>
             )}
           </div>
           <button
@@ -535,7 +535,7 @@ export default function UploadHistoryPage() {
             disabled={adding || !activeWorkspace}
             style={{
               padding: "9px 20px",
-              background: adding ? "#5A7D22" : "#84CC16",
+              background: adding ? "#5A7D22" : "#4D7C0F",
               color: "#0F172A",
               border: "none",
               borderRadius: 6,
@@ -624,7 +624,7 @@ export default function UploadHistoryPage() {
               height="26"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#84CC16"
+              stroke="#4D7C0F"
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"

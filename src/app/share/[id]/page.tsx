@@ -250,7 +250,7 @@ export default function SharedViewPage() {
         const signal = gf(fields, "signals", "overall_signal") || "";
 
         let pinColor = "#2563EB";
-        if (signal.includes("\u{1F7E2}")) pinColor = "#84CC16";
+        if (signal.includes("\u{1F7E2}")) pinColor = "#4D7C0F";
         else if (signal.includes("\u{1F534}")) pinColor = "#EF4444";
         else if (signal.includes("\u{1F7E1}")) pinColor = "#F59E0B";
 
@@ -407,7 +407,7 @@ export default function SharedViewPage() {
           position: absolute;
           top: -1px; left: -1px; right: -1px;
           height: 2px;
-          background: #84CC16;
+          background: #4D7C0F;
           border-top-left-radius: 8px;
           border-top-right-radius: 8px;
         }
@@ -626,7 +626,7 @@ export default function SharedViewPage() {
                   textAlign: "center", fontSize: 10, color: "#94a3b8",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                 }}>
-                  <div style={{ background: "#84CC16", padding: 2, borderRadius: 3, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ background: "#4D7C0F", padding: 2, borderRadius: 3, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: 10, height: 10 }}>
                       <path d="M3 12h3l3-9 6 18 3-9h3" />
                     </svg>

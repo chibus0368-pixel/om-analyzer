@@ -204,7 +204,7 @@ export function renderPropertyEmailHTML(args: RenderArgs): string {
     : `
       <tr>
         <td style="padding: 0; line-height: 0; font-size: 0;">
-          <div style="width: 100%; height: 8px; background: linear-gradient(90deg, ${lensColor} 0%, #84CC16 100%);">&nbsp;</div>
+          <div style="width: 100%; height: 8px; background: linear-gradient(90deg, ${lensColor} 0%, #4D7C0F 100%);">&nbsp;</div>
         </td>
       </tr>
     `;

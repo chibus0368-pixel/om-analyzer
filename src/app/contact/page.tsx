@@ -102,7 +102,7 @@ export default function ContactPage() {
               display: "inline-block",
               fontSize: 11,
               fontWeight: 700,
-              color: "#84CC16",
+              color: "#4D7C0F",
               textTransform: "uppercase",
               letterSpacing: 1.5,
               padding: "6px 12px",
@@ -165,7 +165,7 @@ export default function ContactPage() {
                   justifyContent: "center",
                   margin: "0 auto 20px",
                   fontSize: 28,
-                  color: "#84CC16",
+                  color: "#4D7C0F",
                 }}
               >
                 ✓
@@ -312,7 +312,7 @@ export default function ContactPage() {
                   background:
                     state === "sending"
                       ? "rgba(132,204,22,0.5)"
-                      : "linear-gradient(135deg, #84CC16 0%, #65A30D 100%)",
+                      : "linear-gradient(135deg, #4D7C0F 0%, #65A30D 100%)",
                   color: "#0d0d14",
                   fontSize: 15,
                   fontWeight: 700,
@@ -340,7 +340,7 @@ export default function ContactPage() {
                 Prefer email? Write us directly at{" "}
                 <a
                   href="mailto:support@dealsignals.app"
-                  style={{ color: "#84CC16", textDecoration: "none" }}
+                  style={{ color: "#4D7C0F", textDecoration: "none" }}
                 >
                   support@dealsignals.app
                 </a>
@@ -375,7 +375,7 @@ export default function ContactPage() {
         .ds-contact-grid textarea:focus,
         textarea:focus,
         input:focus {
-          border-color: #84CC16 !important;
+          border-color: #4D7C0F !important;
           background: rgba(132,204,22,0.04) !important;
         }
         @media (max-width: 640px) {

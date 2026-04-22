@@ -282,7 +282,7 @@ export default function BulkUploadPage() {
             onDrop={handleDrop}
             onClick={() => fileRef.current?.click()}
             style={{
-              border: `2px dashed ${isDragging ? "#84CC16" : "#D8DFE9"}`,
+              border: `2px dashed ${isDragging ? "#4D7C0F" : "#D8DFE9"}`,
               borderRadius: 6, padding: hasItems ? "20px 16px" : "40px 16px", textAlign: "center",
               cursor: items.length >= MAX_PROPERTIES ? "not-allowed" : "pointer",
               background: isDragging ? "rgba(132, 204, 22, 0.03)" : "#ffffff", transition: "all 0.15s",
@@ -504,7 +504,7 @@ export default function BulkUploadPage() {
                 <circle cx="64" cy="64" r={radius} fill="none"
                   stroke="rgba(132,204,22,0.12)" strokeWidth="4" />
                 <circle cx="64" cy="64" r={radius} fill="none"
-                  stroke="#84CC16" strokeWidth="4"
+                  stroke="#4D7C0F" strokeWidth="4"
                   strokeDasharray={`${circumference}`}
                   strokeDashoffset={`${circumference * (1 - overallPct / 100)}`}
                   strokeLinecap="round"
@@ -522,7 +522,7 @@ export default function BulkUploadPage() {
                   fontFamily: "'Inter', sans-serif",
                 }}>
                   {overallPct}
-                  <span style={{ fontSize: 16, color: "#84CC16", fontWeight: 700, marginLeft: 2 }}>%</span>
+                  <span style={{ fontSize: 16, color: "#4D7C0F", fontWeight: 700, marginLeft: 2 }}>%</span>
                 </div>
                 <div style={{
                   fontSize: 9, fontWeight: 700, color: "#9CA3AF",
@@ -569,7 +569,7 @@ export default function BulkUploadPage() {
                           : "#F3F4F6",
                       border: `1px solid ${
                         stage.done ? "rgba(132,204,22,0.4)"
-                        : isCurrent ? "#84CC16"
+                        : isCurrent ? "#4D7C0F"
                         : "rgba(0,0,0,0.06)"
                       }`,
                       transition: "all 0.25s",
@@ -578,7 +578,7 @@ export default function BulkUploadPage() {
                         width: 14, height: 14, borderRadius: "50%",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         background: stage.done
-                          ? "#84CC16"
+                          ? "#4D7C0F"
                           : isCurrent ? "rgba(132,204,22,0.3)" : "rgba(0,0,0,0.08)",
                         animation: isCurrent ? "wsBulkPulse 1.4s ease-in-out infinite" : "none",
                       }}>
@@ -590,7 +590,7 @@ export default function BulkUploadPage() {
                         ) : (
                           <div className="ws-bulk-stage-dot" style={{
                             width: 5, height: 5, borderRadius: "50%",
-                            background: isCurrent ? "#84CC16" : "rgba(0,0,0,0.25)",
+                            background: isCurrent ? "#4D7C0F" : "rgba(0,0,0,0.25)",
                           }} />
                         )}
                       </div>
@@ -605,7 +605,7 @@ export default function BulkUploadPage() {
                     {i < arr.length - 1 && (
                       <div className="ws-bulk-stage-connector" style={{
                         width: 10, height: 2, borderRadius: 1,
-                        background: stage.done ? "#84CC16" : "rgba(0,0,0,0.08)",
+                        background: stage.done ? "#4D7C0F" : "rgba(0,0,0,0.08)",
                       }} />
                     )}
                   </div>
@@ -624,7 +624,7 @@ export default function BulkUploadPage() {
               <div style={{
                 height: "100%",
                 width: `${overallPct}%`,
-                background: "linear-gradient(90deg, #84CC16, #65A30D)",
+                background: "linear-gradient(90deg, #4D7C0F, #3F6212)",
                 borderRadius: 999,
                 transition: "width 0.2s linear",
               }} />
@@ -649,7 +649,7 @@ export default function BulkUploadPage() {
                 const isActive = item.status === "uploading" || item.status === "analyzing";
                 const isDone = item.status === "done";
                 const isError = item.status === "error";
-                const bg = isDone ? "#84CC16"
+                const bg = isDone ? "#4D7C0F"
                   : isError ? "#DC2626"
                   : isActive ? "rgba(132,204,22,0.85)"
                   : "rgba(0,0,0,0.1)";

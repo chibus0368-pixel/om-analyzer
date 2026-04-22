@@ -206,27 +206,27 @@ function generateAdminNotificationEmail(
       </td>
     </tr>
     <tr>
-      <td style="height: 3px; background: linear-gradient(90deg, #84CC16, #65A30D); line-height: 3px; font-size: 0;">&nbsp;</td>
+      <td style="height: 3px; background: linear-gradient(90deg, #4D7C0F, #3F6212); line-height: 3px; font-size: 0;">&nbsp;</td>
     </tr>
     <tr>
       <td style="padding: 32px 32px 28px;">
-        <p style="margin: 0 0 4px 0; color: #65A30D; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.3px;">New inbound</p>
+        <p style="margin: 0 0 4px 0; color: #3F6212; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.3px;">New inbound</p>
         <h2 style="margin: 0 0 20px 0; color: #0d0d14; font-size: 22px; font-weight: 800; letter-spacing: -0.02em;">Contact form submission</h2>
 
-        <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #E5E7EB; border-radius: 10px; border-left: 4px solid #84CC16;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #E5E7EB; border-radius: 10px; border-left: 4px solid #4D7C0F;">
           <tr>
             <td style="padding: 18px 20px;">
               <p style="margin: 0 0 10px 0; font-size: 13px;"><strong style="color: #525866;">From:</strong> <span style="color: #0d0d14;">${name}</span></p>
-              <p style="margin: 0 0 10px 0; font-size: 13px;"><strong style="color: #525866;">Email:</strong> <a href="mailto:${email}" style="color: #65A30D; text-decoration: none; font-weight: 600;">${email}</a></p>
+              <p style="margin: 0 0 10px 0; font-size: 13px;"><strong style="color: #525866;">Email:</strong> <a href="mailto:${email}" style="color: #3F6212; text-decoration: none; font-weight: 600;">${email}</a></p>
               <p style="margin: 0 0 14px 0; font-size: 13px;"><strong style="color: #525866;">Submission ID:</strong> <span style="color: #0d0d14; font-family: 'SF Mono', Menlo, monospace; font-size: 12px;">${messageId}</span></p>
 
               <div style="margin: 16px 0 0 0; padding: 16px; background-color: #F2F3FB; border-radius: 8px;">
-                <p style="margin: 0 0 8px 0; color: #65A30D; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;">Message</p>
+                <p style="margin: 0 0 8px 0; color: #3F6212; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;">Message</p>
                 <p style="margin: 0; white-space: pre-wrap; word-wrap: break-word; font-size: 14px; color: #1F2937; line-height: 1.65;">${message}</p>
               </div>
 
               <p style="margin: 22px 0 0 0;">
-                <a href="${dashboardUrl}" style="background-color: #84CC16; color: #0d0d14; padding: 11px 26px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 700; font-size: 13px;">Open in Dashboard</a>
+                <a href="${dashboardUrl}" style="background-color: #4D7C0F; color: #0d0d14; padding: 11px 26px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 700; font-size: 13px;">Open in Dashboard</a>
               </p>
             </td>
           </tr>
@@ -262,11 +262,11 @@ function generateUserConfirmationEmail(name: string): string {
       </td>
     </tr>
     <tr>
-      <td style="height: 3px; background: linear-gradient(90deg, #84CC16, #65A30D); line-height: 3px; font-size: 0;">&nbsp;</td>
+      <td style="height: 3px; background: linear-gradient(90deg, #4D7C0F, #3F6212); line-height: 3px; font-size: 0;">&nbsp;</td>
     </tr>
     <tr>
       <td style="padding: 36px 36px 28px;">
-        <p style="margin: 0 0 8px 0; color: #65A30D; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;">Message received</p>
+        <p style="margin: 0 0 8px 0; color: #3F6212; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;">Message received</p>
         <h2 style="margin: 0 0 20px 0; color: #0d0d14; font-size: 26px; line-height: 1.25; letter-spacing: -0.02em; font-weight: 800;">Thanks, ${name}. We've got it.</h2>
 
         <p style="margin: 0 0 15px 0; font-size: 15px; line-height: 1.65; color: #1F2937;">
@@ -280,7 +280,7 @@ function generateUserConfirmationEmail(name: string): string {
         <table width="100%" cellpadding="0" cellspacing="0" style="margin: 28px 0;">
           <tr>
             <td style="text-align: center;">
-              <a href="${appUrl}/workspace" style="background-color: #84CC16; color: #0d0d14; padding: 14px 36px; font-weight: 700; font-size: 14px; text-decoration: none; border-radius: 8px; display: inline-block; letter-spacing: 0.02em;">
+              <a href="${appUrl}/workspace" style="background-color: #4D7C0F; color: #0d0d14; padding: 14px 36px; font-weight: 700; font-size: 14px; text-decoration: none; border-radius: 8px; display: inline-block; letter-spacing: 0.02em;">
                 Open My Workspace
               </a>
             </td>
@@ -294,7 +294,7 @@ function generateUserConfirmationEmail(name: string): string {
     </tr>
     <tr>
       <td style="background-color: #F2F3FB; padding: 24px 32px; font-size: 11px; color: #6B7280; text-align: center; line-height: 1.7;">
-        <p style="margin: 0 0 4px 0;"><a href="${appUrl}" style="color: #65A30D; text-decoration: none; font-weight: 600;">dealsignals.app</a></p>
+        <p style="margin: 0 0 4px 0;"><a href="${appUrl}" style="color: #3F6212; text-decoration: none; font-weight: 600;">dealsignals.app</a></p>
         <p style="margin: 4px 0;">&copy; ${new Date().getFullYear()} Deal Signals. All rights reserved.</p>
         <p style="margin: 4px 0;">Mequon, Wisconsin</p>
       </td>

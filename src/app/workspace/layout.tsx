@@ -148,7 +148,7 @@ function _SidebarUserCard({ user, collapsed, userTier, usage, onUpgradeClick }: 
           <div style={{
             height: "100%", borderRadius: 4,
             width: `${usagePct}%`,
-            background: usagePct >= 90 ? "#EF4444" : usagePct >= 70 ? "#F59E0B" : "#84CC16",
+            background: usagePct >= 90 ? "#EF4444" : usagePct >= 70 ? "#F59E0B" : "#4D7C0F",
             transition: "width 0.4s ease",
           }} />
         </div>
@@ -1635,7 +1635,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         <div style={{
           position: "fixed", inset: 0, zIndex: 9999,
           background: "rgba(132, 204, 22, 0.06)",
-          border: "3px dashed #84CC16",
+          border: "3px dashed #4D7C0F",
           display: "flex", alignItems: "center", justifyContent: "center",
           pointerEvents: "none",
         }}>
@@ -1643,7 +1643,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             background: "#fff", borderRadius: 12, padding: "32px 48px", textAlign: "center",
             boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
           }}>
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 12 }}>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 12 }}>
               <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
             <p style={{ fontSize: 16, fontWeight: 700, color: "#151b2b", margin: "0 0 4px", fontFamily: "'Inter', sans-serif" }}>

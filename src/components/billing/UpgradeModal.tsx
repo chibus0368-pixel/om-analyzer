@@ -72,7 +72,7 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
           <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
             {currentTier === "pro" && (
               <a href="/workspace/profile?tab=account" style={{
-                padding: "10px 24px", background: "#84CC16", color: "#0F172A", borderRadius: 8,
+                padding: "10px 24px", background: "#4D7C0F", color: "#0F172A", borderRadius: 8,
                 fontSize: 14, fontWeight: 600, textDecoration: "none", fontFamily: "'Inter', sans-serif",
               }}>
                 Upgrade to Pro+
@@ -182,12 +182,12 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
 
         {/* ── Pro Trial Card (Primary) ── */}
         <div style={{
-          border: "2px solid #84CC16", borderRadius: 12, padding: "20px 24px", marginBottom: 12,
+          border: "2px solid #4D7C0F", borderRadius: 12, padding: "20px 24px", marginBottom: 12,
           position: "relative",
         }}>
           <div style={{
             position: "absolute", top: -10, right: 16,
-            background: "#84CC16", color: "#0F172A", fontSize: 10, fontWeight: 700,
+            background: "#4D7C0F", color: "#0F172A", fontSize: 10, fontWeight: 700,
             padding: "3px 10px", borderRadius: 10, textTransform: "uppercase", letterSpacing: "0.05em",
           }}>7-Day Free Trial</div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
@@ -213,7 +213,7 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
             disabled={!!loading}
             style={{
               width: "100%", padding: "12px 0", border: "none",
-              borderRadius: 8, background: "#84CC16", color: "#0F172A",
+              borderRadius: 8, background: "#4D7C0F", color: "#0F172A",
               fontSize: 15, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer",
               fontFamily: "'Inter', sans-serif",
             }}

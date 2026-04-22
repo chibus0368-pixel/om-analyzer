@@ -3,7 +3,7 @@
  *
  * Scoped under explicit .ds- classes so Crexi's own styles do not collide
  * with ours and vice versa. All colors use the DealSignals palette
- * (slate #0F172A, lime #84CC16, soft white).
+ * (slate #0F172A, lime #4D7C0F, soft white).
  */
 
 /* ─────────── Floating pill button ─────────── */
@@ -49,14 +49,14 @@
 }
 #ds-crexi-save-btn.ds-pill:hover {
   transform: translateY(-1px);
-  border-color: #84CC16;
+  border-color: #4D7C0F;
   box-shadow: 0 14px 34px rgba(15, 23, 42, 0.45), 0 0 0 2px rgba(132, 204, 22, 0.25);
 }
 #ds-crexi-save-btn.ds-pill .ds-pill-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #84CC16;
+  background: #4D7C0F;
   box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.22);
   display: inline-block;
 }
@@ -65,7 +65,7 @@
 /* "Hot" state — we detected an open PDF on the page and one click will
    capture it. Pulse to draw the eye. */
 #ds-crexi-save-btn.ds-pill.ds-pill-hot {
-  background: #84CC16;
+  background: #4D7C0F;
   color: #0F172A;
   border-color: #4d7c0f;
   animation: dsPillPulse 1.8s ease-in-out infinite;
@@ -148,7 +148,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #84CC16;
+  background: #4D7C0F;
   box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.22);
 }
 #ds-crexi-root .ds-close {
@@ -217,7 +217,7 @@
   font-family: inherit;
 }
 #ds-crexi-root .ds-input:focus {
-  border-color: #84CC16;
+  border-color: #4D7C0F;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.18);
 }
@@ -242,7 +242,7 @@
   transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
 }
 #ds-crexi-root .ds-drop.ds-drop-hover {
-  border-color: #84CC16;
+  border-color: #4D7C0F;
   background: rgba(132, 204, 22, 0.08);
   transform: scale(1.005);
 }
@@ -292,7 +292,7 @@
   display: inline-block;
   padding: 2px 6px;
   background: #0F172A;
-  color: #84CC16;
+  color: #4D7C0F;
   border-radius: 999px;
   font-size: 10px;
   font-weight: 700;
@@ -338,7 +338,7 @@
 }
 #ds-crexi-root .ds-btn-ghost:hover:not(:disabled) { background: #f1f5f9; }
 #ds-crexi-root .ds-btn-primary {
-  background: #84CC16;
+  background: #4D7C0F;
   color: #0F172A;
   border-color: #65a30d;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset;

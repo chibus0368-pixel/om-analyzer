@@ -121,7 +121,7 @@ export default function SettingsPage() {
           These values are the standardized baseline for every deal in this workspace. Deal Quick Screen and OM Reverse Pricing use them so scoring is comparable across properties. They override any debt or return assumptions in an OM.
         </p>
         {!hydrated && (
-          <p style={{ fontSize: 12, color: "#84CC16", marginBottom: 12 }}>Loading saved values...</p>
+          <p style={{ fontSize: 12, color: "#4D7C0F", marginBottom: 12 }}>Loading saved values...</p>
         )}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 14 }}>
           {[
@@ -214,7 +214,7 @@ export default function SettingsPage() {
           background: rescoring ? "#f2f3ff" : "#ECFDF5",
           border: `1px solid ${rescoring ? "rgba(132, 204, 22, 0.15)" : "rgba(5, 150, 105, 0.2)"}`,
           fontSize: 13, fontWeight: 600,
-          color: rescoring ? "#84CC16" : "#059669",
+          color: rescoring ? "#4D7C0F" : "#059669",
           display: "flex", alignItems: "center", gap: 8,
         }}>
           {rescoring && (

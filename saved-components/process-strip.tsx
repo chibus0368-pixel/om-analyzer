@@ -8,7 +8,7 @@
  * }
  * .ds-process-connector::after {
  *   content: ''; position: absolute; left: 0; top: 0;
- *   height: 100%; width: 100%; background: #84CC16; border-radius: 1px;
+ *   height: 100%; width: 100%; background: #4D7C0F; border-radius: 1px;
  * }
  * @keyframes shimmer {
  *   0% { background-position: -200px 0; }
@@ -31,7 +31,7 @@
       width: 36, height: 36, borderRadius: 10, background: "#252532",
       border: "1.5px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center",
     }}>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
         <polyline points="14 2 14 8 20 8" />
         <line x1="12" y1="18" x2="12" y2="12" />
@@ -62,7 +62,7 @@
       width: 36, height: 36, borderRadius: 10, background: "#252532",
       border: "1.5px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center",
     }}>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7" />
         <rect x="14" y="3" width="7" height="7" />
         <rect x="14" y="14" width="7" height="7" />
@@ -77,7 +77,7 @@
       {[0, 1, 2].map(i => (
         <div key={i} style={{
           height: 3, borderRadius: 2, width: [24, 18, 20][i],
-          background: `linear-gradient(90deg, rgba(255,255,255,0.1) 0%, #84CC16 50%, rgba(255,255,255,0.1) 100%)`,
+          background: `linear-gradient(90deg, rgba(255,255,255,0.1) 0%, #4D7C0F 50%, rgba(255,255,255,0.1) 100%)`,
           backgroundSize: "200px 100%",
           animation: `shimmer 1.5s linear infinite ${i * 0.2}s`,
         }} />
@@ -99,7 +99,7 @@
       width: 36, height: 36, borderRadius: 10, background: "#252532",
       border: "1.5px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center",
     }}>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 20V10" />
         <path d="M18 20V4" />
         <path d="M6 20v-4" />

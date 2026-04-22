@@ -7,7 +7,7 @@ export default function NotFound() {
     <>
       <div style={{ background: "linear-gradient(135deg, #0F1729 0%, #1B2B4B 50%, #0F1729 100%)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "96px 24px 64px", position: "relative", overflow: "hidden" }}>
         <div style={{ maxWidth: 520, textAlign: "center" as const, position: "relative", zIndex: 1 }}>
-          <div style={{ fontSize: "clamp(100px, 18vw, 160px)", fontWeight: 900, lineHeight: 1, letterSpacing: "-4px", background: "linear-gradient(135deg, #84CC16 0%, #65A30D 50%, #84CC16 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 8 }}>
+          <div style={{ fontSize: "clamp(100px, 18vw, 160px)", fontWeight: 900, lineHeight: 1, letterSpacing: "-4px", background: "linear-gradient(135deg, #4D7C0F 0%, #65A30D 50%, #4D7C0F 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 8 }}>
             404
           </div>
 
@@ -23,7 +23,7 @@ export default function NotFound() {
             <Link href="/" style={{
               display: "inline-flex", alignItems: "center", gap: 8,
               padding: "14px 28px",
-              background: "#84CC16", color: "#fff",
+              background: "#4D7C0F", color: "#fff",
               textDecoration: "none", borderRadius: 8,
               fontWeight: 700, fontSize: 15,
             }}>

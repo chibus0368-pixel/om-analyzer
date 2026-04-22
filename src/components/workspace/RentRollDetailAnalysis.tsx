@@ -22,7 +22,7 @@ import type { Property, ExtractedField } from "@/lib/workspace/types";
 
 /* Design tokens */
 const C = {
-  primary: "#84CC16",
+  primary: "#4D7C0F",
   primaryText: "#4D7C0F",
   onSurface: "#0F172A",
   secondary: "#6B7280",
