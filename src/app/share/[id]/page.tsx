@@ -6,6 +6,8 @@ import DealQuickScreen from "@/components/workspace/DealQuickScreen";
 import OmReversePricing from "@/components/workspace/OmReversePricing";
 import RentRollDetailAnalysis from "@/components/workspace/RentRollDetailAnalysis";
 import type { Property as InternalProperty, ExtractedField as InternalExtractedField } from "@/lib/workspace/types";
+import DemographicsToggle from "@/components/demographics/DemographicsToggle";
+import DemographicsOverlay from "@/components/demographics/DemographicsOverlay";
 
 
 interface ExtractedField {
@@ -122,6 +124,13 @@ export default function SharedViewPage() {
   const boundsRef = useRef<[number, number][]>([]);
   const markersRef = useRef<any[]>([]);
   const leafletRef = useRef<any>(null);
+
+  // Demographics overlay state. Off by default; toggle pill in the map
+  // header turns it on. We record per-property geocoded coords so the
+  // overlay can pivot when the recipient picks a different deal.
+  const [demographicsOn, setDemographicsOn] = useState(false);
+  const [demographicsPropId, setDemographicsPropId] = useState<string | null>(null);
+  const [geocodedCoords, setGeocodedCoords] = useState<Record<string, { lat: number; lng: number }>>({});
 
   useEffect(() => {
     if (!shareId) return;
@@ -244,6 +253,12 @@ export default function SharedViewPage() {
 
         bounds.push([lat, lng]);
 
+        // Record this property's coords so the demographics overlay can
+        // pivot to it without re-geocoding when the toggle is enabled.
+        const finalLat = lat as number;
+        const finalLng = lng as number;
+        setGeocodedCoords((prev) => ({ ...prev, [prop.id]: { lat: finalLat, lng: finalLng } }));
+
         const fields = prop.extractedFields;
         const price = gf(fields, "pricing_deal_terms", "asking_price");
         const capRate = gf(fields, "pricing_deal_terms", "cap_rate_om");
@@ -277,6 +292,9 @@ export default function SharedViewPage() {
         marker.on("click", () => {
           setSelectedProp(prop.id);
           setViewMode("detail");
+          // Pivot the demographics overlay to whichever deal was clicked,
+          // so toggling on later focuses on the user's last selection.
+          setDemographicsPropId(prop.id);
         });
 
         markers.push(marker);
@@ -331,6 +349,28 @@ export default function SharedViewPage() {
   const showBranding = !config?.whiteLabel;
   const title = config?.displayName || config?.workspaceName || "Shared Properties";
   const detailProp = selectedProp ? properties.find(p => p.id === selectedProp) : null;
+
+  // Resolve focal demographics property: explicit click wins, then current
+  // detail-view selection, then the first geocoded property.
+  const focalDemographicsProperty = useMemo(() => {
+    if (!demographicsOn) return null;
+    const id = demographicsPropId
+      || selectedProp
+      || properties.find((p) => geocodedCoords[p.id])?.id
+      || null;
+    if (!id) return null;
+    const prop = properties.find((p) => p.id === id);
+    const coords = geocodedCoords[id];
+    if (!prop || !coords) return null;
+    const addr = [prop.address1, prop.city, prop.state, prop.zip].filter(Boolean).join(", ");
+    return {
+      id,
+      lat: coords.lat,
+      lng: coords.lng,
+      name: prop.propertyName,
+      address: addr,
+    };
+  }, [demographicsOn, demographicsPropId, selectedProp, properties, geocodedCoords]);
 
   return (
     <div style={{ minHeight: "100vh", background: "#f7f8fc", fontFamily: "'Inter', system-ui, sans-serif" }}>
@@ -467,8 +507,15 @@ export default function SharedViewPage() {
           {/* Map Controls - top-right overlay */}
           <div style={{
             position: "absolute", top: 12, right: 12, zIndex: 1000,
-            display: "flex", flexDirection: "column", gap: 6,
+            display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end",
           }}>
+            {/* Demographics toggle pill sits above the zoom cluster so it
+                reads as a layer switch rather than a viewport control. */}
+            <DemographicsToggle
+              enabled={demographicsOn}
+              onToggle={setDemographicsOn}
+              disabled={Object.keys(geocodedCoords).length === 0}
+            />
             <MapBtn onClick={() => mapInstanceRef.current?.zoomIn()} title="Zoom in">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
             </MapBtn>
@@ -482,6 +529,19 @@ export default function SharedViewPage() {
               </svg>
             </MapBtn>
           </div>
+
+          {/* Demographics overlay. Manages its own Leaflet layers (tract
+              choropleth + radius rings) and floats a metrics panel at the
+              top-left of the map. Renders nothing when toggle is off. */}
+          <DemographicsOverlay
+            map={mapInstanceRef.current}
+            L={leafletRef.current}
+            enabled={demographicsOn && !!focalDemographicsProperty}
+            lat={focalDemographicsProperty?.lat ?? null}
+            lng={focalDemographicsProperty?.lng ?? null}
+            propertyName={focalDemographicsProperty?.name}
+            propertyAddress={focalDemographicsProperty?.address}
+          />
 
           {/* Property count pill - bottom-left */}
           <div style={{

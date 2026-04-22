@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useWorkspaceAuth as useAuth } from "@/lib/workspace/auth";
 import { getWorkspaceProperties, getPropertyExtractedFields, updateProperty } from "@/lib/workspace/firestore";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
@@ -8,6 +8,8 @@ import type { Property, ExtractedField } from "@/lib/workspace/types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
 import { AnalysisTypeIcon } from "@/lib/workspace/AnalysisTypeIcon";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
+import DemographicsToggle from "@/components/demographics/DemographicsToggle";
+import DemographicsOverlay from "@/components/demographics/DemographicsOverlay";
 
 function gf(fields: ExtractedField[], group: string, name: string): any {
   const f = fields.find(x => x.fieldGroup === group && x.fieldName === name);
@@ -48,6 +50,13 @@ export default function MapPage() {
   const [plotting, setPlotting] = useState(false);
   const [plotted, setPlotted] = useState(0);
   const [failed, setFailed] = useState(0);
+
+  // Demographics overlay state. Off by default per spec; the toggle pill in
+  // the header controls enablement. We track the focal property by id so the
+  // overlay can refocus when the user picks a different deal.
+  const [demographicsOn, setDemographicsOn] = useState(false);
+  const [demographicsPropId, setDemographicsPropId] = useState<string | null>(null);
+  const [geocodedCoords, setGeocodedCoords] = useState<Record<string, { lat: number; lng: number }>>({});
 
   // Mobile responsive styles
   const styles = `
@@ -312,6 +321,19 @@ export default function MapPage() {
           `;
 
           marker.bindPopup(popupHtml, { maxWidth: 280 });
+
+          // Store the geocoded coords + a click handler so the demographics
+          // overlay can pivot to whichever deal the user clicks. We don't
+          // hijack the popup; the click just records the focal property in
+          // state, which feeds the overlay below.
+          (marker as any)._propId = prop.id;
+          setGeocodedCoords((prev) =>
+            prev[prop.id]?.lat === lat && prev[prop.id]?.lng === lng
+              ? prev
+              : { ...prev, [prop.id]: { lat: lat as number, lng: lng as number } },
+          );
+          marker.on("click", () => setDemographicsPropId(prop.id));
+
           successCount++;
           setPlotted(successCount);
         } catch {
@@ -329,6 +351,27 @@ export default function MapPage() {
 
     addMarkers();
   }, [mapReady, properties, propFields, fieldsReady]);
+
+  // Resolve focal demographics property. Defaults to the first geocoded
+  // property when the user enables the toggle without picking one explicitly.
+  const focalProperty = useMemo(() => {
+    if (!demographicsOn) return null;
+    const id = demographicsPropId
+      || properties.find((p) => geocodedCoords[p.id])?.id
+      || null;
+    if (!id) return null;
+    const prop = properties.find((p) => p.id === id);
+    const coords = geocodedCoords[id];
+    if (!prop || !coords) return null;
+    const addr = [prop.address1, prop.city, prop.state, prop.zip].filter(Boolean).join(", ");
+    return {
+      id,
+      lat: coords.lat,
+      lng: coords.lng,
+      name: cleanDisplayName(prop.propertyName, prop.address1, prop.city, prop.state),
+      address: addr,
+    };
+  }, [demographicsOn, demographicsPropId, properties, geocodedCoords]);
 
   return (
     <>
@@ -376,13 +419,23 @@ export default function MapPage() {
           <span className="mp-legend-item" style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <span className="mp-legend-dot" style={{ width: 10, height: 10, borderRadius: "50%", background: "#94a3b8", display: "inline-block" }} /> Not scored
           </span>
+          {/* Divider + demographics toggle. Sits to the right of the score
+              legend so the existing pill chrome stays grouped. */}
+          <span style={{ width: 1, height: 18, background: "#E5E1D6", display: "inline-block", marginLeft: 4, marginRight: 4 }} />
+          <DemographicsToggle
+            enabled={demographicsOn}
+            onToggle={setDemographicsOn}
+            disabled={Object.keys(geocodedCoords).length === 0}
+          />
         </div>
       </div>
       {/* Map container - isolation creates a new stacking context so
           Leaflet's internal z-indexes (panes up to 700, controls up to
-          1000) can't cover sidebar/header dropdowns that sit above it. */}
+          1000) can't cover sidebar/header dropdowns that sit above it.
+          The DemographicsOverlay renders absolutely-positioned chrome
+          inside this wrapper, plus imperatively manages tract polygons
+          and radius rings on the Leaflet map instance directly. */}
       <div
-        ref={mapRef}
         className="mp-map-wrapper"
         style={{
           flex: 1,
@@ -391,7 +444,18 @@ export default function MapPage() {
           zIndex: 0,
           isolation: "isolate",
         }}
-      />
+      >
+        <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
+        <DemographicsOverlay
+          map={mapInstanceRef.current}
+          L={leafletRef.current}
+          enabled={demographicsOn && !!focalProperty}
+          lat={focalProperty?.lat ?? null}
+          lng={focalProperty?.lng ?? null}
+          propertyName={focalProperty?.name}
+          propertyAddress={focalProperty?.address}
+        />
+      </div>
     </div>
     </>
   );

@@ -27,6 +27,7 @@ import DealQuickScreen from "@/components/workspace/DealQuickScreen";
 import OmReversePricing from "@/components/workspace/OmReversePricing";
 import DealVerdictBox from "@/components/workspace/DealVerdictBox";
 import RentRollDetailAnalysis from "@/components/workspace/RentRollDetailAnalysis";
+import SubmarketBrief from "@/components/workspace/SubmarketBrief";
 import SectionHeader from "@/components/workspace/SectionHeader";
 
 /* ── Design tokens ─────────────────────────────────────── */
@@ -1420,12 +1421,13 @@ function PropertyDetailInner({
      URL-backed so a link into ?tab=om-reverse-pricing lands on that tab.
      The tab bar sits directly below the hero; below it the existing
      property detail sections continue to render as "Deal Details".     */
-  type ProTab = "quick-screen" | "om-reverse-pricing" | "rent-roll";
+  type ProTab = "quick-screen" | "om-reverse-pricing" | "rent-roll" | "submarket";
   const [activeProTab, setActiveProTab] = useState<ProTab>(() => {
     if (typeof window === "undefined") return "quick-screen";
     const t = new URLSearchParams(window.location.search).get("tab");
     if (t === "om-reverse-pricing") return "om-reverse-pricing";
     if (t === "rent-roll") return "rent-roll";
+    if (t === "submarket") return "submarket";
     return "quick-screen";
   });
   const routerForTabs = useRouter();
@@ -2068,9 +2070,9 @@ function PropertyDetailInner({
           if (t === "office") return "Office";
           if (t === "land") return "Land";
           return "Asset";
-        })()} Lens`}
+        })()} Model`}
         title="Deal Analysis"
-        subtitle="Three lenses on one deal: triage score, reverse-priced offer scenarios, and tenant-level rent roll"
+        subtitle="Three models on one deal: triage score, reverse-priced offer scenarios, and tenant-level rent roll"
         topGap={40}
         bottomGap={14}
       />
@@ -2097,6 +2099,7 @@ function PropertyDetailInner({
             { id: "quick-screen" as const, label: "Deal Quick Screen", ready: true },
             { id: "om-reverse-pricing" as const, label: "Offer Scenarios", ready: true },
             { id: "rent-roll" as const, label: "Rent Roll", ready: true },
+            { id: "submarket" as const, label: "Submarket", ready: true },
           ].map(tab => {
             const isActive = tab.id === activeProTab;
             return (
@@ -2164,6 +2167,10 @@ function PropertyDetailInner({
 
           {activeProTab === "om-reverse-pricing" && (
             <OmReversePricing property={property} fields={fields} />
+          )}
+
+          {activeProTab === "submarket" && (
+            <SubmarketBrief property={property} fields={fields} wsType={wsType} />
           )}
 
           {activeProTab === "rent-roll" && (

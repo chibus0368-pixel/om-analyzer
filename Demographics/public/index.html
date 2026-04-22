@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Demographics - CRE Site Analytics</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <div class="title">Property Tour</div>
+        <div class="subtitle">demographics replica</div>
+      </div>
+      <div class="top-right">
+        <span id="site-count" class="pill">1 site</span>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar" id="sidebar">
+        <div class="section-label">SITES</div>
+        <div class="site-card" id="site-card">
+          <div class="site-dot"></div>
+          <div class="site-body">
+            <div class="site-name" id="site-name">West Bend Plaza</div>
+            <div class="site-addr" id="site-addr">820 S Main St, West Bend, WI 53095</div>
+          </div>
+          <div class="site-chevron">&rsaquo;</div>
+        </div>
+
+        <div class="search">
+          <input id="addr-input" type="text" placeholder="Search address..." />
+          <button id="addr-go">Go</button>
+        </div>
+      </aside>
+
+      <section class="detail" id="detail">
+        <header class="detail-header">
+          <div>
+            <div class="detail-title" id="detail-title">West Bend Plaza</div>
+            <div class="detail-addr" id="detail-addr">820 S Main St, West Bend, WI 53095</div>
+          </div>
+        </header>
+
+        <nav class="tabs">
+          <button class="tab active">Analytics</button>
+        </nav>
+        <nav class="subtabs">
+          <button class="subtab active">Demographics</button>
+        </nav>
+
+        <div id="panel"></div>
+      </section>
+
+      <section class="map-wrap">
+        <div id="map"></div>
+        <div id="loading" class="loading hidden">Loading real Census data…</div>
+      </section>
+    </main>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
