@@ -2344,7 +2344,11 @@ function PropertyDetailInner({
               <div style={{ fontSize: 12, color: C.secondary, maxWidth: 420, margin: "0 auto", lineHeight: 1.5 }}>
                 {wsType === "land"
                   ? "Land deals have no rent roll. Use the Quick Screen tab for basis-driven triage."
-                  : "Upload a rent roll (XLS/PDF) or an OM with a tenant table on the Deal Details section and tenants will populate here automatically."}
+                  : (<><a
+                      href="#"
+                      onClick={(e: React.MouseEvent) => { e.preventDefault(); fileRef.current?.click(); }}
+                      style={{ color: C.accent || "#84CC16", fontWeight: 600, textDecoration: "underline", cursor: "pointer" }}
+                    >Upload a rent roll (XLS/PDF) or an OM</a> with a tenant table and tenants will populate here automatically.</>)}
               </div>
             </div>
           )}
