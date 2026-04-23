@@ -150,11 +150,17 @@ export default function PropertyImageEditor({
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
+  // If the proxy path fails (host not allowed / upstream error / network),
+  // we retry once with the raw URL so the user at least sees the image.
+  // Cropping will then fail with a CORS canvas error — handled in handleSave.
+  const [proxyFailed, setProxyFailed] = useState(false);
+
   // Resolve the url the <img> should actually load (direct vs proxied).
-  const loadableSrc = useMemo(
-    () => (sourceUrl ? resolveLoadableSrc(sourceUrl) : undefined),
-    [sourceUrl]
-  );
+  const loadableSrc = useMemo(() => {
+    if (!sourceUrl) return undefined;
+    if (proxyFailed) return sourceUrl;
+    return resolveLoadableSrc(sourceUrl);
+  }, [sourceUrl, proxyFailed]);
 
   /* ---- image load handler ---------------------------------------- */
   const handleImgLoad = useCallback(() => {
@@ -301,6 +307,7 @@ export default function PropertyImageEditor({
     setObjectUrl(url);
     setPendingFile(f);
     setSourceUrl(url);
+    setProxyFailed(false);
     setNatural(null);
     setDisplayed(null);
     setCrop(null);
@@ -504,7 +511,15 @@ export default function PropertyImageEditor({
                   alt="Source"
                   crossOrigin="anonymous"
                   onLoad={handleImgLoad}
-                  onError={() => setError("Could not load the source image.")}
+                  onError={() => {
+                    if (!proxyFailed && sourceUrl && !sourceUrl.startsWith("blob:") && !sourceUrl.startsWith("data:")) {
+                      // Proxy path failed — retry once with the raw URL.
+                      console.warn("[PropertyImageEditor] proxy load failed, retrying direct:", sourceUrl);
+                      setProxyFailed(true);
+                      return;
+                    }
+                    setError("Could not load the source image. Try uploading a new one.");
+                  }}
                   draggable={false}
                   style={{
                     display: "block",

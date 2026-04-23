@@ -700,6 +700,24 @@ export default function SharedViewPage() {
           )}
         </div>
       </div>
+      {/* ─── Global disclaimer (bottom of the shared dealboard) ───
+          Small, muted legalese pinned under the map + sidebar pair so
+          it's visible in both list and detail view modes. Intentionally
+          understated so it doesn't compete with the deal content. */}
+      <div
+        style={{
+          padding: "10px 20px 12px",
+          borderTop: "1px solid #e5e7eb",
+          background: "#fafbfc",
+          fontSize: 10,
+          lineHeight: 1.5,
+          color: "#94a3b8",
+          textAlign: "center",
+          fontStyle: "italic",
+        }}
+      >
+        Shared for informational purposes only. Deal Signals output is automated general guidance, not investment, legal, tax, or financial advice. Figures are derived from uploaded documents and public data sources that may be incomplete or inaccurate. Verify all material facts independently before committing capital.
+      </div>
     </div>
   );
 }

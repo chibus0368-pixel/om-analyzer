@@ -4,6 +4,7 @@
 
 import type { ExtractedField, Note } from "./types";
 import type { AnalysisType } from "./types";
+import type { QuickScreenReport } from "@/lib/analysis/quick-screen";
 
 let EJ: any = null;
 
@@ -1176,8 +1177,9 @@ export function generateBriefDownload(
   brief: string,
   fields: ExtractedField[],
   analysisType: AnalysisType = "retail",
-  options?: { returnBlob?: boolean }
+  options?: { returnBlob?: boolean; quickScreen?: QuickScreenReport | null }
 ): void | { blob: Blob; filename: string } {
+  const quickScreen = options?.quickScreen || null;
   const g = (group: string, name: string) => getField(fields, group, name);
   const typeLabel = analysisType === "retail" ? "Retail" : analysisType === "industrial" ? "Industrial" : analysisType === "office" ? "Office" : "Land";
 
@@ -1375,27 +1377,96 @@ ${addonRows.map(([label, val]) => `<tr><td>${label}</td><td class="metric-val">$
     ? "This is a first-pass land analysis based on the provided documents and clearly labeled assumptions. Directional assessment only - not a final acquisition model."
     : "This is a first-pass underwriting screen based on the provided documents and clearly labeled assumptions. Directional assessment only - not a final investment model.";
 
-  // Build brief section HTML (supports structured JSON or legacy plain text)
-  let briefSectionHtml = "";
+  // Build brief section HTML. Preference order (matches the Pro page and the
+  // email template):
+  //   1. QuickScreenReport -> executiveSummary + waysItWorks + waysItDies
+  //   2. Brief JSON -> overview + strengths + concerns
+  //   3. Legacy plain-text brief
+  // Headings are relabeled to "Three Ways This Deal Works / Dies" so the Word
+  // doc reads like what the user sees on the Deal Quick Screen tab.
+  let briefOverview = "";
+  let briefWorks: string[] = [];
+  let briefDies: string[] = [];
+  let briefFallback = "";
+
   try {
     const briefObj = JSON.parse(brief);
-    if (briefObj && typeof briefObj.overview === "string") {
-      briefSectionHtml = `<div class="brief-text"><p>${briefObj.overview}</p></div>`;
-      if (briefObj.strengths?.length) {
-        briefSectionHtml += `<h3>Key Strengths</h3>`;
-        briefSectionHtml += briefObj.strengths.map((s: string) => `<div class="strength-item"><span class="strength-mark">✓</span>${s}</div>`).join("");
-      }
-      if (briefObj.concerns?.length) {
-        briefSectionHtml += `<h3>Primary Concerns</h3>`;
-        briefSectionHtml += briefObj.concerns.map((c: string) => `<div class="concern-item"><span class="concern-mark">△</span>${c}</div>`).join("");
-      }
+    if (briefObj && typeof briefObj === "object") {
+      if (typeof briefObj.overview === "string") briefOverview = briefObj.overview.trim();
+      if (Array.isArray(briefObj.strengths)) briefWorks = briefObj.strengths.map((x: any) => String(x).trim()).filter(Boolean);
+      if (Array.isArray(briefObj.concerns)) briefDies = briefObj.concerns.map((x: any) => String(x).trim()).filter(Boolean);
     }
   } catch {
-    // Legacy plain text brief
-    briefSectionHtml = `<div class="brief-text">${(brief || "No brief generated.").split("\n").map(p => p.trim() ? `<p>${p}</p>` : "").join("")}</div>`;
+    briefFallback = String(brief || "").trim();
+  }
+
+  // Prefer QuickScreen report when available
+  if (quickScreen) {
+    if (quickScreen.executiveSummary && quickScreen.executiveSummary.trim()) {
+      briefOverview = quickScreen.executiveSummary.trim();
+    }
+    const qsWorks = (quickScreen.waysItWorks || []).filter(Boolean);
+    const qsDies = (quickScreen.waysItDies || []).filter(Boolean);
+    if (qsWorks.length) briefWorks = qsWorks;
+    if (qsDies.length) briefDies = qsDies;
+  }
+
+  let briefSectionHtml = "";
+  if (briefOverview) {
+    briefSectionHtml += `<div class="brief-text"><p>${briefOverview}</p></div>`;
+  } else if (briefFallback) {
+    briefSectionHtml += `<div class="brief-text">${briefFallback.split("\n").map(p => p.trim() ? `<p>${p}</p>` : "").join("")}</div>`;
+  }
+  if (briefWorks.length) {
+    briefSectionHtml += `<h3>Three Ways This Deal Works</h3>`;
+    briefSectionHtml += briefWorks.map((s) => `<div class="strength-item"><span class="strength-mark">✓</span>${s}</div>`).join("");
+  }
+  if (briefDies.length) {
+    briefSectionHtml += `<h3>Three Ways This Deal Dies</h3>`;
+    briefSectionHtml += briefDies.map((c) => `<div class="concern-item"><span class="concern-mark">△</span>${c}</div>`).join("");
   }
   if (!briefSectionHtml) {
-    briefSectionHtml = `<div class="brief-text">${(brief || "No brief generated.").split("\n").map(p => p.trim() ? `<p>${p}</p>` : "").join("")}</div>`;
+    briefSectionHtml = `<div class="brief-text"><p>No brief generated.</p></div>`;
+  }
+
+  // Back-of-Napkin Returns — mirrors the Pro page Quick Screen tab. Rendered
+  // only when the QuickScreen report is present. Ordered Bear -> Base -> Bull.
+  let scenariosSectionHtml = "";
+  if (quickScreen && quickScreen.scenarios && quickScreen.scenarios.length) {
+    const order = ["Bear", "Base", "Bull"];
+    const sorted = [...quickScreen.scenarios].sort(
+      (a, b) => order.indexOf(a.label) - order.indexOf(b.label),
+    );
+    const rows = sorted.map((sc) => {
+      const color = sc.label === "Bull" ? "#4D7C0F" : sc.label === "Base" ? "#2563EB" : "#DC2626";
+      const levered = sc.leveredIrrPct != null ? `${sc.leveredIrrPct.toFixed(1)}%` : "--";
+      const unlevered = sc.unleveredIrrPct != null ? `${sc.unleveredIrrPct.toFixed(1)}%` : "--";
+      const em = sc.equityMultiple != null ? `${sc.equityMultiple.toFixed(2)}x` : "--";
+      const rentSign = sc.rentGrowthPct > 0 ? "+" : "";
+      const exitSign = sc.exitCapBps > 0 ? "+" : "";
+      const rowBg = sc.label === "Bull" ? "#F7FEE7" : sc.label === "Base" ? "#EFF6FF" : "#FEF2F2";
+      return `<tr style="background:${rowBg};">
+        <td style="font-weight:700;color:${color};text-transform:uppercase;letter-spacing:0.5px;border-left:3px solid ${color};">${sc.label}</td>
+        <td class="metric-val" style="font-size:11pt;">${levered}</td>
+        <td>${em}</td>
+        <td>${unlevered}</td>
+        <td style="font-size:9pt;color:#6B7280;">annual rent increases ${rentSign}${sc.rentGrowthPct}%, exit cap ${exitSign}${sc.exitCapBps}bps</td>
+      </tr>`;
+    }).join("");
+    scenariosSectionHtml = `
+      <h2>Back-of-Napkin Returns</h2>
+      <p style="font-size:9.5pt;color:#6B7280;margin-top:-4px;">Ranges, not point estimates. Meant for triage, not underwriting.</p>
+      <table>
+        <tr>
+          <th>Scenario</th>
+          <th>Levered IRR</th>
+          <th>Equity Multiple</th>
+          <th>Unlevered IRR</th>
+          <th>Assumptions</th>
+        </tr>
+        ${rows}
+      </table>
+    `;
   }
 
   // ==========================================================
@@ -1554,11 +1625,13 @@ ${addonRows.map(([label, val]) => `<tr><td>${label}</td><td class="metric-val">$
 <p class="subtitle">${disclaimer}</p>
 
 ${showExtended ? `<div class="memo-toc">
-<strong>Contents:</strong> Executive Summary &middot; Investment Thesis &middot; Key Metrics &middot; Signal Assessment &middot; Market Context &middot; Financing Strategy &middot; Exit Strategy &middot; Value Creation &middot; Key Risks &middot; Next Steps
+<strong>Contents:</strong> Executive Summary &middot; Back-of-Napkin Returns &middot; Investment Thesis &middot; Key Metrics &middot; Signal Assessment &middot; Market Context &middot; Financing Strategy &middot; Exit Strategy &middot; Value Creation &middot; Key Risks &middot; Next Steps
 </div>` : ""}
 
 <h2>Executive Summary</h2>
 ${briefSectionHtml}
+
+${scenariosSectionHtml}
 
 ${showExtended ? `<h2>Investment Thesis</h2>
 ${thesisHtml}` : ""}
@@ -1605,7 +1678,14 @@ ${nextStepsHtml}
 <strong>Accompanying documents.</strong> This Brief is one part of a complete deal package. See also: <em>Underwriting Workbook</em> (scenario model, sensitivity, 10-year cash flow), <em>LOI Draft</em> (ready-to-send opening offer), <em>Broker Questions</em> (red-flag-prioritized diligence list), and <em>Creative Deal Structuring</em> (six alternative structures with deal-specific fit analysis).
 </div>` : ""}
 
-<p class="subtitle" style="margin-top: 24px;">Generated by Deal Signals - ${typeLabel} Model</p>
+
+<h2 style="margin-top: 32px; font-size: 11pt; color: #6B7280; border-bottom: 1px solid #E5E7EB; text-transform: uppercase; letter-spacing: 0.08em;">Disclaimer</h2>
+<p style="font-size: 9pt; color: #6B7280; line-height: 1.6; font-style: italic; margin-top: 8px;">
+  This First-Pass Brief is automated general guidance produced by Deal Signals. It is NOT investment, legal, tax, accounting, or financial advice, and it is not an offer, solicitation, or recommendation to buy, sell, lease, finance, or otherwise transact in any property or security. Figures are derived from uploaded documents and public data sources that may be incomplete, out-of-date, or inaccurate. Scenario ranges are back-of-napkin triage outputs based on standardized assumptions and should not be treated as a final underwriting model. You are solely responsible for verifying every material fact (rent roll, leases, expenses, title, environmental, zoning, financing) and conducting full legal, financial, and physical due diligence with qualified professionals before committing any capital. No representation or warranty, express or implied, is made by Deal Signals or its operators as to the accuracy, completeness, or fitness for any particular purpose of the information contained herein. Use at your own risk.
+</p>
+<p style="font-size: 8.5pt; color: #9CA3AF; margin-top: 14px; text-align: center; font-style: italic;">
+  Generated by Deal Signals · ${typeLabel} Model · dealsignals.app
+</p>
 </body></html>`;
 
   // Download as .doc (HTML format that Word opens natively)

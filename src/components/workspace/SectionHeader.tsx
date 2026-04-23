@@ -69,7 +69,6 @@ export default function SectionHeader({
         padding: `0 2px ${padBottom}px 2px`,
         marginTop: topGap,
         marginBottom: bottomGap,
-        borderBottom: `2px solid ${C.primaryText}`,
       }}
     >
       <div style={{ minWidth: 0 }}>

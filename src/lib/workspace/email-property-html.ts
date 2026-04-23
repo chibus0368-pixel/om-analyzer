@@ -12,6 +12,7 @@
 import type { ExtractedField, AnalysisType } from "./types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "./types";
 import { analysisTypeIconSVG } from "./AnalysisTypeIcon";
+import type { QuickScreenReport } from "@/lib/analysis/quick-screen";
 
 function esc(s: any): string {
   if (s === null || s === undefined) return "";
@@ -116,13 +117,19 @@ interface RenderArgs {
   note?: string;
   heroImageUrl?: string;
   propertyUrl?: string;
+  /**
+   * Optional QuickScreenReport — when passed, the email mirrors the Pro
+   * property page's Back-of-Napkin scenarios and Ways It Works / Dies
+   * sections. Without it, the template falls back to the brief JSON.
+   */
+  quickScreen?: QuickScreenReport | null;
 }
 
 export function renderPropertyEmailHTML(args: RenderArgs): string {
   const {
     propertyName, address, city, state, analysisType,
     dealScore, grade, fields, brief, senderName, senderEmail, note,
-    heroImageUrl, propertyUrl,
+    heroImageUrl, propertyUrl, quickScreen,
   } = args;
 
   const lensColor = ANALYSIS_TYPE_COLORS[analysisType] || "#6B7280";
@@ -272,30 +279,100 @@ export function renderPropertyEmailHTML(args: RenderArgs): string {
     </table>
   ` : "";
 
+  // Scenarios block — 3-card grid of Bear / Base / Bull mirroring the Pro
+  // page's "Back-of-Napkin Returns" section. Renders only when we have a
+  // QuickScreenReport to pull from; otherwise the block is skipped entirely.
+  const scenariosHtml = quickScreen && quickScreen.scenarios && quickScreen.scenarios.length ? (() => {
+    const order = ["Bear", "Base", "Bull"];
+    const sorted = [...quickScreen.scenarios].sort(
+      (a, b) => order.indexOf(a.label) - order.indexOf(b.label),
+    );
+    const cardWidth = Math.floor(100 / Math.max(sorted.length, 1));
+    const cards = sorted.map((sc) => {
+      const isBull = sc.label === "Bull";
+      const isBase = sc.label === "Base";
+      const color = isBull ? "#4D7C0F" : isBase ? "#2563EB" : "#DC2626";
+      const bg = isBull ? "#F7FEE7" : isBase ? "#EFF6FF" : "#FEF2F2";
+      const levered = sc.leveredIrrPct != null ? `${sc.leveredIrrPct.toFixed(1)}%` : "--";
+      const unlevered = sc.unleveredIrrPct != null ? `${sc.unleveredIrrPct.toFixed(1)}%` : "--";
+      const em = sc.equityMultiple != null ? `${sc.equityMultiple.toFixed(2)}x` : "--";
+      const rentSign = sc.rentGrowthPct > 0 ? "+" : "";
+      const exitSign = sc.exitCapBps > 0 ? "+" : "";
+      return `
+        <td valign="top" width="${cardWidth}%" style="padding: 6px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background: ${bg}; border: 1px solid ${color}33; border-radius: 10px;">
+            <tr>
+              <td style="padding: 14px 16px; font-family: Arial, sans-serif;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 8px;">
+                  <tr>
+                    <td align="left" style="font-size: 11px; font-weight: 800; color: ${color}; letter-spacing: 0.08em; text-transform: uppercase;">${esc(sc.label)}</td>
+                    <td align="right" style="font-size: 10px; color: #6B7280;">annual rent increases ${rentSign}${sc.rentGrowthPct}%, exit cap ${exitSign}${sc.exitCapBps}bps</td>
+                  </tr>
+                </table>
+                <div style="font-size: 24px; font-weight: 800; color: #0F172A; line-height: 1.1;">${esc(levered)}</div>
+                <div style="font-size: 10px; color: #6B7280; margin-top: 2px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">Levered IRR</div>
+                <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 10px;">
+                  <tr>
+                    <td style="font-size: 11px; color: #6B7280; padding: 2px 0;">Equity multiple</td>
+                    <td align="right" style="font-size: 11px; color: #0F172A; font-weight: 700; padding: 2px 0;">${esc(em)}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size: 11px; color: #6B7280; padding: 2px 0;">Unlevered IRR</td>
+                    <td align="right" style="font-size: 11px; color: #0F172A; font-weight: 600; padding: 2px 0;">${esc(unlevered)}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      `;
+    }).join("");
+
+    return `
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin: 22px 0 6px;">
+        <tr><td style="font-family: Arial, sans-serif;">
+          <div style="font-size: 11px; color: #9CA3AF; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Back-of-Napkin Returns</div>
+          <h2 style="font-size: 18px; color: #0F172A; font-weight: 800; margin: 0 0 4px; letter-spacing: -0.01em;">Three scenarios</h2>
+          <div style="font-size: 12px; color: #6B7280; margin-bottom: 14px;">Ranges, not point estimates. Meant for triage, not underwriting.</div>
+          <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: separate; border-spacing: 0;">
+            <tr>${cards}</tr>
+          </table>
+        </td></tr>
+      </table>
+    `;
+  })() : "";
+
   // Parse brief (supports JSON and plain-text fallback)
   const parsed = parseBrief(brief);
+  // Prefer the QuickScreen's waysItWorks / waysItDies when available, so the
+  // email reads like the Pro page rather than the narrative Brief doc.
+  const qsWorks = (quickScreen?.waysItWorks || []).filter(Boolean);
+  const qsDies = (quickScreen?.waysItDies || []).filter(Boolean);
+  const strengths = qsWorks.length ? qsWorks : parsed.strengths;
+  const concerns = qsDies.length ? qsDies : parsed.concerns;
+  const executiveSummary = (quickScreen?.executiveSummary || "").trim() || parsed.overview;
   const hasBrief =
-    parsed.overview || parsed.strengths.length || parsed.concerns.length || parsed.fallbackParas.length;
+    executiveSummary || strengths.length || concerns.length || parsed.fallbackParas.length;
 
   const briefHtml = hasBrief ? `
     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 26px 0 8px;">
       <tr><td style="font-family: Arial, sans-serif;">
-        <div style="font-size: 11px; color: #9CA3AF; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">First Pass Brief</div>
-        <h2 style="font-size: 20px; color: #0F172A; font-weight: 800; margin: 0 0 14px; letter-spacing: -0.01em;">Analyst Summary</h2>
+        <div style="font-size: 11px; color: #9CA3AF; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Deal Summary</div>
+        <h2 style="font-size: 20px; color: #0F172A; font-weight: 800; margin: 0 0 14px; letter-spacing: -0.01em;">Analyst Read</h2>
 
-        ${parsed.overview ? `
-          <p style="font-size: 14px; color: #374151; line-height: 1.7; margin: 0 0 16px;">${esc(parsed.overview)}</p>
+        ${executiveSummary ? `
+          <p style="font-size: 14px; color: #374151; line-height: 1.7; margin: 0 0 16px;">${esc(executiveSummary)}</p>
         ` : ""}
 
-        ${parsed.fallbackParas.length ? parsed.fallbackParas.map(p =>
+        ${!executiveSummary && parsed.fallbackParas.length ? parsed.fallbackParas.map(p =>
           `<p style="font-size: 14px; color: #374151; line-height: 1.7; margin: 0 0 12px;">${esc(p)}</p>`
         ).join("") : ""}
 
-        ${parsed.strengths.length ? `
+        ${strengths.length ? `
           <div style="margin-top: 18px; padding: 14px 16px; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 10px;">
-            <div style="font-size: 11px; color: #15803D; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;">Key Strengths</div>
+            <div style="font-size: 11px; color: #15803D; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;">Three Ways This Deal Works</div>
             <table cellpadding="0" cellspacing="0" style="width: 100%;">
-              ${parsed.strengths.map(s => `
+              ${strengths.map(s => `
                 <tr>
                   <td valign="top" style="width: 18px; padding: 2px 8px 8px 0; color: #16A34A; font-weight: 800; font-size: 14px;">&#10003;</td>
                   <td valign="top" style="padding: 2px 0 8px 0; font-size: 13.5px; color: #14532D; line-height: 1.55;">${esc(s)}</td>
@@ -305,11 +382,11 @@ export function renderPropertyEmailHTML(args: RenderArgs): string {
           </div>
         ` : ""}
 
-        ${parsed.concerns.length ? `
+        ${concerns.length ? `
           <div style="margin-top: 12px; padding: 14px 16px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px;">
-            <div style="font-size: 11px; color: #B91C1C; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;">Primary Concerns</div>
+            <div style="font-size: 11px; color: #B91C1C; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;">Three Ways This Deal Dies</div>
             <table cellpadding="0" cellspacing="0" style="width: 100%;">
-              ${parsed.concerns.map(c => `
+              ${concerns.map(c => `
                 <tr>
                   <td valign="top" style="width: 18px; padding: 2px 8px 8px 0; color: #DC2626; font-weight: 800; font-size: 14px;">&#9888;</td>
                   <td valign="top" style="padding: 2px 0 8px 0; font-size: 13.5px; color: #7F1D1D; line-height: 1.55;">${esc(c)}</td>
@@ -421,6 +498,9 @@ export function renderPropertyEmailHTML(args: RenderArgs): string {
               ${typeMetricsHtml}
             </td>
           </tr>
+
+          <!-- Back-of-Napkin scenarios (Pro page parity) -->
+          ${scenariosHtml ? `<tr><td style="padding: 0 24px;">${scenariosHtml}</td></tr>` : ""}
 
           <!-- Brief -->
           ${briefHtml ? `<tr><td style="padding: 0 24px;">${briefHtml}</td></tr>` : ""}

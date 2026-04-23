@@ -24,7 +24,8 @@ import Link from "next/link";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import PropertyHeroImage from "@/components/workspace/PropertyHeroImage";
 import PropertyImageEditor from "@/components/workspace/PropertyImageEditor";
-import DealQuickScreen from "@/components/workspace/DealQuickScreen";
+import DealQuickScreen, { buildInput as buildQuickScreenInput, type StandardizedBaseline } from "@/components/workspace/DealQuickScreen";
+import { runQuickScreen } from "@/lib/analysis/quick-screen";
 import OmReversePricing from "@/components/workspace/OmReversePricing";
 import DealVerdictBox from "@/components/workspace/DealVerdictBox";
 import RentRollDetailAnalysis from "@/components/workspace/RentRollDetailAnalysis";
@@ -277,6 +278,30 @@ function EmailPropertyButton({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  // Compute the same Quick Screen report the Pro tab shows so the email body
+  // can mirror Back-of-Napkin scenarios + Ways It Works/Dies. Falls back to
+  // null (email template then uses the brief JSON) when inputs are missing.
+  const { defaults: underwritingDefaults } = useUnderwritingDefaults(
+    (property?.workspaceId as string | undefined) || null,
+  );
+  const quickScreenReport = useMemo(() => {
+    if (!property || !fields) return null;
+    const baseline: StandardizedBaseline = {
+      ltvPct: underwritingDefaults.ltv,
+      interestRatePct: underwritingDefaults.interestRate,
+      amortYears: underwritingDefaults.amortYears,
+      holdYears: underwritingDefaults.holdYears,
+      targetLeveredIrrPct: underwritingDefaults.targetLeveredIrr,
+    };
+    const input = buildQuickScreenInput(property, fields, baseline);
+    if (!input) return null;
+    try {
+      return runQuickScreen(input);
+    } catch {
+      return null;
+    }
+  }, [property, fields, underwritingDefaults]);
+
   // Pre-fill subject when the modal opens
   useEffect(() => {
     if (open) {
@@ -305,7 +330,7 @@ function EmailPropertyButton({
     try {
       // 1. Generate attachments client-side (reuses existing ExcelJS CDN + DOC builder)
       const xlsxResult = await generateUnderwritingXLSX(property.propertyName, fields, wsType, { returnBlob: true });
-      const briefResult = generateBriefDownload(property.propertyName, brief, fields, wsType, { returnBlob: true });
+      const briefResult = generateBriefDownload(property.propertyName, brief, fields, wsType, { returnBlob: true, quickScreen: quickScreenReport });
 
       if (!xlsxResult || !briefResult) {
         throw new Error("Failed to build attachments");
@@ -329,6 +354,7 @@ function EmailPropertyButton({
         note: note.trim(),
         heroImageUrl: property?.heroImageUrl,
         propertyUrl,
+        quickScreen: quickScreenReport,
       });
 
       // 3. POST as multipart
@@ -1417,6 +1443,32 @@ function PropertyDetailInner({
   userTier,
 }: any) {
 
+  // Quick Screen report used by the Brief download buttons inside this
+  // component so the Word doc mirrors what the Deal Quick Screen tab shows
+  // (back-of-napkin scenarios + ways it works / dies). Falls back to null
+  // when inputs are missing; the brief generator then skips the scenarios
+  // block and uses the brief JSON for strengths/concerns.
+  const { defaults: downloadDefaults } = useUnderwritingDefaults(
+    (property?.workspaceId as string | undefined) || null,
+  );
+  const downloadQuickScreen = useMemo(() => {
+    if (!property || !fields) return null;
+    const baseline: StandardizedBaseline = {
+      ltvPct: downloadDefaults.ltv,
+      interestRatePct: downloadDefaults.interestRate,
+      amortYears: downloadDefaults.amortYears,
+      holdYears: downloadDefaults.holdYears,
+      targetLeveredIrrPct: downloadDefaults.targetLeveredIrr,
+    };
+    const input = buildQuickScreenInput(property, fields, baseline);
+    if (!input) return null;
+    try {
+      return runQuickScreen(input);
+    } catch {
+      return null;
+    }
+  }, [property, fields, downloadDefaults]);
+
   /* ── Pro Analysis tabs ─────────────────────────────────
      URL-backed so a link into ?tab=om-reverse-pricing lands on that tab.
      The tab bar sits directly below the hero; below it the existing
@@ -1923,7 +1975,7 @@ function PropertyDetailInner({
               <span style={{ padding: "1px 5px", background: "#D1FAE5", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#065F46" }}>XLSX</span>
             </button>
             <button
-              onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType)}
+              onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType, { quickScreen: downloadQuickScreen })}
               className="dl-btn"
               style={{
                 padding: "6px 14px", borderRadius: 8,
@@ -2338,7 +2390,7 @@ function PropertyDetailInner({
                 <span style={{ padding: "1px 5px", background: "#D1FAE5", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#065F46" }}>XLSX</span>
               </button>
               <button
-                onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType)}
+                onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType, { quickScreen: downloadQuickScreen })}
                 className="dl-btn"
                 style={{
                   padding: "6px 14px", borderRadius: 8,

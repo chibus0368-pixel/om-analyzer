@@ -120,7 +120,7 @@ export interface StandardizedBaseline {
 }
 
 /* ── Map property + fields -> calculator input ───────── */
-function buildInput(
+export function buildInput(
   property: Property,
   fields: ExtractedField[],
   baseline: StandardizedBaseline,

@@ -45,9 +45,9 @@ export default function DemographicsToggle({
         alignItems: "center",
         gap: 8,
         padding: "6px 10px 6px 8px",
-        background: enabled ? "#0F172A" : "#C49A3C",
-        color: enabled ? "#FFFFFF" : disabled ? "#7C6B3F" : "#1F2937",
-        border: enabled ? "1px solid #0F172A" : "1px solid #A17A2B",
+        background: enabled ? "#0F172A" : "#FFFFFF",
+        color: enabled ? "#FFFFFF" : disabled ? "#9CA3AF" : "#0F172A",
+        border: enabled ? "1px solid #0F172A" : "1.5px solid #0F172A",
         borderRadius: 999,
         fontFamily: "'Inter', system-ui, sans-serif",
         fontSize: 12,
@@ -57,7 +57,7 @@ export default function DemographicsToggle({
         opacity: disabled ? 0.6 : 1,
         boxShadow: enabled
           ? "0 2px 6px rgba(15,23,43,0.18)"
-          : "0 2px 6px rgba(164,122,43,0.35), 0 0 0 1px rgba(255,255,255,0.6) inset",
+          : "0 2px 8px rgba(15,23,43,0.22)",
         transition: "background 0.15s ease, color 0.15s ease, border-color 0.15s ease",
         whiteSpace: "nowrap",
       }}
@@ -70,7 +70,7 @@ export default function DemographicsToggle({
           width: 26,
           height: 14,
           borderRadius: 999,
-          background: enabled ? "#D4B255" : "rgba(15,23,43,0.25)",
+          background: enabled ? "#D4B255" : "#CBD5E1",
           transition: "background 0.15s ease",
           flexShrink: 0,
         }}
