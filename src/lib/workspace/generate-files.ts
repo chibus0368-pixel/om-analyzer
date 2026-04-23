@@ -513,13 +513,13 @@ export async function generateUnderwritingXLSX(
   const firstT = wsCF.getCell(totR, 2).address;
   const lastT  = wsCF.getCell(totR, 12).address;
   const lirr = wsCF.getCell(cr, 1); lirr.value = "Levered IRR"; lirr.font = boldLabel; lirr.fill = white; lirr.border = borders; lirr.alignment = { vertical: "middle", indent: 1 };
-  const cirr = wsCF.getCell(cr, 2); cirr.value = { formula: `IRR(${firstT}:${lastT})` }; cirr.numFmt = FMT_PCT; cirr.font = { ...greenFont, size: 12 }; cirr.fill = ltGreen; cirr.border = borders; cirr.alignment = { vertical: "middle", horizontal: "right" };
+  const cirr = wsCF.getCell(cr, 2); cirr.value = { formula: `IFERROR(IRR(${firstT}:${lastT}),"")` }; cirr.numFmt = FMT_PCT; cirr.font = { ...greenFont, size: 12 }; cirr.fill = ltGreen; cirr.border = borders; cirr.alignment = { vertical: "middle", horizontal: "right" };
   cr++;
   const lem = wsCF.getCell(cr, 1); lem.value = "Equity Multiple"; lem.font = boldLabel; lem.fill = white; lem.border = borders; lem.alignment = { vertical: "middle", indent: 1 };
   const firstCash = wsCF.getCell(cashR, 3).address;
   const lastCash  = wsCF.getCell(cashR, 12).address;
   const y10Exit   = wsCF.getCell(exitR, 12).address;
-  const cem = wsCF.getCell(cr, 2); cem.value = { formula: `(SUM(${firstCash}:${lastCash})+${y10Exit})/${uEquity}+1` }; cem.numFmt = FMT_MULT; cem.font = { ...greenFont, size: 12 }; cem.fill = ltGreen; cem.border = borders; cem.alignment = { vertical: "middle", horizontal: "right" };
+  const cem = wsCF.getCell(cr, 2); cem.value = { formula: `IFERROR((SUM(${firstCash}:${lastCash})+${y10Exit})/${uEquity}+1,"")` }; cem.numFmt = FMT_MULT; cem.font = { ...greenFont, size: 12 }; cem.fill = ltGreen; cem.border = borders; cem.alignment = { vertical: "middle", horizontal: "right" };
 
   // ================================================================
   // SHEET: Sensitivity — IRR matrix (Price × Exit Cap)
@@ -577,8 +577,18 @@ export async function generateUnderwritingXLSX(
     exitCaps.forEach((cap, i) => {
       const c = wsSens.getCell(sr, i + 2);
       const priceRef = `(${aPrice}*${pm})`;
-      // Unlevered IRR = (NOI/Price) yield + ((ExitValue/Price)^(1/N) - 1) capital appreciation component
-      const formula = `(${uNOI}/${priceRef})+((${uNOI}*(1+${aRentGr})^(${aHold}-1)/${cap}*(1-${aSellC}))/${priceRef})^(1/${aHold})-1`;
+      // Unlevered IRR approximation:
+      //   yield = NOI / Purchase_Price
+      //   exit  = NOI * (1+g)^(N-1) / exit_cap * (1 - sell_costs)
+      //   capital_component = (exit / price)^(1/N) - 1
+      //   IRR ≈ yield + capital_component
+      //
+      // Guarded: if NOI <= 0 (no income data extracted), the power term
+      // produces #NUM! because Excel can't raise a negative to a fraction.
+      // IFERROR → blank cell instead of a wall of #NUM!.
+      const exitVal = `(${uNOI}*(1+${aRentGr})^(${aHold}-1)/${cap}*(1-${aSellC}))`;
+      const irr = `(${uNOI}/${priceRef})+(${exitVal}/${priceRef})^(1/${aHold})-1`;
+      const formula = `IFERROR(IF(${uNOI}<=0,"",${irr}),"")`;
       c.value = { formula };
       c.numFmt = FMT_PCT1; c.border = borders; c.fill = rowFill; c.font = pm === 1.0 ? boldLabel : valFont;
       c.alignment = { vertical: "middle", horizontal: "right" };
