@@ -5227,9 +5227,30 @@ function downloadLiteBrief(d: any) {
   const tenants = d.tenants || [];
   const noi = Number(d.noiAdjusted || d.noiOm) || 0;
   const sf = Number(d.buildingSf) || 1;
+  const askPrice = Number(d.askingPrice) || 0;
+  const capOm = Number(d.capRateOm) || 0;
+  const occPct = Number(d.occupancyPct) || 0;
+  const dscrOm = Number(d.dscrOm) || 0;
+  const dscrAdj = Number(d.dscrAdjusted) || 0;
+  const debtService = Number(d.annualDebtService) || 0;
+  const wale = Number(d.wale) || 0;
+  const yearBuilt = Number(d.yearBuilt) || 0;
+  const assetType = String(d.assetType || "Retail");
 
   // Build signal class helper
   function sc(v: string): string { if (String(v).includes("🟢")) return "sg"; if (String(v).includes("🟡")) return "sy"; if (String(v).includes("🔴")) return "sr"; return ""; }
+
+  // Signal helper for metrics table
+  function metricSignal(metric: string): string {
+    const s = d.signals || {};
+    if (metric === "Entry Cap Rate" || metric === "Asking Price") return s.cap_rate ? `<span class="${sc(s.cap_rate)}">${s.cap_rate}</span>` : "";
+    if (metric === "DSCR (OM)" || metric === "DSCR (Adjusted)") return s.dscr ? `<span class="${sc(s.dscr)}">${s.dscr}</span>` : "";
+    if (metric === "Occupancy") return s.occupancy ? `<span class="${sc(s.occupancy)}">${s.occupancy}</span>` : "";
+    if (metric === "Breakeven Occupancy") return s.occupancy ? `<span class="${sc(s.occupancy)}">${s.occupancy}</span>` : "";
+    if (metric === "Price / SF") return s.basis ? `<span class="${sc(s.basis)}">${s.basis}</span>` : "";
+    if (metric === "Cash-on-Cash") return s.cap_rate ? `<span class="${sc(s.cap_rate)}">${s.cap_rate}</span>` : "";
+    return "";
+  }
 
   // Deal snapshot bullets
   const snap: string[] = [];
@@ -5241,20 +5262,22 @@ function downloadLiteBrief(d: any) {
   if (d.wale) snap.push(`WALE: ${d.wale} years`);
   if (d.traffic) snap.push(d.traffic);
 
-  // Metrics table rows
-  const metrics = [
+  // Metrics table rows - now with Signal column
+  const metrics: [string, string][] = [
     ["Asking Price", fmt$(d.askingPrice)],
     ["Price / SF", d.pricePerSf ? `$${Number(d.pricePerSf).toFixed(2)}/SF` : ""],
     ["GLA", d.buildingSf ? `${Math.round(Number(d.buildingSf)).toLocaleString()} SF` : ""],
     ["Occupancy", d.occupancyPct ? `${d.occupancyPct}%` : ""],
     ["In-Place NOI", fmt$(d.noiOm)],
     ["Adjusted NOI", fmt$(d.noiAdjusted)],
+    ["Entry Cap Rate", d.capRateOm ? `${Number(d.capRateOm).toFixed(2)}%` : ""],
     ["DSCR (OM)", d.dscrOm ? `${Number(d.dscrOm).toFixed(2)}x` : ""],
     ["DSCR (Adjusted)", d.dscrAdjusted ? `${Number(d.dscrAdjusted).toFixed(2)}x` : ""],
     ["Cash-on-Cash", d.cashOnCashOm ? `${Number(d.cashOnCashOm).toFixed(2)}%` : ""],
     ["Debt Yield", d.debtYield ? `${Number(d.debtYield).toFixed(2)}%` : ""],
     ["Breakeven Occupancy", d.breakevenOccupancy ? `${Number(d.breakevenOccupancy).toFixed(1)}%` : ""],
-  ].filter(([, v]) => v);
+    ["Debt Service", d.annualDebtService ? fmt$(d.annualDebtService) : ""],
+  ].filter(([, v]) => v) as [string, string][];
 
   // Signal rows
   const signals = [
@@ -5264,11 +5287,80 @@ function downloadLiteBrief(d: any) {
     ["Leasing Rollover", d.signals?.rollover_risk],
   ].filter(([, v]) => v) as [string, string][];
 
+  // Strengths + Risks from brief JSON
+  let briefStrengths: string[] = [];
+  let briefRisks: string[] = [];
+  let briefOverview = "";
+  try {
+    const bObj = typeof d.brief === "string" ? JSON.parse(d.brief) : d.brief;
+    if (bObj && typeof bObj === "object") {
+      if (Array.isArray(bObj.strengths)) briefStrengths = bObj.strengths.map((x: any) => String(x).trim()).filter(Boolean);
+      if (Array.isArray(bObj.concerns)) briefRisks = bObj.concerns.map((x: any) => String(x).trim()).filter(Boolean);
+      if (typeof bObj.overview === "string") briefOverview = bObj.overview.trim();
+    }
+  } catch {
+    // Brief is plain text, not JSON
+  }
+
   // Cap scenarios
   const capRows: string[] = [];
   for (let cr = 7; cr <= 10; cr += 0.5) {
     const iv = noi / (cr / 100);
-    capRows.push(`<tr><td><b>${cr.toFixed(1)}%</b></td><td>${fmt$(iv)}</td><td>$${(iv / sf).toFixed(0)}/SF</td></tr>`);
+    const sigClass = cr <= 7.5 ? "sr" : cr <= 8.5 ? "sy" : "sg";
+    const sigLabel = cr <= 7.5 ? "Aggressive" : cr <= 8.5 ? "Fair" : "Attractive";
+    capRows.push(`<tr><td><b>${cr.toFixed(1)}%</b></td><td>${fmt$(iv)}</td><td>$${(iv / sf).toFixed(0)}/SF</td><td class="${sigClass}">${sigLabel}</td></tr>`);
+  }
+
+  // Breakeven stress tests
+  const riskTenants = tenants.filter((t: any) => {
+    const st = String(t.status || "").toLowerCase();
+    return st.includes("expir") || st.includes("vacant") || st.includes("mtm") || st.includes("risk");
+  });
+  let stressTestHtml = "";
+  if (riskTenants.length > 0 && noi > 0) {
+    const totalRiskRent = riskTenants.reduce((sum: number, t: any) => sum + (Number(t.rent) || 0), 0);
+    const totalRiskSf = riskTenants.reduce((sum: number, t: any) => sum + (Number(t.sf) || 0), 0);
+    const riskNames = riskTenants.map((t: any) => t.name).join(", ");
+    const stressNoi = noi - totalRiskRent;
+    const stressDscr = debtService > 0 ? stressNoi / debtService : 0;
+    stressTestHtml = `
+<h3>Stress Test: At-Risk Tenants Leave</h3>
+<p>If at-risk tenants (${riskNames}) vacate, ${totalRiskSf > 0 ? `${totalRiskSf.toLocaleString()} SF and ` : ""}${fmt$(totalRiskRent)} in annual rent is lost. NOI drops to approximately ${fmt$(stressNoi)}${stressDscr > 0 ? ` and DSCR ${stressDscr < 1.0 ? `<b class="sr">collapses to ${stressDscr.toFixed(2)}x (below 1.0x)</b>` : `falls to ${stressDscr.toFixed(2)}x`}` : ""}.</p>`;
+  }
+
+  // Underwriting notes
+  const uwNotes: string[] = [];
+  if (d.debtRate) uwNotes.push(`${Number(d.debtRate).toFixed(2)}% debt rate`);
+  else uwNotes.push("7.25% assumed debt rate");
+  uwNotes.push("25-year amortization");
+  if (d.ltvPct) uwNotes.push(`${Number(d.ltvPct).toFixed(0)}% LTV`);
+  else uwNotes.push("65% LTV");
+  uwNotes.push("2% closing costs");
+  uwNotes.push("6% management fee on EGI");
+  uwNotes.push("$0.25/SF reserves");
+  const uwNotesHtml = `<p>Debt assumed at ${uwNotes.join(", ")}. ${d.noiAdjusted ? "Adjusted NOI reflects management fee and reserves not included in the OM." : "No immediate capex budgeted (insufficient data)."}</p>`;
+
+  // Missing data section
+  const missing: string[] = [];
+  if (!d.askingPrice) missing.push("Asking price / seller expectations");
+  if (!d.noiOm && !d.noiAdjusted) missing.push("Operating income (NOI)");
+  if (tenants.length === 0) missing.push("Tenant details and lease abstracts");
+  if (!d.yearBuilt) missing.push("Year built and property condition");
+  missing.push("Rent escalation schedule for each tenant");
+  missing.push("Environmental / survey status");
+  missing.push("Deferred maintenance and capex history");
+  missing.push("Recent or planned capital improvements");
+
+  // Market context
+  let marketCtx = "";
+  if (assetType.toLowerCase().includes("retail") || assetType.toLowerCase().includes("strip")) {
+    marketCtx = `<p>Retail cap rates have widened 75-125 bps since 2022 as interest rates repriced debt. Neighborhood centers with necessity-based tenants have held up better than discretionary retail. Evaluate anchor stability, co-tenancy protections, and tenant sales performance. Rent growth in strong retail submarkets is running 2-4% per year; weak submarkets are flat to down.</p>`;
+  } else if (assetType.toLowerCase().includes("industrial")) {
+    marketCtx = `<p>Industrial remains the strongest-performing CRE sector, though cap rates have moved 50-100 bps off 2022 lows. Class A distribution with modern specs continues to command premiums. Rent growth varies dramatically by submarket. Underwrite conservative rent growth unless you have submarket-specific evidence.</p>`;
+  } else if (assetType.toLowerCase().includes("office")) {
+    marketCtx = `<p>Office remains the most challenging sector post-pandemic. Sublease space is elevated in most markets, and TI requirements have increased materially. Medical office and mission-critical occupied office has held value; traditional multi-tenant office has experienced both occupancy and rent softening.</p>`;
+  } else {
+    marketCtx = `<p>CRE cap rates have widened as interest rates repriced debt since 2022. Evaluate this property's income stability, tenant credit quality, and submarket rent trends before finalizing underwriting assumptions.</p>`;
   }
 
   const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8">
@@ -5292,32 +5384,48 @@ td{padding:5px 10px;border:1px solid #D8DFE9}
 .sy{color:#D97706;font-weight:600}
 .sr{color:#DC2626;font-weight:600}
 .note{font-size:9pt;color:#8899B0;font-style:italic}
+.strength-item{margin:4px 0;line-height:1.5}
+.concern-item{margin:4px 0;line-height:1.5}
+.callout{background:#FFFBEB;border-left:3px solid #D97706;padding:10px 14px;margin:14px 0;font-size:10pt}
 .footer{margin-top:30px;padding-top:10px;border-top:1px solid #D8DFE9;font-size:8.5pt;color:#8899B0}
+.disclaimer{font-size:9pt;color:#6B7280;line-height:1.6;font-style:italic;margin-top:8px}
 </style></head><body>
 
 <h1>FIRST-PASS UNDERWRITING BRIEF</h1>
 <h2 style="border:none;margin-top:6px;font-size:15pt;">${pName}</h2>
 <p class="loc">${loc}</p>
-<p class="sub">First-pass underwriting screen. Directional only, not a formal recommendation.</p>
+<p class="sub">First-pass underwriting screen based on the provided documents and clearly labeled assumptions. Directional assessment only, not a final investment model.</p>
 
 ${snap.length > 0 ? `<h2>Deal Snapshot</h2><ul>${snap.map(s => `<li>${s}</li>`).join("")}</ul>` : ""}
 
-<h2>Initial Assessment</h2>
-${(typeof d.brief === "string" ? d.brief : Array.isArray(d.brief) ? d.brief.join("\n") : String(d.brief || "No assessment available.")).split("\n").map((p: string) => p.trim() ? `<p>${p}</p>` : "").join("")}
+<h2>Initial Read</h2>
+${briefOverview ? `<p>${briefOverview}</p>` : (typeof d.brief === "string" ? d.brief : Array.isArray(d.brief) ? d.brief.join("\n") : String(d.brief || "No assessment available.")).split("\n").map((p: string) => p.trim() ? `<p>${p}</p>` : "").join("")}
 
 <h2>Key Metrics</h2>
 <table>
-<tr><th>Metric</th><th>Value</th></tr>
-${metrics.map(([l, v], i) => `<tr${i % 2 ? ' class="alt"' : ""}><td>${l}</td><td class="val">${v}</td></tr>`).join("")}
+<tr><th>Metric</th><th>Value</th><th>Signal</th></tr>
+${metrics.map(([l, v], i) => `<tr${i % 2 ? ' class="alt"' : ""}><td>${l}</td><td class="val">${v}</td><td>${metricSignal(l)}</td></tr>`).join("")}
 </table>
 
-<h2>Signal Assessment</h2>
+<h2>Visual Indicators Summary</h2>
 <table>
 <tr><th>Category</th><th>Signal</th></tr>
 ${signals.map(([l, v], i) => `<tr${i % 2 ? ' class="alt"' : ""}><td>${l}</td><td class="${sc(v)}">${v}</td></tr>`).join("")}
 </table>
 
-${tenants.length > 0 ? `<h2>Tenant Summary</h2>
+${briefStrengths.length > 0 ? `<h2>Strengths</h2>
+<ul>${briefStrengths.map(s => `<li>${s}</li>`).join("")}</ul>` : ""}
+
+${briefRisks.length > 0 ? `<h2>Risks / Open Questions</h2>
+<ul>${briefRisks.map(r => `<li>${r}</li>`).join("")}</ul>` : ""}
+
+<h2>Underwriting Notes</h2>
+${uwNotesHtml}
+
+<h2>Market Context</h2>
+${marketCtx}
+
+${tenants.length > 0 ? `<h2>Tenant Rollover Detail</h2>
 <table>
 <tr><th>Tenant</th><th>SF</th><th>Annual Rent</th><th>Type</th><th>Lease End</th><th>Status</th></tr>
 ${tenants.map((t: any, i: number) => {
@@ -5326,24 +5434,50 @@ ${tenants.map((t: any, i: number) => {
 }).join("")}
 </table>` : ""}
 
-<h2>Cap Rate Scenarios</h2>
+<h2>Cap Rate Scenario Table</h2>
 <p class="note">Based on ${d.noiAdjusted ? "adjusted" : "in-place"} NOI of ${fmt$(noi)}</p>
 <table>
-<tr><th>Cap Rate</th><th>Implied Value</th><th>Price/SF</th></tr>
+<tr><th>Cap Rate</th><th>Implied Value</th><th>Price/SF</th><th>Signal</th></tr>
 ${capRows.join("")}
 </table>
 
 <h2>Breakeven Analysis</h2>
 <table>
 <tr><th>Metric</th><th>Value</th></tr>
-<tr><td>Breakeven Occupancy</td><td class="val">${d.breakevenOccupancy ? `${Number(d.breakevenOccupancy).toFixed(1)}%` : "--"}</td></tr>
-<tr class="alt"><td>Breakeven Rent / SF</td><td class="val">${d.breakevenRentPerSf ? `$${Number(d.breakevenRentPerSf).toFixed(2)}` : "--"}</td></tr>
+${debtService > 0 ? `<tr><td>Debt Service to Cover (1.00x DSCR)</td><td class="val">${fmt$(debtService)}</td></tr>
+<tr class="alt"><td>Debt Service to Cover (1.20x DSCR)</td><td class="val">${fmt$(debtService * 1.2)}</td></tr>
+<tr><td>Debt Service to Cover (1.35x DSCR)</td><td class="val">${fmt$(debtService * 1.35)}</td></tr>` : ""}
+<tr${debtService > 0 ? ' class="alt"' : ""}><td>Breakeven Occupancy</td><td class="val">${d.breakevenOccupancy ? `${Number(d.breakevenOccupancy).toFixed(1)}%` : "--"}</td></tr>
+<tr><td>Breakeven Rent / SF</td><td class="val">${d.breakevenRentPerSf ? `$${Number(d.breakevenRentPerSf).toFixed(2)}` : "--"}</td></tr>
 </table>
+${stressTestHtml}
 
-${d.signals?.recommendation ? `<h2>First-Pass Conclusion</h2>
-<p><b class="${sc(d.signals.recommendation)}">${d.signals.recommendation}</b></p>` : ""}
+<h2>Missing Data / Assumptions</h2>
+<p><b>Missing - must obtain before deeper underwriting:</b></p>
+<ul>${missing.map(m => `<li>${m}</li>`).join("")}</ul>
+<p><b>Assumed for first pass:</b></p>
+<ul>
+<li>${capOm > 0 ? `${capOm.toFixed(1)}%` : "8.0%"} entry cap for base case pricing</li>
+<li>7.25% debt rate, 25-yr amort, 65% LTV</li>
+<li>2% closing costs</li>
+<li>6% management fee on EGI</li>
+<li>$0.25/SF reserves</li>
+<li>No immediate capex</li>
+</ul>
 
-<p class="footer">Generated by Deal Signals · dealsignals.app</p>
+<h2>First-Pass Conclusion</h2>
+${d.signals?.overall ? `<h3>Overall Signal</h3><p class="${sc(d.signals.overall)}"><b>${d.signals.overall}</b></p>` : ""}
+${d.signals?.recommendation ? `<h3>Recommendation</h3><p><b class="${sc(d.signals.recommendation)}">${d.signals.recommendation}</b></p>` : ""}
+
+<h2 style="margin-top:32px;font-size:11pt;color:#6B7280;border-bottom:1px solid #E5E7EB;text-transform:uppercase;letter-spacing:0.08em">Disclaimer</h2>
+<p class="disclaimer">This First-Pass Brief is automated general guidance produced by Deal Signals. It is NOT investment, legal, tax, accounting, or financial advice, and it is not an offer, solicitation, or recommendation to buy, sell, lease, finance, or otherwise transact in any property or security. Figures are derived from uploaded documents and public data sources that may be incomplete, out-of-date, or inaccurate. You are solely responsible for verifying every material fact and conducting full due diligence with qualified professionals before committing any capital. Use at your own risk.</p>
+
+<div style="margin-top:30px;padding-top:14px;border-top:1px solid #D8DFE9;text-align:center;">
+<p style="font-size:10pt;font-weight:700;color:#253352;margin:0;">Deal Signals</p>
+<p style="font-size:9pt;color:#6B7280;margin:2px 0;">Analyze CRE deals with AI-powered intelligence. Get real signals, not guesses.</p>
+<p style="font-size:9pt;margin:4px 0;"><a href="https://www.dealsignals.app" style="color:#3B5998;text-decoration:none;">www.dealsignals.app</a></p>
+<p style="font-size:8pt;color:#9CA3AF;margin:8px 0 0 0;font-style:italic;">Generated by Deal Signals</p>
+</div>
 </body></html>`;
 
   const blob = new Blob([html], { type: "application/msword" });

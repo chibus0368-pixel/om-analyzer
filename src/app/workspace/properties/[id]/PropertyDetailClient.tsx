@@ -330,7 +330,15 @@ function EmailPropertyButton({
     try {
       // 1. Generate attachments client-side (reuses existing ExcelJS CDN + DOC builder)
       const xlsxResult = await generateUnderwritingXLSX(property.propertyName, fields, wsType, { returnBlob: true });
-      const briefResult = generateBriefDownload(property.propertyName, brief, fields, wsType, { returnBlob: true, quickScreen: quickScreenReport });
+      // Extract tenants from fields for the brief
+      const tenantFields = fields.filter((f: ExtractedField) => f.fieldGroup === "rent_roll" && f.fieldName.match(/^tenant_\d+_name$/));
+      const briefTenants = tenantFields.map((f: ExtractedField) => {
+        const num = f.fieldName.match(/^tenant_(\d+)_name$/)?.[1];
+        if (!num) return null;
+        const gf = (name: string) => { const fld = fields.find((x: ExtractedField) => x.fieldGroup === "rent_roll" && x.fieldName === name); return fld ? String(fld.normalizedValue || fld.rawValue || "") : ""; };
+        return { name: String(f.normalizedValue || f.rawValue), sf: gf(`tenant_${num}_sf`), rent: gf(`tenant_${num}_rent`), type: gf(`tenant_${num}_type`), end: gf(`tenant_${num}_lease_end`), status: gf(`tenant_${num}_status`) };
+      }).filter(Boolean);
+      const briefResult = generateBriefDownload(property.propertyName, brief, fields, wsType, { returnBlob: true, quickScreen: quickScreenReport, tenants: briefTenants });
 
       if (!xlsxResult || !briefResult) {
         throw new Error("Failed to build attachments");
@@ -1975,7 +1983,7 @@ function PropertyDetailInner({
               <span style={{ padding: "1px 5px", background: "#D1FAE5", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#065F46" }}>XLSX</span>
             </button>
             <button
-              onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType, { quickScreen: downloadQuickScreen })}
+              onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType, { quickScreen: downloadQuickScreen, tenants })}
               className="dl-btn"
               style={{
                 padding: "6px 14px", borderRadius: 8,
@@ -2394,7 +2402,7 @@ function PropertyDetailInner({
                 <span style={{ padding: "1px 5px", background: "#D1FAE5", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#065F46" }}>XLSX</span>
               </button>
               <button
-                onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType, { quickScreen: downloadQuickScreen })}
+                onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType, { quickScreen: downloadQuickScreen, tenants })}
                 className="dl-btn"
                 style={{
                   padding: "6px 14px", borderRadius: 8,

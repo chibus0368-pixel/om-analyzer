@@ -1187,13 +1187,65 @@ export function generateBriefDownload(
   brief: string,
   fields: ExtractedField[],
   analysisType: AnalysisType = "retail",
-  options?: { returnBlob?: boolean; quickScreen?: QuickScreenReport | null }
+  options?: { returnBlob?: boolean; quickScreen?: QuickScreenReport | null; tenants?: any[] }
 ): void | { blob: Blob; filename: string } {
   const quickScreen = options?.quickScreen || null;
+  const tenantData = options?.tenants || [];
   const g = (group: string, name: string) => getField(fields, group, name);
   const typeLabel = analysisType === "retail" ? "Retail" : analysisType === "industrial" ? "Industrial" : analysisType === "office" ? "Office" : "Land";
 
-  // === Build metrics table based on asset type ===
+  // === Core numbers ===
+  const briefAskPrice = Number(g("pricing_deal_terms", "asking_price")) || 0;
+  const briefNOI = Number(g("expenses", "noi_om")) || 0;
+  const briefNOIAdj = Number(g("expenses", "noi_adjusted")) || 0;
+  const briefCap = Number(g("pricing_deal_terms", "cap_rate_om")) || 0;
+  const briefOcc = Number(g("property_basics", "occupancy_pct")) || 0;
+  const briefWale = Number(g("property_basics", "wale_years")) || Number(g("rent_roll", "weighted_avg_lease_term")) || 0;
+  const briefSF = Number(g("property_basics", "building_sf")) || 0;
+  const briefYear = Number(g("property_basics", "year_built")) || 0;
+  const briefTenantCount = Number(g("property_basics", "tenant_count")) || 0;
+  const briefCity = g("property_basics", "city") || "";
+  const briefState = g("property_basics", "state") || "";
+  const briefLoc = [briefCity, briefState].filter(Boolean).join(", ");
+  const briefAddress = g("property_basics", "address") || "";
+  const fullLoc = [briefAddress, briefCity, briefState].filter(Boolean).join(", ");
+  const briefDebtService = Number(g("debt_assumptions", "annual_debt_service")) || 0;
+  const briefDscrOm = Number(g("debt_assumptions", "dscr_om")) || 0;
+  const briefDscrAdj = Number(g("debt_assumptions", "dscr_adjusted")) || 0;
+  const briefCoC = Number(g("returns", "cash_on_cash_om")) || 0;
+  const briefDebtYield = Number(g("debt_assumptions", "debt_yield")) || 0;
+  const briefBreakeven = Number(g("returns", "breakeven_occupancy")) || 0;
+  const noi = briefNOIAdj || briefNOI || 0;
+
+  // Categorize the deal for thesis framing
+  const isStabilized = briefOcc >= 90 && briefWale >= 3;
+  const isLeaseUp = briefOcc > 0 && briefOcc < 85;
+  const isValueAdd = briefOcc >= 85 && briefOcc < 93 && briefCap >= 7;
+  const dealCategory = analysisType === "land" ? "Development" : isStabilized ? "Stabilized Core / Core-Plus" : isLeaseUp ? "Lease-Up / Value-Add" : isValueAdd ? "Value-Add" : "Transitional";
+
+  // Signal class helper
+  function sigClass(val: string): string {
+    const v = String(val || "").toLowerCase();
+    if (v.includes("green") || v.includes("🟢") || v.includes("strong")) return "sg";
+    if (v.includes("yellow") || v.includes("🟡") || v.includes("moderate") || v.includes("fair")) return "sy";
+    if (v.includes("red") || v.includes("🔴") || v.includes("weak") || v.includes("poor")) return "sr";
+    return "";
+  }
+
+  // === Build metrics table based on asset type (now with Signal column) ===
+  function metricSignal(metric: string): string {
+    const capSig = g("signals", "cap_rate_signal") || "";
+    const dscrSig = g("signals", "dscr_signal") || "";
+    const occSig = g("signals", "occupancy_signal") || "";
+    const basisSig = g("signals", "basis_signal") || "";
+    if (metric.includes("Cap") || metric === "Asking Price" || metric.includes("Cash-on-Cash")) return capSig ? `<span class="${sigClass(capSig)}">${capSig}</span>` : "";
+    if (metric.includes("DSCR")) return dscrSig ? `<span class="${sigClass(dscrSig)}">${dscrSig}</span>` : "";
+    if (metric.includes("Occupancy") && !metric.includes("Breakeven")) return occSig ? `<span class="${sigClass(occSig)}">${occSig}</span>` : "";
+    if (metric.includes("Price / SF") || metric.includes("Basis")) return basisSig ? `<span class="${sigClass(basisSig)}">${basisSig}</span>` : "";
+    if (metric.includes("Breakeven")) return occSig ? `<span class="${sigClass(occSig)}">${occSig}</span>` : "";
+    return "";
+  }
+
   let metrics: [string, string][];
 
   if (analysisType === "land") {
@@ -1208,63 +1260,44 @@ export function generateBriefDownload(
       ["Utilities", g("land_addons", "utilities_signal") || ""],
       ["Power Proximity", g("land_utilities", "power_proximity") || g("land_addons", "power_proximity_signal") || ""],
     ].filter(([, v]) => v) as [string, string][];
-  } else if (analysisType === "industrial") {
-    metrics = [
-      ["Asking Price", fmt$(g("pricing_deal_terms", "asking_price"))],
-      ["Price / SF", g("pricing_deal_terms", "price_per_sf") ? "$" + Number(g("pricing_deal_terms", "price_per_sf")).toFixed(2) + "/SF" : ""],
-      ["GLA", g("property_basics", "building_sf") ? Math.round(Number(g("property_basics", "building_sf"))).toLocaleString() + " SF" : ""],
-      ["Occupancy", g("property_basics", "occupancy_pct") ? g("property_basics", "occupancy_pct") + "%" : ""],
-      ["Clear Height", g("industrial_addons", "clear_height") || ""],
-      ["Loading Type", g("industrial_addons", "loading_type") || ""],
-      ["Dock / Door Count", g("industrial_addons", "loading_count") || ""],
-      ["Trailer Parking", g("industrial_addons", "trailer_parking") || ""],
-      ["Office Finish %", g("industrial_addons", "office_finish_pct") || ""],
-      ["Tenant Type", g("industrial_addons", "industrial_tenant_type") || ""],
-      ["NOI (OM)", fmt$(g("expenses", "noi_om"))],
-      ["NOI (Adjusted)", fmt$(g("expenses", "noi_adjusted"))],
-      ["Entry Cap (OM)", g("pricing_deal_terms", "cap_rate_om") ? Number(g("pricing_deal_terms", "cap_rate_om")).toFixed(2) + "%" : ""],
-      ["DSCR (OM)", g("debt_assumptions", "dscr_om") ? Number(g("debt_assumptions", "dscr_om")).toFixed(2) + "x" : ""],
-      ["DSCR (Adjusted)", g("debt_assumptions", "dscr_adjusted") ? Number(g("debt_assumptions", "dscr_adjusted")).toFixed(2) + "x" : ""],
-      ["Cash-on-Cash (OM)", g("returns", "cash_on_cash_om") ? Number(g("returns", "cash_on_cash_om")).toFixed(2) + "%" : ""],
-      ["Debt Yield", g("debt_assumptions", "debt_yield") ? Number(g("debt_assumptions", "debt_yield")).toFixed(2) + "%" : ""],
-    ].filter(([, v]) => v) as [string, string][];
-  } else if (analysisType === "office") {
-    metrics = [
-      ["Asking Price", fmt$(g("pricing_deal_terms", "asking_price"))],
-      ["Price / SF", g("pricing_deal_terms", "price_per_sf") ? "$" + Number(g("pricing_deal_terms", "price_per_sf")).toFixed(2) + "/SF" : ""],
-      ["GLA", g("property_basics", "building_sf") ? Math.round(Number(g("property_basics", "building_sf"))).toLocaleString() + " SF" : ""],
-      ["Occupancy", g("property_basics", "occupancy_pct") ? g("property_basics", "occupancy_pct") + "%" : ""],
-      ["Suite Count", g("office_addons", "suite_count") || ""],
-      ["Medical Office", g("office_addons", "medical_flag") === true ? "Yes" : g("office_addons", "medical_flag") === false ? "No" : ""],
-      ["Major Tenant Mix", g("office_addons", "major_tenant_mix") || ""],
-      ["Parking Ratio", g("office_addons", "parking_ratio") || ""],
-      ["TI/LC Signal", g("office_addons", "ti_lc_signal") || ""],
-      ["Near-Term Expirations", g("office_addons", "lease_expirations_near_term") || ""],
-      ["NOI (OM)", fmt$(g("expenses", "noi_om"))],
-      ["NOI (Adjusted)", fmt$(g("expenses", "noi_adjusted"))],
-      ["Entry Cap (OM)", g("pricing_deal_terms", "cap_rate_om") ? Number(g("pricing_deal_terms", "cap_rate_om")).toFixed(2) + "%" : ""],
-      ["DSCR (OM)", g("debt_assumptions", "dscr_om") ? Number(g("debt_assumptions", "dscr_om")).toFixed(2) + "x" : ""],
-      ["DSCR (Adjusted)", g("debt_assumptions", "dscr_adjusted") ? Number(g("debt_assumptions", "dscr_adjusted")).toFixed(2) + "x" : ""],
-      ["Cash-on-Cash (OM)", g("returns", "cash_on_cash_om") ? Number(g("returns", "cash_on_cash_om")).toFixed(2) + "%" : ""],
-      ["Breakeven Occupancy", g("returns", "breakeven_occupancy") ? Number(g("returns", "breakeven_occupancy")).toFixed(1) + "%" : ""],
-    ].filter(([, v]) => v) as [string, string][];
   } else {
-    // Retail (unchanged)
     metrics = [
       ["Asking Price", fmt$(g("pricing_deal_terms", "asking_price"))],
       ["Price / SF", g("pricing_deal_terms", "price_per_sf") ? "$" + Number(g("pricing_deal_terms", "price_per_sf")).toFixed(2) + "/SF" : ""],
-      ["GLA", g("property_basics", "building_sf") ? Math.round(Number(g("property_basics", "building_sf"))).toLocaleString() + " SF" : ""],
-      ["Occupancy", g("property_basics", "occupancy_pct") ? g("property_basics", "occupancy_pct") + "%" : ""],
-      ["NOI (OM)", fmt$(g("expenses", "noi_om"))],
-      ["NOI (Adjusted)", fmt$(g("expenses", "noi_adjusted"))],
-      ["Entry Cap (OM)", g("pricing_deal_terms", "cap_rate_om") ? Number(g("pricing_deal_terms", "cap_rate_om")).toFixed(2) + "%" : ""],
-      ["DSCR (OM)", g("debt_assumptions", "dscr_om") ? Number(g("debt_assumptions", "dscr_om")).toFixed(2) + "x" : ""],
-      ["DSCR (Adjusted)", g("debt_assumptions", "dscr_adjusted") ? Number(g("debt_assumptions", "dscr_adjusted")).toFixed(2) + "x" : ""],
-      ["Cash-on-Cash (OM)", g("returns", "cash_on_cash_om") ? Number(g("returns", "cash_on_cash_om")).toFixed(2) + "%" : ""],
-      ["Breakeven Occupancy", g("returns", "breakeven_occupancy") ? Number(g("returns", "breakeven_occupancy")).toFixed(1) + "%" : ""],
-      ["Debt Yield", g("debt_assumptions", "debt_yield") ? Number(g("debt_assumptions", "debt_yield")).toFixed(2) + "%" : ""],
+      ["GLA", briefSF ? Math.round(briefSF).toLocaleString() + " SF" : ""],
+      ["Occupancy", briefOcc ? briefOcc + "%" : ""],
+      ["In-Place NOI (OM)", fmt$(g("expenses", "noi_om"))],
+      ["Adjusted NOI", fmt$(g("expenses", "noi_adjusted"))],
+      ["NOI / SF (in-place)", briefNOI > 0 && briefSF > 0 ? "$" + (briefNOI / briefSF).toFixed(2) : ""],
+      ["NOI / SF (adjusted)", briefNOIAdj > 0 && briefSF > 0 ? "$" + (briefNOIAdj / briefSF).toFixed(2) : ""],
+      ["Entry Cap (OM)", briefCap ? briefCap.toFixed(2) + "%" : ""],
+      ["DSCR (OM)", briefDscrOm ? briefDscrOm.toFixed(2) + "x" : ""],
+      ["DSCR (Adjusted)", briefDscrAdj ? briefDscrAdj.toFixed(2) + "x" : ""],
+      ["Cash-on-Cash (OM)", briefCoC ? briefCoC.toFixed(2) + "%" : ""],
+      ["Debt Yield", briefDebtYield ? briefDebtYield.toFixed(2) + "%" : ""],
       ["Debt Service", fmt$(g("debt_assumptions", "annual_debt_service"))],
+      ["Breakeven Occupancy", briefBreakeven ? briefBreakeven.toFixed(1) + "%" : ""],
     ].filter(([, v]) => v) as [string, string][];
+
+    // Add industrial/office specific metrics
+    if (analysisType === "industrial") {
+      const indMetrics: [string, string][] = [
+        ["Clear Height", g("industrial_addons", "clear_height") || ""],
+        ["Loading Type", g("industrial_addons", "loading_type") || ""],
+        ["Dock / Door Count", g("industrial_addons", "loading_count") || ""],
+        ["Trailer Parking", g("industrial_addons", "trailer_parking") || ""],
+        ["Office Finish %", g("industrial_addons", "office_finish_pct") || ""],
+      ].filter(([, v]) => v) as [string, string][];
+      metrics = [...metrics, ...indMetrics];
+    } else if (analysisType === "office") {
+      const offMetrics: [string, string][] = [
+        ["Suite Count", g("office_addons", "suite_count") || ""],
+        ["Parking Ratio", g("office_addons", "parking_ratio") || ""],
+        ["TI/LC Signal", g("office_addons", "ti_lc_signal") || ""],
+        ["Near-Term Expirations", g("office_addons", "lease_expirations_near_term") || ""],
+      ].filter(([, v]) => v) as [string, string][];
+      metrics = [...metrics, ...offMetrics];
+    }
   }
 
   // === Build signals table based on asset type ===
@@ -1315,85 +1348,16 @@ export function generateBriefDownload(
     ].filter(([, v]) => v) as [string, string][];
   }
 
-  // === Build type-specific addon section ===
-  let addonSection = "";
-
-  if (analysisType === "industrial") {
-    const addonRows = [
-      ["Clear Height", g("industrial_addons", "clear_height")],
-      ["Loading Type", g("industrial_addons", "loading_type")],
-      ["Dock / Door Count", g("industrial_addons", "loading_count")],
-      ["Trailer Parking", g("industrial_addons", "trailer_parking")],
-      ["Office Finish %", g("industrial_addons", "office_finish_pct")],
-      ["Tenant Type", g("industrial_addons", "industrial_tenant_type")],
-      ["Notes", g("industrial_addons", "industrial_notes")],
-    ].filter(([, v]) => v);
-
-    if (addonRows.length > 0) {
-      addonSection = `
-<h2>Industrial Property Details</h2>
-<table>
-<tr><th>Attribute</th><th>Value</th></tr>
-${addonRows.map(([label, val]) => `<tr><td>${label}</td><td class="metric-val">${val}</td></tr>`).join("\n")}
-</table>`;
-    }
-  } else if (analysisType === "office") {
-    const addonRows = [
-      ["Suite Count", g("office_addons", "suite_count")],
-      ["Medical Office", g("office_addons", "medical_flag") === true ? "Yes" : g("office_addons", "medical_flag") === false ? "No" : null],
-      ["Major Tenant Mix", g("office_addons", "major_tenant_mix")],
-      ["Parking Ratio", g("office_addons", "parking_ratio")],
-      ["TI/LC Signal", g("office_addons", "ti_lc_signal")],
-      ["Near-Term Expirations", g("office_addons", "lease_expirations_near_term")],
-      ["Notes", g("office_addons", "office_notes")],
-    ].filter(([, v]) => v);
-
-    if (addonRows.length > 0) {
-      addonSection = `
-<h2>Office Property Details</h2>
-<table>
-<tr><th>Attribute</th><th>Value</th></tr>
-${addonRows.map(([label, val]) => `<tr><td>${label}</td><td class="metric-val">${val}</td></tr>`).join("\n")}
-</table>`;
-    }
-  } else if (analysisType === "land") {
-    const addonRows = [
-      ["Usable Acres", g("land_addons", "usable_acres")],
-      ["Zoning", g("land_addons", "zoning")],
-      ["Planned Use", g("land_addons", "planned_use")],
-      ["Frontage", g("land_addons", "frontage_signal")],
-      ["Access", g("land_addons", "access_signal")],
-      ["Utilities", g("land_addons", "utilities_signal")],
-      ["Power Proximity", g("land_addons", "power_proximity_signal")],
-      ["Notes", g("land_addons", "land_notes")],
-    ].filter(([, v]) => v);
-
-    if (addonRows.length > 0) {
-      addonSection = `
-<h2>Site Characteristics</h2>
-<table>
-<tr><th>Attribute</th><th>Value</th></tr>
-${addonRows.map(([label, val]) => `<tr><td>${label}</td><td class="metric-val">${val}</td></tr>`).join("\n")}
-</table>`;
-    }
-  }
-
-  // === Build the brief title based on type ===
+  // === Build the brief title ===
   const briefTitle = analysisType === "land"
     ? "First-Pass Land Analysis Brief"
     : `First-Pass ${typeLabel} Underwriting Brief`;
 
-  const disclaimer = analysisType === "land"
+  const disclaimerText = analysisType === "land"
     ? "This is a first-pass land analysis based on the provided documents and clearly labeled assumptions. Directional assessment only - not a final acquisition model."
     : "This is a first-pass underwriting screen based on the provided documents and clearly labeled assumptions. Directional assessment only - not a final investment model.";
 
-  // Build brief section HTML. Preference order (matches the Pro page and the
-  // email template):
-  //   1. QuickScreenReport -> executiveSummary + waysItWorks + waysItDies
-  //   2. Brief JSON -> overview + strengths + concerns
-  //   3. Legacy plain-text brief
-  // Headings are relabeled to "Three Ways This Deal Works / Dies" so the Word
-  // doc reads like what the user sees on the Deal Quick Screen tab.
+  // === Brief content (Executive Summary / Initial Read) ===
   let briefOverview = "";
   let briefWorks: string[] = [];
   let briefDies: string[] = [];
@@ -1427,20 +1391,22 @@ ${addonRows.map(([label, val]) => `<tr><td>${label}</td><td class="metric-val">$
   } else if (briefFallback) {
     briefSectionHtml += `<div class="brief-text">${briefFallback.split("\n").map(p => p.trim() ? `<p>${p}</p>` : "").join("")}</div>`;
   }
-  if (briefWorks.length) {
-    briefSectionHtml += `<h3>Three Ways This Deal Works</h3>`;
-    briefSectionHtml += briefWorks.map((s) => `<div class="strength-item"><span class="strength-mark">✓</span>${s}</div>`).join("");
-  }
-  if (briefDies.length) {
-    briefSectionHtml += `<h3>Three Ways This Deal Dies</h3>`;
-    briefSectionHtml += briefDies.map((c) => `<div class="concern-item"><span class="concern-mark">△</span>${c}</div>`).join("");
-  }
-  if (!briefSectionHtml) {
-    briefSectionHtml = `<div class="brief-text"><p>No brief generated.</p></div>`;
-  }
 
-  // Back-of-Napkin Returns — mirrors the Pro page Quick Screen tab. Rendered
-  // only when the QuickScreen report is present. Ordered Bear -> Base -> Bull.
+  // === Deal Snapshot bullets ===
+  const snap: string[] = [];
+  if (analysisType !== "land") {
+    const typeStr = analysisType === "retail" ? "NNN retail" : analysisType === "industrial" ? "Industrial" : analysisType === "office" ? "Office" : analysisType;
+    snap.push(`${typeStr}${briefSF ? ` - ${Math.round(briefSF).toLocaleString()} SF GLA` : ""}${briefYear ? `, Year Built ${briefYear}` : ""}${fullLoc ? ` - ${fullLoc}` : ""}`);
+  } else {
+    snap.push(`Land site${fullLoc ? ` - ${fullLoc}` : ""}`);
+  }
+  if (briefOcc > 0) snap.push(`${briefOcc}% occupied${briefTenantCount ? ` - ${briefTenantCount} tenant${briefTenantCount > 1 ? "s" : ""}` : ""}`);
+  if (briefNOI > 0) snap.push(`In-place NOI ${fmt$(briefNOI)}${briefNOIAdj && briefNOIAdj !== briefNOI ? ` (adjusted: ${fmt$(briefNOIAdj)})` : ""}`);
+  if (briefAskPrice > 0) snap.push(`Asking price ${fmt$(briefAskPrice)}${g("pricing_deal_terms", "price_per_sf") ? ` ($${Number(g("pricing_deal_terms", "price_per_sf")).toFixed(0)}/SF)` : ""}`);
+  if (briefCap > 0) snap.push(`Entry cap rate ${briefCap.toFixed(2)}%`);
+  if (briefWale > 0) snap.push(`WALE: ${briefWale.toFixed(1)} years`);
+
+  // === Back-of-Napkin Returns ===
   let scenariosSectionHtml = "";
   if (quickScreen && quickScreen.scenarios && quickScreen.scenarios.length) {
     const order = ["Bear", "Base", "Bull"];
@@ -1460,49 +1426,20 @@ ${addonRows.map(([label, val]) => `<tr><td>${label}</td><td class="metric-val">$
         <td class="metric-val" style="font-size:11pt;">${levered}</td>
         <td>${em}</td>
         <td>${unlevered}</td>
-        <td style="font-size:9pt;color:#6B7280;">annual rent increases ${rentSign}${sc.rentGrowthPct}%, exit cap ${exitSign}${sc.exitCapBps}bps</td>
+        <td style="font-size:9pt;color:#6B7280;">annual rent ${rentSign}${sc.rentGrowthPct}%, exit cap ${exitSign}${sc.exitCapBps}bps</td>
       </tr>`;
     }).join("");
     scenariosSectionHtml = `
       <h2>Back-of-Napkin Returns</h2>
       <p style="font-size:9.5pt;color:#6B7280;margin-top:-4px;">Ranges, not point estimates. Meant for triage, not underwriting.</p>
       <table>
-        <tr>
-          <th>Scenario</th>
-          <th>Levered IRR</th>
-          <th>Equity Multiple</th>
-          <th>Unlevered IRR</th>
-          <th>Assumptions</th>
-        </tr>
+        <tr><th>Scenario</th><th>Levered IRR</th><th>Equity Multiple</th><th>Unlevered IRR</th><th>Assumptions</th></tr>
         ${rows}
       </table>
     `;
   }
 
-  // ==========================================================
-  // EXTENDED MEMO SECTIONS - derived from parsed fields
-  // ==========================================================
-
-  const briefAskPrice = Number(g("pricing_deal_terms", "asking_price")) || 0;
-  const briefNOI = Number(g("expenses", "noi_om")) || 0;
-  const briefNOIAdj = Number(g("expenses", "noi_adjusted")) || 0;
-  const briefCap = Number(g("pricing_deal_terms", "cap_rate_om")) || 0;
-  const briefOcc = Number(g("property_basics", "occupancy_pct")) || 0;
-  const briefWale = Number(g("property_basics", "wale_years")) || Number(g("rent_roll", "weighted_avg_lease_term")) || 0;
-  const briefSF = Number(g("property_basics", "building_sf")) || 0;
-  const briefYear = Number(g("property_basics", "year_built")) || 0;
-  const briefTenants = Number(g("property_basics", "tenant_count")) || 0;
-  const briefCity = g("property_basics", "city") || "";
-  const briefState = g("property_basics", "state") || "";
-  const briefLoc = [briefCity, briefState].filter(Boolean).join(", ");
-
-  // Categorize the deal for thesis framing
-  const isStabilized = briefOcc >= 90 && briefWale >= 3;
-  const isLeaseUp = briefOcc > 0 && briefOcc < 85;
-  const isValueAdd = briefOcc >= 85 && briefOcc < 93 && briefCap >= 7;
-  const dealCategory = analysisType === "land" ? "Development" : isStabilized ? "Stabilized Core / Core-Plus" : isLeaseUp ? "Lease-Up / Value-Add" : isValueAdd ? "Value-Add" : "Transitional";
-
-  // Investment Thesis paragraph
+  // === Investment Thesis ===
   let thesisHtml = "";
   if (analysisType === "land") {
     thesisHtml = `<p>This is a land transaction. The investment return will be driven by entitlement, infrastructure, and market absorption rather than in-place cash flow. Key value creation levers are zoning, utility availability, and proximity to demand drivers. Exit strategy assumes sale to a vertical developer or end-user once the site is entitled and shovel-ready.</p>`;
@@ -1514,33 +1451,33 @@ ${addonRows.map(([label, val]) => `<tr><td>${label}</td><td class="metric-val">$
     if (isStabilized) {
       thesisHtml += `With ${briefOcc}% occupancy and a ${briefWale.toFixed(1)}-year WALE, cash flow is predictable and the investment case rests on holding quality in-place income, capturing modest rent growth, and exiting into a stabilized market. `;
     } else if (isLeaseUp) {
-      thesisHtml += `Occupancy of ${briefOcc}% represents meaningful lease-up upside — the investment case depends on executing a lease-up plan within 12–24 months and re-underwriting the property at stabilized NOI before refinancing or exit. `;
+      thesisHtml += `Occupancy of ${briefOcc}% represents meaningful lease-up upside. The investment case depends on executing a lease-up plan within 12-24 months and re-underwriting the property at stabilized NOI before refinancing or exit. `;
     } else if (isValueAdd) {
-      thesisHtml += `This sits in classic value-add territory — ${briefOcc}% occupancy with modest rent and expense optimization opportunity. Investor returns require execution on both operational lifts and modest capital investment. `;
+      thesisHtml += `This sits in classic value-add territory at ${briefOcc}% occupancy with modest rent and expense optimization opportunity. Investor returns require execution on both operational lifts and modest capital investment. `;
     }
-    thesisHtml += `A typical hold period of ${isStabilized ? "7–10 years" : isLeaseUp ? "3–5 years" : "5–7 years"} is appropriate for this profile.</p>`;
+    thesisHtml += `A typical hold period of ${isStabilized ? "7-10 years" : isLeaseUp ? "3-5 years" : "5-7 years"} is appropriate for this profile.</p>`;
   }
 
-  // Market Context
+  // === Market Context ===
   let marketContext = "";
   if (analysisType === "retail") {
-    marketContext = `<p>Retail cap rates have widened 75–125 bps since 2022 as interest rates repriced debt. Neighborhood centers with necessity-based tenants (grocery, pharmacy, service retail) have held up better than discretionary retail. Evaluate this property's anchor stability, co-tenancy protections, and tenant sales performance relative to national chain averages. Rent growth in strong retail submarkets is running 2–4% per year; weak submarkets are flat to down.</p>`;
+    marketContext = `<p>Retail cap rates have widened 75-125 bps since 2022 as interest rates repriced debt. Neighborhood centers with necessity-based tenants (grocery, pharmacy, service retail) have held up better than discretionary retail. Evaluate this property's anchor stability, co-tenancy protections, and tenant sales performance relative to national chain averages. Rent growth in strong retail submarkets is running 2-4% per year; weak submarkets are flat to down.</p>`;
   } else if (analysisType === "industrial") {
-    marketContext = `<p>Industrial remains the strongest-performing CRE sector, though cap rates have moved 50–100 bps off 2022 lows. Class A distribution with modern specs (32'+ clear, cross-dock, trailer parking) continues to command premiums. Class B product with lower clears, limited loading, or functional obsolescence is facing cap rate widening. Rent growth varies dramatically by submarket — port markets and major distribution hubs outperform secondary logistics nodes. Underwrite conservative rent growth unless you have submarket-specific evidence.</p>`;
+    marketContext = `<p>Industrial remains the strongest-performing CRE sector, though cap rates have moved 50-100 bps off 2022 lows. Class A distribution with modern specs (32'+ clear, cross-dock, trailer parking) continues to command premiums. Rent growth varies dramatically by submarket. Underwrite conservative rent growth unless you have submarket-specific evidence.</p>`;
   } else if (analysisType === "office") {
-    marketContext = `<p>Office remains the most challenging sector post-pandemic. Sublease space is elevated in most markets, and tenant TI requirements have increased materially as tenants downsize. Medical office and government / mission-critical occupied office has held value; traditional multi-tenant office has experienced both occupancy and rent softening. Verify current submarket vacancy, TI packages being offered on new deals, and the building's competitive positioning against newer or recently renovated product.</p>`;
+    marketContext = `<p>Office remains the most challenging sector post-pandemic. Sublease space is elevated in most markets, and tenant TI requirements have increased materially. Medical office and mission-critical occupied office has held value; traditional multi-tenant office has experienced both occupancy and rent softening. Verify current submarket vacancy and TI packages being offered on new deals.</p>`;
   } else if (analysisType === "land") {
-    marketContext = `<p>Land values have been volatile as capital markets repriced development risk. Entitled and shovel-ready land with utilities in place retains value; raw or speculatively-zoned land has widened significantly. Evaluate realistic entitlement timeline, political risk in the jurisdiction, and absorption for the intended use. Development land pricing should be back-solved from residual value analysis: projected stabilized value minus hard costs, soft costs, financing, and required developer profit.</p>`;
-  } else if (analysisType === "multifamily") {
-    marketContext = `<p>Multifamily cap rates widened significantly in 2023–2024 and have stabilized. New deliveries in high-growth markets have created short-term rent softness, but longer-term fundamentals remain supported by household formation and for-sale affordability pressures. Evaluate concession trends, lease-trade-out performance, and forward supply pipeline. Underwrite realistic rent growth — typically 2–3% per year in stabilized markets.</p>`;
+    marketContext = `<p>Land values have been volatile as capital markets repriced development risk. Entitled and shovel-ready land with utilities in place retains value; raw or speculatively-zoned land has widened significantly. Development land pricing should be back-solved from residual value analysis: projected stabilized value minus hard costs, soft costs, financing, and required developer profit.</p>`;
+  } else {
+    marketContext = `<p>CRE cap rates have widened as interest rates repriced debt since 2022. Evaluate this property's income stability, tenant credit quality, and submarket rent trends before finalizing underwriting assumptions.</p>`;
   }
 
-  // Financing Strategy
+  // === Financing Strategy ===
   const financingHtml = analysisType === "land"
-    ? `<p>Land typically does not support conventional permanent financing. Expect all-cash or short-term land loans at 55–65% LTV, rates 150–250 bps above permanent debt, and 1–3 year terms. If the seller is willing to carry, land deals are a classic use case — 25–40% down with a 2–5 year balloon is common.</p>`
-    : `<p>A ${typeLabel.toLowerCase()} property of this profile typically finances at 60–70% LTV with a 25-year amortization. Current market rates are 6.75–7.75% for conventional CMBS / agency debt. If the seller has a below-market existing loan, a loan assumption may be the most attractive structure — ask the broker explicitly about assumption terms. Alternatively, bridge-to-perm or HUD 221(d)(4) may apply depending on the specific property and sponsor. For a full menu of structures, review the accompanying Creative Deal Structuring document.</p>`;
+    ? `<p>Land typically does not support conventional permanent financing. Expect all-cash or short-term land loans at 55-65% LTV, rates 150-250 bps above permanent debt, and 1-3 year terms. If the seller is willing to carry, land deals are a classic use case - 25-40% down with a 2-5 year balloon is common.</p>`
+    : `<p>A ${typeLabel.toLowerCase()} property of this profile typically finances at 60-70% LTV with a 25-year amortization. Current market rates are 6.75-7.75% for conventional CMBS / agency debt. If the seller has a below-market existing loan, a loan assumption may be the most attractive structure. Alternatively, bridge-to-perm may apply depending on the specific property and sponsor.</p>`;
 
-  // Exit Strategy
+  // === Exit Strategy ===
   let exitHtml = "";
   if (analysisType === "land") {
     exitHtml = `<p>Primary exit: sale to a vertical developer or end-user after entitlements are in place. Secondary exit: JV with a developer retaining participation. Tertiary: hold as long-term land bank. Target an all-in cost basis that leaves at least a 20% margin to the pro forma residual value at stabilization.</p>`;
@@ -1549,124 +1486,237 @@ ${addonRows.map(([label, val]) => `<tr><td>${label}</td><td class="metric-val">$
     const yr10NOI = briefNOI * Math.pow(1.025, 10);
     const exit5 = yr5NOI / 0.075;
     const exit10 = yr10NOI / 0.075;
-    exitHtml = `<p>At a 7.5% exit cap (approximately 25 bps above entry), the implied exit values are ${fmt$(Math.round(exit5))} at Year 5 and ${fmt$(Math.round(exit10))} at Year 10, assuming 2.5% annual NOI growth. These are directional — tighten the exit cap 25–50 bps for stronger-than-expected performance or widen 50–100 bps for softer execution. See the 10-Year Cash Flow tab in the Workbook for full levered IRR calculation.</p>`;
+    exitHtml = `<p>At a 7.5% exit cap (approximately 25 bps above entry), the implied exit values are ${fmt$(Math.round(exit5))} at Year 5 and ${fmt$(Math.round(exit10))} at Year 10, assuming 2.5% annual NOI growth. These are directional - tighten the exit cap 25-50 bps for stronger performance or widen 50-100 bps for softer execution.</p>`;
   } else {
     exitHtml = `<p>Exit analysis requires a normalized NOI assumption. See the Workbook for scenario-based exit value modeling.</p>`;
   }
 
-  // Value Creation Opportunities — derived from signals and metrics
+  // === Value Creation ===
   const valueLevers: string[] = [];
-  if (isLeaseUp) valueLevers.push(`<strong>Lease-up to stabilization.</strong> At ${briefOcc}% occupancy, bringing the property to a market-stabilized level (typically 92–95% for ${typeLabel.toLowerCase()}) is the primary lever. Quantify the NOI lift and the capital required to achieve it.`);
-  if (briefWale > 0 && briefWale < 4) valueLevers.push(`<strong>Mark rents to market on rollover.</strong> With a ${briefWale.toFixed(1)}-year WALE, there's opportunity to re-lease at current market rates as tenants roll. Verify current market rates vs. in-place rents before underwriting the bump.`);
-  if (briefYear > 0 && 2026 - briefYear > 15) valueLevers.push(`<strong>Selective capital investment.</strong> A ${2026 - briefYear}-year-old building may benefit from modest capital modernization (signage, lighting, common area refresh) that attracts better tenants and supports rent premiums.`);
-  if (analysisType === "retail") valueLevers.push(`<strong>Out-parcel or pad development.</strong> Confirm with the broker whether any out-parcels are developable under current zoning and not encumbered by tenant exclusives.`);
-  if (analysisType === "office") valueLevers.push(`<strong>Convert vacant floors to a competitive spec suite program.</strong> Pre-built move-in-ready suites capture smaller tenants quickly and justify premium rents.`);
-  if (analysisType === "industrial") valueLevers.push(`<strong>Right-size trailer parking or add yard space.</strong> Industrial tenants will pay premiums for incremental trailer parking or secured yard — quantify capacity and demand.`);
-  if (valueLevers.length === 0) valueLevers.push(`<strong>Operating efficiency.</strong> Benchmark in-place expenses against comparable properties — even a 5% expense reduction compounds meaningfully at the exit cap.`);
+  if (isLeaseUp) valueLevers.push(`<strong>Lease-up to stabilization.</strong> At ${briefOcc}% occupancy, bringing the property to a market-stabilized level (typically 92-95%) is the primary lever.`);
+  if (briefWale > 0 && briefWale < 4) valueLevers.push(`<strong>Mark rents to market on rollover.</strong> With a ${briefWale.toFixed(1)}-year WALE, there's opportunity to re-lease at current market rates as tenants roll.`);
+  if (briefYear > 0 && 2026 - briefYear > 15) valueLevers.push(`<strong>Selective capital investment.</strong> A ${2026 - briefYear}-year-old building may benefit from modest capital modernization.`);
+  if (analysisType === "retail") valueLevers.push(`<strong>Out-parcel or pad development.</strong> Confirm with the broker whether any out-parcels are developable under current zoning.`);
+  if (analysisType === "office") valueLevers.push(`<strong>Spec suite program.</strong> Pre-built move-in-ready suites capture smaller tenants quickly and justify premium rents.`);
+  if (analysisType === "industrial") valueLevers.push(`<strong>Yard / trailer parking optimization.</strong> Industrial tenants pay premiums for incremental trailer parking or secured yard.`);
+  if (valueLevers.length === 0) valueLevers.push(`<strong>Operating efficiency.</strong> Benchmark in-place expenses against comparable properties - even a 5% expense reduction compounds meaningfully at the exit cap.`);
 
-  const valueLeversHtml = `<ul>${valueLevers.map(v => `<li>${v}</li>`).join("")}</ul>`;
-
-  // Key Risks
+  // === Key Risks ===
   const risks: string[] = [];
   const capSig = String(g("signals", "cap_rate_signal") || "").toLowerCase();
   const dscrSig = String(g("signals", "dscr_signal") || "").toLowerCase();
   const occSig = String(g("signals", "occupancy_signal") || "").toLowerCase();
   const rollSig = String(g("signals", "rollover_signal") || "").toLowerCase();
   const tenSig = String(g("signals", "tenant_quality_signal") || "").toLowerCase();
-  if (capSig.includes("red") || capSig.includes("yellow")) risks.push(`<strong>Entry cap rate pressure.</strong> The stated cap rate was flagged during the OM review. Pressure test against recent submarket comps before finalizing the offer.`);
-  if (dscrSig.includes("red") || dscrSig.includes("yellow")) risks.push(`<strong>Financeability.</strong> The projected debt service coverage is tight for current debt markets. If the deal cannot support lender DSCR minimums, equity requirements will increase.`);
-  if (occSig.includes("red") || occSig.includes("yellow") || isLeaseUp) risks.push(`<strong>Occupancy risk.</strong> Current occupancy introduces lease-up execution risk. Every month of delayed lease-up meaningfully impacts IRR at typical hold periods.`);
-  if (rollSig.includes("red") || rollSig.includes("yellow")) risks.push(`<strong>Rollover concentration.</strong> Near-term lease expirations create retention and re-tenanting risk. Build a tenant-by-tenant renewal probability and required TI/LC reserve.`);
-  if (tenSig.includes("red") || tenSig.includes("yellow")) risks.push(`<strong>Tenant credit.</strong> Tenant credit quality was flagged. Confirm which tenants have corporate vs. personal guaranties and obtain recent financials on non-credit tenants.`);
-  if (analysisType === "office") risks.push(`<strong>Sector headwinds.</strong> Office faces structural demand softness in most markets. Underwrite conservative rent growth and longer-than-historical lease-up assumptions.`);
-  if (risks.length === 0) risks.push(`<strong>Interest rate and cap rate risk.</strong> Every CRE deal faces the possibility of cap rate widening at exit. Stress test the IRR at an exit cap 100 bps wider than entry and confirm the deal still meets your minimum return hurdle.`);
+  if (capSig.includes("red") || capSig.includes("yellow")) risks.push(`<strong>Entry cap rate pressure.</strong> Pressure test against recent submarket comps before finalizing the offer.`);
+  if (dscrSig.includes("red") || dscrSig.includes("yellow")) risks.push(`<strong>Financeability.</strong> The projected debt service coverage is tight for current debt markets. Equity requirements may increase.`);
+  if (occSig.includes("red") || occSig.includes("yellow") || isLeaseUp) risks.push(`<strong>Occupancy risk.</strong> Current occupancy introduces lease-up execution risk. Every month of delayed lease-up impacts IRR.`);
+  if (rollSig.includes("red") || rollSig.includes("yellow")) risks.push(`<strong>Rollover concentration.</strong> Near-term lease expirations create retention and re-tenanting risk.`);
+  if (tenSig.includes("red") || tenSig.includes("yellow")) risks.push(`<strong>Tenant credit.</strong> Confirm corporate vs. personal guaranties and obtain recent financials on non-credit tenants.`);
+  if (analysisType === "office") risks.push(`<strong>Sector headwinds.</strong> Office faces structural demand softness. Underwrite conservative rent growth.`);
+  if (risks.length === 0) risks.push(`<strong>Interest rate and cap rate risk.</strong> Stress test the IRR at an exit cap 100 bps wider than entry.`);
 
-  const risksHtml = `<ul>${risks.map(r => `<li>${r}</li>`).join("")}</ul>`;
+  // === Cap Rate Scenarios ===
+  let capScenariosHtml = "";
+  if (noi > 0 && analysisType !== "land") {
+    const capRows: string[] = [];
+    for (let cr = 7; cr <= 10; cr += 0.5) {
+      const iv = noi / (cr / 100);
+      const psfVal = briefSF > 0 ? `$${(iv / briefSF).toFixed(0)}/SF` : "--";
+      const sigLabel = cr <= 7.5 ? "Aggressive" : cr <= 8.5 ? "Fair" : "Attractive";
+      const sigCls = cr <= 7.5 ? "sr" : cr <= 8.5 ? "sy" : "sg";
+      capRows.push(`<tr><td><b>${cr.toFixed(1)}%</b></td><td>${fmt$(iv)}</td><td>${psfVal}</td><td class="${sigCls}">${sigLabel}</td></tr>`);
+    }
+    capScenariosHtml = `
+<h2>Cap Rate Scenario Table</h2>
+<p style="font-size:9.5pt;color:#6B7280;">Based on ${briefNOIAdj ? "adjusted" : "in-place"} NOI of ${fmt$(noi)}</p>
+<table>
+<tr><th>Cap Rate</th><th>Implied Value</th><th>Price/SF</th><th>Signal</th></tr>
+${capRows.join("\n")}
+</table>`;
+  }
 
-  // Next Steps
+  // === Breakeven Analysis with Stress Tests ===
+  let breakevenHtml = "";
+  if (analysisType !== "land") {
+    const beRows: string[] = [];
+    if (briefDebtService > 0) {
+      beRows.push(`<tr><td>NOI to cover debt at 1.00x DSCR</td><td class="metric-val">${fmt$(briefDebtService)}</td></tr>`);
+      beRows.push(`<tr class="alt-row"><td>NOI to cover debt at 1.20x DSCR</td><td class="metric-val">${fmt$(briefDebtService * 1.2)}</td></tr>`);
+      beRows.push(`<tr><td>NOI to cover debt at 1.35x DSCR</td><td class="metric-val">${fmt$(briefDebtService * 1.35)}</td></tr>`);
+    }
+    if (briefBreakeven > 0) beRows.push(`<tr class="alt-row"><td>Breakeven Occupancy</td><td class="metric-val">${briefBreakeven.toFixed(1)}%</td></tr>`);
+    const beSF = briefSF > 0 && noi > 0 ? (briefDebtService > 0 ? briefDebtService / briefSF : noi / briefSF) : 0;
+    if (beSF > 0) beRows.push(`<tr><td>Breakeven Rent / SF</td><td class="metric-val">$${beSF.toFixed(2)}</td></tr>`);
+
+    // Stress tests from tenant data
+    let stressHtml = "";
+    if (tenantData.length > 0) {
+      const riskTenants = tenantData.filter((t: any) => {
+        const st = String(t.status || t.risk_level || "").toLowerCase();
+        const end = String(t.end || t.lease_end || "").toLowerCase();
+        return st.includes("expir") || st.includes("vacant") || st.includes("mtm") || st.includes("risk") || st.includes("red");
+      });
+      if (riskTenants.length > 0 && noi > 0) {
+        const totalRiskRent = riskTenants.reduce((sum: number, t: any) => sum + (Number(t.rent || t.annual_rent) || 0), 0);
+        const totalRiskSf = riskTenants.reduce((sum: number, t: any) => sum + (Number(t.sf || t.gla) || 0), 0);
+        const riskNames = riskTenants.map((t: any) => t.name || t.tenant_name).join(", ");
+        const stressNoi = noi - totalRiskRent;
+        const stressDscr = briefDebtService > 0 ? stressNoi / briefDebtService : 0;
+        stressHtml = `
+<h3>Stress Test: At-Risk Tenants Vacate</h3>
+<p>If at-risk tenants (${riskNames}) vacate, ${totalRiskSf > 0 ? `${totalRiskSf.toLocaleString()} SF and ` : ""}${fmt$(totalRiskRent)} in annual rent is lost. NOI drops to approximately ${fmt$(stressNoi)}${stressDscr > 0 ? `. DSCR ${stressDscr < 1.0 ? `<b class="sr">collapses to ${stressDscr.toFixed(2)}x (below 1.0x)</b>` : `falls to ${stressDscr.toFixed(2)}x`}` : ""}.</p>`;
+      }
+    }
+
+    breakevenHtml = `
+<h2>Breakeven Analysis</h2>
+<table>
+<tr><th>Metric</th><th>Value</th></tr>
+${beRows.join("\n")}
+</table>
+${stressHtml}`;
+  }
+
+  // === Tenant Rollover Detail ===
+  let tenantRolloverHtml = "";
+  if (tenantData.length > 0) {
+    const tRows = tenantData.map((t: any, i: number) => {
+      const name = t.name || t.tenant_name || `Tenant ${i + 1}`;
+      const tSf = t.sf || t.gla || "";
+      const tRent = t.rent || t.annual_rent || "";
+      const tType = t.type || t.lease_type || "";
+      const tEnd = t.end || t.lease_end || "";
+      const tExt = t.extension || t.options || "";
+      const tStatus = t.status || t.risk_level || "";
+      const isRisk = String(tStatus).toLowerCase().match(/expir|vacant|mtm|risk|red|gone/);
+      const pctGla = briefSF > 0 && tSf ? `${((Number(tSf) / briefSF) * 100).toFixed(1)}%` : "";
+      return `<tr${i % 2 ? ' class="alt-row"' : ""}><td><b>${name}</b></td><td>${tSf ? Number(tSf).toLocaleString() : ""}</td><td>${pctGla}</td><td>${tRent ? fmt$(tRent) : ""}</td><td>${tEnd}</td><td>${tExt || "None"}</td><td class="${isRisk ? "sr" : "sg"}">${tStatus}</td></tr>`;
+    }).join("\n");
+    tenantRolloverHtml = `
+<h2>Tenant Rollover Detail</h2>
+<table>
+<tr><th>Tenant</th><th>SF</th><th>% GLA</th><th>Annual Rent</th><th>Lease End</th><th>Extension</th><th>Risk Level</th></tr>
+${tRows}
+</table>`;
+  }
+
+  // === Underwriting Notes ===
+  const debtRate = Number(g("debt_assumptions", "interest_rate")) || 7.25;
+  const ltvPct = Number(g("debt_assumptions", "ltv_pct")) || 65;
+  const uwNotesHtml = `<p>Debt assumed at ${debtRate.toFixed(2)}% rate, 25-year amortization, ${ltvPct}% LTV${briefAskPrice > 0 ? ` on purchase price of ${fmt$(briefAskPrice)}` : ""}. Closing costs at 2%. Management fee estimated at 6% of EGI. Reserves at $0.25/SF. ${briefNOIAdj && briefNOIAdj !== briefNOI ? "Adjusted NOI reflects management fee and reserves not included in the OM statement." : "No immediate capex budgeted (insufficient data)."}</p>`;
+
+  // === Missing Data / Assumptions ===
+  const missing: string[] = [];
+  if (!briefAskPrice) missing.push("Asking price / seller expectations");
+  if (tenantData.length === 0) missing.push("Tenant details, lease abstracts, and renewal status");
+  if (!briefYear) missing.push("Year built and property condition report");
+  missing.push("Actual lease abstracts (confirm NNN vs Gross structure)");
+  missing.push("Rent escalation schedule for each tenant");
+  missing.push("Environmental / survey / title status");
+  missing.push("Deferred maintenance and recent capex history");
+  missing.push("Land size and site plan details");
+
+  const assumed: string[] = [];
+  assumed.push(`${briefCap > 0 ? briefCap.toFixed(1) + "%" : "8.0%"} entry cap for base case pricing`);
+  assumed.push(`${debtRate.toFixed(2)}% debt rate, 25-yr amort, ${ltvPct}% LTV`);
+  assumed.push("2% closing costs");
+  assumed.push("6% management fee on EGI");
+  assumed.push("$0.25/SF reserves");
+  assumed.push("No immediate capex");
+
+  // === Next Steps ===
   const nextSteps = [
-    `Submit LOI at ${briefAskPrice > 0 ? fmt$(Math.round(briefAskPrice * 0.95)) + " (approximately 95% of ask)" : "an appropriate opening offer price"} with 30-day DD and 60-day close — see accompanying LOI draft.`,
-    `Send the broker the Broker Questions document — prioritize the red-flag questions first.`,
+    `Submit LOI at ${briefAskPrice > 0 ? fmt$(Math.round(briefAskPrice * 0.95)) + " (approximately 95% of ask)" : "an appropriate opening offer price"} with 30-day DD and 60-day close.`,
+    `Prioritize red-flag diligence items from the Signal Assessment.`,
     `Engage legal counsel for PSA negotiation assuming LOI is accepted.`,
     `Order preliminary title report and Phase I environmental as soon as PSA is executed.`,
     `Obtain at least two debt quotes during the DD period; verify the DSCR and LTV assumptions hold at quoted terms.`,
-    `For creative structures (seller financing, assumption, JV), review the Creative Deal Structuring document before the first broker call.`,
   ];
 
-  const nextStepsHtml = `<ol>${nextSteps.map(s => `<li>${s}</li>`).join("")}</ol>`;
-
-  // Determine whether to show extended memo sections (skip if briefNOI and briefAskPrice both 0)
-  const showExtended = briefAskPrice > 0 || analysisType === "land";
-
-  // Build HTML document that Word can open
+  // === Build the HTML document ===
   const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
 <head><meta charset="utf-8"><style>
-  body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #1a1a1a; max-width: 7.5in; margin: 0.75in auto; line-height: 1.5; }
-  h1 { font-size: 18pt; color: #0B1120; border-bottom: 2px solid #C49A3C; padding-bottom: 8px; margin-top: 0; }
-  h2 { font-size: 14pt; color: #253352; margin-top: 24px; margin-bottom: 8px; border-bottom: 1px solid #E5E7EB; padding-bottom: 4px; }
-  h3 { font-size: 12pt; color: #5A7091; margin-top: 16px; margin-bottom: 6px; }
-  p { margin: 6px 0; }
-  .subtitle { font-size: 9pt; color: #8899B0; font-style: italic; margin-bottom: 16px; }
-  .type-badge { display: inline-block; background: #F0F4FF; color: #3B5998; padding: 4px 12px; border-radius: 4px; font-size: 10pt; font-weight: 600; margin-bottom: 12px; }
-  .deal-cat-badge { display: inline-block; background: #FEF3C7; color: #92400E; padding: 4px 12px; border-radius: 4px; font-size: 10pt; font-weight: 600; margin-bottom: 12px; margin-left: 6px; }
-  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 10pt; }
-  th { background: #F6F8FB; text-align: left; padding: 6px 10px; border: 1px solid #D8DFE9; font-weight: 600; color: #5A7091; }
-  td { padding: 5px 10px; border: 1px solid #D8DFE9; }
-  .metric-val { font-weight: 600; }
-  .signal-green { color: #059669; }
-  .signal-yellow { color: #D97706; }
-  .signal-red { color: #DC2626; }
-  .brief-text { margin: 12px 0; }
-  .brief-text p { margin: 8px 0; line-height: 1.6; }
-  .strength-item, .concern-item { margin: 6px 0; line-height: 1.5; }
-  .strength-mark { color: #059669; font-weight: 700; margin-right: 6px; }
-  .concern-mark { color: #D97706; font-weight: 700; margin-right: 6px; }
-  ul, ol { margin: 8px 0 8px 22px; }
-  li { margin: 6px 0; }
-  .callout { background: #FFFBEB; border-left: 3px solid #D97706; padding: 10px 14px; margin: 14px 0; font-size: 10pt; }
-  .callout-info { background: #EFF6FF; border-left: 3px solid #2563EB; padding: 10px 14px; margin: 14px 0; font-size: 10pt; }
-  .memo-toc { background: #F9FAFB; border: 1px solid #E5E7EB; padding: 10px 14px; font-size: 10pt; margin-bottom: 18px; }
-  .memo-toc strong { color: #253352; }
-  .deal-category { color: #92400E; font-weight: 600; }
+@page { size: 8.5in 11in; margin: 0.75in 1in; }
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #1a1a1a; line-height: 1.6; }
+h1 { font-size: 18pt; color: #0B1120; border-bottom: 2.5px solid #C49A3C; padding-bottom: 8px; margin: 0 0 4px 0; }
+h2 { font-size: 13pt; color: #253352; margin: 24px 0 8px 0; padding-bottom: 4px; border-bottom: 1px solid #E0E5ED; }
+h3 { font-size: 11pt; color: #253352; margin: 16px 0 6px 0; }
+p { margin: 5px 0; }
+.sub { font-size: 9.5pt; color: #8899B0; font-style: italic; margin-bottom: 16px; }
+.loc { font-size: 10.5pt; color: #555; margin: 2px 0 2px 0; }
+.type-badge { display: inline-block; background: #F0F4FF; color: #3B5998; padding: 4px 12px; border-radius: 4px; font-size: 10pt; font-weight: 600; margin-bottom: 6px; }
+.deal-cat-badge { display: inline-block; background: #FEF3C7; color: #92400E; padding: 4px 12px; border-radius: 4px; font-size: 10pt; font-weight: 600; margin-bottom: 6px; margin-left: 6px; }
+ul { margin: 6px 0 6px 18px; padding: 0; }
+ol { margin: 6px 0 6px 18px; padding: 0; }
+li { margin: 4px 0; line-height: 1.5; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 10pt; }
+th { background: #262C5C; color: #fff; text-align: left; padding: 7px 10px; border: 1px solid #262C5C; font-weight: 600; }
+td { padding: 5px 10px; border: 1px solid #D8DFE9; }
+.alt-row { background: #F6F8FB; }
+.metric-val { font-weight: 600; }
+.sg { color: #059669; font-weight: 600; }
+.sy { color: #D97706; font-weight: 600; }
+.sr { color: #DC2626; font-weight: 600; }
+.brief-text { margin: 10px 0; }
+.brief-text p { margin: 8px 0; line-height: 1.6; }
+.strength-item, .concern-item { margin: 5px 0; line-height: 1.5; }
+.strength-mark { color: #059669; font-weight: 700; margin-right: 6px; }
+.concern-mark { color: #D97706; font-weight: 700; margin-right: 6px; }
+.callout { background: #FFFBEB; border-left: 3px solid #D97706; padding: 10px 14px; margin: 14px 0; font-size: 10pt; }
+.callout-info { background: #EFF6FF; border-left: 3px solid #2563EB; padding: 10px 14px; margin: 14px 0; font-size: 10pt; }
+.toc { background: #F9FAFB; border: 1px solid #E5E7EB; padding: 10px 14px; font-size: 10pt; margin-bottom: 18px; }
+.toc strong { color: #253352; }
+.disclaimer { font-size: 9pt; color: #6B7280; line-height: 1.6; font-style: italic; margin-top: 8px; }
+.footer-brand { margin-top: 30px; padding-top: 14px; border-top: 1px solid #D8DFE9; text-align: center; }
 </style></head><body>
+
 <h1>${briefTitle}</h1>
-<h2 style="border: none; margin-top: 4px;">${propertyName}</h2>
-<div class="type-badge">${typeLabel} Analysis</div>${showExtended ? `<div class="deal-cat-badge">${dealCategory}</div>` : ""}
-<p class="subtitle">${disclaimer}</p>
+<h2 style="border:none;margin-top:6px;font-size:15pt;">${propertyName}</h2>
+${fullLoc ? `<p class="loc">${fullLoc}</p>` : ""}
+<div class="type-badge">${typeLabel} Analysis</div><div class="deal-cat-badge">${dealCategory}</div>
+<p class="sub">${disclaimerText}</p>
 
-${showExtended ? `<div class="memo-toc">
-<strong>Contents:</strong> Executive Summary &middot; Back-of-Napkin Returns &middot; Investment Thesis &middot; Key Metrics &middot; Signal Assessment &middot; Market Context &middot; Financing Strategy &middot; Exit Strategy &middot; Value Creation &middot; Key Risks &middot; Next Steps
-</div>` : ""}
+<div class="toc">
+<strong>Contents:</strong> Deal Snapshot &middot; Initial Read &middot; Key Metrics &middot; Visual Indicators &middot; Strengths &middot; Risks${scenariosSectionHtml ? " &middot; Back-of-Napkin Returns" : ""} &middot; Investment Thesis &middot; Market Context &middot; Financing &middot; Exit Strategy &middot; Value Creation${capScenariosHtml ? " &middot; Cap Rate Scenarios" : ""}${breakevenHtml ? " &middot; Breakeven Analysis" : ""}${tenantRolloverHtml ? " &middot; Tenant Rollover" : ""} &middot; Missing Data &middot; Next Steps &middot; Conclusion
+</div>
 
-<h2>Executive Summary</h2>
-${briefSectionHtml}
+<h2>Deal Snapshot</h2>
+<ul>${snap.map(s => `<li>${s}</li>`).join("")}</ul>
 
-${scenariosSectionHtml}
+<h2>Initial Read</h2>
+${briefSectionHtml || `<div class="brief-text"><p>No assessment generated.</p></div>`}
 
-${showExtended ? `<h2>Investment Thesis</h2>
-${thesisHtml}` : ""}
+${briefWorks.length > 0 ? `<h2>Strengths</h2>
+<ul>${briefWorks.map(s => `<li>${s}</li>`).join("")}</ul>` : ""}
 
-${addonSection}
+${briefDies.length > 0 ? `<h2>Risks / Open Questions</h2>
+<ul>${briefDies.map(c => `<li>${c}</li>`).join("")}</ul>` : `<h2>Key Risks</h2>
+<ul>${risks.map(r => `<li>${r}</li>`).join("")}</ul>`}
 
 <h2>Key Metrics</h2>
 <table>
-<tr><th>Metric</th><th>Value</th></tr>
-${metrics.map(([label, val]) => `<tr><td>${label}</td><td class="metric-val">${val}</td></tr>`).join("\n")}
+<tr><th>Metric</th><th>Value</th><th>Signal</th></tr>
+${metrics.map(([label, val], i) => `<tr${i % 2 ? ' class="alt-row"' : ""}><td>${label}</td><td class="metric-val">${val}</td><td>${metricSignal(label)}</td></tr>`).join("\n")}
 </table>
 
-<h2>Signal Assessment</h2>
+<h2>Visual Indicators Summary</h2>
 <table>
-<tr><th>Category</th><th>Signal</th></tr>
-${signals.map(([label, val]) => {
-    let cls = "";
-    if (String(val).includes("Green") || String(val).includes("green") || String(val).includes("🟢")) cls = "signal-green";
-    else if (String(val).includes("Yellow") || String(val).includes("yellow") || String(val).includes("🟡")) cls = "signal-yellow";
-    else if (String(val).includes("Red") || String(val).includes("red") || String(val).includes("🔴")) cls = "signal-red";
-    return `<tr><td>${label}</td><td class="${cls}">${val}</td></tr>`;
+<tr><th>Category</th><th>Signal</th><th>Note</th></tr>
+${signals.map(([label, val], i) => {
+    return `<tr${i % 2 ? ' class="alt-row"' : ""}><td>${label}</td><td class="${sigClass(val)}">${val}</td><td></td></tr>`;
   }).join("\n")}
 </table>
 
-${showExtended ? `<h2>Market Context</h2>
+<h2>Underwriting Notes</h2>
+${uwNotesHtml}
+
+${scenariosSectionHtml}
+
+<h2>Investment Thesis</h2>
+${thesisHtml}
+
+<h2>Market Context</h2>
 ${marketContext}
 
 <h2>Financing Strategy</h2>
@@ -1676,26 +1726,39 @@ ${financingHtml}
 ${exitHtml}
 
 <h2>Value Creation Opportunities</h2>
-${valueLeversHtml}
+<ul>${valueLevers.map(v => `<li>${v}</li>`).join("")}</ul>
 
-<h2>Key Risks</h2>
-${risksHtml}
+${capScenariosHtml}
+
+${breakevenHtml}
+
+${tenantRolloverHtml}
+
+<h2>Missing Data / Assumptions</h2>
+<p><b>Missing - must obtain before deeper underwriting:</b></p>
+<ul>${missing.map(m => `<li>${m}</li>`).join("")}</ul>
+<p><b>Assumed for first pass:</b></p>
+<ul>${assumed.map(a => `<li>${a}</li>`).join("")}</ul>
 
 <h2>Next Steps</h2>
-${nextStepsHtml}
+<ol>${nextSteps.map(s => `<li>${s}</li>`).join("")}</ol>
 
-<div class="callout-info">
-<strong>Accompanying documents.</strong> This Brief is one part of a complete deal package. See also: <em>Underwriting Workbook</em> (scenario model, sensitivity, 10-year cash flow), <em>LOI Draft</em> (ready-to-send opening offer), <em>Broker Questions</em> (red-flag-prioritized diligence list), and <em>Creative Deal Structuring</em> (six alternative structures with deal-specific fit analysis).
-</div>` : ""}
+<h2>First-Pass Conclusion</h2>
+${g("signals", "overall_signal") ? `<h3>Overall Signal</h3><p class="${sigClass(g("signals", "overall_signal"))}"><b>${g("signals", "overall_signal")}</b></p>` : ""}
+${g("signals", "recommendation") ? `<h3>Recommendation</h3><p class="${sigClass(g("signals", "recommendation"))}"><b>${g("signals", "recommendation")}</b></p>` : ""}
 
-
-<h2 style="margin-top: 32px; font-size: 11pt; color: #6B7280; border-bottom: 1px solid #E5E7EB; text-transform: uppercase; letter-spacing: 0.08em;">Disclaimer</h2>
-<p style="font-size: 9pt; color: #6B7280; line-height: 1.6; font-style: italic; margin-top: 8px;">
-  This First-Pass Brief is automated general guidance produced by Deal Signals. It is NOT investment, legal, tax, accounting, or financial advice, and it is not an offer, solicitation, or recommendation to buy, sell, lease, finance, or otherwise transact in any property or security. Figures are derived from uploaded documents and public data sources that may be incomplete, out-of-date, or inaccurate. Scenario ranges are back-of-napkin triage outputs based on standardized assumptions and should not be treated as a final underwriting model. You are solely responsible for verifying every material fact (rent roll, leases, expenses, title, environmental, zoning, financing) and conducting full legal, financial, and physical due diligence with qualified professionals before committing any capital. No representation or warranty, express or implied, is made by Deal Signals or its operators as to the accuracy, completeness, or fitness for any particular purpose of the information contained herein. Use at your own risk.
+<h2 style="margin-top:32px;font-size:11pt;color:#6B7280;border-bottom:1px solid #E5E7EB;text-transform:uppercase;letter-spacing:0.08em">Disclaimer</h2>
+<p class="disclaimer">
+This First-Pass Brief is automated general guidance produced by Deal Signals. It is NOT investment, legal, tax, accounting, or financial advice, and it is not an offer, solicitation, or recommendation to buy, sell, lease, finance, or otherwise transact in any property or security. Figures are derived from uploaded documents and public data sources that may be incomplete, out-of-date, or inaccurate. Scenario ranges are back-of-napkin triage outputs based on standardized assumptions and should not be treated as a final underwriting model. You are solely responsible for verifying every material fact (rent roll, leases, expenses, title, environmental, zoning, financing) and conducting full legal, financial, and physical due diligence with qualified professionals before committing any capital. No representation or warranty, express or implied, is made by Deal Signals or its operators as to the accuracy, completeness, or fitness for any particular purpose of the information contained herein. Use at your own risk.
 </p>
-<p style="font-size: 8.5pt; color: #9CA3AF; margin-top: 14px; text-align: center; font-style: italic;">
-  Generated by Deal Signals · ${typeLabel} Model · dealsignals.app
-</p>
+
+<div class="footer-brand">
+<p style="font-size:10pt;font-weight:700;color:#253352;margin:0;">Deal Signals</p>
+<p style="font-size:9pt;color:#6B7280;margin:2px 0;">Analyze CRE deals with AI-powered intelligence. Get real signals, not guesses.</p>
+<p style="font-size:9pt;margin:4px 0;"><a href="https://www.dealsignals.app" style="color:#3B5998;text-decoration:none;">www.dealsignals.app</a></p>
+<p style="font-size:8pt;color:#9CA3AF;margin:8px 0 0 0;font-style:italic;">Generated by Deal Signals &middot; ${typeLabel} Model</p>
+</div>
+
 </body></html>`;
 
   // Download as .doc (HTML format that Word opens natively)
