@@ -297,7 +297,7 @@ function HeroShowcase() {
       score: 78, verdict: "BUY",
       price: "$14.2M", cap: "7.80%", noi: "$1.11M", sf: "94.2K SF",
       photoUrl: "/pics/greenfield.jpg",
-      hero: "linear-gradient(135deg, #1e3a5f 0%, #2d4a6b 40%, #4D7C0F 180%)",
+      hero: "linear-gradient(135deg, #1e3a5f 0%, #2d4a6b 40%, #84CC16 180%)",
       pricePerSf: "$151/SF", dscr: "1.42x", coc: "9.8%", debtYield: "11.7%",
       occupancy: "94%", yearBuilt: "1998", tenantCount: "12", walt: "6.2 yrs", submarket: "Milwaukee MSA",
       executive: "Stabilized multi-tenant center with an anchor holding 12 years of remaining term and shop rents 18% below market comps. Traffic counts of 37K VPD support the retail thesis and embedded rent steps provide inflation protection. Rollover risk is moderate with 3 shop leases expiring in the next 24 months.",
@@ -349,7 +349,7 @@ function HeroShowcase() {
       score: 72, verdict: "BUY",
       price: "$9.4M", cap: "8.34%", noi: "$784K", sf: "62.5K SF",
       photoUrl: "/pics/hales-corners.jpg",
-      hero: "linear-gradient(135deg, #2d1f4e 0%, #4a2d5f 40%, #4D7C0F 180%)",
+      hero: "linear-gradient(135deg, #2d1f4e 0%, #4a2d5f 40%, #84CC16 180%)",
       pricePerSf: "$150/SF", dscr: "1.51x", coc: "10.4%", debtYield: "12.4%",
       occupancy: "97%", yearBuilt: "2003", tenantCount: "9", walt: "5.4 yrs", submarket: "Milwaukee South",
       executive: "Grocery-anchored neighborhood center priced at a meaningful discount to replacement cost. Anchor has 8 years base term remaining with 2x5 year options and the shops are 97% occupied. The asset benefits from recession-resistant tenancy and stable, predictable cash flow.",
@@ -399,7 +399,7 @@ function HeroShowcase() {
       score: 69, verdict: "BUY",
       price: "$7.0M", cap: "8.39%", noi: "$587K", sf: "48.1K SF",
       photoUrl: "/pics/harwood.jpg",
-      hero: "linear-gradient(135deg, #1f3a3a 0%, #2d5555 40%, #4D7C0F 180%)",
+      hero: "linear-gradient(135deg, #1f3a3a 0%, #2d5555 40%, #84CC16 180%)",
       pricePerSf: "$146/SF", dscr: "1.38x", coc: "9.2%", debtYield: "11.8%",
       occupancy: "91%", yearBuilt: "1995", tenantCount: "7", walt: "4.1 yrs", submarket: "Milwaukee West",
       executive: "Coffee-anchored neighborhood center in a stable Wauwatosa submarket with strong surrounding demographics. Stone Creek Coffee draws daily, repeat foot traffic that lifts every shop tenant in the roster. In-place cap rate is attractive relative to submarket comps, though the non-credit local anchor and a modest CapEx backlog are considerations.",
@@ -593,7 +593,7 @@ function HeroShowcase() {
   ];
 
   const verdictColor: Record<string, { bg: string; fg: string; ring: string }> = {
-    BUY:     { bg: "rgba(132,204,22,0.15)", fg: "#4D7C0F", ring: "#4D7C0F" },
+    BUY:     { bg: "rgba(132,204,22,0.15)", fg: "#84CC16", ring: "#84CC16" },
     NEUTRAL: { bg: "rgba(217,119,6,0.15)",  fg: "#F59E0B", ring: "#F59E0B" },
     PASS:    { bg: "rgba(239,68,68,0.12)",  fg: "#F87171", ring: "#F87171" },
   };
@@ -623,7 +623,7 @@ function HeroShowcase() {
         <div>
           <div style={{ marginBottom: 16 }}>
             <h3 style={{ fontSize: 42, fontWeight: 800, color: "#fff", margin: 0, letterSpacing: -0.5, lineHeight: 1.05 }}>
-              Quickly <span style={{ color: "#4D7C0F" }}>score and rank</span> on-market deals.
+              Quickly <span style={{ color: "#84CC16" }}>score and rank</span> on-market deals.
             </h3>
             <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 15, margin: "8px 0 0", fontWeight: 500 }}>
               Upload an OM, get a verdict and a rent roll in under a minute.
@@ -816,7 +816,7 @@ function HeroShowcase() {
               width: 28, height: 28, borderRadius: 8,
               background: sortByScore ? "rgba(132,204,22,0.15)" : "rgba(255,255,255,0.04)",
               border: `1px solid ${sortByScore ? "rgba(132,204,22,0.45)" : "rgba(255,255,255,0.1)"}`,
-              color: sortByScore ? "#4D7C0F" : "rgba(255,255,255,0.55)",
+              color: sortByScore ? "#84CC16" : "rgba(255,255,255,0.55)",
               display: "inline-flex", alignItems: "center", justifyContent: "center",
               cursor: "pointer", padding: 0,
               transition: "background 0.15s ease, color 0.15s ease, border-color 0.15s ease",
@@ -833,7 +833,7 @@ function HeroShowcase() {
           <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", lineHeight: 1.25, marginBottom: 6, paddingRight: 34 }}>
             From OM to Decision
           </div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: "#4D7C0F", marginBottom: 18, lineHeight: 1 }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "#84CC16", marginBottom: 18, lineHeight: 1 }}>
             in 60 seconds
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -844,7 +844,7 @@ function HeroShowcase() {
               "Shareable deal view",
             ].map(f => (
               <div key={f} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
                 <span style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>{f}</span>
               </div>
             ))}
@@ -910,7 +910,7 @@ function HeroCardModal({ card: c, displayPhoto, verdictColor, onClose }: {
     text: "#0F172A",
     muted: "#6B7280",
     mutedSoft: "#94A3B8",
-    lime: "#3F6212",
+    lime: "#65A30D",
     limeSoft: "#F7FEE7",
     limeBorder: "rgba(132, 204, 22, 0.35)",
     amber: "#B45309",
@@ -922,7 +922,7 @@ function HeroCardModal({ card: c, displayPhoto, verdictColor, onClose }: {
     blue: "#2563EB",
   };
   const verdictLight: Record<string, { ring: string; fg: string; bg: string }> = {
-    BUY:     { ring: "#3F6212", fg: "#4D7C0F", bg: "#ECFCCB" },
+    BUY:     { ring: "#65A30D", fg: "#4D7C0F", bg: "#ECFCCB" },
     NEUTRAL: { ring: "#D97706", fg: "#B45309", bg: "#FEF3C7" },
     PASS:    { ring: "#DC2626", fg: "#B91C1C", bg: "#FEE2E2" },
   };
@@ -1958,10 +1958,10 @@ export default function OmAnalyzerPage() {
         }}>
           <div style={{
             padding: "48px 64px", borderRadius: 20,
-            border: "2px dashed #4D7C0F", background: "rgba(132,204,22,0.05)",
+            border: "2px dashed #84CC16", background: "rgba(132,204,22,0.05)",
             textAlign: "center",
           }}>
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }}>
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
             </svg>
             <div style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", marginBottom: 6 }}>Drop your file anywhere</div>
@@ -2006,7 +2006,7 @@ export default function OmAnalyzerPage() {
         .ds-om-outputs > div:hover { cursor: default; }
         /* Reusable curved green underline callout */
         .ds-callout {
-          color: #4D7C0F;
+          color: #84CC16;
           position: relative;
           display: inline-block;
         }
@@ -2048,17 +2048,17 @@ export default function OmAnalyzerPage() {
         .ds-process-strip { opacity: 1; }
         .ds-process-step { opacity: 1; }
         .ds-process-connector { position: relative; height: 2px; flex: 1; min-width: 32px; background: rgba(255,255,255,0.1); overflow: hidden; border-radius: 1px; align-self: center; }
-        .ds-process-connector::after { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 100%; background: #4D7C0F; border-radius: 1px; }
+        .ds-process-connector::after { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 100%; background: #84CC16; border-radius: 1px; }
         .ds-card { transition: all 0.25s ease; border-radius: 20px; background: rgba(22,22,31,0.6); border: 1px solid rgba(255,255,255,0.06); backdropFilter: blur(10px); }
         .ds-card:hover { transform: translateY(-3px); box-shadow: 0 0 30px rgba(132,204,22,0.06); }
         .ds-btn { display: inline-flex; align-items: center; justify-content: center; font-weight: 700; border-radius: 50px; cursor: pointer; transition: all 0.2s ease; text-decoration: none; border: none; }
         .ds-btn:hover { transform: translateY(-1px); }
-        .ds-btn-primary { background: #4D7C0F; color: #0d0d14; box-shadow: 0 0 30px rgba(132,204,22,0.4), 0 0 60px rgba(132,204,22,0.15); }
+        .ds-btn-primary { background: #84CC16; color: #0d0d14; box-shadow: 0 0 30px rgba(132,204,22,0.4), 0 0 60px rgba(132,204,22,0.15); }
         .ds-btn-primary:hover { box-shadow: 0 0 30px rgba(132,204,22,0.4), 0 0 60px rgba(132,204,22,0.15); transform: translateY(-2px); }
         .ds-btn-outline { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.12); }
-        .ds-btn-outline:hover { border-color: #4D7C0F; color: #4D7C0F; box-shadow: 0 0 20px rgba(132,204,22,0.15); }
+        .ds-btn-outline:hover { border-color: #84CC16; color: #84CC16; box-shadow: 0 0 20px rgba(132,204,22,0.15); }
         .om-upload-zone { transition: all 0.2s ease; }
-        .om-upload-zone:hover { border-color: #4D7C0F !important; background: rgba(132,204,22,0.08) !important; }
+        .om-upload-zone:hover { border-color: #84CC16 !important; background: rgba(132,204,22,0.08) !important; }
         .dl-btn { transition: all 0.2s ease; }
         .dl-btn:hover { background: rgba(132,204,22,0.15) !important; transform: translateY(-1px); }
         .om-dark-btn { transition: all 0.2s ease; }
@@ -2067,7 +2067,7 @@ export default function OmAnalyzerPage() {
         .om-feature-card { transition: all 0.25s ease; }
         .om-feature-card:hover { transform: translateY(-2px); }
         footer a { transition: color 0.15s ease; }
-        footer a:hover { color: #4D7C0F !important; }
+        footer a:hover { color: #84CC16 !important; }
         input:focus { box-shadow: 0 0 0 3px rgba(132,204,22,0.1) !important; }
         @media (max-width: 900px) {
           .ds-hero-grid { grid-template-columns: 1fr !important; text-align: center; }
@@ -2154,7 +2154,7 @@ export default function OmAnalyzerPage() {
               width: 56, height: 56, borderRadius: 14, background: "rgba(132,204,22,0.15)",
               display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 16,
             }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
             </div>
@@ -2189,7 +2189,7 @@ export default function OmAnalyzerPage() {
               }}
               style={{
                 display: "inline-block", padding: "14px 36px",
-                background: "linear-gradient(135deg, #4D7C0F, #a8d600)", color: "#0d0d14",
+                background: "linear-gradient(135deg, #84CC16, #a8d600)", color: "#0d0d14",
                 borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: "none",
                 marginBottom: 8, cursor: "pointer",
               }}
@@ -2206,7 +2206,7 @@ export default function OmAnalyzerPage() {
                 }}
                 style={{
                   display: "block", padding: "10px 20px",
-                  color: "#4D7C0F", fontSize: 13, fontWeight: 600, textDecoration: "none",
+                  color: "#84CC16", fontSize: 13, fontWeight: 600, textDecoration: "none",
                   cursor: "pointer",
                 }}
               >
@@ -2415,7 +2415,7 @@ export default function OmAnalyzerPage() {
               <div className="ds-hero-left" style={{ animation: "fadeInUp 0.5s ease-out" }}>
 
                 <div style={{
-                  fontSize: 13, fontWeight: 700, color: "#4D7C0F",
+                  fontSize: 13, fontWeight: 700, color: "#84CC16",
                   textTransform: "uppercase" as const, letterSpacing: 2,
                   marginBottom: 16,
                 }}>
@@ -2441,7 +2441,7 @@ export default function OmAnalyzerPage() {
               <div style={{ animation: "fadeInUp 0.5s ease-out 0.1s both", marginTop: -40 }}>
                 {/* "Try now" label */}
                 <div style={{ textAlign: "center", marginBottom: 14 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "#4D7C0F", letterSpacing: 0.3 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#84CC16", letterSpacing: 0.3 }}>
                     Instantly analyze on-market CRE deals. Try now.
                   </span>
                 </div>
@@ -2470,7 +2470,7 @@ export default function OmAnalyzerPage() {
                     background: dragging ? "rgba(132,204,22,0.06)" : "rgba(255,255,255,0.03)",
                     borderRadius: 20, padding: selectedFile ? "24px" : "48px 32px",
                     cursor: selectedFile ? "default" : "pointer",
-                    border: `2px dashed ${dragging ? "#4D7C0F" : "rgba(132,204,22,0.25)"}`,
+                    border: `2px dashed ${dragging ? "#84CC16" : "rgba(132,204,22,0.25)"}`,
                     textAlign: "center",
                     transition: "border-color 0.2s, background 0.2s",
                   }}
@@ -2484,7 +2484,7 @@ export default function OmAnalyzerPage() {
                         width: 56, height: 56, borderRadius: "50%", background: "rgba(132,204,22,0.12)",
                         display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 16,
                       }}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                           <polyline points="17 8 12 3 7 8" />
                           <line x1="12" y1="3" x2="12" y2="15" />
@@ -2508,7 +2508,7 @@ export default function OmAnalyzerPage() {
                         display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
                         background: "rgba(255,255,255,0.05)", borderRadius: 10, textAlign: "left",
                       }}>
-                        <span style={{ padding: "2px 8px", background: "rgba(132,204,22,0.15)", borderRadius: 6, fontSize: 9, fontWeight: 700, color: "#4D7C0F", textTransform: "uppercase", flexShrink: 0 }}>
+                        <span style={{ padding: "2px 8px", background: "rgba(132,204,22,0.15)", borderRadius: 6, fontSize: 9, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", flexShrink: 0 }}>
                           {selectedFile.name.split(".").pop()}
                         </span>
                         <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500, fontSize: 13, color: "#ffffff" }}>{selectedFile.name}</span>
@@ -2533,10 +2533,10 @@ export default function OmAnalyzerPage() {
                     <div style={{ height: 4, width: 56, background: "rgba(255,255,255,0.1)", borderRadius: 2, overflow: "hidden" }}>
                       <div style={{ height: "100%", borderRadius: 2, transition: "width 0.3s ease",
                         width: `${Math.min(100, (usageData.uploadsUsed / usageData.uploadLimit) * 100)}%`,
-                        background: usageData.uploadsUsed >= usageData.uploadLimit ? "#4D7C0F" : usageData.uploadsUsed >= usageData.uploadLimit - 1 ? "#eab308" : "#10b981",
+                        background: usageData.uploadsUsed >= usageData.uploadLimit ? "#84CC16" : usageData.uploadsUsed >= usageData.uploadLimit - 1 ? "#eab308" : "#10b981",
                       }} />
                     </div>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: usageData.uploadsUsed >= usageData.uploadLimit ? "#4D7C0F" : "#9ca3af" }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: usageData.uploadsUsed >= usageData.uploadLimit ? "#84CC16" : "#9ca3af" }}>
                       {usageData.uploadsUsed} / {usageData.uploadLimit} free
                     </span>
                   </div>
@@ -2554,7 +2554,7 @@ export default function OmAnalyzerPage() {
                 "Pre-diligence in 1 minute, not hours",
               ].map(t => (
                 <div key={t} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
                   <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.6)" }}>{t}</span>
                 </div>
               ))}
@@ -2585,7 +2585,7 @@ export default function OmAnalyzerPage() {
               <div style={{ textAlign: "center", marginBottom: 48 }}>
                 <div style={{
                   display: "inline-flex", alignItems: "center", padding: "6px 16px",
-                  borderRadius: 50, background: "rgba(132,204,22,0.08)", color: "#4D7C0F",
+                  borderRadius: 50, background: "rgba(132,204,22,0.08)", color: "#84CC16",
                   fontSize: 12, fontWeight: 700, marginBottom: 16, gap: 6,
                   letterSpacing: 0.5, textTransform: "uppercase" as const,
                   border: "1px solid rgba(132,204,22,0.18)",
@@ -2768,7 +2768,7 @@ export default function OmAnalyzerPage() {
                         width="100%"
                         height="100%"
                         fill="none"
-                        stroke="#4D7C0F"
+                        stroke="#84CC16"
                         strokeWidth="1.2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -2783,7 +2783,7 @@ export default function OmAnalyzerPage() {
                       <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", letterSpacing: -0.2 }}>{a.label}</div>
                       <div style={{
                         fontSize: 9, fontWeight: 800, letterSpacing: 0.6, textTransform: "uppercase",
-                        color: "#4D7C0F",
+                        color: "#84CC16",
                         background: "rgba(132,204,22,0.10)",
                         padding: "3px 8px", borderRadius: 4,
                         border: "1px solid rgba(132,204,22,0.22)",
@@ -2817,7 +2817,7 @@ export default function OmAnalyzerPage() {
                 fontSize: 13, color: "rgba(255,255,255,0.45)",
               }}>
                 We auto-detect the asset type from your OM and route it to the right model.
-                <span style={{ color: "#4D7C0F", fontWeight: 600 }}> No extra clicks.</span>
+                <span style={{ color: "#84CC16", fontWeight: 600 }}> No extra clicks.</span>
               </div>
             </div>
 
@@ -2850,7 +2850,7 @@ export default function OmAnalyzerPage() {
               <div style={{ textAlign: "center", marginBottom: 72 }}>
                 <div style={{
                   display: "inline-flex", alignItems: "center", padding: "6px 16px",
-                  borderRadius: 50, background: "rgba(132,204,22,0.06)", color: "#4D7C0F",
+                  borderRadius: 50, background: "rgba(132,204,22,0.06)", color: "#84CC16",
                   fontSize: 12, fontWeight: 700, marginBottom: 16, gap: 6,
                   letterSpacing: 0.5, textTransform: "uppercase" as const,
                 }}>
@@ -2908,18 +2908,18 @@ export default function OmAnalyzerPage() {
                         background: "rgba(132,204,22,0.08)", border: "1px solid rgba(132,204,22,0.15)",
                         display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20,
                       }}>
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={card.icon} /></svg>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={card.icon} /></svg>
                       </div>
 
                       {/* Stat callout */}
                       <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 16 }}>
-                        <span style={{ fontSize: 32, fontWeight: 800, color: "#4D7C0F", lineHeight: 1, letterSpacing: -1 }}>{card.stat}</span>
+                        <span style={{ fontSize: 32, fontWeight: 800, color: "#84CC16", lineHeight: 1, letterSpacing: -1 }}>{card.stat}</span>
                         <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(132,204,22,0.6)" }}>{card.statLabel}</span>
                       </div>
 
                       {/* Copy */}
                       <h3 style={{ fontSize: 18, fontWeight: 800, color: "#ffffff", marginBottom: 4, lineHeight: 1.3 }}>{card.headline}</h3>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: "#4D7C0F", marginBottom: 12 }}>{card.subline}</p>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: "#84CC16", marginBottom: 12 }}>{card.subline}</p>
                       <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{card.body}</p>
                     </div>
                   </ScrollReveal>
@@ -2939,7 +2939,7 @@ export default function OmAnalyzerPage() {
             <div style={{ position: "absolute", bottom: -150, left: -100, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.03)", filter: "blur(140px)", pointerEvents: "none" }} />
             {/* Subtle city skyline silhouette at bottom */}
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 220, pointerEvents: "none", opacity: 0.04 }}>
-              <svg width="100%" height="100%" viewBox="0 0 1200 220" preserveAspectRatio="none" fill="#4D7C0F">
+              <svg width="100%" height="100%" viewBox="0 0 1200 220" preserveAspectRatio="none" fill="#84CC16">
                 <path d="M0 220 V180 H30 V140 H50 V180 H70 V120 H80 V100 H90 V120 H110 V160 H130 V130 H140 V90 H150 V60 H160 V90 H170 V130 H190 V180 H220 V150 H240 V110 H250 V80 H260 V50 H270 V80 H280 V110 H300 V160 H330 V180 H360 V140 H370 V100 H380 V70 H390 V40 H400 V70 H410 V100 H420 V140 H450 V170 H480 V130 H500 V90 H510 V60 H520 V30 H530 V60 H540 V90 H560 V150 H590 V180 H620 V140 H640 V100 H650 V70 H660 V100 H670 V140 H700 V170 H730 V120 H750 V80 H760 V50 H770 V80 H780 V120 H810 V160 H840 V130 H860 V90 H870 V55 H880 V90 H890 V130 H920 V170 H950 V140 H970 V100 H980 V70 H990 V45 H1000 V70 H1010 V100 H1030 V150 H1060 V180 H1090 V140 H1110 V110 H1120 V80 H1130 V110 H1140 V140 H1170 V180 H1200 V220 Z" />
               </svg>
             </div>
@@ -2948,7 +2948,7 @@ export default function OmAnalyzerPage() {
 
               {/* Section header */}
               <div style={{ textAlign: "center", marginBottom: 64 }}>
-                <div style={{ display: "inline-flex", alignItems: "center", padding: "6px 16px", borderRadius: 50, background: "rgba(132,204,22,0.06)", color: "#4D7C0F", fontSize: 12, fontWeight: 700, marginBottom: 16, gap: 6, letterSpacing: 0.5, textTransform: "uppercase" as const }}>
+                <div style={{ display: "inline-flex", alignItems: "center", padding: "6px 16px", borderRadius: 50, background: "rgba(132,204,22,0.06)", color: "#84CC16", fontSize: 12, fontWeight: 700, marginBottom: 16, gap: 6, letterSpacing: 0.5, textTransform: "uppercase" as const }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
                   Quick Analysis
                 </div>
@@ -2967,7 +2967,7 @@ export default function OmAnalyzerPage() {
                   visual: (
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
                       {/* Scan line animation overlay */}
-                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, transparent, #4D7C0F, transparent)", animation: "scanDown 2.5s ease-in-out both", zIndex: 2 }} />
+                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, transparent, #84CC16, transparent)", animation: "scanDown 2.5s ease-in-out both", zIndex: 2 }} />
 
                       {/* File header */}
                       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6, animation: "fadeInUp 0.3s ease-out 0s both" }}>
@@ -2979,13 +2979,13 @@ export default function OmAnalyzerPage() {
                           <div style={{ fontSize: 9, color: "#6b7280" }}>2.4 MB · Processing...</div>
                         </div>
                         <div style={{ padding: "4px 10px", borderRadius: 50, background: "rgba(132,204,22,0.1)", border: "1px solid rgba(132,204,22,0.2)" }}>
-                          <span style={{ fontSize: 9, fontWeight: 700, color: "#4D7C0F", animation: "pulse 1.5s ease-in-out both" }}>EXTRACTING</span>
+                          <span style={{ fontSize: 9, fontWeight: 700, color: "#84CC16", animation: "pulse 1.5s ease-in-out both" }}>EXTRACTING</span>
                         </div>
                       </div>
 
                       {/* Divider with progress */}
                       <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "12px 0 14px", position: "relative" }}>
-                        <div style={{ position: "absolute", top: 0, left: 0, height: "100%", width: "100%", background: "linear-gradient(90deg, #4D7C0F, rgba(132,204,22,0.3))", animation: "progressFill 2s ease-out forwards" }} />
+                        <div style={{ position: "absolute", top: 0, left: 0, height: "100%", width: "100%", background: "linear-gradient(90deg, #84CC16, rgba(132,204,22,0.3))", animation: "progressFill 2s ease-out forwards" }} />
                       </div>
 
                       {/* Animated fields dropping in */}
@@ -3005,16 +3005,16 @@ export default function OmAnalyzerPage() {
                           border: "1px solid rgba(255,255,255,0.03)",
                         }}>
                           <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(132,204,22,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={f.icon} /></svg>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={f.icon} /></svg>
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 9, color: "#6b7280", fontWeight: 600, marginBottom: 1 }}>{f.label}</div>
                             <div style={{ fontSize: 11, color: "#fff", fontWeight: 700 }}>{f.value}</div>
                           </div>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2.5" style={{ flexShrink: 0, opacity: 0.6 }}><polyline points="20 6 9 17 4 12" /></svg>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5" style={{ flexShrink: 0, opacity: 0.6 }}><polyline points="20 6 9 17 4 12" /></svg>
                         </div>
                       ))}
-                      <div style={{ marginTop: 10, textAlign: "center", fontSize: 10, color: "#4D7C0F", fontWeight: 600, animation: "fadeInUp 0.3s ease-out 1.2s both" }}>40+ fields extracted in 8 seconds</div>
+                      <div style={{ marginTop: 10, textAlign: "center", fontSize: 10, color: "#84CC16", fontWeight: 600, animation: "fadeInUp 0.3s ease-out 1.2s both" }}>40+ fields extracted in 8 seconds</div>
                     </div>
                   ),
                 },
@@ -3028,22 +3028,22 @@ export default function OmAnalyzerPage() {
                       {/* Score ring with animated pulse */}
                       <div style={{ position: "relative", zIndex: 1, textAlign: "center", marginBottom: 20 }}>
                         <div style={{ position: "relative", display: "inline-block" }}>
-                          <div style={{ width: 96, height: 96, borderRadius: "50%", border: "4px solid #4D7C0F", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 40px rgba(132,204,22,0.2), inset 0 0 20px rgba(132,204,22,0.05)", animation: "pulse 2.5s ease-in-out both" }}>
+                          <div style={{ width: 96, height: 96, borderRadius: "50%", border: "4px solid #84CC16", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 40px rgba(132,204,22,0.2), inset 0 0 20px rgba(132,204,22,0.05)", animation: "pulse 2.5s ease-in-out both" }}>
                             <div>
-                              <span style={{ fontSize: 36, fontWeight: 800, color: "#4D7C0F", lineHeight: 1 }}>74</span>
+                              <span style={{ fontSize: 36, fontWeight: 800, color: "#84CC16", lineHeight: 1 }}>74</span>
                               <div style={{ fontSize: 8, fontWeight: 700, color: "rgba(132,204,22,0.6)", letterSpacing: 1, marginTop: 2 }}>/ 100</div>
                             </div>
                           </div>
                           {/* BUY badge */}
-                          <div style={{ position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%)", padding: "3px 14px", borderRadius: 50, background: "#4D7C0F", color: "#0d0d14", fontSize: 10, fontWeight: 800, letterSpacing: 1, whiteSpace: "nowrap" as const }}>BUY SIGNAL</div>
+                          <div style={{ position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%)", padding: "3px 14px", borderRadius: 50, background: "#84CC16", color: "#0d0d14", fontSize: 10, fontWeight: 800, letterSpacing: 1, whiteSpace: "nowrap" as const }}>BUY SIGNAL</div>
                         </div>
                       </div>
 
                       {/* Animated callout cards */}
                       <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 8, marginTop: 28 }}>
                         {[
-                          { icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z", label: "Strong Location", detail: "High-traffic retail corridor", color: "#4D7C0F", delay: "0.2s" },
-                          { icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", label: "Investment Grade Tenant", detail: "Walgreens (S&P: BBB)", color: "#4D7C0F", delay: "0.4s" },
+                          { icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z", label: "Strong Location", detail: "High-traffic retail corridor", color: "#84CC16", delay: "0.2s" },
+                          { icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", label: "Investment Grade Tenant", detail: "Walgreens (S&P: BBB)", color: "#84CC16", delay: "0.4s" },
                           { icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z", label: "Below Market Rents", detail: "12% upside at renewal", color: "#D97706", delay: "0.6s" },
                           { icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z", label: "Rollover Risk", detail: "Lease expires in 18 months", color: "#ef4444", delay: "0.8s" },
                           { icon: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6", label: "Moderate DSCR", detail: "1.42x - meets threshold", color: "#D97706", delay: "1.0s" },
@@ -3073,7 +3073,7 @@ export default function OmAnalyzerPage() {
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Scoreboard header */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: "#4D7C0F", textTransform: "uppercase" as const, letterSpacing: 0.8 }}>Deal Scorecard</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 0.8 }}>Deal Scorecard</span>
                         <span style={{ fontSize: 9, color: "#6b7280" }}>Sorted by Score ↓</span>
                       </div>
                       {/* Column headers */}
@@ -3085,8 +3085,8 @@ export default function OmAnalyzerPage() {
                       </div>
                       {/* Animated rows */}
                       {[
-                        { name: "Walgreens NNN", loc: "Cedar Park, TX", score: 74, signal: "BUY", signalColor: "#4D7C0F", cap: "5.85%", delay: "0.15s" },
-                        { name: "CVS Pharmacy", loc: "Plano, TX", score: 71, signal: "BUY", signalColor: "#4D7C0F", cap: "5.40%", delay: "0.3s" },
+                        { name: "Walgreens NNN", loc: "Cedar Park, TX", score: 74, signal: "BUY", signalColor: "#84CC16", cap: "5.85%", delay: "0.15s" },
+                        { name: "CVS Pharmacy", loc: "Plano, TX", score: 71, signal: "BUY", signalColor: "#84CC16", cap: "5.40%", delay: "0.3s" },
                         { name: "Autozone NNN", loc: "Round Rock, TX", score: 68, signal: "HOLD", signalColor: "#D97706", cap: "6.25%", delay: "0.45s" },
                         { name: "Dollar General", loc: "Lawrenceville, GA", score: 61, signal: "HOLD", signalColor: "#eab308", cap: "6.50%", delay: "0.6s" },
                         { name: "O'Reilly Auto NNN", loc: "Pflugerville, TX", score: 48, signal: "PASS", signalColor: "#ef4444", cap: "7.80%", delay: "0.75s" },
@@ -3122,7 +3122,7 @@ export default function OmAnalyzerPage() {
                       {/* Excel tab bar */}
                       <div style={{ display: "flex", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "0 8px" }}>
                         {["Summary", "Rent Roll", "Operating", "Debt & Returns", "Breakeven", "Cap Scenarios"].map((tab, i) => (
-                          <span key={tab} style={{ fontSize: 9, fontWeight: i === 0 ? 700 : 500, padding: "8px 12px", color: i === 0 ? "#4D7C0F" : "#6b7280", borderBottom: i === 0 ? "2px solid #4D7C0F" : "2px solid transparent", background: i === 0 ? "rgba(132,204,22,0.04)" : "transparent" }}>{tab}</span>
+                          <span key={tab} style={{ fontSize: 9, fontWeight: i === 0 ? 700 : 500, padding: "8px 12px", color: i === 0 ? "#84CC16" : "#6b7280", borderBottom: i === 0 ? "2px solid #84CC16" : "2px solid transparent", background: i === 0 ? "rgba(132,204,22,0.04)" : "transparent" }}>{tab}</span>
                         ))}
                       </div>
 
@@ -3131,10 +3131,10 @@ export default function OmAnalyzerPage() {
                         {/* Price input with "editable" highlight */}
                         <div style={{ marginBottom: 12, padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(132,204,22,0.25)", background: "rgba(132,204,22,0.03)", animation: "fadeInUp 0.3s ease-out 0.1s both" }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ fontSize: 10, fontWeight: 600, color: "#4D7C0F" }}>Purchase Price</span>
+                            <span style={{ fontSize: 10, fontWeight: 600, color: "#84CC16" }}>Purchase Price</span>
                             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                               <span style={{ fontSize: 14, fontWeight: 800, color: "#fff", fontFamily: "monospace" }}>$7,050,000</span>
-                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                             </div>
                           </div>
                         </div>
@@ -3163,7 +3163,7 @@ export default function OmAnalyzerPage() {
 
                       {/* Download bar */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", borderTop: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.01)" }}>
-                        <div style={{ padding: "6px 16px", borderRadius: 8, background: "#4D7C0F", color: "#0d0d14", fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                        <div style={{ padding: "6px 16px", borderRadius: 8, background: "#84CC16", color: "#0d0d14", fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
                           Download .xlsx
                         </div>
@@ -3186,13 +3186,13 @@ export default function OmAnalyzerPage() {
                         ].map(tab => (
                           <div key={tab.label} style={{
                             padding: "10px 14px", fontSize: 10, fontWeight: tab.active ? 700 : 500,
-                            color: tab.active ? "#4D7C0F" : "#6b7280",
-                            borderBottom: tab.active ? "2px solid #4D7C0F" : "2px solid transparent",
+                            color: tab.active ? "#84CC16" : "#6b7280",
+                            borderBottom: tab.active ? "2px solid #84CC16" : "2px solid transparent",
                             background: tab.active ? "rgba(132,204,22,0.04)" : "transparent",
                             display: "flex", alignItems: "center", gap: 5,
                           }}>
                             {tab.label}
-                            <span style={{ fontSize: 8, fontWeight: 700, padding: "1px 5px", borderRadius: 50, background: tab.active ? "rgba(132,204,22,0.15)" : "rgba(255,255,255,0.06)", color: tab.active ? "#4D7C0F" : "#6b7280" }}>{tab.count}</span>
+                            <span style={{ fontSize: 8, fontWeight: 700, padding: "1px 5px", borderRadius: 50, background: tab.active ? "rgba(132,204,22,0.15)" : "rgba(255,255,255,0.06)", color: tab.active ? "#84CC16" : "#6b7280" }}>{tab.count}</span>
                           </div>
                         ))}
                       </div>
@@ -3200,8 +3200,8 @@ export default function OmAnalyzerPage() {
                       {/* Retail NNN deals list */}
                       <div style={{ padding: "12px 16px" }}>
                         {[
-                          { name: "Walgreens NNN", loc: "Cedar Park, TX", price: "$7.05M", cap: "5.85%", score: 74, color: "#4D7C0F", delay: "0.15s" },
-                          { name: "CVS Pharmacy", loc: "Plano, TX", price: "$5.2M", cap: "5.40%", score: 71, color: "#4D7C0F", delay: "0.3s" },
+                          { name: "Walgreens NNN", loc: "Cedar Park, TX", price: "$7.05M", cap: "5.85%", score: 74, color: "#84CC16", delay: "0.15s" },
+                          { name: "CVS Pharmacy", loc: "Plano, TX", price: "$5.2M", cap: "5.40%", score: 71, color: "#84CC16", delay: "0.3s" },
                           { name: "Dollar General", loc: "Lawrenceville, GA", price: "$2.8M", cap: "6.50%", score: 61, color: "#eab308", delay: "0.45s" },
                           { name: "7-Eleven NNN", loc: "Frisco, TX", price: "$3.1M", cap: "5.95%", score: 58, color: "#D97706", delay: "0.6s" },
                         ].map((d, i) => (
@@ -3227,7 +3227,7 @@ export default function OmAnalyzerPage() {
                       {/* Bottom stats */}
                       <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 20px", borderTop: "1px solid rgba(255,255,255,0.04)", background: "rgba(255,255,255,0.01)" }}>
                         <span style={{ fontSize: 9, color: "#6b7280" }}>4 deals · Avg score: 66</span>
-                        <span style={{ fontSize: 9, color: "#4D7C0F", fontWeight: 600 }}>+ Upload New Deal</span>
+                        <span style={{ fontSize: 9, color: "#84CC16", fontWeight: 600 }}>+ Upload New Deal</span>
                       </div>
                     </div>
                   ),
@@ -3238,7 +3238,7 @@ export default function OmAnalyzerPage() {
                     <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
                       {/* Header with asset type */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 18px", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: "#4D7C0F", textTransform: "uppercase" as const, letterSpacing: 0.8 }}>Retail NNN Comparison</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 0.8 }}>Retail NNN Comparison</span>
                         <span style={{ fontSize: 9, color: "#6b7280" }}>3 deals</span>
                       </div>
 
@@ -3250,12 +3250,12 @@ export default function OmAnalyzerPage() {
                           <div style={{ padding: "8px 4px", fontWeight: 700, color: "#fff", textAlign: "center" }}>CVS</div>
                           <div style={{ padding: "8px 4px", fontWeight: 700, color: "#fff", textAlign: "center" }}>Dollar Gen.</div>
                           {[
-                            { m: "Score", v: ["74", "71", "61"], c: ["#4D7C0F", "#4D7C0F", "#eab308"] },
+                            { m: "Score", v: ["74", "71", "61"], c: ["#84CC16", "#84CC16", "#eab308"] },
                             { m: "Price", v: ["$7.05M", "$5.2M", "$2.8M"], c: ["#fff", "#fff", "#fff"] },
                             { m: "Cap Rate", v: ["5.85%", "5.40%", "6.50%"], c: ["#fff", "#fff", "#fff"] },
                             { m: "NOI", v: ["$412K", "$281K", "$182K"], c: ["#fff", "#fff", "#fff"] },
-                            { m: "DSCR", v: ["1.42x", "1.38x", "1.08x"], c: ["#4D7C0F", "#4D7C0F", "#ef4444"] },
-                            { m: "Signal", v: ["BUY", "BUY", "HOLD"], c: ["#4D7C0F", "#4D7C0F", "#eab308"] },
+                            { m: "DSCR", v: ["1.42x", "1.38x", "1.08x"], c: ["#84CC16", "#84CC16", "#ef4444"] },
+                            { m: "Signal", v: ["BUY", "BUY", "HOLD"], c: ["#84CC16", "#84CC16", "#eab308"] },
                           ].map((row, ri) => (
                             <React.Fragment key={row.m}>
                               <div style={{ padding: "7px 0", fontWeight: 600, color: "#6b7280", borderTop: "1px solid rgba(255,255,255,0.04)", animation: `fadeInUp 0.25s ease-out ${0.1 + ri * 0.08}s both` }}>{row.m}</div>
@@ -3270,8 +3270,8 @@ export default function OmAnalyzerPage() {
                       {/* ── Mobile: stacked deal cards ── */}
                       <div className="ds-compare-cards" style={{ display: "none", flexDirection: "column", gap: 8, padding: "12px 14px" }}>
                         {[
-                          { name: "Walgreens NNN", score: 74, signal: "BUY", signalColor: "#4D7C0F", price: "$7.05M", cap: "5.85%", noi: "$412K", dscr: "1.42x", dscrColor: "#4D7C0F", winner: true, delay: "0.1s" },
-                          { name: "CVS Pharmacy", score: 71, signal: "BUY", signalColor: "#4D7C0F", price: "$5.2M", cap: "5.40%", noi: "$281K", dscr: "1.38x", dscrColor: "#4D7C0F", winner: false, delay: "0.25s" },
+                          { name: "Walgreens NNN", score: 74, signal: "BUY", signalColor: "#84CC16", price: "$7.05M", cap: "5.85%", noi: "$412K", dscr: "1.42x", dscrColor: "#84CC16", winner: true, delay: "0.1s" },
+                          { name: "CVS Pharmacy", score: 71, signal: "BUY", signalColor: "#84CC16", price: "$5.2M", cap: "5.40%", noi: "$281K", dscr: "1.38x", dscrColor: "#84CC16", winner: false, delay: "0.25s" },
                           { name: "Dollar General", score: 61, signal: "HOLD", signalColor: "#eab308", price: "$2.8M", cap: "6.50%", noi: "$182K", dscr: "1.08x", dscrColor: "#ef4444", winner: false, delay: "0.4s" },
                         ].map(deal => (
                           <div key={deal.name} style={{
@@ -3311,8 +3311,8 @@ export default function OmAnalyzerPage() {
 
                       {/* Winner callout */}
                       <div style={{ padding: "10px 18px", borderTop: "1px solid rgba(255,255,255,0.04)", background: "rgba(132,204,22,0.03)", display: "flex", alignItems: "center", gap: 8, animation: "fadeInUp 0.3s ease-out 0.7s both" }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: "#4D7C0F" }}>Walgreens NNN leads on 5 of 6 metrics</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#84CC16" }}>Walgreens NNN leads on 5 of 6 metrics</span>
                       </div>
                     </div>
                   ),
@@ -3362,8 +3362,8 @@ export default function OmAnalyzerPage() {
 
                         {/* Animated pins dropping in */}
                         {[
-                          { left: "25%", top: "30%", score: 74, name: "Walgreens", color: "#4D7C0F", delay: "0.2s", active: true },
-                          { left: "52%", top: "58%", score: 71, name: "CVS", color: "#4D7C0F", delay: "0.5s", active: false },
+                          { left: "25%", top: "30%", score: 74, name: "Walgreens", color: "#84CC16", delay: "0.2s", active: true },
+                          { left: "52%", top: "58%", score: 71, name: "CVS", color: "#84CC16", delay: "0.5s", active: false },
                           { left: "70%", top: "35%", score: 61, name: "Dollar Gen.", color: "#eab308", delay: "0.8s", active: false },
                           { left: "38%", top: "72%", score: 58, name: "7-Eleven", color: "#D97706", delay: "1.1s", active: false },
                         ].map((pin, i) => (
@@ -3387,8 +3387,8 @@ export default function OmAnalyzerPage() {
                       {/* Share bar */}
                       <div style={{ padding: "10px 18px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(255,255,255,0.01)" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
-                          <span style={{ fontSize: 10, fontWeight: 600, color: "#4D7C0F" }}>Share Map with Client</span>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
+                          <span style={{ fontSize: 10, fontWeight: 600, color: "#84CC16" }}>Share Map with Client</span>
                         </div>
                         <span style={{ fontSize: 9, color: "#6b7280" }}>4 pins · Retail NNN Board</span>
                       </div>
@@ -3404,10 +3404,10 @@ export default function OmAnalyzerPage() {
                         <div style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", marginBottom: 10, textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Private Share Link</div>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
                           <div style={{ flex: 1, padding: "10px 14px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 8 }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></svg>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></svg>
                             <span style={{ fontSize: 11, color: "#9ca3af", fontFamily: "monospace" }}>dealsignals.app/s/NRC7wA...</span>
                           </div>
-                          <div style={{ padding: "10px 16px", borderRadius: 8, background: "#4D7C0F", color: "#0d0d14", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" as const, animation: "fadeInUp 0.3s ease-out 0.3s both" }}>Copy</div>
+                          <div style={{ padding: "10px 16px", borderRadius: 8, background: "#84CC16", color: "#0d0d14", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" as const, animation: "fadeInUp 0.3s ease-out 0.3s both" }}>Copy</div>
                         </div>
 
                         {/* Access control */}
@@ -3417,8 +3417,8 @@ export default function OmAnalyzerPage() {
                             { icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z", label: "Expires in 7 days", active: true },
                           ].map(opt => (
                             <div key={opt.label} style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 6, background: "rgba(132,204,22,0.06)", border: "1px solid rgba(132,204,22,0.12)" }}>
-                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={opt.icon} /></svg>
-                              <span style={{ fontSize: 9, fontWeight: 600, color: "#4D7C0F" }}>{opt.label}</span>
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={opt.icon} /></svg>
+                              <span style={{ fontSize: 9, fontWeight: 600, color: "#84CC16" }}>{opt.label}</span>
                             </div>
                           ))}
                         </div>
@@ -3427,7 +3427,7 @@ export default function OmAnalyzerPage() {
                       {/* Client preview card */}
                       <div style={{ margin: "0 20px 20px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden", animation: "fadeInUp 0.4s ease-out 0.6s both" }}>
                         <div style={{ padding: "4px 12px", background: "rgba(132,204,22,0.06)", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                          <span style={{ fontSize: 8, fontWeight: 700, color: "#4D7C0F", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Client Preview</span>
+                          <span style={{ fontSize: 8, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Client Preview</span>
                         </div>
                         <div style={{ padding: "14px 14px 10px" }}>
                           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
@@ -3435,7 +3435,7 @@ export default function OmAnalyzerPage() {
                               <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>Walgreens NNN - Cedar Park, TX</div>
                               <div style={{ fontSize: 9, color: "#6b7280" }}>Retail NNN · 14,820 SF · $7.05M</div>
                             </div>
-                            <div style={{ width: 28, height: 28, borderRadius: "50%", border: "2px solid #4D7C0F", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "#4D7C0F" }}>74</div>
+                            <div style={{ width: 28, height: 28, borderRadius: "50%", border: "2px solid #84CC16", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "#84CC16" }}>74</div>
                           </div>
                           <div style={{ display: "flex", gap: 12 }}>
                             {[{ l: "Cap", v: "5.85%" }, { l: "NOI", v: "$412K" }, { l: "DSCR", v: "1.42x" }].map(m => (
@@ -3465,7 +3465,7 @@ export default function OmAnalyzerPage() {
                         {/* Bright number circle */}
                         <div style={{
                           width: 44, height: 44, borderRadius: "50%",
-                          background: "#4D7C0F", color: "#0d0d14",
+                          background: "#84CC16", color: "#0d0d14",
                           display: "inline-flex", alignItems: "center", justifyContent: "center",
                           fontSize: 16, fontWeight: 800, marginBottom: 16,
                           boxShadow: "0 4px 16px rgba(132,204,22,0.25)",
@@ -3534,7 +3534,7 @@ export default function OmAnalyzerPage() {
                   ].map(f => (
                     <div key={f.label} style={{ display: "flex", alignItems: "center", gap: 12 }}>
                       <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(132,204,22,0.06)", border: "1px solid rgba(132,204,22,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={f.icon} /></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={f.icon} /></svg>
                       </div>
                       <span style={{ fontSize: 13, fontWeight: 600, color: "#9ca3af" }}>{f.label}</span>
                     </div>
@@ -3638,16 +3638,16 @@ export default function OmAnalyzerPage() {
                   boxShadow: tier.highlight ? "0 0 40px rgba(132,204,22,0.1)" : "none",
                 }}>
                   {tier.highlight && (
-                    <div style={{ position: "absolute", top: 0, right: 0, background: "#4D7C0F", color: "#0d0d14", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                    <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#0d0d14", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
                       Most Popular
                     </div>
                   )}
                   {(tier as any).bestValue && (
-                    <div style={{ position: "absolute", top: 0, right: 0, background: "#4D7C0F", color: "#0d0d14", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                    <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#0d0d14", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
                       Best Value
                     </div>
                   )}
-                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: tier.highlight ? "#4D7C0F" : "#9ca3af", marginBottom: 10 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: tier.highlight ? "#84CC16" : "#9ca3af", marginBottom: 10 }}>
                     {tier.name}
                   </div>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 4 }}>
@@ -3657,7 +3657,7 @@ export default function OmAnalyzerPage() {
                   </div>
                   <p style={{ fontSize: 13, color: "#9ca3af", marginBottom: (tier as any).valueCallout ? 10 : 28, lineHeight: 1.5 }}>{tier.desc}</p>
                   {(tier as any).valueCallout && (
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#4D7C0F", marginBottom: 20, letterSpacing: 0.3 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#84CC16", marginBottom: 20, letterSpacing: 0.3 }}>
                       {(tier as any).valueCallout}
                     </div>
                   )}
@@ -3666,7 +3666,7 @@ export default function OmAnalyzerPage() {
                     {tier.features.map(f => (
                       <div key={f.text} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: f.included ? "#e2e8f0" : "rgba(255,255,255,0.3)" }}>
                         {f.included ? (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2.5"><path d="M5 13l4 4L19 7" /></svg>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5"><path d="M5 13l4 4L19 7" /></svg>
                         ) : (
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
                         )}
@@ -3677,8 +3677,8 @@ export default function OmAnalyzerPage() {
 
                   <Link href={tier.ctaLink} style={{
                     display: "block", width: "100%", padding: "12px", textAlign: "center",
-                    background: tier.highlight ? "#4D7C0F" : "rgba(132,204,22,0.12)",
-                    color: tier.highlight ? "#0d0d14" : "#4D7C0F",
+                    background: tier.highlight ? "#84CC16" : "rgba(132,204,22,0.12)",
+                    color: tier.highlight ? "#0d0d14" : "#84CC16",
                     border: tier.highlight ? "none" : "1px solid rgba(132,204,22,0.3)",
                     borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: "none", fontFamily: "inherit",
                     boxSizing: "border-box", transition: "all 0.2s ease",
@@ -3703,7 +3703,7 @@ export default function OmAnalyzerPage() {
 
             {/* Header */}
             <div style={{ textAlign: "center", marginBottom: 64 }}>
-              <div style={{ display: "inline-flex", alignItems: "center", padding: "6px 16px", borderRadius: 50, background: "rgba(132,204,22,0.06)", color: "#4D7C0F", fontSize: 12, fontWeight: 700, marginBottom: 16, gap: 6, letterSpacing: 0.5, textTransform: "uppercase" as const }}>
+              <div style={{ display: "inline-flex", alignItems: "center", padding: "6px 16px", borderRadius: 50, background: "rgba(132,204,22,0.06)", color: "#84CC16", fontSize: 12, fontWeight: 700, marginBottom: 16, gap: 6, letterSpacing: 0.5, textTransform: "uppercase" as const }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
                 FAQ
               </div>
@@ -3720,7 +3720,7 @@ export default function OmAnalyzerPage() {
               {/* Left column */}
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {/* Category: Getting Started */}
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#4D7C0F", textTransform: "uppercase" as const, letterSpacing: 1, padding: "0 0 8px", marginBottom: 4 }}>Getting Started</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "0 0 8px", marginBottom: 4 }}>Getting Started</div>
 
                 {[
                   { q: "What exactly does DealSignals do?", a: "DealSignals is a pre-diligence engine for commercial real estate. Upload an OM, rent roll, or broker flyer and get a scored deal brief with extracted financials, risk signals, and a buy/hold/pass recommendation in under 60 seconds." },
@@ -3747,8 +3747,8 @@ export default function OmAnalyzerPage() {
                           color: "inherit", font: "inherit", outline: "none",
                         }}
                       >
-                        <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#4D7C0F" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#4D7C0F" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#84CC16" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#84CC16" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
                           <polyline points="6 9 12 15 18 9" />
                         </svg>
                       </button>
@@ -3762,7 +3762,7 @@ export default function OmAnalyzerPage() {
                 })}
 
                 {/* Category: Pricing */}
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#4D7C0F", textTransform: "uppercase" as const, letterSpacing: 1, padding: "16px 0 8px", marginBottom: 4 }}>Pricing &amp; Plans</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "16px 0 8px", marginBottom: 4 }}>Pricing &amp; Plans</div>
 
                 {[
                   { q: "Is it really free?", a: "Yes. Try 2 deals without signing up. Create a free account for 5 total analyses with scoring, risk signals, and Excel export. Same output Pro users get." },
@@ -3787,8 +3787,8 @@ export default function OmAnalyzerPage() {
                           color: "inherit", font: "inherit", outline: "none",
                         }}
                       >
-                        <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#4D7C0F" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#4D7C0F" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#84CC16" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#84CC16" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
                           <polyline points="6 9 12 15 18 9" />
                         </svg>
                       </button>
@@ -3805,7 +3805,7 @@ export default function OmAnalyzerPage() {
               {/* Right column */}
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {/* Category: The Product */}
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#4D7C0F", textTransform: "uppercase" as const, letterSpacing: 1, padding: "0 0 8px", marginBottom: 4 }}>The Product</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "0 0 8px", marginBottom: 4 }}>The Product</div>
 
                 {[
                   { q: "How is this different from just reading the OM?", a: "Reading an OM takes 20–45 minutes and you still have to build a spreadsheet. DealSignals gives you the same data extraction, a structured financial summary, and a scored recommendation in under 60 seconds. It's the difference between reading every deal and filtering to the ones worth your time." },
@@ -3832,8 +3832,8 @@ export default function OmAnalyzerPage() {
                           color: "inherit", font: "inherit", outline: "none",
                         }}
                       >
-                        <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#4D7C0F" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#4D7C0F" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#84CC16" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#84CC16" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
                           <polyline points="6 9 12 15 18 9" />
                         </svg>
                       </button>
@@ -3847,7 +3847,7 @@ export default function OmAnalyzerPage() {
                 })}
 
                 {/* Category: Security */}
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#4D7C0F", textTransform: "uppercase" as const, letterSpacing: 1, padding: "16px 0 8px", marginBottom: 4 }}>Privacy &amp; Security</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "16px 0 8px", marginBottom: 4 }}>Privacy &amp; Security</div>
 
                 {[
                   { q: "Is my data private and secure?", a: "Yes. Documents are processed in real-time and not stored permanently on our servers. We don't sell or share your data. No tracking cookies, no analytics on your deals. Free tier doesn't even require an account." },
@@ -3871,8 +3871,8 @@ export default function OmAnalyzerPage() {
                           color: "inherit", font: "inherit", outline: "none",
                         }}
                       >
-                        <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#4D7C0F" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#4D7C0F" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#84CC16" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#84CC16" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
                           <polyline points="6 9 12 15 18 9" />
                         </svg>
                       </button>
@@ -3926,15 +3926,15 @@ export default function OmAnalyzerPage() {
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 220, zIndex: 1, overflow: "hidden" }}>
             {/* Layer 1 - far buildings, slow pan */}
             <svg style={{ position: "absolute", bottom: 0, left: 0, width: "200%", height: 180, opacity: 0.04, animation: "panCity1 60s linear infinite" }} viewBox="0 0 2400 180" preserveAspectRatio="none">
-              <path d="M0,140 h30 v-60 h20 v60 h40 v-90 h15 v-20 h15 v110 h50 v-70 h20 v70 h30 v-50 h25 v50 h35 v-100 h10 v-30 h10 v130 h45 v-80 h20 v80 h30 v-45 h20 v45 h50 v-110 h15 v-15 h15 v125 h40 v-60 h25 v60 h30 v-85 h20 v85 h45 v-70 h15 v70 h35 v-95 h10 v-25 h15 v120 h40 v-55 h20 v55 h50 v-75 h20 v75 h30 v-40 h25 v40 h35 v-100 h15 v100 h40 v-65 h20 v65 h45 v-110 h10 v-20 h10 v130 h30 v-50 h20 v50 h40 v-80 h15 v80 h50 v-70 h25 v70 h30 v-90 h20 v90 h0 V180 H0 Z" fill="#4D7C0F"/>
+              <path d="M0,140 h30 v-60 h20 v60 h40 v-90 h15 v-20 h15 v110 h50 v-70 h20 v70 h30 v-50 h25 v50 h35 v-100 h10 v-30 h10 v130 h45 v-80 h20 v80 h30 v-45 h20 v45 h50 v-110 h15 v-15 h15 v125 h40 v-60 h25 v60 h30 v-85 h20 v85 h45 v-70 h15 v70 h35 v-95 h10 v-25 h15 v120 h40 v-55 h20 v55 h50 v-75 h20 v75 h30 v-40 h25 v40 h35 v-100 h15 v100 h40 v-65 h20 v65 h45 v-110 h10 v-20 h10 v130 h30 v-50 h20 v50 h40 v-80 h15 v80 h50 v-70 h25 v70 h30 v-90 h20 v90 h0 V180 H0 Z" fill="#84CC16"/>
             </svg>
             {/* Layer 2 - mid buildings, medium pan */}
             <svg style={{ position: "absolute", bottom: 0, left: 0, width: "200%", height: 160, opacity: 0.06, animation: "panCity2 45s linear infinite" }} viewBox="0 0 2400 160" preserveAspectRatio="none">
-              <path d="M0,120 h25 v-80 h18 v80 h35 v-50 h22 v50 h28 v-100 h12 v-25 h12 v125 h45 v-65 h18 v65 h38 v-90 h15 v90 h30 v-40 h25 v40 h42 v-110 h10 v-15 h14 v125 h35 v-55 h20 v55 h50 v-75 h18 v75 h28 v-95 h15 v95 h40 v-60 h22 v60 h32 v-85 h12 v85 h48 v-70 h15 v70 h30 v-105 h10 v-20 h12 v125 h42 v-50 h20 v50 h35 v-80 h18 v80 h28 v-45 h22 v45 h45 v-90 h15 v90 h38 v-65 h20 v65 h30 v-100 h12 v100 V160 H0 Z" fill="#4D7C0F"/>
+              <path d="M0,120 h25 v-80 h18 v80 h35 v-50 h22 v50 h28 v-100 h12 v-25 h12 v125 h45 v-65 h18 v65 h38 v-90 h15 v90 h30 v-40 h25 v40 h42 v-110 h10 v-15 h14 v125 h35 v-55 h20 v55 h50 v-75 h18 v75 h28 v-95 h15 v95 h40 v-60 h22 v60 h32 v-85 h12 v85 h48 v-70 h15 v70 h30 v-105 h10 v-20 h12 v125 h42 v-50 h20 v50 h35 v-80 h18 v80 h28 v-45 h22 v45 h45 v-90 h15 v90 h38 v-65 h20 v65 h30 v-100 h12 v100 V160 H0 Z" fill="#84CC16"/>
             </svg>
             {/* Layer 3 - near buildings, faster pan */}
             <svg style={{ position: "absolute", bottom: 0, left: 0, width: "200%", height: 120, opacity: 0.08, animation: "panCity3 30s linear infinite" }} viewBox="0 0 2400 120" preserveAspectRatio="none">
-              <path d="M0,80 h40 v-40 h30 v40 h20 v-60 h25 v60 h35 v-30 h30 v30 h25 v-50 h20 v50 h40 v-70 h15 v70 h30 v-35 h25 v35 h45 v-55 h20 v55 h30 v-45 h30 v45 h20 v-65 h25 v65 h35 v-40 h20 v40 h40 v-50 h30 v50 h25 v-70 h20 v70 h45 v-35 h25 v35 h30 v-55 h20 v55 h35 v-45 h25 v45 h40 v-60 h30 v60 h20 v-30 h25 v30 h45 v-50 h20 v50 h30 v-40 h30 v40 V120 H0 Z" fill="#4D7C0F"/>
+              <path d="M0,80 h40 v-40 h30 v40 h20 v-60 h25 v60 h35 v-30 h30 v30 h25 v-50 h20 v50 h40 v-70 h15 v70 h30 v-35 h25 v35 h45 v-55 h20 v55 h30 v-45 h30 v45 h20 v-65 h25 v65 h35 v-40 h20 v40 h40 v-50 h30 v50 h25 v-70 h20 v70 h45 v-35 h25 v35 h30 v-55 h20 v55 h35 v-45 h25 v45 h40 v-60 h30 v60 h20 v-30 h25 v30 h45 v-50 h20 v50 h30 v-40 h30 v40 V120 H0 Z" fill="#84CC16"/>
             </svg>
             {/* Gradient fade at top of cityscape */}
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 60, background: "linear-gradient(to bottom, #0d0d14, transparent)", zIndex: 2 }} />
@@ -3952,7 +3952,7 @@ export default function OmAnalyzerPage() {
               }}>
                 <span style={{
                   padding: "2px 6px", background: "rgba(132,204,22,0.2)", borderRadius: 4,
-                  fontSize: 9, fontWeight: 700, color: "#4D7C0F", textTransform: "uppercase",
+                  fontSize: 9, fontWeight: 700, color: "#84CC16", textTransform: "uppercase",
                 }}>
                   {selectedFile.name.split(".").pop()}
                 </span>
@@ -3966,7 +3966,7 @@ export default function OmAnalyzerPage() {
             <div style={{ marginBottom: 24, position: "relative", width: 80, height: 80, marginLeft: "auto", marginRight: "auto", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg width="80" height="80" viewBox="0 0 80 80" style={{ position: "absolute", inset: 0 }}>
                 <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(132,204,22,0.08)" strokeWidth="2" />
-                <circle cx="40" cy="40" r="34" fill="none" stroke="#4D7C0F" strokeWidth="2"
+                <circle cx="40" cy="40" r="34" fill="none" stroke="#84CC16" strokeWidth="2"
                   strokeDasharray={`${2 * Math.PI * 34}`}
                   strokeDashoffset={`${2 * Math.PI * 34 * (1 - processingPct / 100)}`}
                   strokeLinecap="round"
@@ -3975,7 +3975,7 @@ export default function OmAnalyzerPage() {
               </svg>
               <div style={{ position: "relative", zIndex: 1 }}>
                 <div style={{
-                  fontSize: 18, fontWeight: 700, color: "#4D7C0F",
+                  fontSize: 18, fontWeight: 700, color: "#84CC16",
                   fontFamily: "'Inter', sans-serif", fontVariantNumeric: "tabular-nums",
                 }}>
                   {processingPct}%
@@ -3999,18 +3999,18 @@ export default function OmAnalyzerPage() {
                       width: 22, height: 22, borderRadius: "50%",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       background: stage.done ? "rgba(132,204,22,0.2)" : isCurrent ? "rgba(132,204,22,0.12)" : "rgba(255,255,255,0.04)",
-                      border: `1.5px solid ${stage.done ? "#4D7C0F" : isCurrent ? "#4D7C0F" : "rgba(132,204,22,0.2)"}`,
+                      border: `1.5px solid ${stage.done ? "#84CC16" : isCurrent ? "#84CC16" : "rgba(132,204,22,0.2)"}`,
                       animation: isCurrent ? "pulse 1.5s ease-in-out infinite" : "none",
                     }}>
                       {stage.done ? (
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>
                       ) : (
-                        <div style={{ width: 6, height: 6, borderRadius: "50%", background: isCurrent ? "#4D7C0F" : "rgba(132,204,22,0.3)" }} />
+                        <div style={{ width: 6, height: 6, borderRadius: "50%", background: isCurrent ? "#84CC16" : "rgba(132,204,22,0.3)" }} />
                       )}
                     </div>
                     <span style={{
                       fontSize: 10, fontWeight: 600,
-                      color: stage.done ? "#4D7C0F" : isCurrent ? "#4D7C0F" : "#6B7280",
+                      color: stage.done ? "#84CC16" : isCurrent ? "#84CC16" : "#6B7280",
                       textTransform: "uppercase", letterSpacing: 0.5,
                     }}>
                       {stage.label}
@@ -4025,7 +4025,7 @@ export default function OmAnalyzerPage() {
 
             {/* Rotating status message */}
             <p key={`status-${processingMsgIdx}`} style={{
-              fontSize: 14, fontWeight: 500, color: "#4D7C0F", margin: "0 0 32px",
+              fontSize: 14, fontWeight: 500, color: "#84CC16", margin: "0 0 32px",
               fontFamily: "'Inter', sans-serif", animation: "factSwap 0.6s ease-out",
             }}>
               {[
@@ -4104,13 +4104,13 @@ export default function OmAnalyzerPage() {
             <div style={{ marginTop: 20, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <span style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
-                fontSize: 11, fontWeight: 600, color: "#4D7C0F",
+                fontSize: 11, fontWeight: 600, color: "#84CC16",
                 padding: "5px 11px", borderRadius: 999,
                 background: "rgba(132,204,22,0.08)",
                 border: "1px solid rgba(132,204,22,0.25)",
                 fontFamily: "'Inter', sans-serif", letterSpacing: 0.3,
               }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4D7C0F", boxShadow: "0 0 6px #4D7C0F" }} />
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#84CC16", boxShadow: "0 0 6px #84CC16" }} />
                 All systems operational
               </span>
               <span style={{
@@ -4251,7 +4251,7 @@ function DealScoreRing({ score, label }: { score: number; label: string }) {
   const circumference = 2 * Math.PI * radius;
   const pct = Math.max(0, Math.min(100, score)) / 100;
   const offset = circumference * (1 - pct);
-  const color = score >= 70 ? "#059669" : score >= 50 ? "#C49A3C" : "#4D7C0F";
+  const color = score >= 70 ? "#059669" : score >= 50 ? "#C49A3C" : "#84CC16";
   const bgColor = score >= 70 ? "#D1FAE5" : score >= 50 ? "#FEF3C7" : "#FEE2E2";
   const sentiment = score >= 80 ? "BULLISH" : score >= 60 ? "NEUTRAL" : "BEARISH";
 
@@ -4567,7 +4567,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
       {(d.askingPrice && d.noiOm) && (
         <div className="tm-table-wrap" style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", padding: "20px", marginBottom: 20, overflow: "auto" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-            <span style={{ width: 3, height: 14, background: "#4D7C0F", borderRadius: 2 }} />
+            <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
             <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Sale Price Scenarios</h3>
           </div>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: "'Inter', sans-serif" }}>
@@ -4593,10 +4593,10 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
                 return (
                   <tr key={row.label} style={{
                     background: row.isOM ? "rgba(0,0,0,0.02)" : idx % 2 === 1 ? "rgba(0,0,0,0.01)" : "transparent",
-                    borderBottom: row.isOM ? "2px solid #4D7C0F" : "1px solid rgba(0,0,0,0.05)",
+                    borderBottom: row.isOM ? "2px solid #84CC16" : "1px solid rgba(0,0,0,0.05)",
                   }}>
                     <td style={{ padding: "10px 12px", fontWeight: row.isOM ? 700 : 500, color: "#374151" }}>
-                      {row.isOM ? <span style={{ color: "#4D7C0F", fontWeight: 700 }}>⭐ {row.label}</span> : row.label}
+                      {row.isOM ? <span style={{ color: "#84CC16", fontWeight: 700 }}>⭐ {row.label}</span> : row.label}
                     </td>
                     <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 700, color: "#374151", fontVariantNumeric: "tabular-nums" }}>{fmt$((d.askingPrice || 0) * (1 + row.adjustment))}</td>
                     <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: capRateColor, fontVariantNumeric: "tabular-nums" }}>{sens.capRate.toFixed(2)}%</td>
@@ -4745,7 +4745,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
           {metrics.length > 0 && (
             <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", overflow: "hidden" }}>
               <div style={{ padding: "12px 18px", background: "#F9FAFB", display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ width: 3, height: 14, background: "#4D7C0F", borderRadius: 2 }} />
+                <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
                 <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Key Metrics</h3>
               </div>
               {metrics.map(([label, val, tooltip], i) => (
@@ -4765,14 +4765,14 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
           {signals.length > 0 && (
             <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", overflow: "hidden" }}>
               <div style={{ padding: "12px 18px", background: "#F9FAFB", display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ width: 3, height: 14, background: "#4D7C0F", borderRadius: 2 }} />
+                <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
                 <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Signal Assessment</h3>
               </div>
               {signals.map(([label, val], i) => {
                 const raw = String(val);
                 const color = signalColor(raw);
                 const bgColor = color === "#059669" ? "rgba(5,150,105,0.05)" : color === "#D97706" ? "rgba(217,119,6,0.05)" : color === "#DC2626" ? "rgba(220,38,38,0.05)" : "rgba(132,204,22,0.03)";
-                const borderLeft = color === "#059669" ? "3px solid #059669" : color === "#D97706" ? "3px solid #D97706" : color === "#DC2626" ? "3px solid #DC2626" : "3px solid #4D7C0F";
+                const borderLeft = color === "#059669" ? "3px solid #059669" : color === "#D97706" ? "3px solid #D97706" : color === "#DC2626" ? "3px solid #DC2626" : "3px solid #84CC16";
                 // Strip leading emoji + space for cleaner display
                 const text = raw.replace(/^[🟢🟡🔴]\s*/, "");
                 return (
@@ -4836,7 +4836,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
       {hasData && (
         <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", padding: 20, marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-            <span style={{ width: 3, height: 14, background: "#4D7C0F", borderRadius: 2 }} />
+            <span style={{ width: 3, height: 14, background: "#84CC16", borderRadius: 2 }} />
             <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Download Assets</h3>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -4895,7 +4895,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
           <p style={{ fontSize: 16, color: "#d1d5db", lineHeight: 1.7, maxWidth: 520, margin: "0 auto 8px" }}>
             With DealSignals Pro, every analysis is saved to your DealBoard. Score side-by-side, export full workbooks, pin deals to a map, and send branded briefs to clients.
           </p>
-          <p style={{ fontSize: 14, color: "#4D7C0F", fontWeight: 600, marginBottom: 28 }}>
+          <p style={{ fontSize: 14, color: "#84CC16", fontWeight: 600, marginBottom: 28 }}>
             Try Pro free for 7 days. 100 deals/month for $40 - less than 50¢ per deal.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
@@ -4908,7 +4908,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
               style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 padding: "14px 36px", borderRadius: 10,
-                background: "#4D7C0F", color: "#0d0d14",
+                background: "#84CC16", color: "#0d0d14",
                 fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
                 boxShadow: "0 0 30px rgba(132,204,22,0.4), 0 0 60px rgba(132,204,22,0.15)",
@@ -4920,7 +4920,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
           </div>
           {usageData && (
             <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 16, fontFamily: "'Inter', sans-serif" }}>
-              <span style={{ color: usageData.uploadsUsed >= usageData.uploadLimit ? "#f87171" : "#4D7C0F", fontWeight: 700 }}>
+              <span style={{ color: usageData.uploadsUsed >= usageData.uploadLimit ? "#f87171" : "#84CC16", fontWeight: 700 }}>
                 {usageData.uploadsUsed}/{usageData.uploadLimit}
               </span>{" "}
               free {usageData.uploadLimit === 1 ? "analysis" : "analyses"} used

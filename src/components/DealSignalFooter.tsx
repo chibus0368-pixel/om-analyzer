@@ -85,7 +85,7 @@ export default function DealSignalFooter() {
                 gap: 6,
                 fontSize: 11,
                 fontWeight: 600,
-                color: "#4D7C0F",
+                color: "#84CC16",
                 padding: "4px 10px",
                 borderRadius: 999,
                 background: "rgba(132,204,22,0.08)",
@@ -99,8 +99,8 @@ export default function DealSignalFooter() {
                   width: 6,
                   height: 6,
                   borderRadius: "50%",
-                  background: "#4D7C0F",
-                  boxShadow: "0 0 6px #4D7C0F",
+                  background: "#84CC16",
+                  boxShadow: "0 0 6px #84CC16",
                 }}
               />
               All systems operational
