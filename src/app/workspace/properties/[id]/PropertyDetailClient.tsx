@@ -1855,24 +1855,28 @@ function PropertyDetailInner({
             <span style={{ fontSize: 48, opacity: 0.25 }}>📍</span>
           </div>
         )}
-        {/* Edit image button - mobile */}
+        {/* Edit image button - mobile. 44px hit target (Apple HIG minimum)
+            and stopPropagation so taps near the edge don't fall through to
+            the Street-View <a> link wrapping the hero image. */}
         <button
           type="button"
-          onClick={() => setImageEditorOpen(true)}
+          onClick={(e) => { e.stopPropagation(); setImageEditorOpen(true); }}
+          onPointerDown={(e) => e.stopPropagation()}
           title="Edit image"
           aria-label="Edit property image"
           style={{
-            position: "absolute", top: 12, right: 12, zIndex: 2,
-            width: 34, height: 34, borderRadius: 999,
-            background: "rgba(15, 23, 42, 0.55)", color: "#ffffff",
-            border: "1px solid rgba(255,255,255,0.25)",
+            position: "absolute", top: 10, right: 10, zIndex: 3,
+            width: 44, height: 44, borderRadius: 999,
+            background: "rgba(15, 23, 42, 0.65)", color: "#ffffff",
+            border: "1px solid rgba(255,255,255,0.3)",
             backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)",
             cursor: "pointer",
             display: "inline-flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+            touchAction: "manipulation",
           }}
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 20h9" />
             <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
           </svg>
@@ -1924,24 +1928,31 @@ function PropertyDetailInner({
           background: "linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.25) 55%, rgba(0,0,0,0.82) 100%)",
         }} />
 
-        {/* Edit image button (opens crop / replace modal) */}
+        {/* Edit image button (opens crop / replace modal).
+            Sized generously because a full-hero <a> (Street View fallback)
+            sits underneath — misses by a few px would otherwise navigate
+            to Google Maps. stopPropagation on pointer + click events for
+            the same reason. zIndex: 3 to sit above the asset-type pill. */}
         <button
           type="button"
-          onClick={() => setImageEditorOpen(true)}
+          onClick={(e) => { e.stopPropagation(); setImageEditorOpen(true); }}
+          onPointerDown={(e) => e.stopPropagation()}
           title="Edit image (crop or replace)"
           aria-label="Edit property image"
           style={{
-            position: "absolute", bottom: 14, right: 14, zIndex: 2,
-            display: "inline-flex", alignItems: "center", gap: 6,
-            padding: "6px 12px", borderRadius: 8,
-            background: "rgba(15, 23, 42, 0.55)", color: "#ffffff",
-            border: "1px solid rgba(255,255,255,0.25)",
+            position: "absolute", bottom: 12, right: 12, zIndex: 3,
+            display: "inline-flex", alignItems: "center", gap: 8,
+            padding: "10px 16px", borderRadius: 10,
+            background: "rgba(15, 23, 42, 0.65)", color: "#ffffff",
+            border: "1px solid rgba(255,255,255,0.3)",
             backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
-            fontSize: 11, fontWeight: 600, fontFamily: "inherit",
-            cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+            fontSize: 13, fontWeight: 600, fontFamily: "inherit",
+            cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.35)",
+            minHeight: 40,
+            touchAction: "manipulation",
           }}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 20h9" />
             <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
           </svg>

@@ -21,9 +21,13 @@ export function middleware(request: NextRequest) {
   response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   response.headers.set('X-Permitted-Cross-Domain-Policies', 'none');
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+  // NB: img-src must include `blob:` so PropertyImageEditor can preview a
+  // newly uploaded file via URL.createObjectURL(). Without it the browser
+  // silently blocks <img src="blob:..."> and the editor appears to do nothing
+  // after a file pick.
   response.headers.set(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com https://apis.google.com https://*.firebaseapp.com https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: https://www.google-analytics.com https://www.googletagmanager.com; connect-src 'self' https: https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com; frame-src 'self' https://maps.google.com https://www.google.com https://*.firebaseapp.com https://accounts.google.com; frame-ancestors 'self'; upgrade-insecure-requests;"
+    "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com https://apis.google.com https://*.firebaseapp.com https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: https://www.google-analytics.com https://www.googletagmanager.com; media-src 'self' blob:; connect-src 'self' blob: https: https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com; frame-src 'self' https://maps.google.com https://www.google.com https://*.firebaseapp.com https://accounts.google.com; frame-ancestors 'self'; upgrade-insecure-requests;"
   );
 
   // Add CORS headers for public API routes only (not admin)
