@@ -1639,56 +1639,54 @@ ${tRows}
   const logoB64 = DEALSIGNALS_LOGO_B64;
   const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
 <head><meta charset="utf-8"><style>
-@page { size: 8.5in 11in; margin: 0.75in 1in; }
-body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #1a1a1a; line-height: 1.6; }
-.header { border-bottom: 2px solid #84CC16; padding-bottom: 14px; margin-bottom: 20px; }
-.header img { height: 40px; width: auto; }
-.header .tagline { color: #6B7280; font-size: 9pt; margin: 4px 0 0 0; }
-h1 { font-size: 20pt; color: #0d0d14; padding-bottom: 8px; margin: 0 0 6px 0; letter-spacing: -0.3px; }
-h2 { font-size: 13pt; color: #0d0d14; margin: 26px 0 8px 0; padding-bottom: 5px; border-bottom: 2px solid #84CC16; font-weight: 700; }
-h3 { font-size: 11pt; color: #0d0d14; margin: 16px 0 6px 0; font-weight: 700; }
-p { margin: 5px 0; }
-.sub { font-size: 9.5pt; color: #6B7280; font-style: italic; margin-bottom: 16px; }
-.loc { font-size: 11pt; color: #4B5563; margin: 2px 0 8px 0; }
-.type-badge { display: inline-block; background: #0d0d14; color: #84CC16; padding: 4px 14px; font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
-.deal-cat-badge { display: inline-block; background: #F3F4F6; color: #374151; padding: 4px 14px; font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; margin-left: 6px; }
-ul { margin: 6px 0 6px 18px; padding: 0; }
-ol { margin: 6px 0 6px 18px; padding: 0; }
-li { margin: 4px 0; line-height: 1.5; }
-table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 10pt; }
-th { background: #0d0d14; color: #84CC16; text-align: left; padding: 8px 10px; border: 1px solid #0d0d14; font-weight: 700; font-size: 9.5pt; text-transform: uppercase; letter-spacing: 0.04em; }
-td { padding: 6px 10px; border: 1px solid #E5E7EB; }
+@page { size: 8.5in 11in; margin: 0.8in 0.9in; }
+body { font-family: Calibri, Arial, sans-serif; font-size: 10.5pt; color: #1F2937; line-height: 1.55; }
+.header-row { margin-bottom: 24px; }
+.header-row img { height: 26px; width: auto; }
+h1 { font-size: 22pt; color: #111827; margin: 16px 0 4px 0; font-weight: 300; letter-spacing: -0.5px; }
+h1 span { font-weight: 700; }
+h2 { font-size: 11pt; color: #374151; margin: 22px 0 6px 0; padding: 0 0 4px 0; border-bottom: 1px solid #D1D5DB; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 9.5pt; }
+h3 { font-size: 10.5pt; color: #374151; margin: 14px 0 4px 0; font-weight: 700; }
+p { margin: 4px 0; }
+.prop-name { font-size: 14pt; color: #374151; margin: 2px 0 2px 0; font-weight: 600; }
+.loc { font-size: 10pt; color: #6B7280; margin: 0 0 10px 0; }
+.badge { display: inline-block; background: #F3F4F6; color: #374151; padding: 3px 10px; font-size: 8.5pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 4px 8px 0; border: 1px solid #E5E7EB; }
+.sub { font-size: 8.5pt; color: #9CA3AF; font-style: italic; margin-bottom: 14px; line-height: 1.4; }
+ul { margin: 4px 0 4px 16px; padding: 0; }
+ol { margin: 4px 0 4px 16px; padding: 0; }
+li { margin: 2px 0; line-height: 1.45; font-size: 10pt; }
+table { border-collapse: collapse; width: 100%; margin: 6px 0 12px 0; font-size: 9.5pt; }
+th { background: #374151; color: #ffffff; text-align: left; padding: 6px 8px; border: 1px solid #374151; font-weight: 600; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.05em; }
+td { padding: 5px 8px; border: 1px solid #E5E7EB; vertical-align: top; }
 .alt-row { background: #F9FAFB; }
-.metric-val { font-weight: 700; color: #0d0d14; }
-.sg { color: #059669; font-weight: 700; }
-.sy { color: #D97706; font-weight: 700; }
-.sr { color: #DC2626; font-weight: 700; }
-.brief-text { margin: 10px 0; }
-.brief-text p { margin: 8px 0; line-height: 1.6; }
-.strength-item, .concern-item { margin: 5px 0; line-height: 1.5; }
-.callout { background: #FFFBEB; border-left: 3px solid #D97706; padding: 10px 14px; margin: 14px 0; font-size: 10pt; }
-.callout-info { background: #F0FDF4; border-left: 3px solid #84CC16; padding: 10px 14px; margin: 14px 0; font-size: 10pt; }
-.toc { background: #F9FAFB; border: 1px solid #E5E7EB; border-left: 3px solid #84CC16; padding: 12px 16px; font-size: 10pt; margin-bottom: 20px; }
-.toc strong { color: #0d0d14; font-size: 9.5pt; }
-.disclaimer { font-size: 8.5pt; color: #6B7280; line-height: 1.5; font-style: italic; margin-top: 8px; }
-.footer-brand { margin-top: 36px; padding-top: 16px; border-top: 2px solid #84CC16; text-align: center; }
-.footer-brand img { height: 32px; width: auto; margin-bottom: 6px; }
-.divider { border: none; border-top: 1px solid #E5E7EB; margin: 24px 0; }
+.metric-val { font-weight: 700; color: #111827; }
+.sg { color: #059669; font-weight: 600; }
+.sy { color: #D97706; font-weight: 600; }
+.sr { color: #DC2626; font-weight: 600; }
+.brief-text { margin: 6px 0; }
+.brief-text p { margin: 6px 0; line-height: 1.55; }
+.callout { background: #FEF3C7; border-left: 2px solid #D97706; padding: 8px 12px; margin: 10px 0; font-size: 9.5pt; }
+.callout-info { background: #F0FDF4; border-left: 2px solid #84CC16; padding: 8px 12px; margin: 10px 0; font-size: 9.5pt; }
+.toc { background: #F9FAFB; padding: 8px 12px; font-size: 8.5pt; margin-bottom: 16px; color: #6B7280; border: 1px solid #E5E7EB; }
+.toc b { color: #374151; }
+.disclaimer { font-size: 7.5pt; color: #9CA3AF; line-height: 1.4; margin-top: 6px; }
+.footer { margin-top: 28px; padding-top: 12px; border-top: 1px solid #D1D5DB; text-align: center; }
+.footer img { height: 20px; width: auto; margin-bottom: 4px; }
+.divider { border: none; border-top: 1px solid #E5E7EB; margin: 18px 0; }
 </style></head><body>
 
-<div class="header">
+<div class="header-row">
 <img src="data:image/png;base64,${logoB64}" alt="DealSignals" />
-<p class="tagline">AI-Powered CRE Pre-Diligence</p>
 </div>
 
-<h1>${briefTitle}</h1>
-<p style="font-size:15pt;font-weight:700;color:#374151;margin:4px 0 2px 0;">${propertyName}</p>
+<h1><span>${briefTitle}</span></h1>
+<p class="prop-name">${propertyName}</p>
 ${fullLoc ? `<p class="loc">${fullLoc}</p>` : ""}
-<div class="type-badge">${typeLabel}</div><div class="deal-cat-badge">${dealCategory}</div>
+<span class="badge">${typeLabel}</span><span class="badge">${dealCategory}</span>
 <p class="sub">${disclaimerText}</p>
 
 <div class="toc">
-<strong>Contents:</strong> Deal Snapshot &middot; Initial Read &middot; Key Metrics &middot; Visual Indicators &middot; Strengths &middot; Risks${scenariosSectionHtml ? " &middot; Back-of-Napkin Returns" : ""} &middot; Investment Thesis &middot; Market Context &middot; Financing &middot; Exit Strategy &middot; Value Creation${capScenariosHtml ? " &middot; Cap Rate Scenarios" : ""}${breakevenHtml ? " &middot; Breakeven Analysis" : ""}${tenantRolloverHtml ? " &middot; Tenant Rollover" : ""} &middot; Missing Data &middot; Next Steps &middot; Conclusion
+<b>Contents:</b> Deal Snapshot &middot; Initial Read &middot; Key Metrics &middot; Visual Indicators &middot; Strengths &middot; Risks${scenariosSectionHtml ? " &middot; Back-of-Napkin Returns" : ""} &middot; Investment Thesis &middot; Market Context &middot; Financing &middot; Exit Strategy &middot; Value Creation${capScenariosHtml ? " &middot; Cap Rate Scenarios" : ""}${breakevenHtml ? " &middot; Breakeven Analysis" : ""}${tenantRolloverHtml ? " &middot; Tenant Rollover" : ""} &middot; Missing Data &middot; Next Steps &middot; Conclusion
 </div>
 
 <h2>Deal Snapshot</h2>
@@ -1758,16 +1756,13 @@ ${g("signals", "overall_signal") ? `<h3>Overall Signal</h3><p class="${sigClass(
 ${g("signals", "recommendation") ? `<h3>Recommendation</h3><p class="${sigClass(g("signals", "recommendation"))}"><b>${g("signals", "recommendation")}</b></p>` : ""}
 
 <hr class="divider" />
-<p style="font-size:9pt;color:#8899B0;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;margin-bottom:6px;">Disclaimer</p>
 <p class="disclaimer">
-This First-Pass Brief is automated general guidance produced by DealSignals. It is NOT investment, legal, tax, accounting, or financial advice, and it is not an offer, solicitation, or recommendation to buy, sell, lease, finance, or otherwise transact in any property or security. Figures are derived from uploaded documents and public data sources that may be incomplete, out-of-date, or inaccurate. Scenario ranges are back-of-napkin triage outputs based on standardized assumptions and should not be treated as a final underwriting model. You are solely responsible for verifying every material fact (rent roll, leases, expenses, title, environmental, zoning, financing) and conducting full legal, financial, and physical due diligence with qualified professionals before committing any capital. No representation or warranty, express or implied, is made by DealSignals or its operators as to the accuracy, completeness, or fitness for any particular purpose of the information contained herein. Use at your own risk.
+<b style="color:#6B7280;">Disclaimer:</b> This First-Pass Brief is automated general guidance produced by DealSignals. It is NOT investment, legal, tax, accounting, or financial advice, and it is not an offer, solicitation, or recommendation to buy, sell, lease, finance, or otherwise transact in any property or security. Figures are derived from uploaded documents and public data sources that may be incomplete, out-of-date, or inaccurate. Scenario ranges are back-of-napkin triage outputs based on standardized assumptions and should not be treated as a final underwriting model. You are solely responsible for verifying every material fact and conducting full due diligence with qualified professionals before committing any capital. Use at your own risk.
 </p>
 
-<div class="footer-brand">
+<div class="footer">
 <img src="data:image/png;base64,${logoB64}" alt="DealSignals" />
-<p style="font-size:9pt;color:#6B7280;margin:2px 0;">AI-Powered CRE Pre-Diligence</p>
-<p style="font-size:9pt;margin:4px 0;"><a href="https://www.dealsignals.app" style="color:#84CC16;text-decoration:none;font-weight:600;">www.dealsignals.app</a></p>
-<p style="font-size:8pt;color:#9CA3AF;margin:8px 0 0 0;">Generated by DealSignals &middot; ${typeLabel} Model</p>
+<p style="font-size:8pt;color:#9CA3AF;margin:4px 0 0 0;"><a href="https://www.dealsignals.app" style="color:#6B7280;text-decoration:none;">www.dealsignals.app</a> &middot; Generated by DealSignals</p>
 </div>
 
 </body></html>`;
