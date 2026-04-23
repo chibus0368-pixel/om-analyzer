@@ -1641,25 +1641,25 @@ ${tRows}
 <head><meta charset="utf-8"><style>
 @page { size: 8.5in 11in; margin: 0.75in 1in; }
 body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #1a1a1a; line-height: 1.6; }
-.header-bar { background: #0B1120; padding: 18px 24px; margin: -12px -12px 20px -12px; }
-.header-bar img { height: 36px; width: auto; }
-.header-bar .tagline { color: #8899B0; font-size: 9pt; margin: 4px 0 0 0; }
-h1 { font-size: 20pt; color: #0B1120; border-bottom: 3px solid #C49A3C; padding-bottom: 10px; margin: 0 0 6px 0; letter-spacing: -0.3px; }
-h2 { font-size: 13pt; color: #0B1120; margin: 26px 0 8px 0; padding-bottom: 5px; border-bottom: 1.5px solid #C49A3C; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
-h3 { font-size: 11pt; color: #253352; margin: 16px 0 6px 0; font-weight: 700; }
+.header { border-bottom: 2px solid #84CC16; padding-bottom: 14px; margin-bottom: 20px; }
+.header img { height: 40px; width: auto; }
+.header .tagline { color: #6B7280; font-size: 9pt; margin: 4px 0 0 0; }
+h1 { font-size: 20pt; color: #0d0d14; padding-bottom: 8px; margin: 0 0 6px 0; letter-spacing: -0.3px; }
+h2 { font-size: 13pt; color: #0d0d14; margin: 26px 0 8px 0; padding-bottom: 5px; border-bottom: 2px solid #84CC16; font-weight: 700; }
+h3 { font-size: 11pt; color: #0d0d14; margin: 16px 0 6px 0; font-weight: 700; }
 p { margin: 5px 0; }
-.sub { font-size: 9.5pt; color: #8899B0; font-style: italic; margin-bottom: 16px; }
-.loc { font-size: 11pt; color: #3D516E; margin: 2px 0 8px 0; }
-.type-badge { display: inline-block; background: #0B1120; color: #C49A3C; padding: 4px 14px; font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
-.deal-cat-badge { display: inline-block; background: #FEF3C7; color: #92400E; padding: 4px 14px; font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; margin-left: 6px; }
+.sub { font-size: 9.5pt; color: #6B7280; font-style: italic; margin-bottom: 16px; }
+.loc { font-size: 11pt; color: #4B5563; margin: 2px 0 8px 0; }
+.type-badge { display: inline-block; background: #0d0d14; color: #84CC16; padding: 4px 14px; font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.deal-cat-badge { display: inline-block; background: #F3F4F6; color: #374151; padding: 4px 14px; font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; margin-left: 6px; }
 ul { margin: 6px 0 6px 18px; padding: 0; }
 ol { margin: 6px 0 6px 18px; padding: 0; }
 li { margin: 4px 0; line-height: 1.5; }
 table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 10pt; }
-th { background: #0B1120; color: #C49A3C; text-align: left; padding: 8px 10px; border: 1px solid #0B1120; font-weight: 700; font-size: 9.5pt; text-transform: uppercase; letter-spacing: 0.04em; }
-td { padding: 6px 10px; border: 1px solid #D8DFE9; }
-.alt-row { background: #F6F8FB; }
-.metric-val { font-weight: 700; color: #0B1120; }
+th { background: #0d0d14; color: #84CC16; text-align: left; padding: 8px 10px; border: 1px solid #0d0d14; font-weight: 700; font-size: 9.5pt; text-transform: uppercase; letter-spacing: 0.04em; }
+td { padding: 6px 10px; border: 1px solid #E5E7EB; }
+.alt-row { background: #F9FAFB; }
+.metric-val { font-weight: 700; color: #0d0d14; }
 .sg { color: #059669; font-weight: 700; }
 .sy { color: #D97706; font-weight: 700; }
 .sr { color: #DC2626; font-weight: 700; }
@@ -1667,22 +1667,22 @@ td { padding: 6px 10px; border: 1px solid #D8DFE9; }
 .brief-text p { margin: 8px 0; line-height: 1.6; }
 .strength-item, .concern-item { margin: 5px 0; line-height: 1.5; }
 .callout { background: #FFFBEB; border-left: 3px solid #D97706; padding: 10px 14px; margin: 14px 0; font-size: 10pt; }
-.callout-info { background: #EFF6FF; border-left: 3px solid #2563EB; padding: 10px 14px; margin: 14px 0; font-size: 10pt; }
-.toc { background: #F6F8FB; border: 1px solid #D8DFE9; border-left: 3px solid #C49A3C; padding: 12px 16px; font-size: 10pt; margin-bottom: 20px; }
-.toc strong { color: #0B1120; text-transform: uppercase; letter-spacing: 0.04em; font-size: 9.5pt; }
+.callout-info { background: #F0FDF4; border-left: 3px solid #84CC16; padding: 10px 14px; margin: 14px 0; font-size: 10pt; }
+.toc { background: #F9FAFB; border: 1px solid #E5E7EB; border-left: 3px solid #84CC16; padding: 12px 16px; font-size: 10pt; margin-bottom: 20px; }
+.toc strong { color: #0d0d14; font-size: 9.5pt; }
 .disclaimer { font-size: 8.5pt; color: #6B7280; line-height: 1.5; font-style: italic; margin-top: 8px; }
-.footer-brand { margin-top: 36px; padding-top: 16px; border-top: 3px solid #C49A3C; text-align: center; }
-.footer-brand img { height: 28px; width: auto; margin-bottom: 6px; }
-.divider { border: none; border-top: 1px solid #D8DFE9; margin: 24px 0; }
+.footer-brand { margin-top: 36px; padding-top: 16px; border-top: 2px solid #84CC16; text-align: center; }
+.footer-brand img { height: 32px; width: auto; margin-bottom: 6px; }
+.divider { border: none; border-top: 1px solid #E5E7EB; margin: 24px 0; }
 </style></head><body>
 
-<div class="header-bar">
+<div class="header">
 <img src="data:image/png;base64,${logoB64}" alt="DealSignals" />
 <p class="tagline">AI-Powered CRE Pre-Diligence</p>
 </div>
 
 <h1>${briefTitle}</h1>
-<p style="font-size:15pt;font-weight:700;color:#253352;margin:4px 0 2px 0;">${propertyName}</p>
+<p style="font-size:15pt;font-weight:700;color:#374151;margin:4px 0 2px 0;">${propertyName}</p>
 ${fullLoc ? `<p class="loc">${fullLoc}</p>` : ""}
 <div class="type-badge">${typeLabel}</div><div class="deal-cat-badge">${dealCategory}</div>
 <p class="sub">${disclaimerText}</p>
@@ -1764,10 +1764,10 @@ This First-Pass Brief is automated general guidance produced by DealSignals. It 
 </p>
 
 <div class="footer-brand">
-<img src="data:image/png;base64,${logoB64}" alt="DealSignals" style="height:24px;width:auto;margin-bottom:6px;" />
-<p style="font-size:9pt;color:#3D516E;margin:2px 0;font-weight:600;">AI-Powered CRE Pre-Diligence</p>
-<p style="font-size:9pt;margin:4px 0;"><a href="https://www.dealsignals.app" style="color:#C49A3C;text-decoration:none;font-weight:600;">www.dealsignals.app</a></p>
-<p style="font-size:8pt;color:#8899B0;margin:8px 0 0 0;">Generated by DealSignals &middot; ${typeLabel} Model</p>
+<img src="data:image/png;base64,${logoB64}" alt="DealSignals" />
+<p style="font-size:9pt;color:#6B7280;margin:2px 0;">AI-Powered CRE Pre-Diligence</p>
+<p style="font-size:9pt;margin:4px 0;"><a href="https://www.dealsignals.app" style="color:#84CC16;text-decoration:none;font-weight:600;">www.dealsignals.app</a></p>
+<p style="font-size:8pt;color:#9CA3AF;margin:8px 0 0 0;">Generated by DealSignals &middot; ${typeLabel} Model</p>
 </div>
 
 </body></html>`;
