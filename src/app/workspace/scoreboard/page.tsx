@@ -978,9 +978,9 @@ export default function ScoreboardPage() {
             padding: 12px 8px !important;
             font-size: 12px !important;
           }
-          /* Hide GLA (6th), Value-Add (7th), Signal (8th) on tablet */
-          .sb-comparison-table thead tr th:nth-child(n+6),
-          .sb-comparison-table tbody tr td:nth-child(n+6) {
+          /* Hide GLA (7th) on tablet to keep the core 6 columns visible */
+          .sb-comparison-table thead tr th:nth-child(n+7),
+          .sb-comparison-table tbody tr td:nth-child(n+7) {
             display: none !important;
           }
           /* Tighten property thumbnail */
@@ -1260,8 +1260,6 @@ export default function ScoreboardPage() {
                     { key: "cap_rate" as SortKey, label: "Cap Rate", align: "right" as const },
                     { key: "noi" as SortKey, label: "NOI", align: "right" as const },
                     { key: "gla" as SortKey, label: "GLA", align: "right" as const },
-                    { key: "value_add" as SortKey, label: "Value-Add", align: "center" as const },
-                    { key: "signal" as SortKey, label: "Signal", align: "center" as const },
                   ]).map(col => (
                     <th
                       key={col.key}
@@ -1298,7 +1296,6 @@ export default function ScoreboardPage() {
                   const capRate = pd.values.get("cap_rate");
                   const noi = pd.values.get("noi");
                   const gla = pd.values.get("building_sf");
-                  const signal = getSignal(pd);
 
                   // SVG score ring
                   const ringSize = 60;
@@ -1474,41 +1471,6 @@ export default function ScoreboardPage() {
                         {gla ? formatValue("building_sf", gla) : "--"}
                       </td>
 
-                      {/* Value-Add Score */}
-                      <td style={{ padding: "16px 24px", textAlign: "center" }}>
-                        {(() => {
-                          const vaScoreVal = (pd.property as any).valueAddScore;
-                          if (vaScoreVal === undefined || vaScoreVal === null) return <span style={{ color: "#D1D5DB" }}>--</span>;
-                          const va = Number(vaScoreVal);
-                          const vaColor = va >= 7 ? "#059669" : va >= 4 ? "#D97706" : "#6B7280";
-                          const vaBg = va >= 7 ? "rgba(5,150,105,0.08)" : va >= 4 ? "rgba(217,119,6,0.08)" : "rgba(107,114,128,0.06)";
-                          const vaLabel = va >= 7 ? "📈" : va >= 4 ? "📊" : "〰️";
-                          return (
-                            <span style={{
-                              display: "inline-flex", alignItems: "center", gap: 4,
-                              padding: "4px 10px", borderRadius: 6,
-                              background: vaBg, color: vaColor,
-                              fontSize: 13, fontWeight: 700,
-                            }}>
-                              {vaLabel} {va}/10
-                            </span>
-                          );
-                        })()}
-                      </td>
-
-                      {/* Signal Pill Badge */}
-                      <td style={{
-                        padding: "16px 24px", textAlign: "center",
-                      }}>
-                        <div style={{
-                          display: "inline-flex", alignItems: "center", justifyContent: "center",
-                          padding: "6px 12px", borderRadius: 6,
-                          background: signal.bg, color: signal.color,
-                          fontSize: 12, fontWeight: 700, textTransform: "capitalize",
-                        }}>
-                          {signal.label}
-                        </div>
-                      </td>
                     </tr>
                   );
                 })}

@@ -8,6 +8,7 @@ import type { Property, ExtractedField } from "@/lib/workspace/types";
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
 import { AnalysisTypeIcon } from "@/lib/workspace/AnalysisTypeIcon";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
+import Link from "next/link";
 import DemographicsToggle from "@/components/demographics/DemographicsToggle";
 import DemographicsOverlay from "@/components/demographics/DemographicsOverlay";
 
@@ -24,6 +25,20 @@ function fmt$(val: any): string {
   if (n >= 1000000) return `$${(n / 1000000).toFixed(2)}M`;
   if (n >= 1000) return `$${Math.round(n).toLocaleString()}`;
   return `$${n.toFixed(2)}`;
+}
+
+function fmtPct(val: any): string {
+  if (val === null || val === undefined || val === "") return "--";
+  const n = Number(val);
+  if (isNaN(n)) return String(val);
+  return `${n.toFixed(2)}%`;
+}
+
+function fmtSF(val: any): string {
+  if (!val) return "--";
+  const n = Number(val);
+  if (isNaN(n)) return String(val);
+  return `${Math.round(n).toLocaleString()} SF`;
 }
 
 /** Build the best geocoding address from property data */
@@ -43,8 +58,10 @@ export default function MapPage() {
   const mapInstanceRef = useRef<any>(null);
   const leafletRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  const markersByIdRef = useRef<Record<string, any>>({});
   const runIdRef = useRef(0);
   const [properties, setProperties] = useState<Property[]>([]);
+  const [selectedPropId, setSelectedPropId] = useState<string | null>(null);
   const [propFields, setPropFields] = useState<Record<string, ExtractedField[]>>({});
   const [mapReady, setMapReady] = useState(false);
   const [plotting, setPlotting] = useState(false);
@@ -78,9 +95,15 @@ export default function MapPage() {
         font-size: 10px !important;
       }
       .mp-map-wrapper {
-        height: calc(100vh - 180px) !important;
+        height: 100% !important;
       }
     }
+    @media (max-width: 900px) {
+      .mp-sidebar {
+        display: none !important;
+      }
+    }
+    .mp-share-card:hover { box-shadow: 0 8px 24px rgba(21,27,43,0.1); transform: translateY(-1px); }
     @media (max-width: 480px) {
       .mp-header-container {
         padding: 8px 12px !important;
@@ -187,6 +210,7 @@ export default function MapPage() {
       if (layer instanceof L.Marker) map.removeLayer(layer);
     });
     markersRef.current = [];
+    markersByIdRef.current = {};
 
     if (properties.length === 0) {
       setPlotted(0);
@@ -327,12 +351,16 @@ export default function MapPage() {
           // hijack the popup; the click just records the focal property in
           // state, which feeds the overlay below.
           (marker as any)._propId = prop.id;
+          markersByIdRef.current[prop.id] = marker;
           setGeocodedCoords((prev) =>
             prev[prop.id]?.lat === lat && prev[prop.id]?.lng === lng
               ? prev
               : { ...prev, [prop.id]: { lat: lat as number, lng: lng as number } },
           );
-          marker.on("click", () => setDemographicsPropId(prop.id));
+          marker.on("click", () => {
+            setSelectedPropId(prop.id);
+            setDemographicsPropId(prop.id);
+          });
 
           successCount++;
           setPlotted(successCount);
@@ -372,6 +400,17 @@ export default function MapPage() {
       address: addr,
     };
   }, [demographicsOn, demographicsPropId, properties, geocodedCoords]);
+
+  function selectPropertyCard(propId: string) {
+    setSelectedPropId(propId);
+    setDemographicsPropId(propId);
+    const map = mapInstanceRef.current;
+    const marker = markersByIdRef.current[propId];
+    if (!map || !marker) return;
+    const latlng = marker.getLatLng();
+    map.flyTo(latlng, Math.max(map.getZoom(), 13), { duration: 0.6 });
+    marker.openPopup();
+  }
 
   return (
     <>
@@ -435,26 +474,172 @@ export default function MapPage() {
           The DemographicsOverlay renders absolutely-positioned chrome
           inside this wrapper, plus imperatively manages tract polygons
           and radius rings on the Leaflet map instance directly. */}
-      <div
-        className="mp-map-wrapper"
-        style={{
-          flex: 1,
-          width: "100%",
-          position: "relative",
-          zIndex: 0,
-          isolation: "isolate",
-        }}
-      >
-        <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
-        <DemographicsOverlay
-          map={mapInstanceRef.current}
-          L={leafletRef.current}
-          enabled={demographicsOn && !!focalProperty}
-          lat={focalProperty?.lat ?? null}
-          lng={focalProperty?.lng ?? null}
-          propertyName={focalProperty?.name}
-          propertyAddress={focalProperty?.address}
-        />
+      <div className="mp-body" style={{ flex: 1, display: "flex", minHeight: 0 }}>
+        <div
+          className="mp-map-wrapper"
+          style={{
+            flex: 1,
+            minWidth: 0,
+            height: "100%",
+            position: "relative",
+            zIndex: 0,
+            isolation: "isolate",
+          }}
+        >
+          <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
+          <DemographicsOverlay
+            map={mapInstanceRef.current}
+            L={leafletRef.current}
+            enabled={demographicsOn && !!focalProperty}
+            lat={focalProperty?.lat ?? null}
+            lng={focalProperty?.lng ?? null}
+            propertyName={focalProperty?.name}
+            propertyAddress={focalProperty?.address}
+          />
+        </div>
+
+        {/* ─── Right sidebar: share-style property list ─── */}
+        <aside
+          className="mp-sidebar"
+          style={{
+            width: 420,
+            minWidth: 420,
+            background: "#fff",
+            overflow: "auto",
+            borderLeft: "1px solid #e5e7eb",
+          }}
+        >
+          <div style={{ padding: "16px 16px 10px", borderBottom: "1px solid #f1f5f9", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
+            <div style={{ fontSize: 17, fontWeight: 800, color: "#151b2b", letterSpacing: "-0.02em" }}>Properties</div>
+            <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>Click a property to zoom the map</div>
+          </div>
+          <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+            {properties.map((prop) => {
+              const fields = propFields[prop.id] || [];
+              const price = gf(fields, "pricing_deal_terms", "asking_price");
+              const capRate = gf(fields, "pricing_deal_terms", "cap_rate_om");
+              const noi = gf(fields, "expenses", "noi_om");
+              const gla = gf(fields, "property_basics", "building_sf") || prop.buildingSf;
+              const signal = gf(fields, "signals", "overall_signal") || "";
+              const tenantName = gf(fields, "tenant_info", "tenant_name") || gf(fields, "tenant_info", "primary_tenant");
+              const addr = [prop.address1, prop.city, prop.state, prop.zip].filter(Boolean).join(", ");
+              const displayName = cleanDisplayName(prop.propertyName, prop.address1, prop.city, prop.state);
+              const heroUrl = (prop as any).heroImageUrl as string | undefined;
+              const isSelected = selectedPropId === prop.id;
+
+              return (
+                <div
+                  key={prop.id}
+                  className="mp-share-card"
+                  onClick={() => selectPropertyCard(prop.id)}
+                  style={{
+                    background: "#fff",
+                    border: isSelected ? "2px solid #2563EB" : "1px solid #e5e7eb",
+                    borderRadius: 10,
+                    overflow: "hidden",
+                    cursor: "pointer",
+                    transition: "transform 0.15s ease, box-shadow 0.15s ease",
+                  }}
+                >
+                  {heroUrl && (
+                    <div
+                      style={{
+                        height: 100,
+                        background: `url(${heroUrl}) center/cover no-repeat`,
+                        borderBottom: "1px solid #e5e7eb",
+                      }}
+                    />
+                  )}
+                  <div style={{ padding: "12px 14px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h3 style={{ fontSize: 14, fontWeight: 700, color: "#151b2b", margin: "0 0 2px" }}>
+                          {displayName}
+                        </h3>
+                        <p style={{ fontSize: 11, color: "#585e70", margin: "0 0 8px" }}>{addr || "-"}</p>
+                      </div>
+                      <Link
+                        href={`/workspace/properties/${prop.id}`}
+                        prefetch={false}
+                        onClick={(e) => e.stopPropagation()}
+                        title="Open deal"
+                        style={{
+                          flexShrink: 0,
+                          marginTop: 2,
+                          color: "#94a3b8",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          width: 22,
+                          height: 22,
+                        }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9 18l6-6-6-6" />
+                        </svg>
+                      </Link>
+                    </div>
+
+                    {/* Quick metrics row */}
+                    <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                      {price && (
+                        <div>
+                          <div style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", color: "#94a3b8" }}>Price</div>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "#151b2b" }}>{fmt$(price)}</div>
+                        </div>
+                      )}
+                      {capRate && (
+                        <div>
+                          <div style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", color: "#94a3b8" }}>Cap Rate</div>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "#151b2b" }}>{fmtPct(capRate)}</div>
+                        </div>
+                      )}
+                      {noi && (
+                        <div>
+                          <div style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", color: "#94a3b8" }}>NOI</div>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "#151b2b" }}>{fmt$(noi)}</div>
+                        </div>
+                      )}
+                      {gla && (
+                        <div>
+                          <div style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", color: "#94a3b8" }}>GLA</div>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "#151b2b" }}>{fmtSF(gla)}</div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Bottom row: tenant + signal */}
+                    {(tenantName || signal) && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+                        {tenantName && (
+                          <span style={{ fontSize: 11, color: "#585e70", background: "#f8fafc", padding: "2px 8px", borderRadius: 4, border: "1px solid #f1f5f9" }}>
+                            {tenantName}
+                          </span>
+                        )}
+                        {signal && (
+                          <span style={{
+                            fontSize: 10, padding: "2px 8px", borderRadius: 4,
+                            background: String(signal).includes("\u{1F7E2}") ? "rgba(16,185,129,0.08)"
+                              : String(signal).includes("\u{1F534}") ? "rgba(239,68,68,0.08)"
+                              : "rgba(245,158,11,0.08)",
+                            color: "#151b2b",
+                          }}>
+                            {String(signal)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            {properties.length === 0 && (
+              <div style={{ padding: 24, textAlign: "center", fontSize: 12, color: "#94a3b8" }}>
+                No properties yet. Upload OMs to see them here.
+              </div>
+            )}
+          </div>
+        </aside>
       </div>
     </div>
     </>
