@@ -44,11 +44,14 @@ const ASPECT = ASPECT_W / ASPECT_H;
 // cropped a huge source photo. We downscale only, never upscale.
 const MAX_OUTPUT_WIDTH = 1600;
 
-// Hosts where direct <img crossOrigin="anonymous"> succeeds. Everything else
-// goes through the proxy route.
-const CORS_SAFE_HOSTS = new Set([
-  "firebasestorage.googleapis.com",
-]);
+// Any non-local URL is routed through the same-origin proxy route
+// (/api/workspace/proxy-image). This keeps the <img> same-origin, which lets
+// the canvas read pixels without taint and means we don't need the <img>
+// element to set crossOrigin. crossOrigin="anonymous" is actively harmful on
+// blob: URLs (there is no HTTP response for the browser to attach CORS
+// headers to, so the image never finishes loading) and on hosts whose buckets
+// don't return permissive CORS (default-config Firebase Storage,
+// lh3.googleusercontent.com, etc.).
 
 /* ---------------------------------------------------------------- *
  * Types                                                            *
@@ -83,12 +86,10 @@ type Handle = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
  * ---------------------------------------------------------------- */
 
 function resolveLoadableSrc(rawUrl: string): string {
-  // Object URLs (new uploads) and data URLs load natively.
+  // Same-origin sources load directly.
   if (rawUrl.startsWith("blob:") || rawUrl.startsWith("data:")) return rawUrl;
-  try {
-    const host = new URL(rawUrl).hostname;
-    if (CORS_SAFE_HOSTS.has(host)) return rawUrl;
-  } catch { /* fall through */ }
+  if (rawUrl.startsWith("/")) return rawUrl;
+  // Everything else goes through the proxy so the <img> stays same-origin.
   return `/api/workspace/proxy-image?url=${encodeURIComponent(rawUrl)}`;
 }
 
@@ -168,12 +169,18 @@ export default function PropertyImageEditor({
     if (!img) return;
     const nw = img.naturalWidth;
     const nh = img.naturalHeight;
-    const dw = img.getBoundingClientRect().width;
-    const dh = img.getBoundingClientRect().height;
+    // onLoad can fire before the element is in layout (cached images), in
+    // which case getBoundingClientRect() returns zeros. Fall back to natural
+    // dims so the default crop is still sensible; the resize effect will
+    // re-measure once the element has a real box.
+    const rect = img.getBoundingClientRect();
+    const dw = rect.width || nw;
+    const dh = rect.height || nh;
     setNatural({ w: nw, h: nh });
     setDisplayed({ w: dw, h: dh });
-    // Default crop is in displayed coords so drag math works directly.
     setCrop(defaultCropFor(dw, dh));
+    // Clear any stale error from a previous failed source.
+    setError(null);
   }, []);
 
   /* ---- keep displayed dims in sync on resize --------------------- */
@@ -509,12 +516,15 @@ export default function PropertyImageEditor({
                   ref={imgRef}
                   src={loadableSrc}
                   alt="Source"
-                  crossOrigin="anonymous"
                   onLoad={handleImgLoad}
-                  onError={() => {
-                    if (!proxyFailed && sourceUrl && !sourceUrl.startsWith("blob:") && !sourceUrl.startsWith("data:")) {
-                      // Proxy path failed — retry once with the raw URL.
-                      console.warn("[PropertyImageEditor] proxy load failed, retrying direct:", sourceUrl);
+                  onError={(ev) => {
+                    const failedSrc = (ev.currentTarget as HTMLImageElement).src;
+                    console.warn("[PropertyImageEditor] source image failed to load:", failedSrc);
+                    // If the proxy path failed and we have a non-local original, try
+                    // loading it directly. This will taint the canvas for cross-origin
+                    // hosts without permissive CORS, but handleApply surfaces a clear
+                    // error in that case, which beats showing nothing at all.
+                    if (!proxyFailed && sourceUrl && !sourceUrl.startsWith("blob:") && !sourceUrl.startsWith("data:") && !sourceUrl.startsWith("/")) {
                       setProxyFailed(true);
                       return;
                     }
