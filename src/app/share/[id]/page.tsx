@@ -314,6 +314,30 @@ export default function SharedViewPage() {
     return () => { cancelled = true; };
   }, [loading, error, properties]);
 
+  // Resolve focal demographics property: explicit click wins, then current
+  // detail-view selection, then the first geocoded property.
+  // MUST be declared before any early returns so hook order stays stable
+  // across loading -> loaded transitions (React Rules of Hooks).
+  const focalDemographicsProperty = useMemo(() => {
+    if (!demographicsOn) return null;
+    const id = demographicsPropId
+      || selectedProp
+      || properties.find((p) => geocodedCoords[p.id])?.id
+      || null;
+    if (!id) return null;
+    const prop = properties.find((p) => p.id === id);
+    const coords = geocodedCoords[id];
+    if (!prop || !coords) return null;
+    const addr = [prop.address1, prop.city, prop.state, prop.zip].filter(Boolean).join(", ");
+    return {
+      id,
+      lat: coords.lat,
+      lng: coords.lng,
+      name: prop.propertyName,
+      address: addr,
+    };
+  }, [demographicsOn, demographicsPropId, selectedProp, properties, geocodedCoords]);
+
   // Loading state
   if (loading) {
     return (
@@ -349,28 +373,6 @@ export default function SharedViewPage() {
   const showBranding = !config?.whiteLabel;
   const title = config?.displayName || config?.workspaceName || "Shared Properties";
   const detailProp = selectedProp ? properties.find(p => p.id === selectedProp) : null;
-
-  // Resolve focal demographics property: explicit click wins, then current
-  // detail-view selection, then the first geocoded property.
-  const focalDemographicsProperty = useMemo(() => {
-    if (!demographicsOn) return null;
-    const id = demographicsPropId
-      || selectedProp
-      || properties.find((p) => geocodedCoords[p.id])?.id
-      || null;
-    if (!id) return null;
-    const prop = properties.find((p) => p.id === id);
-    const coords = geocodedCoords[id];
-    if (!prop || !coords) return null;
-    const addr = [prop.address1, prop.city, prop.state, prop.zip].filter(Boolean).join(", ");
-    return {
-      id,
-      lat: coords.lat,
-      lng: coords.lng,
-      name: prop.propertyName,
-      address: addr,
-    };
-  }, [demographicsOn, demographicsPropId, selectedProp, properties, geocodedCoords]);
 
   return (
     <div style={{ minHeight: "100vh", background: "#f7f8fc", fontFamily: "'Inter', system-ui, sans-serif" }}>

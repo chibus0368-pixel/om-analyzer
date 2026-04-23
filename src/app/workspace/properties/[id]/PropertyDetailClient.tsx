@@ -23,11 +23,11 @@ import Link from "next/link";
 
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import PropertyHeroImage from "@/components/workspace/PropertyHeroImage";
+import PropertyImageEditor from "@/components/workspace/PropertyImageEditor";
 import DealQuickScreen from "@/components/workspace/DealQuickScreen";
 import OmReversePricing from "@/components/workspace/OmReversePricing";
 import DealVerdictBox from "@/components/workspace/DealVerdictBox";
 import RentRollDetailAnalysis from "@/components/workspace/RentRollDetailAnalysis";
-import SubmarketBrief from "@/components/workspace/SubmarketBrief";
 import SectionHeader from "@/components/workspace/SectionHeader";
 
 /* ── Design tokens ─────────────────────────────────────── */
@@ -1421,16 +1421,18 @@ function PropertyDetailInner({
      URL-backed so a link into ?tab=om-reverse-pricing lands on that tab.
      The tab bar sits directly below the hero; below it the existing
      property detail sections continue to render as "Deal Details".     */
-  type ProTab = "quick-screen" | "om-reverse-pricing" | "rent-roll" | "submarket";
+  type ProTab = "quick-screen" | "om-reverse-pricing" | "rent-roll";
   const [activeProTab, setActiveProTab] = useState<ProTab>(() => {
     if (typeof window === "undefined") return "quick-screen";
     const t = new URLSearchParams(window.location.search).get("tab");
     if (t === "om-reverse-pricing") return "om-reverse-pricing";
     if (t === "rent-roll") return "rent-roll";
-    if (t === "submarket") return "submarket";
     return "quick-screen";
   });
   const routerForTabs = useRouter();
+
+  // Image editor modal (crop existing hero or upload a new image).
+  const [imageEditorOpen, setImageEditorOpen] = useState(false);
   const selectProTab = useCallback((next: ProTab) => {
     setActiveProTab(next);
     // Keep the URL in sync with a shallow push so refresh + share both land
@@ -1793,6 +1795,28 @@ function PropertyDetailInner({
             <span style={{ fontSize: 48, opacity: 0.25 }}>📍</span>
           </div>
         )}
+        {/* Edit image button - mobile */}
+        <button
+          type="button"
+          onClick={() => setImageEditorOpen(true)}
+          title="Edit image"
+          aria-label="Edit property image"
+          style={{
+            position: "absolute", top: 12, right: 12, zIndex: 2,
+            width: 34, height: 34, borderRadius: 999,
+            background: "rgba(15, 23, 42, 0.55)", color: "#ffffff",
+            border: "1px solid rgba(255,255,255,0.25)",
+            backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)",
+            cursor: "pointer",
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg>
+        </button>
         {/* Asset-type pill overlay — replaces the full-width
             "Scored with … Model (auto-detected)" banner on mobile. */}
         {(() => {
@@ -1839,6 +1863,30 @@ function PropertyDetailInner({
           position: "absolute", inset: 0, pointerEvents: "none",
           background: "linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.25) 55%, rgba(0,0,0,0.82) 100%)",
         }} />
+
+        {/* Edit image button (opens crop / replace modal) */}
+        <button
+          type="button"
+          onClick={() => setImageEditorOpen(true)}
+          title="Edit image (crop or replace)"
+          aria-label="Edit property image"
+          style={{
+            position: "absolute", bottom: 14, right: 14, zIndex: 2,
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "6px 12px", borderRadius: 8,
+            background: "rgba(15, 23, 42, 0.55)", color: "#ffffff",
+            border: "1px solid rgba(255,255,255,0.25)",
+            backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+            fontSize: 11, fontWeight: 600, fontFamily: "inherit",
+            cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+          }}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg>
+          Edit image
+        </button>
 
         {/* Top-left: asset type pill (small, over image) */}
         <div style={{ position: "absolute", top: 16, left: 20, zIndex: 2 }}>
@@ -2072,7 +2120,6 @@ function PropertyDetailInner({
           return "Asset";
         })()} Model`}
         title="Deal Analysis"
-        subtitle="Three models on one deal: triage score, reverse-priced offer scenarios, and tenant-level rent roll"
         topGap={40}
         bottomGap={14}
       />
@@ -2099,7 +2146,6 @@ function PropertyDetailInner({
             { id: "quick-screen" as const, label: "Deal Quick Screen", ready: true },
             { id: "om-reverse-pricing" as const, label: "Offer Scenarios", ready: true },
             { id: "rent-roll" as const, label: "Rent Roll", ready: true },
-            { id: "submarket" as const, label: "Submarket", ready: true },
           ].map(tab => {
             const isActive = tab.id === activeProTab;
             return (
@@ -2167,10 +2213,6 @@ function PropertyDetailInner({
 
           {activeProTab === "om-reverse-pricing" && (
             <OmReversePricing property={property} fields={fields} />
-          )}
-
-          {activeProTab === "submarket" && (
-            <SubmarketBrief property={property} fields={fields} wsType={wsType} />
           )}
 
           {activeProTab === "rent-roll" && (
@@ -2806,6 +2848,23 @@ function PropertyDetailInner({
           Delete Deal
         </button>
       </div>
+
+      {/* Image editor modal - crop existing or upload new */}
+      {imageEditorOpen && user && property && (
+        <PropertyImageEditor
+          propertyId={propertyId}
+          projectId={property.projectId || "workspace-default"}
+          userId={user.uid}
+          currentImageUrl={(property as any).heroImageUrl}
+          propertyName={property.propertyName || "Property"}
+          onClose={() => setImageEditorOpen(false)}
+          onSaved={(newUrl) => {
+            // Reflect the new hero locally so the page updates without a reload.
+            setProperty((prev: Property | null) => prev ? ({ ...prev, heroImageUrl: newUrl } as Property) : prev);
+            if (typeof window !== "undefined") window.dispatchEvent(new Event("workspace-properties-changed"));
+          }}
+        />
+      )}
     </div>
   );
 }
