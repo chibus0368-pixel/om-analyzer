@@ -304,13 +304,31 @@ export default function PropertyImageEditor({
   /* ---- file upload (replace source) ------------------------------ */
   const onFilePicked = useCallback((ev: React.ChangeEvent<HTMLInputElement>) => {
     const f = ev.target.files?.[0];
+    console.debug("[PropertyImageEditor] onFilePicked:", { type: f?.type, name: f?.name, size: f?.size });
     if (!f) return;
-    if (!/^image\/(png|jpe?g|webp)$/i.test(f.type)) {
-      setError("Please choose a PNG, JPEG, or WEBP image.");
+
+    // Accept any browser-reported image/* MIME, and fall back to the file
+    // extension when the browser hands us an empty or oddly-capitalized type
+    // (Safari on iOS sometimes reports "" for HEIC, Windows can report types
+    // like "image/pjpeg"). We also accept common extensions like HEIC/HEIF/AVIF
+    // even though canvas may not decode them in every browser — if the browser
+    // can't decode, the <img>.onError path below surfaces a clear message.
+    const fileType = (f.type || "").toLowerCase();
+    const fileName = (f.name || "").toLowerCase();
+    const looksLikeImage =
+      fileType.startsWith("image/") ||
+      /\.(png|jpe?g|webp|gif|bmp|heic|heif|avif|tiff?)$/i.test(fileName);
+    if (!looksLikeImage) {
+      setError(
+        `That file doesn't look like an image (type: ${f.type || "unknown"}${f.name ? `, name: ${f.name}` : ""}). Please choose a PNG, JPEG, or WEBP.`
+      );
+      // Clear the input so the user can re-pick.
+      ev.target.value = "";
       return;
     }
     if (objectUrl) URL.revokeObjectURL(objectUrl);
     const url = URL.createObjectURL(f);
+    console.debug("[PropertyImageEditor] new source blob URL:", url);
     setObjectUrl(url);
     setPendingFile(f);
     setSourceUrl(url);
@@ -490,9 +508,25 @@ export default function PropertyImageEditor({
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/png,image/jpeg,image/webp"
+              // Broadened to image/* so iOS shows photo library picks that
+              // report as "" or image/heic. We re-validate in onFilePicked.
+              accept="image/*"
               onChange={onFilePicked}
-              style={{ display: "none" }}
+              // Visually hidden but still clickable. We used display:none here
+              // previously, which works in most browsers but has edge cases
+              // around screen readers and a handful of mobile browsers that
+              // skip onchange for detached-layout inputs. This keeps the input
+              // in the layout tree without taking space.
+              style={{
+                position: "absolute",
+                width: 1,
+                height: 1,
+                padding: 0,
+                margin: -1,
+                overflow: "hidden",
+                clip: "rect(0,0,0,0)",
+                border: 0,
+              }}
             />
             <span style={{ fontSize: 11, color: "#64748B" }}>
               Drag the crop box to position. Drag the corner and edge handles to resize (ratio stays locked to 16:9).
@@ -513,6 +547,13 @@ export default function PropertyImageEditor({
             {loadableSrc ? (
               <>
                 <img
+                  // Keying on the resolved source forces React to swap the
+                  // element whenever the user uploads a new file. Without this,
+                  // React reuses the existing <img> and only updates its src,
+                  // which means onLoad won't re-fire reliably if the browser
+                  // caches or collapses the load (seen with Safari on iOS after
+                  // a second pick in the same session).
+                  key={loadableSrc}
                   ref={imgRef}
                   src={loadableSrc}
                   alt="Source"
@@ -528,7 +569,14 @@ export default function PropertyImageEditor({
                       setProxyFailed(true);
                       return;
                     }
-                    setError("Could not load the source image. Try uploading a new one.");
+                    // For blob: sources (newly uploaded file) the decode itself
+                    // failed — most commonly HEIC/HEIF on Chrome or an
+                    // unsupported codec. Tell the user what to do.
+                    if (sourceUrl && sourceUrl.startsWith("blob:")) {
+                      setError("Your browser couldn't decode that image. Try a JPEG, PNG, or WEBP (HEIC photos from iPhone aren't supported in Chrome).");
+                    } else {
+                      setError("Could not load the source image. Try uploading a new one.");
+                    }
                   }}
                   draggable={false}
                   style={{
