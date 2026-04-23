@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
 import { extractTextFromFile } from "@/lib/workspace/file-reader";
+import { DEALSIGNALS_LOGO_B64 } from "@/lib/workspace/logo-b64";
 
 import DealSignalNav from "@/components/DealSignalNav";
 import { trackLiteUpload, trackLiteResult, trackLeadCapture, trackProCTAClick, trackDownload } from "@/lib/analytics";
@@ -5363,37 +5364,50 @@ function downloadLiteBrief(d: any) {
     marketCtx = `<p>CRE cap rates have widened as interest rates repriced debt since 2022. Evaluate this property's income stability, tenant credit quality, and submarket rent trends before finalizing underwriting assumptions.</p>`;
   }
 
+  const logoB64 = DEALSIGNALS_LOGO_B64;
   const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8">
 <style>
 @page{size:8.5in 11in;margin:0.75in 1in}
 body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#1a1a1a;line-height:1.6}
-h1{font-size:18pt;color:#0B1120;border-bottom:2.5px solid #C49A3C;padding-bottom:8px;margin:0 0 4px 0}
-h2{font-size:13pt;color:#253352;margin:22px 0 8px 0;padding-bottom:4px;border-bottom:1px solid #E0E5ED}
-h3{font-size:11pt;color:#253352;margin:16px 0 6px 0}
+.header-bar{background:#0B1120;padding:18px 24px;margin:-12px -12px 20px -12px}
+.header-bar img{height:36px;width:auto}
+.header-bar .tagline{color:#8899B0;font-size:9pt;margin:4px 0 0 0}
+h1{font-size:20pt;color:#0B1120;border-bottom:3px solid #C49A3C;padding-bottom:10px;margin:0 0 6px 0;letter-spacing:-0.3px}
+h2{font-size:13pt;color:#0B1120;margin:26px 0 8px 0;padding-bottom:5px;border-bottom:1.5px solid #C49A3C;text-transform:uppercase;letter-spacing:0.04em;font-weight:700}
+h3{font-size:11pt;color:#253352;margin:16px 0 6px 0;font-weight:700}
 p{margin:5px 0}
 .sub{font-size:9.5pt;color:#8899B0;font-style:italic;margin-bottom:16px}
-.loc{font-size:10.5pt;color:#555;margin:2px 0 2px 0}
+.loc{font-size:11pt;color:#3D516E;margin:2px 0 8px 0}
+.type-badge{display:inline-block;background:#0B1120;color:#C49A3C;padding:4px 14px;font-size:9.5pt;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
 ul{margin:6px 0 6px 18px;padding:0}
-li{margin:3px 0;line-height:1.5}
+li{margin:4px 0;line-height:1.5}
 table{border-collapse:collapse;width:100%;margin:8px 0;font-size:10pt}
-th{background:#262C5C;color:#fff;text-align:left;padding:7px 10px;border:1px solid #262C5C;font-weight:600}
-td{padding:5px 10px;border:1px solid #D8DFE9}
+th{background:#0B1120;color:#C49A3C;text-align:left;padding:8px 10px;border:1px solid #0B1120;font-weight:700;font-size:9.5pt;text-transform:uppercase;letter-spacing:0.04em}
+td{padding:6px 10px;border:1px solid #D8DFE9}
 .alt{background:#F6F8FB}
-.val{font-weight:600}
-.sg{color:#059669;font-weight:600}
-.sy{color:#D97706;font-weight:600}
-.sr{color:#DC2626;font-weight:600}
+.val{font-weight:700;color:#0B1120}
+.sg{color:#059669;font-weight:700}
+.sy{color:#D97706;font-weight:700}
+.sr{color:#DC2626;font-weight:700}
 .note{font-size:9pt;color:#8899B0;font-style:italic}
 .strength-item{margin:4px 0;line-height:1.5}
 .concern-item{margin:4px 0;line-height:1.5}
 .callout{background:#FFFBEB;border-left:3px solid #D97706;padding:10px 14px;margin:14px 0;font-size:10pt}
-.footer{margin-top:30px;padding-top:10px;border-top:1px solid #D8DFE9;font-size:8.5pt;color:#8899B0}
-.disclaimer{font-size:9pt;color:#6B7280;line-height:1.6;font-style:italic;margin-top:8px}
+.disclaimer{font-size:8.5pt;color:#6B7280;line-height:1.5;font-style:italic;margin-top:8px}
+.footer-brand{margin-top:36px;padding-top:16px;border-top:3px solid #C49A3C;text-align:center}
+.footer-brand img{height:24px;width:auto;margin-bottom:6px}
+.divider{border:none;border-top:1px solid #D8DFE9;margin:24px 0}
 </style></head><body>
 
+<div class="header-bar">
+<img src="data:image/png;base64,${logoB64}" alt="DealSignals" />
+<p class="tagline">AI-Powered CRE Pre-Diligence</p>
+</div>
+
 <h1>FIRST-PASS UNDERWRITING BRIEF</h1>
-<h2 style="border:none;margin-top:6px;font-size:15pt;">${pName}</h2>
+<p style="font-size:15pt;font-weight:700;color:#253352;margin:4px 0 2px 0;">${pName}</p>
 <p class="loc">${loc}</p>
+${assetType ? `<div class="type-badge">${assetType}</div>` : ""}
 <p class="sub">First-pass underwriting screen based on the provided documents and clearly labeled assumptions. Directional assessment only, not a final investment model.</p>
 
 ${snap.length > 0 ? `<h2>Deal Snapshot</h2><ul>${snap.map(s => `<li>${s}</li>`).join("")}</ul>` : ""}
@@ -5469,14 +5483,15 @@ ${stressTestHtml}
 ${d.signals?.overall ? `<h3>Overall Signal</h3><p class="${sc(d.signals.overall)}"><b>${d.signals.overall}</b></p>` : ""}
 ${d.signals?.recommendation ? `<h3>Recommendation</h3><p><b class="${sc(d.signals.recommendation)}">${d.signals.recommendation}</b></p>` : ""}
 
-<h2 style="margin-top:32px;font-size:11pt;color:#6B7280;border-bottom:1px solid #E5E7EB;text-transform:uppercase;letter-spacing:0.08em">Disclaimer</h2>
-<p class="disclaimer">This First-Pass Brief is automated general guidance produced by Deal Signals. It is NOT investment, legal, tax, accounting, or financial advice, and it is not an offer, solicitation, or recommendation to buy, sell, lease, finance, or otherwise transact in any property or security. Figures are derived from uploaded documents and public data sources that may be incomplete, out-of-date, or inaccurate. You are solely responsible for verifying every material fact and conducting full due diligence with qualified professionals before committing any capital. Use at your own risk.</p>
+<hr class="divider" />
+<p style="font-size:9pt;color:#8899B0;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;margin-bottom:6px;">Disclaimer</p>
+<p class="disclaimer">This First-Pass Brief is automated general guidance produced by DealSignals. It is NOT investment, legal, tax, accounting, or financial advice, and it is not an offer, solicitation, or recommendation to buy, sell, lease, finance, or otherwise transact in any property or security. Figures are derived from uploaded documents and public data sources that may be incomplete, out-of-date, or inaccurate. You are solely responsible for verifying every material fact and conducting full due diligence with qualified professionals before committing any capital. Use at your own risk.</p>
 
-<div style="margin-top:30px;padding-top:14px;border-top:1px solid #D8DFE9;text-align:center;">
-<p style="font-size:10pt;font-weight:700;color:#253352;margin:0;">Deal Signals</p>
-<p style="font-size:9pt;color:#6B7280;margin:2px 0;">Analyze CRE deals with AI-powered intelligence. Get real signals, not guesses.</p>
-<p style="font-size:9pt;margin:4px 0;"><a href="https://www.dealsignals.app" style="color:#3B5998;text-decoration:none;">www.dealsignals.app</a></p>
-<p style="font-size:8pt;color:#9CA3AF;margin:8px 0 0 0;font-style:italic;">Generated by Deal Signals</p>
+<div class="footer-brand">
+<img src="data:image/png;base64,${logoB64}" alt="DealSignals" style="height:24px;width:auto;margin-bottom:6px;" />
+<p style="font-size:9pt;color:#3D516E;margin:2px 0;font-weight:600;">AI-Powered CRE Pre-Diligence</p>
+<p style="font-size:9pt;margin:4px 0;"><a href="https://www.dealsignals.app" style="color:#C49A3C;text-decoration:none;font-weight:600;">www.dealsignals.app</a></p>
+<p style="font-size:8pt;color:#8899B0;margin:8px 0 0 0;">Generated by DealSignals</p>
 </div>
 </body></html>`;
 
