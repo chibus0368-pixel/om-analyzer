@@ -419,6 +419,8 @@ export default function SharedViewPage() {
         }
         .back-pill:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(15,23,43,0.28); }
         .back-pill:active { transform: translateY(0); }
+        .back-pill-label-mobile { display: none; }
+        .pd-tab-label-mobile { display: none; }
         .pd-tab {
           padding: 9px 14px;
           font-size: 12px;
@@ -538,6 +540,57 @@ export default function SharedViewPage() {
             min-height: 180px;
             max-height: 280px;
           }
+          /* ── Detail view scroll + tab restructure ──────────────────
+             The detail panel had a nested scroll setup: outer sidebar
+             with overflow:auto, inner content div also with overflow:auto,
+             and two position:sticky bars relying on a scroll container
+             that wasn't actually scrolling. On a phone the result was
+             content sliding under a tab strip that never quite pinned
+             and a claustrophobic 30%-of-viewport scroll area.
+             Fix on mobile: collapse to a SINGLE scroll (the sidebar),
+             let the property header/hero scroll away, and pin back bar
+             + tab strip to the top of the viewport. */
+          .detail-slide {
+            height: auto !important;
+            min-height: 100%;
+          }
+          .detail-content {
+            overflow: visible !important;
+            flex: none !important;
+          }
+          .detail-top-bar {
+            padding: 8px 12px !important;
+          }
+          .detail-top-bar .back-pill {
+            padding: 8px 12px 8px 8px !important;
+            font-size: 12px !important;
+          }
+          /* Show the "All properties" label on mobile, hide the desktop
+             "Back to Map" copy that no longer matches the UI. */
+          .back-pill-label-desktop { display: none !important; }
+          .back-pill-label-mobile { display: inline !important; }
+          /* Compact the locate+prev/next cluster — smaller buttons, no
+             locate (there is no map to locate on; Back takes you back
+             to the list where the map lives). */
+          .detail-nav-cluster > button:first-child { display: none !important; }
+          .detail-nav-cluster > button { width: 30px !important; height: 30px !important; }
+          /* Tab strip pins to the top of the viewport now that the outer
+             scroll is the whole sidebar. 48px ≈ the compact top bar height. */
+          .detail-tab-strip {
+            top: 48px !important;
+            padding: 6px 8px 0 !important;
+            gap: 0 !important;
+            overflow-x: visible !important;
+          }
+          .pd-tab {
+            padding: 9px 10px !important;
+            font-size: 12px !important;
+            flex: 1 1 0;
+            min-width: 0;
+            text-align: center;
+          }
+          .pd-tab-label-desktop { display: none !important; }
+          .pd-tab-label-mobile { display: inline !important; }
         }
         /* Prefer the dynamic viewport (dvh) on iOS Safari 16+ so the
            bottom disclaimer stops getting clipped by the tab bar/URL bar
@@ -976,23 +1029,24 @@ function PropertyDetail({
 
   return (
     <div className="detail-slide" style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      {/* Sticky nav bar. The Back to Map pill is deliberately the most
+      {/* Sticky nav bar. The Back pill is deliberately the most
           prominent affordance because the user's primary mental model is
-          "map with deals I drill into and come back from", so the pill makes
+          "list of deals I drill into and come back from", so the pill makes
           that return trip a single obvious click. Esc also returns. */}
-      <div style={{
+      <div className="detail-top-bar" style={{
         padding: "12px 16px", borderBottom: "1px solid #e5e7eb", background: "#fff",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         gap: 10, position: "sticky", top: 0, zIndex: 5,
       }}>
-        <button onClick={onBack} className="back-pill" title="Back to map (Esc)">
+        <button onClick={onBack} className="back-pill" title="Back to properties (Esc)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
           </svg>
-          Back to Map
+          <span className="back-pill-label-desktop">Back to Map</span>
+          <span className="back-pill-label-mobile">All properties</span>
         </button>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        <div className="detail-nav-cluster" style={{ display: "flex", alignItems: "center", gap: 4 }}>
           {/* Locate on map - re-centers without leaving the detail view */}
           <button onClick={onLocate} title="Locate on map" style={{
             width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center",
@@ -1054,9 +1108,11 @@ function PropertyDetail({
       </div>
 
       {/* Tab strip - only shows tabs that have real data. Sticky under the
-          top bar so the viewer can switch views without scrolling back up. */}
+          top bar so the viewer can switch views without scrolling back up.
+          On mobile we re-pin to top:0 since the top bar compacts to 48px
+          and the property header scrolls away; see the @media block. */}
       {visibleTabs.length > 1 && (
-        <div style={{
+        <div className="detail-tab-strip" style={{
           display: "flex",
           alignItems: "flex-end",
           background: "#F9FAFB",
@@ -1069,20 +1125,32 @@ function PropertyDetail({
           zIndex: 4,
           overflowX: "auto",
         }}>
-          {visibleTabs.map(t => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`pd-tab ${tab === t.id ? "active" : ""}`}
-            >
-              {t.label}
-            </button>
-          ))}
+          {visibleTabs.map(t => {
+            // Mobile needs shorter labels so the whole strip fits without
+            // horizontal scrolling on a 375px iPhone. Render both, let CSS
+            // pick which is visible.
+            const shortLabel = t.id === "quick-screen" ? "Screen"
+              : t.id === "scenarios" ? "Offer"
+              : t.id === "rent-roll" ? "Rent"
+              : "Summary";
+            return (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={`pd-tab ${tab === t.id ? "active" : ""}`}
+              >
+                <span className="pd-tab-label-desktop">{t.label}</span>
+                <span className="pd-tab-label-mobile">{shortLabel}</span>
+              </button>
+            );
+          })}
         </div>
       )}
 
-      {/* Scrollable content */}
-      <div style={{ flex: 1, overflow: "auto", padding: "16px 18px", background: "#fff" }}>
+      {/* Scrollable content. On mobile we flatten this into the
+          parent .share-sidebar scroll so sticky back bar + tabs actually
+          work as designed. */}
+      <div className="detail-content" style={{ flex: 1, overflow: "auto", padding: "16px 18px", background: "#fff" }}>
         {/* ═══ QUICK SCREEN TAB ═══ */}
         {tab === "quick-screen" && (
           <div>
