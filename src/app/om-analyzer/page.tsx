@@ -4539,6 +4539,11 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
   const [captureEmail, setCaptureEmail] = useState("");
   const [captureStatus, setCaptureStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [captureMsg, setCaptureMsg] = useState("");
+  // Pro-style tab strip below the hero. Mirrors PropertyDetailClient's
+  // ProTab structure ("Deal Quick Screen" / "Offer Scenarios" / "Rent Roll")
+  // so Try Me reads as a lighter-weight version of the same surface.
+  type TmTab = "quick-screen" | "offer-scenarios" | "rent-roll";
+  const [tab, setTab] = useState<TmTab>("quick-screen");
   const location = [d.address, d.city, d.state].filter(Boolean).join(", ");
   const encodedAddress = encodeURIComponent(location || d.propertyName);
   const recommendation = typeof d.signals?.recommendation === "string" ? d.signals.recommendation : d.signals?.recommendation?.text ? String(d.signals.recommendation.text) : String(d.signals?.recommendation || "");
@@ -4764,6 +4769,77 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
         </div>
       </div>
 
+      {/* ===== TAB STRIP - matches Pro's file-folder tabs ===== */}
+      <div style={{
+        display: "flex",
+        alignItems: "flex-end",
+        background: "#F9FAFB",
+        borderTopLeftRadius: 14,
+        borderTopRightRadius: 14,
+        border: "1px solid rgba(0,0,0,0.06)",
+        borderBottom: "none",
+        padding: "8px 12px 0",
+        gap: 2,
+        marginBottom: 0,
+      }}>
+        {[
+          { id: "quick-screen" as const, label: "Deal Quick Screen" },
+          { id: "offer-scenarios" as const, label: "Offer Scenarios" },
+          { id: "rent-roll" as const, label: "Rent Roll", disabled: tenants.length === 0 },
+        ].map(t => {
+          const isActive = t.id === tab;
+          const isDisabled = (t as any).disabled;
+          return (
+            <button
+              key={t.id}
+              onClick={() => !isDisabled && setTab(t.id)}
+              disabled={isDisabled}
+              style={{
+                position: "relative",
+                padding: "10px 18px 11px",
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: 0.3,
+                background: isActive ? "#FFFFFF" : "transparent",
+                color: isDisabled ? "#CBD5E1" : isActive ? "#0F172A" : "#6B7280",
+                border: `1px solid ${isActive ? "rgba(0,0,0,0.06)" : "transparent"}`,
+                borderBottom: isActive ? "1px solid #FFFFFF" : "1px solid transparent",
+                borderTopLeftRadius: 8,
+                borderTopRightRadius: 8,
+                marginBottom: -1,
+                cursor: isDisabled ? "not-allowed" : "pointer",
+                fontFamily: "'Inter', sans-serif",
+                transition: "background 0.15s ease, color 0.15s ease",
+              }}
+            >
+              {isActive && (
+                <span aria-hidden style={{
+                  position: "absolute",
+                  top: -1, left: -1, right: -1,
+                  height: 2,
+                  background: "#4D7C0F",
+                  borderTopLeftRadius: 8,
+                  borderTopRightRadius: 8,
+                }} />
+              )}
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Tab content panel - white surface continuous with the active tab */}
+      <div style={{
+        background: "#FFFFFF",
+        border: "1px solid rgba(0,0,0,0.06)",
+        borderTop: "none",
+        borderBottomLeftRadius: 14,
+        borderBottomRightRadius: 14,
+        padding: "20px 18px 18px",
+        marginBottom: 20,
+      }}>
+
+      {tab === "quick-screen" && (<>
       {/* ===== METRICS STRIP - Horizontal single-row key metrics ===== */}
       {metricsStripItems.length > 0 && (
         <div className="tm-metrics-strip" style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", padding: "14px 0", marginBottom: 20, display: "grid", gridTemplateColumns: `repeat(${metricsStripItems.length}, 1fr)` }}>
@@ -4972,6 +5048,9 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
 
 
 
+      </>)}
+
+      {tab === "offer-scenarios" && (<>
       {/* ===== KEY METRICS + SIGNALS ===== */}
       {hasData && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
@@ -5026,6 +5105,9 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
         </div>
       )}
 
+      </>)}
+
+      {tab === "rent-roll" && (<>
       {/* ===== TENANT SUMMARY ===== */}
       {tenants.length > 0 && (
         <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", overflow: "hidden", marginBottom: 16 }}>
@@ -5064,6 +5146,10 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
           </table>
         </div>
       )}
+
+      </>)}
+
+      </div>{/* /tab content panel */}
 
       {/* ===== DOWNLOAD ASSETS ===== */}
       {hasData && (
