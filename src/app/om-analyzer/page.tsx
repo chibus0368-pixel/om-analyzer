@@ -7,6 +7,7 @@ import Link from "next/link";
 import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
 import { extractTextFromFile } from "@/lib/workspace/file-reader";
 import { DEALSIGNALS_LOGO_B64 } from "@/lib/workspace/logo-b64";
+import { useWorkspaceAuth } from "@/lib/workspace/auth";
 
 import DealSignalNav from "@/components/DealSignalNav";
 import { trackLiteUpload, trackLiteResult, trackLeadCapture, trackProCTAClick, trackDownload } from "@/lib/analytics";
@@ -1656,7 +1657,14 @@ export default function OmAnalyzerPage() {
   const dropZoneCounter = useRef(0);
   const [selectedAssetType, setSelectedAssetType] = useState<string>("auto");
   const [scoreResult, setScoreResult] = useState<any>(null);
-  const [usageData, setUsageData] = useState<{ uploadsUsed: number; uploadLimit: number } | null>(null);
+  const [usageData, setUsageData] = useState<{
+    uploadsUsed: number;
+    uploadLimit: number;
+    tier?: string;
+    tierStatus?: string;
+    isAnonymous?: boolean;
+    stripeSubscriptionId?: string | null;
+  } | null>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [animateStrip, setAnimateStrip] = useState(false);
@@ -1675,16 +1683,48 @@ export default function OmAnalyzerPage() {
     return id;
   }, []);
 
+  // Auth state: when a user is logged in and lands on the public pricing
+  // section we want to call /api/workspace/usage with their token so we
+  // can show their current plan on the tier cards.
+  const { user: authUser, loading: authLoading } = useWorkspaceAuth();
+
   const fetchUsage = useCallback(async () => {
     try {
+      // Authenticated: identify the user's tier so pricing section can
+      // highlight their current plan.
+      if (authUser) {
+        const token = await authUser.getIdToken();
+        const res = await fetch("/api/workspace/usage", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUsageData({
+            uploadsUsed: data.uploadsUsed,
+            uploadLimit: data.uploadLimit,
+            tier: data.tier,
+            tierStatus: data.tierStatus,
+            isAnonymous: false,
+            stripeSubscriptionId: data.stripeSubscriptionId,
+          });
+          return;
+        }
+        // Fall through to anonymous on auth error
+      }
       const anonId = getAnonId();
       const res = await fetch(`/api/workspace/usage?anonId=${anonId}`);
       if (res.ok) {
         const data = await res.json();
-        setUsageData({ uploadsUsed: data.uploadsUsed, uploadLimit: data.uploadLimit });
+        setUsageData({
+          uploadsUsed: data.uploadsUsed,
+          uploadLimit: data.uploadLimit,
+          tier: data.tier,
+          tierStatus: data.tierStatus,
+          isAnonymous: true,
+        });
       }
     } catch { /* silent */ }
-  }, [getAnonId]);
+  }, [getAnonId, authUser]);
 
   const incrementUsage = useCallback(async () => {
     try {
@@ -1702,7 +1742,13 @@ export default function OmAnalyzerPage() {
   }, [getAnonId]);
 
   // Fetch usage on mount
-  useEffect(() => { fetchUsage(); }, [fetchUsage]);
+  // Re-runs whenever authUser resolves (from null to a user or vice
+  // versa) because fetchUsage depends on authUser. Wait for auth loading
+  // to settle so we don't make two calls (anonymous then authenticated).
+  useEffect(() => {
+    if (authLoading) return;
+    fetchUsage();
+  }, [fetchUsage, authLoading]);
 
   // Safety: auto-dismiss drag overlay after 3s to prevent stuck state
   useEffect(() => {
@@ -3570,6 +3616,7 @@ export default function OmAnalyzerPage() {
             <div className="ds-pricing-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 60 }}>
               {[
                 {
+                  key: "free" as const,
                   name: "Free",
                   price: "0",
                   period: "",
@@ -3589,6 +3636,7 @@ export default function OmAnalyzerPage() {
                   highlight: false,
                 },
                 {
+                  key: "pro" as const,
                   name: "Pro",
                   price: "40",
                   period: "/mo",
@@ -3612,6 +3660,7 @@ export default function OmAnalyzerPage() {
                   highlight: true,
                 },
                 {
+                  key: "pro_plus" as const,
                   name: "Pro+",
                   price: "100",
                   period: "/mo",
@@ -3630,25 +3679,63 @@ export default function OmAnalyzerPage() {
                   highlight: false,
                   bestValue: true,
                 },
-              ].map(tier => (
+              ].map(tier => {
+                // Is the logged-in user on this exact plan?
+                const userTier = authUser && !usageData?.isAnonymous ? usageData?.tier : undefined;
+                const isCurrent = !!userTier && userTier === tier.key;
+                // Ranking lets us tell upgrade from downgrade for CTA copy.
+                const rank: Record<string, number> = { free: 0, pro: 1, pro_plus: 2 };
+                const userRank = userTier ? rank[userTier] ?? -1 : -1;
+                const tierRank = rank[tier.key];
+                const isUpgradeTarget = userRank >= 0 && tierRank > userRank;
+                const isDowngradeTarget = userRank >= 0 && tierRank < userRank;
+
+                // Override CTA text + link when the user is signed in so the
+                // section stops shouting "Sign Up Free" at an active customer.
+                let ctaLabel = tier.cta;
+                let ctaLink = tier.ctaLink;
+                if (isCurrent) {
+                  ctaLabel = "Manage plan";
+                  ctaLink = "/workspace/profile";
+                } else if (isUpgradeTarget) {
+                  ctaLabel = `Upgrade to ${tier.name}`;
+                  ctaLink = `/workspace/profile?upgrade=${tier.key}`;
+                } else if (isDowngradeTarget) {
+                  ctaLabel = "Switch plan";
+                  ctaLink = "/workspace/profile";
+                }
+
+                return (
                 <div key={tier.name} style={{
-                  background: "rgba(22,22,31,0.6)", backdropFilter: "blur(10px)",
-                  borderRadius: 16, border: tier.highlight ? "1px solid rgba(132,204,22,0.4)" : "1px solid rgba(255,255,255,0.06)",
+                  background: isCurrent ? "rgba(132,204,22,0.08)" : "rgba(22,22,31,0.6)", backdropFilter: "blur(10px)",
+                  borderRadius: 16, border: isCurrent
+                    ? "1px solid rgba(132,204,22,0.6)"
+                    : tier.highlight ? "1px solid rgba(132,204,22,0.4)" : "1px solid rgba(255,255,255,0.06)",
                   padding: "36px 28px", position: "relative", overflow: "hidden",
                   transition: "all 0.25s ease",
-                  boxShadow: tier.highlight ? "0 0 40px rgba(132,204,22,0.1)" : "none",
+                  boxShadow: isCurrent
+                    ? "0 0 40px rgba(132,204,22,0.18)"
+                    : tier.highlight ? "0 0 40px rgba(132,204,22,0.1)" : "none",
                 }}>
-                  {tier.highlight && (
+                  {/* "Your current plan" badge wins over Most Popular / Best Value
+                      when the logged-in user is on this tier, so the signal is
+                      unambiguous. */}
+                  {isCurrent && (
+                    <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#0d0d14", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                      Your current plan
+                    </div>
+                  )}
+                  {!isCurrent && tier.highlight && (
                     <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#0d0d14", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
                       Most Popular
                     </div>
                   )}
-                  {(tier as any).bestValue && (
+                  {!isCurrent && (tier as any).bestValue && (
                     <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#0d0d14", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
                       Best Value
                     </div>
                   )}
-                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: tier.highlight ? "#84CC16" : "#9ca3af", marginBottom: 10 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: tier.highlight || isCurrent ? "#84CC16" : "#9ca3af", marginBottom: 10 }}>
                     {tier.name}
                   </div>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 4 }}>
@@ -3657,7 +3744,7 @@ export default function OmAnalyzerPage() {
                     {tier.period && <span style={{ fontSize: 14, color: "rgba(255,255,255,0.5)" }}>{tier.period}</span>}
                   </div>
                   <p style={{ fontSize: 13, color: "#9ca3af", marginBottom: (tier as any).valueCallout ? 10 : 28, lineHeight: 1.5 }}>{tier.desc}</p>
-                  {(tier as any).valueCallout && (
+                  {(tier as any).valueCallout && !isCurrent && (
                     <div style={{ fontSize: 12, fontWeight: 700, color: "#84CC16", marginBottom: 20, letterSpacing: 0.3 }}>
                       {(tier as any).valueCallout}
                     </div>
@@ -3676,18 +3763,25 @@ export default function OmAnalyzerPage() {
                     ))}
                   </div>
 
-                  <Link href={tier.ctaLink} style={{
+                  <Link href={ctaLink} style={{
                     display: "block", width: "100%", padding: "12px", textAlign: "center",
-                    background: tier.highlight ? "#84CC16" : "rgba(132,204,22,0.12)",
-                    color: tier.highlight ? "#0d0d14" : "#84CC16",
-                    border: tier.highlight ? "none" : "1px solid rgba(132,204,22,0.3)",
+                    background: isCurrent
+                      ? "rgba(132,204,22,0.18)"
+                      : tier.highlight ? "#84CC16" : "rgba(132,204,22,0.12)",
+                    color: isCurrent
+                      ? "#84CC16"
+                      : tier.highlight ? "#0d0d14" : "#84CC16",
+                    border: isCurrent
+                      ? "1px solid rgba(132,204,22,0.5)"
+                      : tier.highlight ? "none" : "1px solid rgba(132,204,22,0.3)",
                     borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: "none", fontFamily: "inherit",
                     boxSizing: "border-box", transition: "all 0.2s ease",
                   }}>
-                    {tier.cta}
+                    {ctaLabel}
                   </Link>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
           </div>
