@@ -8,12 +8,11 @@ import { useWorkspaceAuth } from "@/lib/workspace/auth";
 /**
  * /workspace/upgrade
  *
- * Workspace-internal upgrade page. Renders three tiers (Trial / Free / Pro)
- * with the visitor's current plan highlighted. CTAs:
- *   - Anonymous users: "Sign up free" -> /workspace/login?signup=1 with their
- *     Firebase anon UID preserved via linkWithCredential on the auth side.
- *   - Free users: "Start 7-day Pro trial" -> /api/stripe/checkout
- *   - Pro/Pro+ users: shows their current plan, no CTA
+ * Workspace-internal upgrade page. Mirrors the pricing module on
+ * /om-analyzer#pricing exactly - dark theme, gradient orbs, three-tier
+ * grid with smart per-tier CTA logic. Source of truth for plan numbers
+ * is src/lib/stripe/config.ts. If you edit copy here, also edit it in
+ * the marketing pricing section.
  */
 export default function WorkspaceUpgradePage() {
   const router = useRouter();
@@ -52,10 +51,8 @@ export default function WorkspaceUpgradePage() {
   }, [user, loading, router]);
 
   const isAnon = tier === "anonymous";
-  const isFree = tier === "free";
-  const isPro = tier === "pro" || tier === "pro_plus";
 
-  async function startProCheckout() {
+  async function startProCheckout(targetTier: "pro" | "pro_plus") {
     if (!user) return;
     try {
       const token = await user.getIdToken();
@@ -65,7 +62,7 @@ export default function WorkspaceUpgradePage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ tier: "pro" }),
+        body: JSON.stringify({ tier: targetTier }),
       });
       const data = await res.json();
       if (data?.url) window.location.href = data.url;
@@ -76,157 +73,259 @@ export default function WorkspaceUpgradePage() {
   }
 
   return (
-    <div style={{ padding: "32px 24px 64px", maxWidth: 1100, margin: "0 auto", fontFamily: "'Inter', system-ui, sans-serif" }}>
-      <h1 style={{ fontSize: 28, fontWeight: 800, color: "#0F172A", margin: "0 0 8px", letterSpacing: -0.4 }}>
-        {isPro ? "Your plan" : "Upgrade your plan"}
-      </h1>
-      <p style={{ fontSize: 14, color: "#6B7280", margin: "0 0 24px" }}>
-        {isAnon && "You're on a 2-deal trial. Sign up to keep analyzing without losing this work."}
-        {isFree && "You get 7 deal analyses per month on the free plan. Upgrade for higher limits and Pro features."}
-        {isPro && "You have full access to Pro features."}
-      </p>
+    <div style={{ background: "#0d0d14", minHeight: "100vh", color: "#FFFFFF", fontFamily: "'Inter', system-ui, sans-serif", position: "relative", overflow: "hidden" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        @media (max-width: 900px) {
+          .ws-up-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+        }
+      `}</style>
 
-      {usage && (
-        <div style={{
-          background: "#F9FAFB", border: "1px solid rgba(0,0,0,0.06)",
-          borderRadius: 12, padding: "14px 18px", marginBottom: 28,
-          display: "flex", alignItems: "center", gap: 14,
-        }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>
-              Current usage
-            </div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>
-              {usage.used} of {usage.limit} {isAnon || (isFree && false) ? "trial" : isFree ? "monthly" : "monthly"} analyses used
+      {/* Gradient orb */}
+      <div style={{
+        position: "absolute", top: -200, right: -100,
+        width: 500, height: 500, borderRadius: "50%",
+        background: "rgba(132,204,22,0.1)", filter: "blur(128px)",
+        pointerEvents: "none", zIndex: 0,
+      }} />
+
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "60px 32px 80px", position: "relative", zIndex: 1 }}>
+        {/* Trial usage banner - only when on the anonymous tier */}
+        {isAnon && usage && (
+          <div style={{
+            background: "rgba(132,204,22,0.08)",
+            border: "1px solid rgba(132,204,22,0.3)",
+            borderRadius: 12,
+            padding: "14px 18px",
+            marginBottom: 32,
+            display: "flex", alignItems: "center", gap: 14,
+          }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 4 }}>
+                You're on Trial
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "#FFFFFF" }}>
+                {usage.used} of {usage.limit} free analyses used. Sign up free for 5 more per month.
+              </div>
             </div>
           </div>
-        </div>
-      )}
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
-        <PlanCard
-          name="Trial"
-          price="Free"
-          subtitle="Anonymous"
-          features={["2 deal analyses", "Full Pro property page", "Brief + XLS downloads"]}
-          current={isAnon}
-        />
-        <PlanCard
-          name="Free"
-          price="$0/mo"
-          subtitle="With email signup"
-          features={["7 deal analyses per month", "Save deals to workspace", "Brief + XLS downloads", "Deal Signals scoring"]}
-          current={isFree}
-          ctaLabel={isAnon ? "Sign up free" : isFree ? undefined : undefined}
-          ctaHref={isAnon ? "/workspace/login?signup=1" : undefined}
-          highlight={isAnon}
-        />
-        <PlanCard
-          name="Pro"
-          price="$40/mo"
-          subtitle="7-day free trial"
-          features={[
-            "100 deal analyses per month",
-            "Pro DealBoard with history",
-            "Interactive property map",
-            "White-label shareable links",
-            "Location Intelligence",
-          ]}
-          current={tier === "pro"}
-          ctaLabel={isAnon || isFree ? "Start 7-day trial" : undefined}
-          ctaOnClick={isAnon || isFree ? startProCheckout : undefined}
-          highlight={isFree}
-        />
-      </div>
-
-      <p style={{ fontSize: 12, color: "#9CA3AF", marginTop: 24, textAlign: "center" }}>
-        {isPro ? (
-          <Link href="/workspace/profile?tab=account" prefetch={false} style={{ color: "#84CC16" }}>
-            Manage your subscription &rarr;
-          </Link>
-        ) : (
-          <>Cancel anytime. No credit card required for Free plan.</>
         )}
-      </p>
-    </div>
-  );
-}
 
-function PlanCard({
-  name, price, subtitle, features, current, ctaLabel, ctaHref, ctaOnClick, highlight,
-}: {
-  name: string;
-  price: string;
-  subtitle: string;
-  features: string[];
-  current?: boolean;
-  ctaLabel?: string;
-  ctaHref?: string;
-  ctaOnClick?: () => void;
-  highlight?: boolean;
-}) {
-  return (
-    <div style={{
-      background: "#FFFFFF",
-      border: highlight ? "2px solid #84CC16" : "1px solid rgba(0,0,0,0.08)",
-      borderRadius: 14,
-      padding: "20px 18px",
-      boxShadow: highlight ? "0 8px 24px rgba(132,204,22,0.15)" : "0 2px 10px rgba(15,23,43,0.04)",
-      display: "flex", flexDirection: "column", gap: 12,
-      position: "relative",
-    }}>
-      {current && (
-        <div style={{
-          position: "absolute", top: 12, right: 12,
-          background: "#0F172A", color: "#FFFFFF",
-          fontSize: 9, fontWeight: 800, letterSpacing: 0.6, textTransform: "uppercase",
-          padding: "3px 8px", borderRadius: 4,
-        }}>
-          Current
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 56, position: "relative", zIndex: 1 }}>
+          <h1 style={{
+            fontSize: 38, fontWeight: 800, color: "#FFFFFF",
+            margin: "0 0 12px",
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            letterSpacing: -0.6,
+          }}>
+            {isAnon ? "Sign up to keep going" : "Start free. Scale as your deal flow grows."}
+          </h1>
+          <p style={{ fontSize: 14, color: "#5A7091", lineHeight: 1.7, maxWidth: 520, margin: "0 auto" }}>
+            DealSignals turns deals and OMs into actionable investment insight, powering faster pre-diligence decisions.
+          </p>
         </div>
-      )}
-      <div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.6 }}>
-          {subtitle}
+
+        {/* 3-tier pricing grid - mirrors /om-analyzer#pricing */}
+        <div className="ws-up-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 60 }}>
+          {[
+            {
+              key: "free" as const,
+              name: "Free",
+              price: "0",
+              period: "",
+              desc: "Try DealSignals on real deals.",
+              valueCallout: undefined as string | undefined,
+              features: [
+                { text: "7 deal analyses per month", included: true },
+                { text: "Save deals to workspace", included: true },
+                { text: "Deal Signals scoring", included: true },
+                { text: "Downloadable XLS worksheets of analysis", included: true },
+                { text: "First-pass brief download", included: true },
+                { text: "Interactive property map", included: false },
+                { text: "Deal comparison scoreboard", included: false },
+                { text: "Location Intelligence", included: false },
+              ],
+              defaultCta: "Sign Up Free",
+              defaultHref: "/workspace/login?signup=1",
+              highlight: false,
+              bestValue: false,
+            },
+            {
+              key: "pro" as const,
+              name: "Pro",
+              price: "40",
+              period: "/mo",
+              desc: "For active investors moving fast on deals.",
+              valueCallout: "7-day free trial · Less than 50¢ per deal",
+              features: [
+                { text: "100 deal analyses/month", included: true },
+                { text: "Bulk portfolio uploads", included: true },
+                { text: "Save deals to workspace", included: true },
+                { text: "Deal Signals scoring", included: true },
+                { text: "Downloadable XLS worksheets of analysis", included: true },
+                { text: "First-pass brief download", included: true },
+                { text: "Pro DealBoard with history", included: true },
+                { text: "Interactive property map", included: true },
+                { text: "Deal comparison scoreboard", included: true },
+                { text: "Location Intelligence", included: true },
+                { text: "White-label shareable links", included: true },
+              ],
+              defaultCta: "Start 7-Day Free Trial",
+              defaultHref: "#",
+              highlight: true,
+              bestValue: false,
+            },
+            {
+              key: "pro_plus" as const,
+              name: "Pro+",
+              price: "100",
+              period: "/mo",
+              desc: "For high-volume deal flow and serious operators.",
+              valueCallout: "7-day free trial · 20¢ per deal",
+              features: [
+                { text: "500 deal analyses/month", included: true },
+                { text: "Everything in Pro", included: true },
+                { text: "Chrome extension: add deals right from Crexi, CoStar, and LoopNet", included: true },
+                { text: "Priority processing queue", included: true },
+                { text: "Priority support", included: true },
+                { text: "Custom branding", included: true },
+              ],
+              defaultCta: "Start 7-Day Free Trial",
+              defaultHref: "#",
+              highlight: false,
+              bestValue: true,
+            },
+          ].map(plan => {
+            const isCurrent = tier === plan.key;
+            const rank: Record<string, number> = { anonymous: -1, free: 0, pro: 1, pro_plus: 2 };
+            const userRank = rank[tier] ?? -1;
+            const tierRank = rank[plan.key];
+            const isUpgradeTarget = userRank >= 0 && tierRank > userRank;
+            const isDowngradeTarget = userRank >= 0 && tierRank < userRank;
+
+            // CTA logic mirrors marketing pricing module
+            let ctaLabel = plan.defaultCta;
+            let ctaHref: string | null = plan.defaultHref;
+            let ctaOnClick: (() => void) | undefined = undefined;
+
+            if (isCurrent) {
+              ctaLabel = "Manage plan";
+              ctaHref = "/workspace/profile?tab=account";
+            } else if (plan.key === "pro" || plan.key === "pro_plus") {
+              // Stripe checkout for paid tiers when the user already has an account
+              if (isAnon) {
+                ctaLabel = `Sign up &middot; ${plan.name}`;
+                ctaHref = `/workspace/login?signup=1&upgrade=${plan.key}`;
+              } else {
+                ctaLabel = isUpgradeTarget ? `Upgrade to ${plan.name}` : isDowngradeTarget ? "Switch plan" : `Start 7-Day Free Trial`;
+                ctaHref = null;
+                ctaOnClick = () => startProCheckout(plan.key);
+              }
+            } else if (plan.key === "free" && isAnon) {
+              ctaLabel = "Sign Up Free";
+              ctaHref = "/workspace/login?signup=1";
+            }
+
+            return (
+              <div key={plan.name} style={{
+                background: isCurrent ? "rgba(132,204,22,0.08)" : "rgba(22,22,31,0.6)",
+                backdropFilter: "blur(10px)",
+                borderRadius: 16,
+                border: isCurrent
+                  ? "1px solid rgba(132,204,22,0.6)"
+                  : plan.highlight ? "1px solid rgba(132,204,22,0.4)" : "1px solid rgba(255,255,255,0.06)",
+                padding: "36px 28px",
+                position: "relative",
+                overflow: "hidden",
+                transition: "all 0.25s ease",
+                boxShadow: isCurrent
+                  ? "0 0 40px rgba(132,204,22,0.18)"
+                  : plan.highlight ? "0 0 40px rgba(132,204,22,0.1)" : "none",
+              }}>
+                {/* Top-right badge */}
+                {isCurrent && (
+                  <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#0d0d14", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                    Your current plan
+                  </div>
+                )}
+                {!isCurrent && plan.highlight && (
+                  <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#0d0d14", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                    Most Popular
+                  </div>
+                )}
+                {!isCurrent && plan.bestValue && (
+                  <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#0d0d14", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                    Best Value
+                  </div>
+                )}
+
+                {/* Tier eyebrow */}
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: plan.highlight || isCurrent ? "#84CC16" : "#9ca3af", marginBottom: 10 }}>
+                  {plan.name}
+                </div>
+
+                {/* Price */}
+                <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 4 }}>
+                  <span style={{ fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>$</span>
+                  <span style={{ fontSize: 40, fontWeight: 800, color: "#ffffff", letterSpacing: -1 }}>{plan.price}</span>
+                  {plan.period && <span style={{ fontSize: 14, color: "rgba(255,255,255,0.5)" }}>{plan.period}</span>}
+                </div>
+
+                <p style={{ fontSize: 13, color: "#9ca3af", marginBottom: plan.valueCallout ? 10 : 28, lineHeight: 1.5 }}>{plan.desc}</p>
+
+                {plan.valueCallout && !isCurrent && (
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#84CC16", marginBottom: 20, letterSpacing: 0.3 }}>
+                    {plan.valueCallout}
+                  </div>
+                )}
+
+                {/* Feature list */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
+                  {plan.features.map(f => (
+                    <div key={f.text} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: f.included ? "#e2e8f0" : "rgba(255,255,255,0.3)" }}>
+                      {f.included ? (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5"><path d="M5 13l4 4L19 7" /></svg>
+                      ) : (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                      )}
+                      <span>{f.text}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA */}
+                {ctaHref ? (
+                  <Link href={ctaHref} style={{
+                    display: "block", width: "100%", padding: "12px", textAlign: "center",
+                    background: isCurrent ? "rgba(132,204,22,0.18)" : plan.highlight ? "#84CC16" : "rgba(132,204,22,0.12)",
+                    color: isCurrent ? "#84CC16" : plan.highlight ? "#0d0d14" : "#84CC16",
+                    border: isCurrent ? "1px solid rgba(132,204,22,0.5)" : plan.highlight ? "none" : "1px solid rgba(132,204,22,0.3)",
+                    borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: "none", fontFamily: "inherit",
+                    boxSizing: "border-box", transition: "all 0.2s ease",
+                  }} dangerouslySetInnerHTML={{ __html: ctaLabel }} />
+                ) : (
+                  <button onClick={ctaOnClick} style={{
+                    display: "block", width: "100%", padding: "12px", textAlign: "center",
+                    background: plan.highlight ? "#84CC16" : "rgba(132,204,22,0.12)",
+                    color: plan.highlight ? "#0d0d14" : "#84CC16",
+                    border: plan.highlight ? "none" : "1px solid rgba(132,204,22,0.3)",
+                    borderRadius: 8, fontSize: 14, fontWeight: 600, fontFamily: "inherit",
+                    cursor: "pointer", boxSizing: "border-box", transition: "all 0.2s ease",
+                  }} dangerouslySetInnerHTML={{ __html: ctaLabel }} />
+                )}
+              </div>
+            );
+          })}
         </div>
-        <div style={{ fontSize: 22, fontWeight: 800, color: "#0F172A", marginTop: 2 }}>{name}</div>
-        <div style={{ fontSize: 14, color: "#4D7C0F", fontWeight: 700, marginTop: 4 }}>{price}</div>
+
+        <p style={{ textAlign: "center", fontSize: 12, color: "#5A7091" }}>
+          Need more than 500 analyses per month?{" "}
+          <Link href="/contact" style={{ color: "#84CC16", textDecoration: "none" }}>
+            Talk to us about Enterprise &rarr;
+          </Link>
+        </p>
       </div>
-      <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
-        {features.map((f, i) => (
-          <li key={i} style={{ fontSize: 12.5, color: "#374151", lineHeight: 1.5, display: "flex", gap: 8, alignItems: "flex-start" }}>
-            <span aria-hidden style={{ color: "#4D7C0F", fontWeight: 800 }}>&#10003;</span>
-            <span>{f}</span>
-          </li>
-        ))}
-      </ul>
-      {ctaLabel && (ctaHref ? (
-        <Link
-          href={ctaHref}
-          prefetch={false}
-          style={{
-            marginTop: "auto", padding: "10px 14px", borderRadius: 8,
-            background: highlight ? "#84CC16" : "#0F172A", color: highlight ? "#0F172A" : "#FFFFFF",
-            fontSize: 13, fontWeight: 700, textAlign: "center", textDecoration: "none",
-            border: "none", cursor: "pointer",
-          }}
-        >
-          {ctaLabel}
-        </Link>
-      ) : (
-        <button
-          type="button"
-          onClick={ctaOnClick}
-          style={{
-            marginTop: "auto", padding: "10px 14px", borderRadius: 8,
-            background: highlight ? "#84CC16" : "#0F172A", color: highlight ? "#0F172A" : "#FFFFFF",
-            fontSize: 13, fontWeight: 700, fontFamily: "inherit",
-            border: "none", cursor: "pointer",
-          }}
-        >
-          {ctaLabel}
-        </button>
-      ))}
     </div>
   );
 }

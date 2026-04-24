@@ -1051,13 +1051,8 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               onMouseEnter={e => { e.currentTarget.style.opacity = "0.9"; }}
               onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
             >
-              {userUsage && (
-                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.3 }}>
-                  {userUsage.used}/{userUsage.limit}
-                </span>
-              )}
-              <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                Sign up &middot; +5 free
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.2, textTransform: "none" }}>
+                Sign up now to get 5 more deals
               </span>
             </Link>
           ) : userTier === "free" ? (
@@ -1077,11 +1072,11 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             >
               {userUsage && (
                 <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: "#84CC16" }}>
-                  {userUsage.used}/{userUsage.limit}
+                  {userUsage.used}/{userUsage.limit} deals
                 </span>
               )}
-              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                Upgrade &middot; 100/mo
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.2, textTransform: "none" }}>
+                Upgrade for 100/mo
               </span>
             </Link>
           ) : (
