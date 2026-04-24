@@ -268,6 +268,69 @@ export default function PropertyTeaser() {
 
   return (
     <div style={{ background: "#F7F8FA", minHeight: "100vh" }}>
+      {/* Mobile-responsive styles */}
+      <style>{`
+        .teaser-metrics-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+          gap: 10px;
+          margin-bottom: 20px;
+        }
+        .teaser-metric-card {
+          background: #ffffff;
+          border-radius: 10px;
+          padding: 14px 16px;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        }
+        .teaser-metric-label {
+          font-size: 11px;
+          color: #9CA3AF;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          margin-bottom: 4px;
+        }
+        .teaser-metric-value {
+          font-size: 18px;
+          font-weight: 700;
+          color: #111827;
+        }
+        .teaser-metric-signal {
+          font-size: 11px;
+          font-weight: 600;
+          margin-top: 2px;
+        }
+        .teaser-hero-img { height: 220px; }
+        .teaser-prop-name { font-size: 24px; }
+        .teaser-summary-text { font-size: 14px; }
+        .teaser-content-pad { padding: 24px 20px 40px; }
+        @media (max-width: 600px) {
+          .teaser-metrics-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+          }
+          .teaser-metric-card {
+            padding: 10px 12px;
+            border-radius: 8px;
+          }
+          .teaser-metric-label {
+            font-size: 9px;
+            margin-bottom: 2px;
+            letter-spacing: 0.03em;
+          }
+          .teaser-metric-value {
+            font-size: 14px;
+          }
+          .teaser-metric-signal {
+            font-size: 9px;
+          }
+          .teaser-hero-img { height: 160px; }
+          .teaser-prop-name { font-size: 20px; }
+          .teaser-summary-text { font-size: 13px; }
+          .teaser-content-pad { padding: 16px 14px 32px; }
+        }
+      `}</style>
+
       {/* Nav bar */}
       <div style={{
         background: "#0d0d14", padding: "12px 24px",
@@ -289,7 +352,7 @@ export default function PropertyTeaser() {
       </div>
 
       {/* Hero section */}
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "24px 20px 40px" }}>
+      <div className="teaser-content-pad" style={{ maxWidth: 900, margin: "0 auto" }}>
 
         {/* Property header */}
         <div style={{
@@ -298,8 +361,8 @@ export default function PropertyTeaser() {
         }}>
           {/* Hero image */}
           {data.heroImageUrl && (
-            <div style={{
-              height: 220, background: `url(${data.heroImageUrl}) center/cover no-repeat`,
+            <div className="teaser-hero-img" style={{
+              background: `url(${data.heroImageUrl}) center/cover no-repeat`,
               position: "relative",
             }}>
               <div style={{
@@ -314,8 +377,8 @@ export default function PropertyTeaser() {
           <div style={{ padding: "20px 24px" }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
               <div style={{ flex: 1 }}>
-                <h1 style={{
-                  fontSize: 24, fontWeight: 700, color: "#111827",
+                <h1 className="teaser-prop-name" style={{
+                  fontWeight: 700, color: "#111827",
                   margin: "0 0 4px 0", lineHeight: 1.3,
                 }}>{data.propertyName}</h1>
                 {location && (
@@ -377,21 +440,16 @@ export default function PropertyTeaser() {
 
         {/* Key Metrics grid */}
         {metricCards.length > 0 && (
-          <div style={{
-            display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-            gap: 10, marginBottom: 20,
-          }}>
+          <div className="teaser-metrics-grid">
             {metricCards.map((m, i) => {
               const s = m.signal ? signalBadge(m.signal) : null;
               return (
-                <div key={i} style={{
-                  background: "#ffffff", borderRadius: 10, padding: "14px 16px",
-                  boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                <div key={i} className="teaser-metric-card" style={{
                   borderLeft: s ? `3px solid ${s.color}` : "3px solid #E5E7EB",
                 }}>
-                  <div style={{ fontSize: 11, color: "#9CA3AF", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>{m.label}</div>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: "#111827" }}>{m.value}</div>
-                  {s && <div style={{ fontSize: 11, color: s.color, fontWeight: 600, marginTop: 2 }}>{m.signal}</div>}
+                  <div className="teaser-metric-label">{m.label}</div>
+                  <div className="teaser-metric-value">{m.value}</div>
+                  {s && <div className="teaser-metric-signal" style={{ color: s.color }}>{m.signal}</div>}
                 </div>
               );
             })}
@@ -409,8 +467,8 @@ export default function PropertyTeaser() {
               textTransform: "uppercase", letterSpacing: "0.06em",
               margin: "0 0 10px 0",
             }}>Executive Summary</h2>
-            <p style={{
-              fontSize: 14, color: "#374151", lineHeight: 1.65, margin: 0,
+            <p className="teaser-summary-text" style={{
+              color: "#374151", lineHeight: 1.65, margin: 0,
             }}>{briefOverview.length > 800 ? briefOverview.slice(0, 800) + "..." : briefOverview}</p>
           </div>
         )}
