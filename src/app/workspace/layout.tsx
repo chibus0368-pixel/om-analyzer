@@ -713,11 +713,12 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   // The parent WorkspaceLayout already waits for auth to load before rendering,
   // so `user` being null here means the user is genuinely not logged in.
   const isLoginPage = pathname === "/workspace/login";
+  const isPropertyPage = /^\/workspace\/properties\/[^/]+$/.test(pathname);
   useEffect(() => {
-    if (!user && !isLoginPage) {
+    if (!user && !isLoginPage && !isPropertyPage) {
       router.replace("/workspace/login");
     }
-  }, [user, router, isLoginPage]);
+  }, [user, router, isLoginPage, isPropertyPage]);
 
   // ── Auto-open upgrade modal if ?upgrade= param is present (after login redirect) ──
   useEffect(() => {

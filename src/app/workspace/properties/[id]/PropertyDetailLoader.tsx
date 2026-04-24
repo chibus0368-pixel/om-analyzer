@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, lazy, Suspense } from "react";
+import { useWorkspaceAuth } from "@/lib/workspace/auth";
+import PropertyTeaser from "@/components/workspace/PropertyTeaser";
 
 /**
  * Lightweight client-only loader for PropertyDetailClient.
@@ -14,6 +16,10 @@ import { useState, useEffect, lazy, Suspense } from "react";
  *   2. Properly trigger webpack chunk loading on the client
  *      (next/dynamic ssr:false has a bug in Next.js 15.5 where
  *       BailoutToCSR never triggers React.lazy chunk loading)
+ *
+ * When the user is NOT authenticated, it renders the PropertyTeaser
+ * component instead - a public conversion page with limited property
+ * info and a signup modal.
  */
 const PropertyDetailClient = lazy(() => import("./PropertyDetailClient"));
 
@@ -37,9 +43,15 @@ const spinner = (
 
 export default function PropertyDetailLoader() {
   const [mounted, setMounted] = useState(false);
+  const { user, loading } = useWorkspaceAuth();
   useEffect(() => setMounted(true), []);
 
-  if (!mounted) return spinner;
+  if (!mounted || loading) return spinner;
+
+  // Unauthenticated users see the public teaser/conversion page
+  if (!user) {
+    return <PropertyTeaser />;
+  }
 
   return (
     <Suspense fallback={spinner}>
