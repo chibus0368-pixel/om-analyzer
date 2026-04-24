@@ -86,6 +86,23 @@ export async function POST(request: NextRequest) {
         updates.uploadsUsed = Math.max(existing.uploadsUsed || 0, anonUploadsUsed);
       }
 
+      // Anonymous-Firebase-user promotion: if the existing doc was provisioned
+      // by tryme-analyze with tier="anonymous" and they've now linked an
+      // email/password (or Google), promote them to free tier. Their UID and
+      // all their workspace_properties stay attached because linkWithCredential
+      // preserves the UID.
+      if (existing.tier === "anonymous") {
+        updates.tier = "free";
+        updates.tierStatus = "none";
+        updates.uploadLimit = 7;
+        updates.isLifetimeLimit = false;
+        updates.isAnonymous = false;
+        updates.periodStart = new Date();
+        // Reset their counter so they get a clean monthly quota - their
+        // 2 free trial uploads should not eat into the 7/month allowance.
+        updates.uploadsUsed = 0;
+      }
+
       await userRef.update(updates);
       userDoc = { ...existing, ...updates };
     } else {
@@ -116,8 +133,9 @@ export async function POST(request: NextRequest) {
         tier: "free",
         tierStatus: "none",
         uploadsUsed: anonUploadsUsed,
-        uploadLimit: 5,
-        isLifetimeLimit: true,
+        uploadLimit: 7,
+        isLifetimeLimit: false,
+        periodStart: new Date(),
         newsletterOptIn: false,
         productUpdatesOptIn: false,
         lastLoginAt: now,

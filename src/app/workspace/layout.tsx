@@ -1017,21 +1017,42 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
         {/* Right: Pro Plan pill + user info + settings */}
         <div className="ws-header-right" style={{ display: "flex", alignItems: "center", gap: 24, marginLeft: "auto" }}>
-          {userTier === "free" ? (
-            <button
-              onClick={() => setShowUpgrade(true)}
+          {userTier === "anonymous" ? (
+            <Link
+              href="/workspace/upgrade"
+              prefetch={false}
+              className="ws-plan-pill"
+              style={{
+                padding: "6px 16px", background: "linear-gradient(135deg, #84CC16, #a8d600)", color: "#0d0d14",
+                border: "1px solid rgba(132,204,22,0.5)", borderRadius: 9999,
+                fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase",
+                textDecoration: "none", fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
+                display: "inline-flex", alignItems: "center", gap: 6,
+              }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = "0.9"; }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
+            >
+              <span aria-hidden style={{ fontSize: 11 }}>&#9889;</span>
+              Sign Up Free
+            </Link>
+          ) : userTier === "free" ? (
+            <Link
+              href="/workspace/upgrade"
+              prefetch={false}
               className="ws-plan-pill"
               style={{
                 padding: "6px 16px", background: "rgba(132,204,22,0.2)", color: "#84CC16",
                 border: "1px solid rgba(132,204,22,0.3)", borderRadius: 9999,
                 fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-                cursor: "pointer", fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
+                textDecoration: "none", fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
+                display: "inline-flex", alignItems: "center", gap: 6,
               }}
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.3)"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "rgba(132,204,22,0.2)"; }}
             >
+              <span aria-hidden style={{ fontSize: 11 }}>&#9889;</span>
               Upgrade to Pro
-            </button>
+            </Link>
           ) : (
             <Link href="/workspace/profile?tab=account" prefetch={false} className="ws-plan-pill" style={{
               padding: "6px 16px", background: "rgba(132,204,22,0.2)", color: "#84CC16",

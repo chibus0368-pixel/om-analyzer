@@ -94,6 +94,37 @@ export async function POST(request: NextRequest) {
         : "tryme-anon";
     }
 
+    // Provision a minimal users/{uid} doc the first time a Firebase anon user
+    // hits this endpoint, so /api/workspace/usage and the workspace shell can
+    // read tier/limit data without 404ing. We default to tier=anonymous,
+    // uploadLimit=2 (lifetime). On signup via linkWithCredential, /api/auth/
+    // bootstrap promotes them to tier=free with limit=7/month.
+    if (firebaseUid && isAnonymousFirebase) {
+      const userRef = db.collection("users").doc(firebaseUid);
+      const existing = await userRef.get();
+      if (!existing.exists) {
+        const provisionNow = new Date().toISOString();
+        await userRef.set({
+          uid: firebaseUid,
+          tier: "anonymous",
+          tierStatus: "none",
+          uploadsUsed: 0,
+          uploadLimit: 2,
+          isLifetimeLimit: true,
+          isAnonymous: true,
+          authProviders: ["anonymous"],
+          primaryProvider: "anonymous",
+          accountStatus: "active",
+          email: null,
+          fullName: null,
+          displayName: "Trial User",
+          defaultWorkspaceId: null,
+          createdAt: provisionNow,
+          updatedAt: provisionNow,
+        });
+      }
+    }
+
     if (!documentText || documentText.trim().length < 50) {
       return NextResponse.json(
         { error: "Document text too short or missing" },

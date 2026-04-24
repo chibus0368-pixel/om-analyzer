@@ -102,7 +102,7 @@ export async function GET(req: NextRequest) {
     const planConfig = PLANS[tier];
     const isLifetime = planConfig?.isLifetimeLimit ?? (tier === "free");
 
-    if (!isLifetime && (tier === "pro" || tier === "pro_plus") && shouldResetPeriod(userData)) {
+    if (!isLifetime && (tier === "pro" || tier === "pro_plus" || tier === "free") && shouldResetPeriod(userData)) {
       uploadsUsed = 0;
       // Persist the reset so it only happens once per period
       await userRef.update({
@@ -198,7 +198,7 @@ export async function POST(req: NextRequest) {
     // ── Auto-reset if new billing period (paid users only, not free lifetime) ──
     const postPlanConfig = PLANS[tier];
     const postIsLifetime = postPlanConfig?.isLifetimeLimit ?? (tier === "free");
-    if (!postIsLifetime && (tier === "pro" || tier === "pro_plus") && shouldResetPeriod(userData)) {
+    if (!postIsLifetime && (tier === "pro" || tier === "pro_plus" || tier === "free") && shouldResetPeriod(userData)) {
       currentUsed = 0;
     }
 

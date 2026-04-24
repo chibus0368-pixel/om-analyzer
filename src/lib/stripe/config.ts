@@ -20,20 +20,35 @@ export interface PlanConfig {
   features: string[];
 }
 
-export const ANONYMOUS_LIMIT = 1; // analyses before email gate
-export const LEAD_LIMIT = 5;       // analyses for email-only "lead" tier (no account)
+export const ANONYMOUS_LIMIT = 2; // free trial analyses before signup is prompted
+export const LEAD_LIMIT = 5;       // legacy email-only "lead" tier - kept for in-flight users
 
 export const PLANS: Record<string, PlanConfig> = {
+  anonymous: {
+    id: "anonymous",
+    name: "Trial",
+    tier: "anonymous",
+    priceMonthly: 0,
+    uploadLimit: 2,
+    isLifetimeLimit: true,     // 2 deals total, no monthly reset - signup is the gate
+    stripePriceId: null,
+    features: [
+      "2 free deal analyses",
+      "Full Pro property page",
+      "First-pass brief download",
+      "Downloadable XLS underwriting",
+    ],
+  },
   free: {
     id: "free",
     name: "Free",
     tier: "free",
     priceMonthly: 0,
-    uploadLimit: 5,
-    isLifetimeLimit: true,     // 5 deals total, no monthly reset
+    uploadLimit: 7,
+    isLifetimeLimit: false,    // 7 deals per month for signed-up users
     stripePriceId: null,
     features: [
-      "5 deal analyses (total)",
+      "7 deal analyses per month",
       "Save deals to workspace",
       "Deal Signals scoring",
       "First-pass brief download",
