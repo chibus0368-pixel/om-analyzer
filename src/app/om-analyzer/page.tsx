@@ -1977,6 +1977,10 @@ export default function OmAnalyzerPage() {
           source: "om-analyzer-page",
           analysisType,
           anonId: getAnonId(),
+          // Pass the GCS-persisted hero image URL so the property doc
+          // gets it written. The blob URL alternative isn't useful
+          // server-side and would expire when this tab closes.
+          heroImageUrl: (typeof heroImageUrl === "string" && !heroImageUrl.startsWith("blob:")) ? heroImageUrl : undefined,
         }),
       });
 

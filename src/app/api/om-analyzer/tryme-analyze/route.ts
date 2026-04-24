@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { documentText, fileName, analysisType: requestedType, anonId } = body;
+    const { documentText, fileName, analysisType: requestedType, anonId, heroImageUrl } = body;
 
     // Prefer Firebase auth (signInAnonymously) - the trial user has a real
     // UID and writing under it lets them see their property at
@@ -147,12 +147,14 @@ export async function POST(request: NextRequest) {
     await db.collection("workspace_properties").doc(propertyId).set({
       projectId,
       userId,
-      // Use propertyId as workspaceId so the public /api/share filter
-      // (which queries by userId then filters by workspaceId) matches
-      // exactly this trial property and nothing else from the same anonId.
-      workspaceId: propertyId,
+      // Slot the trial property into the user's default workspace so it
+      // shows up on /workspace (dashboard / scorecard) where the listing
+      // filter expects workspaceId === activeWorkspaceId. New anon users
+      // get "default" by default in workspace-context.tsx.
+      workspaceId: "default",
       propertyName: fileName?.replace(/\.[^.]+$/, "") || "Property",
       analysisType,
+      heroImageUrl: heroImageUrl || null,
       parseStatus: "pending",
       isTryMe: true,
       isAnonymousFirebase,
