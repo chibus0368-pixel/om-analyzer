@@ -205,6 +205,28 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      {/* Scoped mobile styles. The Sale Price Scenarios table carried
+          six columns with minWidth:480 which forced a horizontal
+          scroll on a 375px iPhone. On phones we drop Levered IRR and
+          Verdict (the verdict is implied by the color-tinted IRR cell
+          on desktop; on a small screen we lean on the Going-in Cap
+          as the single "is this priced right?" signal) and relax the
+          minWidth so the remaining four columns fit the viewport. */}
+      <style>{`
+        @media (max-width: 768px) {
+          .orp-col-irr,
+          .orp-col-verdict,
+          .orp-col-ppsf { display: none !important; }
+          .orp-price-scenarios { min-width: 0 !important; font-size: 11px !important; }
+          .orp-price-scenarios th,
+          .orp-price-scenarios td { padding: 7px 5px !important; }
+          /* Rent growth heatmap: smaller font + tighter cells */
+          .orp-heatmap { min-width: 0 !important; font-size: 11px !important; }
+          .orp-heatmap th,
+          .orp-heatmap td { padding: 6px 4px !important; font-size: 10px !important; }
+          .orp-heatmap th { font-size: 8px !important; letter-spacing: 0 !important; }
+        }
+      `}</style>
       {/* ── Sale Price Scenarios (vertical table) ─────────────────── */}
       {/*    One row per price scenario. Pass/fail against target IRR   */}
       {/*    is color-coded on the IRR cell.                            */}
@@ -214,15 +236,15 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
         accent="#0891B2"
       >
         <div style={{ overflow: "auto" }}>
-          <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse", minWidth: 480 }}>
+          <table className="orp-price-scenarios" style={{ width: "100%", fontSize: 12, borderCollapse: "collapse", minWidth: 480 }}>
             <thead>
               <tr style={{ color: C.secondary, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, fontSize: 10 }}>
                 <th style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "left" }}>Scenario</th>
                 <th style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Purchase Price</th>
-                <th style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Price / {unitLabel}</th>
+                <th className="orp-col-ppsf" style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Price / {unitLabel}</th>
                 <th style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Going-in Cap</th>
-                <th style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Levered IRR</th>
-                <th style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Verdict</th>
+                <th className="orp-col-irr" style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Levered IRR</th>
+                <th className="orp-col-verdict" style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Verdict</th>
               </tr>
             </thead>
             <tbody>
@@ -254,16 +276,16 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
                     <td style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, background: rowTint, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700, color: C.onSurface }}>
                       {fmtCurrency(row.purchasePrice)}
                     </td>
-                    <td style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, background: rowTint, textAlign: "right", fontVariantNumeric: "tabular-nums", color: C.secondary }}>
+                    <td className="orp-col-ppsf" style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, background: rowTint, textAlign: "right", fontVariantNumeric: "tabular-nums", color: C.secondary }}>
                       {fmtCurrency(row.purchasePrice / input.unitsOrSf)}
                     </td>
                     <td style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, background: rowTint, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700, color: C.onSurface }}>
                       {fmtPct(row.goingInCapPct, 2)}
                     </td>
-                    <td style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 800, color, background: bg }}>
+                    <td className="orp-col-irr" style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 800, color, background: bg }}>
                       {fmtPct(irr, 1)}
                     </td>
-                    <td style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, borderRight: rightBorder, background: rowTint, textAlign: "right", fontSize: 10, fontWeight: 700, color, letterSpacing: 0.4, textTransform: "uppercase" }}>
+                    <td className="orp-col-verdict" style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, borderRight: rightBorder, background: rowTint, textAlign: "right", fontSize: 10, fontWeight: 700, color, letterSpacing: 0.4, textTransform: "uppercase" }}>
                       {verdict}
                     </td>
                   </tr>
@@ -281,7 +303,7 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
         accent="#7C3AED"
       >
         <div style={{ overflow: "auto" }}>
-          <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse", minWidth: 420 }}>
+          <table className="orp-heatmap" style={{ width: "100%", fontSize: 12, borderCollapse: "collapse", minWidth: 420 }}>
             <thead>
               {/* Axis banner: tells you what columns vs rows represent */}
               <tr>
