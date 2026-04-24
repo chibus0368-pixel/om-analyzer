@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
-import { getUploadLimit, ANONYMOUS_LIMIT, PLANS } from "@/lib/stripe/config";
+import { getUploadLimit, ANONYMOUS_LIMIT, LEAD_LIMIT, PLANS } from "@/lib/stripe/config";
 
 export const dynamic = "force-dynamic";
 
@@ -46,12 +46,16 @@ export async function GET(req: NextRequest) {
     if (anonId) {
       const anonDoc = await db.collection("anonymous_trials").doc(anonId).get();
       const data = anonDoc.data();
+      // Email-claimed users get tier="lead" with LEAD_LIMIT, otherwise anonymous.
+      const docTier = data?.tier === "lead" ? "lead" : "anonymous";
+      const docLimit = docTier === "lead" ? LEAD_LIMIT : ANONYMOUS_LIMIT;
       return NextResponse.json({
         uploadsUsed: data?.uploadsUsed || 0,
-        uploadLimit: ANONYMOUS_LIMIT,
-        tier: "anonymous",
+        uploadLimit: docLimit,
+        tier: docTier,
         tierStatus: "none",
         isAnonymous: true,
+        emailCaptured: Boolean(data?.email),
       });
     }
 
@@ -140,24 +144,34 @@ export async function POST(req: NextRequest) {
     if (body.anonId) {
       const ref = db.collection("anonymous_trials").doc(body.anonId);
       const doc = await ref.get();
-      const current = doc.data()?.uploadsUsed || 0;
+      const data = doc.data() || {};
+      const current = data.uploadsUsed || 0;
+      // Per-doc tier so email-claimed leads keep their bumped limit.
+      const docTier = data.tier === "lead" ? "lead" : "anonymous";
+      const docLimit = docTier === "lead" ? LEAD_LIMIT : ANONYMOUS_LIMIT;
 
-      if (current >= ANONYMOUS_LIMIT) {
+      if (current >= docLimit) {
+        // Anonymous hits prompt the email gate; lead hits prompt full signup.
+        const emailGate = docTier === "anonymous";
         return NextResponse.json({
-          error: "Create a free account to keep analyzing deals",
+          error: emailGate
+            ? "Add your email to keep analyzing deals"
+            : "Create a free account to keep analyzing deals",
           upgradeRequired: true,
-          signupRequired: true,
+          emailGate,
+          signupRequired: !emailGate,
+          tier: docTier,
         }, { status: 403 });
       }
 
       await ref.set({
         uploadsUsed: current + 1,
         lastUploadAt: new Date(),
-        createdAt: doc.exists ? doc.data()?.createdAt : new Date(),
+        createdAt: doc.exists ? data.createdAt : new Date(),
         updatedAt: new Date(),
       }, { merge: true });
 
-      return NextResponse.json({ uploadsUsed: current + 1, uploadLimit: ANONYMOUS_LIMIT });
+      return NextResponse.json({ uploadsUsed: current + 1, uploadLimit: docLimit, tier: docTier });
     }
 
     // ── Authenticated increment ─────────────────────────────

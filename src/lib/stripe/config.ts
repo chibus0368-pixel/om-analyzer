@@ -20,7 +20,8 @@ export interface PlanConfig {
   features: string[];
 }
 
-export const ANONYMOUS_LIMIT = 2; // analyses before signup required
+export const ANONYMOUS_LIMIT = 1; // analyses before email gate
+export const LEAD_LIMIT = 5;       // analyses for email-only "lead" tier (no account)
 
 export const PLANS: Record<string, PlanConfig> = {
   free: {
