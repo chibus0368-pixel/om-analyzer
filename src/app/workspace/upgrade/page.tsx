@@ -8,18 +8,19 @@ import { useWorkspaceAuth } from "@/lib/workspace/auth";
 /**
  * /workspace/upgrade
  *
- * Workspace-internal upgrade page. Mirrors the pricing module on
- * /om-analyzer#pricing exactly - dark theme, gradient orbs, three-tier
- * grid with smart per-tier CTA logic. Source of truth for plan numbers
- * is src/lib/stripe/config.ts. If you edit copy here, also edit it in
- * the marketing pricing section.
+ * Workspace-internal upgrade page. Light theme to match the rest of the
+ * workspace shell. Same plan structure and CTA logic as the marketing
+ * pricing module on /om-analyzer#pricing - just visually adapted to the
+ * workspace.
+ *
+ * Source of truth for plan numbers is src/lib/stripe/config.ts. If you
+ * edit copy here, also edit it in the marketing pricing section.
  */
 export default function WorkspaceUpgradePage() {
   const router = useRouter();
   const { user, loading } = useWorkspaceAuth();
   const [tier, setTier] = useState<string>("free");
   const [usage, setUsage] = useState<{ used: number; limit: number } | null>(null);
-  const [usageLoading, setUsageLoading] = useState(true);
 
   useEffect(() => {
     if (loading) return;
@@ -43,8 +44,6 @@ export default function WorkspaceUpgradePage() {
         }
       } catch (err) {
         console.error("[upgrade] usage fetch failed:", err);
-      } finally {
-        if (!cancelled) setUsageLoading(false);
       }
     })();
     return () => { cancelled = true; };
@@ -73,7 +72,7 @@ export default function WorkspaceUpgradePage() {
   }
 
   return (
-    <div style={{ background: "#0d0d14", minHeight: "100vh", color: "#FFFFFF", fontFamily: "'Inter', system-ui, sans-serif", position: "relative", overflow: "hidden" }}>
+    <div style={{ background: "#FFFFFF", minHeight: "100vh", color: "#0F172A", fontFamily: "'Inter', system-ui, sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         @media (max-width: 900px) {
@@ -81,53 +80,54 @@ export default function WorkspaceUpgradePage() {
         }
       `}</style>
 
-      {/* Gradient orb */}
-      <div style={{
-        position: "absolute", top: -200, right: -100,
-        width: 500, height: 500, borderRadius: "50%",
-        background: "rgba(132,204,22,0.1)", filter: "blur(128px)",
-        pointerEvents: "none", zIndex: 0,
-      }} />
-
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "60px 32px 80px", position: "relative", zIndex: 1 }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "56px 32px 80px" }}>
         {/* Trial usage banner - only when on the anonymous tier */}
         {isAnon && usage && (
           <div style={{
-            background: "rgba(132,204,22,0.08)",
-            border: "1px solid rgba(132,204,22,0.3)",
-            borderRadius: 12,
-            padding: "14px 18px",
+            background: "linear-gradient(135deg, rgba(132,204,22,0.12), rgba(132,204,22,0.04))",
+            border: "1px solid rgba(132,204,22,0.4)",
+            borderRadius: 14,
+            padding: "16px 20px",
             marginBottom: 32,
             display: "flex", alignItems: "center", gap: 14,
           }}>
+            <div style={{
+              width: 38, height: 38, borderRadius: 10,
+              background: "rgba(132,204,22,0.18)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+            </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 4 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#4D7C0F", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 2 }}>
                 You're on Trial
               </div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: "#FFFFFF" }}>
-                {usage.used} of {usage.limit} free analyses used. Sign up free for 5 more per month.
+              <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A" }}>
+                {usage.used} of {usage.limit} free analyses used. Sign up to keep your work and get 5 more per month.
               </div>
             </div>
           </div>
         )}
 
         {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 56, position: "relative", zIndex: 1 }}>
+        <div style={{ textAlign: "center", marginBottom: 48 }}>
           <h1 style={{
-            fontSize: 38, fontWeight: 800, color: "#FFFFFF",
+            fontSize: 38, fontWeight: 800, color: "#0F172A",
             margin: "0 0 12px",
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             letterSpacing: -0.6,
           }}>
-            {isAnon ? "Sign up to keep going" : "Start free. Scale as your deal flow grows."}
+            {isAnon ? "Sign up to keep going" : "Plans built for how you actually source deals"}
           </h1>
-          <p style={{ fontSize: 14, color: "#5A7091", lineHeight: 1.7, maxWidth: 520, margin: "0 auto" }}>
-            DealSignals turns deals and OMs into actionable investment insight, powering faster pre-diligence decisions.
+          <p style={{ fontSize: 15, color: "#6B7280", lineHeight: 1.7, maxWidth: 580, margin: "0 auto" }}>
+            DealSignals turns OMs into actionable investment insight in under 60 seconds.
+            Start free, upgrade when your deal flow grows.
           </p>
         </div>
 
-        {/* 3-tier pricing grid - mirrors /om-analyzer#pricing */}
-        <div className="ws-up-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 60 }}>
+        {/* 3-tier pricing grid */}
+        <div className="ws-up-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18, marginBottom: 48 }}>
           {[
             {
               key: "free" as const,
@@ -146,8 +146,6 @@ export default function WorkspaceUpgradePage() {
                 { text: "Deal comparison scoreboard", included: false },
                 { text: "Location Intelligence", included: false },
               ],
-              defaultCta: "Sign Up Free",
-              defaultHref: "/workspace/login?signup=1",
               highlight: false,
               bestValue: false,
             },
@@ -171,8 +169,6 @@ export default function WorkspaceUpgradePage() {
                 { text: "Location Intelligence", included: true },
                 { text: "White-label shareable links", included: true },
               ],
-              defaultCta: "Start 7-Day Free Trial",
-              defaultHref: "#",
               highlight: true,
               bestValue: false,
             },
@@ -186,13 +182,11 @@ export default function WorkspaceUpgradePage() {
               features: [
                 { text: "500 deal analyses/month", included: true },
                 { text: "Everything in Pro", included: true },
-                { text: "Chrome extension: add deals right from Crexi, CoStar, and LoopNet", included: true },
+                { text: "Chrome extension: add deals from Crexi, CoStar, LoopNet", included: true },
                 { text: "Priority processing queue", included: true },
                 { text: "Priority support", included: true },
                 { text: "Custom branding", included: true },
               ],
-              defaultCta: "Start 7-Day Free Trial",
-              defaultHref: "#",
               highlight: false,
               bestValue: true,
             },
@@ -204,90 +198,112 @@ export default function WorkspaceUpgradePage() {
             const isUpgradeTarget = userRank >= 0 && tierRank > userRank;
             const isDowngradeTarget = userRank >= 0 && tierRank < userRank;
 
-            // CTA logic mirrors marketing pricing module
-            let ctaLabel = plan.defaultCta;
-            let ctaHref: string | null = plan.defaultHref;
+            // CTA logic - every state has an explicit branch so we don't
+            // accidentally fall through to a generic "Sign Up Free" link
+            // for a logged-in user (the previous bug that bounced them
+            // back to the dealboard).
+            let ctaLabel = "";
+            let ctaHref: string | null = null;
             let ctaOnClick: (() => void) | undefined = undefined;
 
             if (isCurrent) {
               ctaLabel = "Manage plan";
               ctaHref = "/workspace/profile?tab=account";
-            } else if (plan.key === "pro" || plan.key === "pro_plus") {
-              // Stripe checkout for paid tiers when the user already has an account
+            } else if (plan.key === "free") {
               if (isAnon) {
-                ctaLabel = `Sign up &middot; ${plan.name}`;
-                ctaHref = `/workspace/login?signup=1&upgrade=${plan.key}`;
+                ctaLabel = "Sign up free";
+                ctaHref = "/workspace/login?signup=1";
               } else {
-                ctaLabel = isUpgradeTarget ? `Upgrade to ${plan.name}` : isDowngradeTarget ? "Switch plan" : `Start 7-Day Free Trial`;
+                // Already on a higher tier - downgrade goes through profile.
+                ctaLabel = "Switch to Free";
+                ctaHref = "/workspace/profile?tab=account";
+              }
+            } else {
+              // Pro or Pro+
+              if (isAnon) {
+                ctaLabel = `Sign up to start ${plan.name}`;
+                ctaHref = `/workspace/login?signup=1&upgrade=${plan.key}`;
+              } else if (isDowngradeTarget) {
+                ctaLabel = `Switch to ${plan.name}`;
+                ctaHref = "/workspace/profile?tab=account";
+              } else {
+                // Free user upgrading or Pro user going to Pro+ - Stripe checkout.
+                ctaLabel = isUpgradeTarget ? `Upgrade to ${plan.name}` : `Start 7-day free trial`;
                 ctaHref = null;
                 ctaOnClick = () => startProCheckout(plan.key);
               }
-            } else if (plan.key === "free" && isAnon) {
-              ctaLabel = "Sign Up Free";
-              ctaHref = "/workspace/login?signup=1";
             }
+
+            const accent = "#4D7C0F";
+            const accentLight = "#F0FDF4";
 
             return (
               <div key={plan.name} style={{
-                background: isCurrent ? "rgba(132,204,22,0.08)" : "rgba(22,22,31,0.6)",
-                backdropFilter: "blur(10px)",
+                background: "#FFFFFF",
                 borderRadius: 16,
                 border: isCurrent
-                  ? "1px solid rgba(132,204,22,0.6)"
-                  : plan.highlight ? "1px solid rgba(132,204,22,0.4)" : "1px solid rgba(255,255,255,0.06)",
-                padding: "36px 28px",
+                  ? `2px solid ${accent}`
+                  : plan.highlight ? `2px solid ${accent}` : "1px solid #E5E7EB",
+                padding: "32px 26px",
                 position: "relative",
                 overflow: "hidden",
-                transition: "all 0.25s ease",
-                boxShadow: isCurrent
-                  ? "0 0 40px rgba(132,204,22,0.18)"
-                  : plan.highlight ? "0 0 40px rgba(132,204,22,0.1)" : "none",
+                transition: "all 0.2s ease",
+                boxShadow: isCurrent || plan.highlight
+                  ? "0 12px 32px rgba(77,124,15,0.12)"
+                  : "0 2px 8px rgba(15,23,43,0.04)",
+                display: "flex", flexDirection: "column",
               }}>
                 {/* Top-right badge */}
                 {isCurrent && (
-                  <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#0d0d14", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                  <div style={{ position: "absolute", top: 0, right: 0, background: accent, color: "#FFFFFF", fontSize: 10, fontWeight: 700, padding: "4px 12px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
                     Your current plan
                   </div>
                 )}
                 {!isCurrent && plan.highlight && (
-                  <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#0d0d14", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                  <div style={{ position: "absolute", top: 0, right: 0, background: accent, color: "#FFFFFF", fontSize: 10, fontWeight: 700, padding: "4px 12px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
                     Most Popular
                   </div>
                 )}
                 {!isCurrent && plan.bestValue && (
-                  <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#0d0d14", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                  <div style={{ position: "absolute", top: 0, right: 0, background: "#0F172A", color: "#FFFFFF", fontSize: 10, fontWeight: 700, padding: "4px 12px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
                     Best Value
                   </div>
                 )}
 
                 {/* Tier eyebrow */}
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: plan.highlight || isCurrent ? "#84CC16" : "#9ca3af", marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.4, color: plan.highlight || isCurrent ? accent : "#6B7280", marginBottom: 12 }}>
                   {plan.name}
                 </div>
 
                 {/* Price */}
-                <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 4 }}>
-                  <span style={{ fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>$</span>
-                  <span style={{ fontSize: 40, fontWeight: 800, color: "#ffffff", letterSpacing: -1 }}>{plan.price}</span>
-                  {plan.period && <span style={{ fontSize: 14, color: "rgba(255,255,255,0.5)" }}>{plan.period}</span>}
+                <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 6 }}>
+                  <span style={{ fontSize: 18, fontWeight: 700, color: "#9CA3AF" }}>$</span>
+                  <span style={{ fontSize: 44, fontWeight: 800, color: "#0F172A", letterSpacing: -1.2, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{plan.price}</span>
+                  {plan.period && <span style={{ fontSize: 14, color: "#9CA3AF", marginLeft: 2 }}>{plan.period}</span>}
                 </div>
 
-                <p style={{ fontSize: 13, color: "#9ca3af", marginBottom: plan.valueCallout ? 10 : 28, lineHeight: 1.5 }}>{plan.desc}</p>
+                <p style={{ fontSize: 13, color: "#6B7280", marginBottom: plan.valueCallout ? 10 : 24, lineHeight: 1.5 }}>{plan.desc}</p>
 
                 {plan.valueCallout && !isCurrent && (
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#84CC16", marginBottom: 20, letterSpacing: 0.3 }}>
+                  <div style={{
+                    fontSize: 11, fontWeight: 700, color: accent,
+                    background: accentLight, padding: "6px 10px", borderRadius: 6,
+                    marginBottom: 18, letterSpacing: 0.2,
+                    border: "1px solid rgba(77,124,15,0.15)",
+                    display: "inline-block",
+                  }}>
                     {plan.valueCallout}
                   </div>
                 )}
 
                 {/* Feature list */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24, flex: 1 }}>
                   {plan.features.map(f => (
-                    <div key={f.text} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: f.included ? "#e2e8f0" : "rgba(255,255,255,0.3)" }}>
+                    <div key={f.text} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: f.included ? "#374151" : "#CBD5E1", lineHeight: 1.5 }}>
                       {f.included ? (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5"><path d="M5 13l4 4L19 7" /></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2.5" style={{ flexShrink: 0, marginTop: 2 }}><path d="M5 13l4 4L19 7" /></svg>
                       ) : (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E5E7EB" strokeWidth="2" style={{ flexShrink: 0, marginTop: 2 }}><path d="M18 6L6 18M6 6l12 12" /></svg>
                       )}
                       <span>{f.text}</span>
                     </div>
@@ -296,32 +312,36 @@ export default function WorkspaceUpgradePage() {
 
                 {/* CTA */}
                 {ctaHref ? (
-                  <Link href={ctaHref} style={{
-                    display: "block", width: "100%", padding: "12px", textAlign: "center",
-                    background: isCurrent ? "rgba(132,204,22,0.18)" : plan.highlight ? "#84CC16" : "rgba(132,204,22,0.12)",
-                    color: isCurrent ? "#84CC16" : plan.highlight ? "#0d0d14" : "#84CC16",
-                    border: isCurrent ? "1px solid rgba(132,204,22,0.5)" : plan.highlight ? "none" : "1px solid rgba(132,204,22,0.3)",
-                    borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: "none", fontFamily: "inherit",
-                    boxSizing: "border-box", transition: "all 0.2s ease",
-                  }} dangerouslySetInnerHTML={{ __html: ctaLabel }} />
+                  <Link href={ctaHref} prefetch={false} style={{
+                    display: "block", width: "100%", padding: "12px 16px", textAlign: "center",
+                    background: isCurrent ? "#FFFFFF" : plan.highlight ? accent : "#FFFFFF",
+                    color: isCurrent ? accent : plan.highlight ? "#FFFFFF" : accent,
+                    border: isCurrent ? `1.5px solid ${accent}` : plan.highlight ? "none" : `1.5px solid ${accent}`,
+                    borderRadius: 8, fontSize: 14, fontWeight: 700, textDecoration: "none", fontFamily: "inherit",
+                    boxSizing: "border-box", transition: "all 0.15s ease",
+                  }}>
+                    {ctaLabel}
+                  </Link>
                 ) : (
                   <button onClick={ctaOnClick} style={{
-                    display: "block", width: "100%", padding: "12px", textAlign: "center",
-                    background: plan.highlight ? "#84CC16" : "rgba(132,204,22,0.12)",
-                    color: plan.highlight ? "#0d0d14" : "#84CC16",
-                    border: plan.highlight ? "none" : "1px solid rgba(132,204,22,0.3)",
-                    borderRadius: 8, fontSize: 14, fontWeight: 600, fontFamily: "inherit",
-                    cursor: "pointer", boxSizing: "border-box", transition: "all 0.2s ease",
-                  }} dangerouslySetInnerHTML={{ __html: ctaLabel }} />
+                    display: "block", width: "100%", padding: "12px 16px", textAlign: "center",
+                    background: plan.highlight ? accent : "#FFFFFF",
+                    color: plan.highlight ? "#FFFFFF" : accent,
+                    border: plan.highlight ? "none" : `1.5px solid ${accent}`,
+                    borderRadius: 8, fontSize: 14, fontWeight: 700, fontFamily: "inherit",
+                    cursor: "pointer", boxSizing: "border-box", transition: "all 0.15s ease",
+                  }}>
+                    {ctaLabel}
+                  </button>
                 )}
               </div>
             );
           })}
         </div>
 
-        <p style={{ textAlign: "center", fontSize: 12, color: "#5A7091" }}>
+        <p style={{ textAlign: "center", fontSize: 13, color: "#6B7280" }}>
           Need more than 500 analyses per month?{" "}
-          <Link href="/contact" style={{ color: "#84CC16", textDecoration: "none" }}>
+          <Link href="/contact" style={{ color: "#4D7C0F", textDecoration: "none", fontWeight: 700 }}>
             Talk to us about Enterprise &rarr;
           </Link>
         </p>
