@@ -512,6 +512,32 @@ export default function SharedViewPage() {
             border-top: 1px solid #e5e7eb !important;
             flex: 1 1 auto;
           }
+          /* In detail view on mobile, hide the map entirely. The stacked
+             layout meant the map was still taking 38vh above the detail
+             overlay, so clicking a property left the viewer staring at
+             a cropped Leaflet tile on top of the deal data. Give the
+             detail content the whole screen. */
+          .share-main--detail .share-map { display: none !important; }
+          /* Contact info ate a whole row in the header. Drop it on
+             phones; the contact block is still present on the list
+             cards / detail footer for anyone who needs to reach out. */
+          .share-header-contact { display: none !important; }
+          .share-header > div:first-child {
+            width: 100%;
+          }
+          /* Demographics overlay is a map-layer feature that needs
+             room to breathe. Hide the toggle on phones; it is still
+             available on tablets/desktop. */
+          .share-demographics-toggle { display: none !important; }
+          /* Redundant property-count pill — duplicated in the header. */
+          .share-map-count-pill { display: none !important; }
+          /* Shorten the map so the property list is the primary view
+             on a phone. */
+          .share-map {
+            height: 30vh !important;
+            min-height: 180px;
+            max-height: 280px;
+          }
         }
         /* Prefer the dynamic viewport (dvh) on iOS Safari 16+ so the
            bottom disclaimer stops getting clipped by the tab bar/URL bar
@@ -570,7 +596,7 @@ export default function SharedViewPage() {
       </header>
 
       {/* Main layout: map + sidebar */}
-      <div className="share-main" style={{ display: "flex", height: "calc(100vh - 56px)" }}>
+      <div className={`share-main ${viewMode === "detail" ? "share-main--detail" : "share-main--list"}`} style={{ display: "flex", height: "calc(100vh - 56px)" }}>
         {/* Map */}
         <div className="share-map" style={{ flex: 1, position: "relative" }}>
           <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
@@ -581,12 +607,17 @@ export default function SharedViewPage() {
             display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end",
           }}>
             {/* Demographics toggle pill sits above the zoom cluster so it
-                reads as a layer switch rather than a viewport control. */}
-            <DemographicsToggle
-              enabled={demographicsOn}
-              onToggle={setDemographicsOn}
-              disabled={Object.keys(geocodedCoords).length === 0}
-            />
+                reads as a layer switch rather than a viewport control.
+                Hidden on mobile — phones don't have the real estate for
+                choropleth overlays and the toggle steals tap targets
+                from the smaller map. */}
+            <div className="share-demographics-toggle">
+              <DemographicsToggle
+                enabled={demographicsOn}
+                onToggle={setDemographicsOn}
+                disabled={Object.keys(geocodedCoords).length === 0}
+              />
+            </div>
             <MapBtn onClick={() => mapInstanceRef.current?.zoomIn()} title="Zoom in">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
             </MapBtn>
@@ -614,8 +645,10 @@ export default function SharedViewPage() {
             propertyAddress={focalDemographicsProperty?.address}
           />
 
-          {/* Property count pill - bottom-left */}
-          <div style={{
+          {/* Property count pill - bottom-left. Hidden on mobile; the
+              header already shows the same count, and on a small map
+              the pill just covers markers. */}
+          <div className="share-map-count-pill" style={{
             position: "absolute", bottom: 28, left: 12, zIndex: 1000,
             background: "#fff", borderRadius: 20, padding: "6px 14px",
             boxShadow: "0 2px 8px rgba(0,0,0,0.15)", fontSize: 12, fontWeight: 600, color: "#151b2b",
