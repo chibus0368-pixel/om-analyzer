@@ -215,10 +215,16 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
       <style>{`
         @media (max-width: 768px) {
           .orp-col-irr,
-          .orp-col-verdict { display: none !important; }
-          .orp-price-scenarios { min-width: 0 !important; font-size: 11.5px !important; }
+          .orp-col-verdict,
+          .orp-col-ppsf { display: none !important; }
+          .orp-price-scenarios { min-width: 0 !important; font-size: 11px !important; }
           .orp-price-scenarios th,
-          .orp-price-scenarios td { padding: 8px 6px !important; }
+          .orp-price-scenarios td { padding: 7px 5px !important; }
+          /* Rent growth heatmap: smaller font + tighter cells */
+          .orp-heatmap { min-width: 0 !important; font-size: 11px !important; }
+          .orp-heatmap th,
+          .orp-heatmap td { padding: 6px 4px !important; font-size: 10px !important; }
+          .orp-heatmap th { font-size: 8px !important; letter-spacing: 0 !important; }
         }
       `}</style>
       {/* ── Sale Price Scenarios (vertical table) ─────────────────── */}
@@ -235,7 +241,7 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
               <tr style={{ color: C.secondary, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, fontSize: 10 }}>
                 <th style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "left" }}>Scenario</th>
                 <th style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Purchase Price</th>
-                <th style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Price / {unitLabel}</th>
+                <th className="orp-col-ppsf" style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Price / {unitLabel}</th>
                 <th style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Going-in Cap</th>
                 <th className="orp-col-irr" style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Levered IRR</th>
                 <th className="orp-col-verdict" style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "right" }}>Verdict</th>
@@ -270,7 +276,7 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
                     <td style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, background: rowTint, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700, color: C.onSurface }}>
                       {fmtCurrency(row.purchasePrice)}
                     </td>
-                    <td style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, background: rowTint, textAlign: "right", fontVariantNumeric: "tabular-nums", color: C.secondary }}>
+                    <td className="orp-col-ppsf" style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, background: rowTint, textAlign: "right", fontVariantNumeric: "tabular-nums", color: C.secondary }}>
                       {fmtCurrency(row.purchasePrice / input.unitsOrSf)}
                     </td>
                     <td style={{ padding: "10px", borderTop: topBorder, borderBottom: bottomBorder, background: rowTint, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700, color: C.onSurface }}>
@@ -297,7 +303,7 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
         accent="#7C3AED"
       >
         <div style={{ overflow: "auto" }}>
-          <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse", minWidth: 420 }}>
+          <table className="orp-heatmap" style={{ width: "100%", fontSize: 12, borderCollapse: "collapse", minWidth: 420 }}>
             <thead>
               {/* Axis banner: tells you what columns vs rows represent */}
               <tr>
