@@ -453,10 +453,79 @@ export default function SharedViewPage() {
           border-top-left-radius: 8px;
           border-top-right-radius: 8px;
         }
+        /* ── iPhone / narrow-phone layout ────────────────────────────────
+           Below 768px the 420px min-width sidebar forced the map to 0px
+           or pushed the sidebar off-screen. Stack instead: map on top at
+           a fixed short height, property list below it flowing to the
+           bottom. Header contents collapse to fit a 375-390px viewport.
+           Detail view is already full-screen via the max-width:900px rule
+           above, so no changes needed there. */
+        @media (max-width: 768px) {
+          .share-header {
+            height: auto !important;
+            min-height: 52px;
+            padding: 8px 12px !important;
+            flex-wrap: wrap;
+            gap: 6px !important;
+          }
+          .share-header > div:first-child {
+            gap: 8px !important;
+            flex-wrap: wrap;
+          }
+          .share-header-title {
+            font-size: 13px !important;
+            max-width: 60vw;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          .share-header-contact {
+            font-size: 11px !important;
+            gap: 6px !important;
+            width: 100%;
+            justify-content: flex-start;
+            padding-top: 2px;
+          }
+          /* Drop the "Shared by" preamble + agency on small screens to
+             keep the header to one short line; name + phone link remain. */
+          .share-contact-label,
+          .share-contact-agency {
+            display: none !important;
+          }
+          .share-main {
+            flex-direction: column !important;
+            height: auto !important;
+            min-height: calc(100vh - 72px);
+          }
+          .share-map {
+            flex: 0 0 auto !important;
+            height: 38vh !important;
+            min-height: 220px;
+            max-height: 360px;
+          }
+          /* Sidebar in list mode: full width, below the map, no left border
+             (top border instead so the seam reads correctly when stacked). */
+          .share-sidebar {
+            width: 100% !important;
+            min-width: 0 !important;
+            border-left: none !important;
+            border-top: 1px solid #e5e7eb !important;
+            flex: 1 1 auto;
+          }
+        }
+        /* Prefer the dynamic viewport (dvh) on iOS Safari 16+ so the
+           bottom disclaimer stops getting clipped by the tab bar/URL bar
+           when it appears. Falls back to 100vh on older browsers. */
+        @supports (height: 100dvh) {
+          .share-main { height: calc(100dvh - 56px); }
+          @media (max-width: 768px) {
+            .share-main { min-height: calc(100dvh - 72px); }
+          }
+        }
       `}</style>
 
       {/* Header - dark branded bar matching workspace */}
-      <header style={{
+      <header className="share-header" style={{
         background: "#0b1326", padding: "0 24px", height: 56, display: "flex",
         alignItems: "center", justifyContent: "space-between",
         borderBottom: "1px solid rgba(255,255,255,0.08)", position: "relative", zIndex: 10,
@@ -472,7 +541,7 @@ export default function SharedViewPage() {
             </div>
           )}
           {showBranding && <div style={{ width: 1, height: 24, background: "rgba(255,255,255,0.12)" }} />}
-          <h1 style={{ fontSize: 15, fontWeight: 700, color: "#FFFFFF", margin: 0 }}>{title}</h1>
+          <h1 className="share-header-title" style={{ fontSize: 15, fontWeight: 700, color: "#FFFFFF", margin: 0 }}>{title}</h1>
           <span style={{
             fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.6)", background: "rgba(255,255,255,0.08)",
             padding: "3px 10px", borderRadius: 4,
@@ -482,16 +551,16 @@ export default function SharedViewPage() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {(config?.contactName || config?.contactAgency || config?.contactPhone) && (
-            <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12 }}>
-              <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: 0.5 }}>Shared by</span>
+            <div className="share-header-contact" style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12 }}>
+              <span className="share-contact-label" style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: 0.5 }}>Shared by</span>
               {config?.contactName && (
-                <span style={{ fontWeight: 700, color: "#FFFFFF" }}>{config.contactName}</span>
+                <span className="share-contact-name" style={{ fontWeight: 700, color: "#FFFFFF" }}>{config.contactName}</span>
               )}
               {config?.contactAgency && (
-                <span style={{ color: "rgba(255,255,255,0.6)" }}>{config.contactAgency}</span>
+                <span className="share-contact-agency" style={{ color: "rgba(255,255,255,0.6)" }}>{config.contactAgency}</span>
               )}
               {config?.contactPhone && (
-                <a href={`tel:${config.contactPhone}`} style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>
+                <a className="share-contact-phone" href={`tel:${config.contactPhone}`} style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>
                   {config.contactPhone}
                 </a>
               )}
@@ -501,9 +570,9 @@ export default function SharedViewPage() {
       </header>
 
       {/* Main layout: map + sidebar */}
-      <div style={{ display: "flex", height: "calc(100vh - 56px)" }}>
+      <div className="share-main" style={{ display: "flex", height: "calc(100vh - 56px)" }}>
         {/* Map */}
-        <div style={{ flex: 1, position: "relative" }}>
+        <div className="share-map" style={{ flex: 1, position: "relative" }}>
           <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
 
           {/* Map Controls - top-right overlay */}
