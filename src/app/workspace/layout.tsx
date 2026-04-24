@@ -634,6 +634,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   const [newWsType, setNewWsType] = useState<AnalysisType>("retail");
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [userTier, setUserTier] = useState<string>("free");
+  const [userUsage, setUserUsage] = useState<{ used: number; limit: number } | null>(null);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [globalDrag, setGlobalDrag] = useState(false);
@@ -813,6 +814,10 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           const data = await res.json();
           const tier = data.tier || "free";
           setUserTier(tier);
+          setUserUsage({
+            used: typeof data.uploadsUsed === "number" ? data.uploadsUsed : 0,
+            limit: typeof data.uploadLimit === "number" ? data.uploadLimit : 0,
+          });
 
           // Self-healing: if Firestore says "free" but a Stripe subscription
           // exists, the webhook likely mis-matched (e.g. missing env var).
@@ -1036,36 +1041,48 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               href="/workspace/upgrade"
               prefetch={false}
               className="ws-plan-pill"
+              title="Sign up free for 5 more analyses, or upgrade to Pro for 100 per month"
               style={{
-                padding: "6px 16px", background: "linear-gradient(135deg, #84CC16, #a8d600)", color: "#0d0d14",
+                padding: "6px 14px", background: "linear-gradient(135deg, #84CC16, #a8d600)", color: "#0d0d14",
                 border: "1px solid rgba(132,204,22,0.5)", borderRadius: 9999,
-                fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase",
                 textDecoration: "none", fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
-                display: "inline-flex", alignItems: "center", gap: 6,
+                display: "inline-flex", alignItems: "center", gap: 8,
               }}
               onMouseEnter={e => { e.currentTarget.style.opacity = "0.9"; }}
               onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
             >
-              <span aria-hidden style={{ fontSize: 11 }}>&#9889;</span>
-              Sign Up Free
+              {userUsage && (
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.3 }}>
+                  {userUsage.used}/{userUsage.limit}
+                </span>
+              )}
+              <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                Sign up &middot; +5 free
+              </span>
             </Link>
           ) : userTier === "free" ? (
             <Link
               href="/workspace/upgrade"
               prefetch={false}
               className="ws-plan-pill"
+              title={userUsage ? `${userUsage.used} of ${userUsage.limit} free analyses used this month. Upgrade to Pro for 100/mo.` : "Upgrade to Pro for 100 analyses per month"}
               style={{
-                padding: "6px 16px", background: "rgba(132,204,22,0.2)", color: "#84CC16",
+                padding: "6px 14px", background: "rgba(132,204,22,0.2)", color: "#84CC16",
                 border: "1px solid rgba(132,204,22,0.3)", borderRadius: 9999,
-                fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
                 textDecoration: "none", fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
-                display: "inline-flex", alignItems: "center", gap: 6,
+                display: "inline-flex", alignItems: "center", gap: 8,
               }}
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.3)"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "rgba(132,204,22,0.2)"; }}
             >
-              <span aria-hidden style={{ fontSize: 11 }}>&#9889;</span>
-              Upgrade to Pro
+              {userUsage && (
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: "#84CC16" }}>
+                  {userUsage.used}/{userUsage.limit}
+                </span>
+              )}
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                Upgrade &middot; 100/mo
+              </span>
             </Link>
           ) : (
             <Link href="/workspace/profile?tab=account" prefetch={false} className="ws-plan-pill" style={{
