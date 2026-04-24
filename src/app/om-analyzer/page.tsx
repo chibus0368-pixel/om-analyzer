@@ -1666,6 +1666,13 @@ export default function OmAnalyzerPage() {
     stripeSubscriptionId?: string | null;
   } | null>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  // Email gate (anonymous -> lead promotion). Shown when an anon user
+  // hits the 1-upload limit. Successful submit promotes them to tier=lead
+  // (5 uploads) without requiring a real account.
+  const [showEmailGate, setShowEmailGate] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+  const [emailSubmitting, setEmailSubmitting] = useState(false);
+  const [emailError, setEmailError] = useState("");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [animateStrip, setAnimateStrip] = useState(false);
   const [processingPct, setProcessingPct] = useState(0);
@@ -1807,13 +1814,62 @@ export default function OmAnalyzerPage() {
     if (fileRef.current) fileRef.current.value = "";
   }, []);
 
+  // ===== EMAIL GATE - promotes anon -> lead tier (5 uploads) =====
+  const submitEmailGate = useCallback(async () => {
+    const email = emailInput.trim();
+    if (!email) {
+      setEmailError("Please enter your email");
+      return;
+    }
+    // Lightweight client-side validation; server validates again.
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError("That doesn't look like a valid email");
+      return;
+    }
+    setEmailSubmitting(true);
+    setEmailError("");
+    try {
+      const res = await fetch("/api/om-analyzer/email-claim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ anonId: getAnonId(), email }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setEmailError(json?.error || "Couldn't save your email. Try again.");
+        setEmailSubmitting(false);
+        return;
+      }
+      // Refresh local usage state so the gate doesn't trigger again.
+      setUsageData({
+        uploadsUsed: json.uploadsUsed,
+        uploadLimit: json.uploadLimit,
+        tier: json.tier,
+      });
+      try { trackLeadCapture("om_analyzer_email_gate"); } catch {}
+      setShowEmailGate(false);
+      setEmailInput("");
+      setEmailSubmitting(false);
+    } catch (err: any) {
+      setEmailError(err?.message || "Network error. Try again.");
+      setEmailSubmitting(false);
+    }
+  }, [emailInput, getAnonId]);
+
   // ===== ANALYSIS - client-side PDF extraction + parse-lite API =====
   const startAnalysis = useCallback(async () => {
     if (!selectedFile) return;
 
-    // Check usage limit before starting
+    // Check usage limit before starting. Anonymous users get the lightweight
+    // email gate first; lead/free users see the full upgrade prompt.
     if (usageData && usageData.uploadsUsed >= usageData.uploadLimit) {
-      setShowUpgradePrompt(true);
+      const tier = usageData.tier;
+      if (!tier || tier === "anonymous") {
+        setEmailError("");
+        setShowEmailGate(true);
+      } else {
+        setShowUpgradePrompt(true);
+      }
       return;
     }
 
@@ -2195,6 +2251,88 @@ export default function OmAnalyzerPage() {
           .ds-section-pad { padding-top: 40px !important; padding-bottom: 36px !important; }
         }
       `}</style>
+
+      {/* ===== EMAIL GATE MODAL (anon -> lead) ===== */}
+      {showEmailGate && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9999,
+          background: "rgba(13,13,20,0.8)", backdropFilter: "blur(8px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: 16,
+        }} onClick={() => !emailSubmitting && setShowEmailGate(false)}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: "#16161f", borderRadius: 16, padding: "36px 32px", maxWidth: 420,
+            width: "100%", boxShadow: "0 32px 80px rgba(0,0,0,0.6)",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: 12, background: "rgba(132,204,22,0.15)",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 14,
+            }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+            </div>
+            <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#ffffff", margin: "0 0 8px", letterSpacing: -0.3 }}>
+              Drop your email for 5 more analyses
+            </h3>
+            <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.6, margin: "0 0 20px" }}>
+              No password, no signup wall. Your email unlocks the rest of your trial right here.
+            </p>
+            <form
+              onSubmit={(e) => { e.preventDefault(); if (!emailSubmitting) submitEmailGate(); }}
+              style={{ display: "flex", flexDirection: "column", gap: 10 }}
+            >
+              <input
+                type="email"
+                autoFocus
+                placeholder="you@company.com"
+                value={emailInput}
+                onChange={(e) => { setEmailInput(e.target.value); if (emailError) setEmailError(""); }}
+                disabled={emailSubmitting}
+                style={{
+                  width: "100%", padding: "12px 14px", borderRadius: 8,
+                  background: "#0d0d14", border: "1px solid " + (emailError ? "#dc2626" : "rgba(255,255,255,0.12)"),
+                  color: "#ffffff", fontSize: 14, outline: "none",
+                  fontFamily: "inherit", boxSizing: "border-box",
+                }}
+              />
+              {emailError && (
+                <div style={{ fontSize: 12, color: "#fca5a5", marginTop: -4 }}>
+                  {emailError}
+                </div>
+              )}
+              <button
+                type="submit"
+                disabled={emailSubmitting}
+                style={{
+                  padding: "13px 20px", marginTop: 6, borderRadius: 8, border: "none",
+                  background: emailSubmitting ? "#4d6512" : "linear-gradient(135deg, #84CC16, #a8d600)",
+                  color: "#0d0d14", fontSize: 15, fontWeight: 700,
+                  cursor: emailSubmitting ? "default" : "pointer",
+                  fontFamily: "inherit",
+                }}
+              >
+                {emailSubmitting ? "Unlocking..." : "Unlock 5 More Analyses"}
+              </button>
+            </form>
+            <button
+              type="button"
+              onClick={() => !emailSubmitting && setShowEmailGate(false)}
+              disabled={emailSubmitting}
+              style={{
+                display: "block", width: "100%", marginTop: 14, padding: "8px",
+                background: "none", border: "none", color: "#6b7280",
+                cursor: emailSubmitting ? "default" : "pointer", fontSize: 13, fontWeight: 500,
+                fontFamily: "inherit",
+              }}
+            >
+              Maybe later
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ===== UPGRADE PROMPT OVERLAY ===== */}
       {showUpgradePrompt && (
