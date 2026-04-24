@@ -9,6 +9,7 @@ import { extractTextFromFile } from "@/lib/workspace/file-reader";
 // Use Pro's brief/XLSX generators so Try Me downloads match Pro exactly.
 import { generateUnderwritingXLSX, generateBriefDownload } from "@/lib/workspace/generate-files";
 import { ensureAnonymousUser } from "@/lib/firebase";
+import { setPendingUploadFiles } from "@/lib/workspace/upload-handoff";
 import { DEALSIGNALS_LOGO_B64 } from "@/lib/workspace/logo-b64";
 import { useWorkspaceAuth } from "@/lib/workspace/auth";
 
@@ -1859,12 +1860,16 @@ export default function OmAnalyzerPage() {
     }
   }, [emailInput, getAnonId]);
 
-  // ===== ANALYSIS - client-side PDF extraction + parse-lite API =====
+  // ===== ANALYSIS - hand off to Pro's upload engine =====
+  // Trial users now use the same upload pipeline as Pro: drop the file
+  // into upload-handoff, sign in anonymously if needed, then push to
+  // /workspace/upload which picks up the file from the handoff and runs
+  // the full Pro parse + score flow. End state: /workspace/properties/[id].
   const startAnalysis = useCallback(async () => {
     if (!selectedFile) return;
 
-    // Check usage limit before starting. Anonymous users get the lightweight
-    // email gate first; lead/free users see the full upgrade prompt.
+    // Quota gate stays here so anonymous users still see the email gate
+    // (or upgrade prompt) before being thrown into the workspace.
     if (usageData && usageData.uploadsUsed >= usageData.uploadLimit) {
       const tier = usageData.tier;
       if (!tier || tier === "anonymous") {
@@ -1876,148 +1881,34 @@ export default function OmAnalyzerPage() {
       return;
     }
 
+    setStatusMsg("Preparing your workspace...");
     setView("processing");
-    setStatusMsg("Uploading files...");
     trackLiteUpload(selectedFile.name, selectedFile.name.split(".").pop()?.toLowerCase() || "unknown");
 
     try {
-      let documentText = "";
-      const ext = selectedFile.name.split(".").pop()?.toLowerCase() || "";
-
-      // Hero image extraction (PDF only) - Try-Me-specific, runs in parallel with text extraction
-      if (ext === "pdf") {
-        setStatusMsg("Extracting property image...");
-        try {
-          const heroBlob = await extractHeroImageFromPDF(selectedFile);
-          if (heroBlob && heroBlob.size > 5000) {
-            setHeroImageUrl(URL.createObjectURL(heroBlob));
-            console.log("[om-analyzer] Smart hero image set (blob)");
-            // Upload to Firebase Storage for persistent URL (non-blocking)
-            (async () => {
-              try {
-                const reader = new FileReader();
-                const base64 = await new Promise<string>((resolve, reject) => {
-                  reader.onload = () => {
-                    const result = reader.result as string;
-                    resolve((reader.result as string).split(",")[1]);
-                  };
-                  reader.onerror = reject;
-                  reader.readAsDataURL(heroBlob);
-                });
-                const res = await fetch("/api/om-analyzer/upload-image", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ imageBase64: base64 }),
-                });
-                if (res.ok) {
-                  const { url } = await res.json();
-                  if (url) {
-                    setHeroImageUrl(url);
-                    console.log("[om-analyzer] Hero image persisted to Storage:", url);
-                  }
-                }
-              } catch (uploadErr) {
-                console.warn("[om-analyzer] Storage upload failed, using blob URL:", uploadErr);
-              }
-            })();
-          } else {
-            console.log("[om-analyzer] No good property image found in PDF - will use map fallback");
-          }
-        } catch (imgErr) {
-          console.warn("[om-analyzer] Hero image extraction failed:", imgErr);
-        }
-      }
-
-      // === Text extraction: uses the SAME helper as Pro workspace ===
-      // extractTextFromFile handles:
-      //   • PDF text extraction (first 12 pages via pdf.js)
-      //   • Vision OCR fallback for scanned / image-heavy OMs (critical for design-heavy broker flyers)
-      //   • Excel/XLSX extraction via SheetJS
-      //   • CSV/TXT/JSON/MD
-      //   • Per-page headers (--- Page N ---) for better LLM context
-      setStatusMsg("Reading file contents...");
+      // Sign in anonymously so the workspace shell loads instead of
+      // bouncing to login. ensureAnonymousUser is a no-op if already signed in.
       try {
-        documentText = await extractTextFromFile(selectedFile);
-        console.log(`[om-analyzer] Extracted ${documentText.length} chars from ${selectedFile.name}`);
-      } catch (extractErr: any) {
-        console.error("[om-analyzer] Text extraction failed:", extractErr);
-        documentText = `[${ext.toUpperCase()} file: ${selectedFile.name}]\n(Extraction failed - property name may be in filename)`;
-      }
-
-      // Sign in anonymously (or reuse existing Firebase user) so the trial
-      // upload writes under a real Firebase UID. The user is then dropped into
-      // the actual Pro property page at /workspace/properties/[id] - no
-      // separate Try Me UI to maintain.
-      setStatusMsg("Preparing your workspace...");
-      let firebaseToken: string | null = null;
-      try {
-        const fbUser = await ensureAnonymousUser();
-        firebaseToken = await fbUser.getIdToken();
+        await ensureAnonymousUser();
       } catch (authErr: any) {
         console.error("[om-analyzer] Anonymous Firebase sign-in failed:", authErr?.message);
-        // If signInAnonymously is disabled in Firebase Console this throws
-        // auth/operation-not-allowed. Fall through to the legacy anonId path
-        // so trial users still get their analysis even if anon auth is off.
+        // Fall through - /workspace/upload will bounce to login if there's no session.
       }
 
-      // Call unified tryme-analyze route - runs the EXACT SAME Pro pipeline
-      // (runParseEngine + runScoreEngine) against an ephemeral Firestore
-      // record. Guarantees Try Me scores match Pro scores byte-for-byte.
-      setStatusMsg("Analyzing property data...");
-      const analysisType = selectedAssetType === "auto" ? undefined : selectedAssetType;
-      const response = await fetch("/api/om-analyzer/tryme-analyze", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(firebaseToken ? { Authorization: `Bearer ${firebaseToken}` } : {}),
-        },
-        body: JSON.stringify({
-          documentText: documentText.substring(0, 40000),
-          fileName: selectedFile.name,
-          source: "om-analyzer-page",
-          analysisType,
-          anonId: getAnonId(),
-          // Pass the GCS-persisted hero image URL so the property doc
-          // gets it written. The blob URL alternative isn't useful
-          // server-side and would expire when this tab closes.
-          heroImageUrl: (typeof heroImageUrl === "string" && !heroImageUrl.startsWith("blob:")) ? heroImageUrl : undefined,
-        }),
-      });
+      // Hand the file off via the in-memory module variable that
+      // /workspace/upload's mount-effect consumes (60s TTL).
+      setPendingUploadFiles([selectedFile]);
 
-      if (!response.ok) throw new Error("Analysis failed");
-      const result = await response.json();
-
-      // Score is already included in the response as result.proScore
-      if (result.proScore) {
-        setScoreResult(result.proScore);
-      }
-
-      // If we authed via Firebase, the property is now scoped to the user's
-      // real UID and viewable at /workspace/properties/[id]. Drop them into
-      // the real Pro page instead of the inline Try Me result view.
-      if (firebaseToken && result?.propertyId) {
-        trackLiteResult(result?.propertyName || selectedFile.name, result?.proScore?.totalScore || computeDealScore(result));
-        incrementUsage();
-        router.push(`/workspace/properties/${result.propertyId}`);
-        return;
-      }
-
-      // Legacy fallback: anon Firebase auth not available (or disabled in
-      // Firebase Console). Render the inline result view as before.
-      setData(result);
-      setView("result");
-      trackLiteResult(result?.propertyName || selectedFile.name, result?.proScore?.totalScore || computeDealScore(result));
-
-      // Increment usage counter after successful analysis
-      incrementUsage();
-    } catch (err) {
-      console.error("Analysis error:", err);
-      setData(generateDemoResult(selectedFile.name));
-      setView("result");
-      // Still increment on demo fallback (counts as an analysis attempt)
-      incrementUsage();
+      // The Pro upload page will run parse + score + redirect to
+      // /workspace/properties/[id] when done.
+      router.push("/workspace/upload");
+    } catch (err: any) {
+      console.error("[om-analyzer] Hand-off failed:", err);
+      setView("upload");
+      setStatusMsg("");
+      alert("Couldn\'t hand off to the workspace. Please try again.");
     }
-  }, [selectedFile, usageData, incrementUsage]);
+  }, [selectedFile, usageData, router]);
 
   const resetAnalyzer = useCallback(() => {
     // Hard reset via full navigation - bulletproof, clears every piece of
