@@ -68,10 +68,39 @@ export async function GET(req: NextRequest) {
     const adminAuth = getAdminAuth();
     const decoded = await adminAuth.verifyIdToken(token);
     const uid = decoded.uid;
+    const isFirebaseAnon = (decoded.firebase?.sign_in_provider === "anonymous");
 
     const userRef = db.collection("users").doc(uid);
     const userDoc = await userRef.get();
-    const userData = userDoc.data();
+    let userData = userDoc.data();
+
+    // Auto-provision anonymous Firebase users on first read so the workspace
+    // shell can render their tier/usage without a 404. Mirrors the
+    // provisioning in tryme-analyze for users who arrive by upload.
+    if (!userData && isFirebaseAnon) {
+      const provisionNow = new Date().toISOString();
+      const newDoc = {
+        uid,
+        tier: "anonymous",
+        tierStatus: "none",
+        uploadsUsed: 0,
+        uploadLimit: 2,
+        isLifetimeLimit: true,
+        isAnonymous: true,
+        authProviders: ["anonymous"],
+        primaryProvider: "anonymous",
+        accountStatus: "active",
+        email: null,
+        fullName: null,
+        displayName: "Trial User",
+        defaultWorkspaceId: null,
+        createdAt: provisionNow,
+        updatedAt: provisionNow,
+      };
+      await userRef.set(newDoc);
+      userData = newDoc;
+    }
+
     if (!userData) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -183,10 +212,39 @@ export async function POST(req: NextRequest) {
     const adminAuth = getAdminAuth();
     const decoded = await adminAuth.verifyIdToken(token);
     const uid = decoded.uid;
+    const isFirebaseAnon = (decoded.firebase?.sign_in_provider === "anonymous");
 
     const userRef = db.collection("users").doc(uid);
     const userDoc = await userRef.get();
-    const userData = userDoc.data();
+    let userData = userDoc.data();
+
+    // Auto-provision anonymous Firebase users on first read so the workspace
+    // shell can render their tier/usage without a 404. Mirrors the
+    // provisioning in tryme-analyze for users who arrive by upload.
+    if (!userData && isFirebaseAnon) {
+      const provisionNow = new Date().toISOString();
+      const newDoc = {
+        uid,
+        tier: "anonymous",
+        tierStatus: "none",
+        uploadsUsed: 0,
+        uploadLimit: 2,
+        isLifetimeLimit: true,
+        isAnonymous: true,
+        authProviders: ["anonymous"],
+        primaryProvider: "anonymous",
+        accountStatus: "active",
+        email: null,
+        fullName: null,
+        displayName: "Trial User",
+        defaultWorkspaceId: null,
+        createdAt: provisionNow,
+        updatedAt: provisionNow,
+      };
+      await userRef.set(newDoc);
+      userData = newDoc;
+    }
+
     if (!userData) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }

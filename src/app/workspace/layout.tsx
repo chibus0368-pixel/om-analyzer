@@ -13,6 +13,7 @@ import Link from "next/link";
 import TrialStatusBar from "@/components/billing/TrialStatusBar";
 
 import UpgradeModal from "@/components/billing/UpgradeModal";
+import { ensureAnonymousUser } from "@/lib/firebase";
 
 /* Sidebar nav - matches Deal Signals design - NO "DealBoard" link */
 const SIDEBAR_NAV = [
@@ -708,16 +709,29 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [globalDrag, activeWorkspace?.slug, activeWorkspace?.id, router]);
 
-  // ── Auth gate: redirect to login if not authenticated ──
-  // Skip redirect if already on the login page to prevent redirect loops.
-  // The parent WorkspaceLayout already waits for auth to load before rendering,
-  // so `user` being null here means the user is genuinely not logged in.
+  // ── Auth gate ──
+  // Property pages auto-anon-sign-in for unauth'd visitors (e.g. recipients
+  // of "Email this property" links) so they land on the real Pro page
+  // instead of getting bounced to login. Other workspace pages still
+  // require a real session.
   const isLoginPage = pathname === "/workspace/login";
   const isPropertyPage = /^\/workspace\/properties\/[^/]+$/.test(pathname);
   useEffect(() => {
-    if (!user && !isLoginPage && !isPropertyPage) {
-      router.replace("/workspace/login");
+    // Parent WorkspaceLayout already waits for auth to load before rendering
+    // this component, so user being null here is genuine (not in-flight).
+    if (user) return;
+    if (isLoginPage) return;
+    if (isPropertyPage) {
+      // Don't redirect - sign them in anonymously so the property page
+      // can load. They'll see the upgrade pill in the header.
+      ensureAnonymousUser().catch((err) => {
+        console.error("[workspace] anonymous sign-in failed:", err?.message);
+        // If anon auth is disabled, fall back to bouncing to login.
+        router.replace("/workspace/login");
+      });
+      return;
     }
+    router.replace("/workspace/login");
   }, [user, router, isLoginPage, isPropertyPage]);
 
   // ── Auto-open upgrade modal if ?upgrade= param is present (after login redirect) ──

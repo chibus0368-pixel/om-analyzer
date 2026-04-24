@@ -9,7 +9,8 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { updateProfile } from "firebase/auth";
+import { registerWithEmail } from "@/lib/auth/providers";
 import { auth } from "@/lib/firebase";
 import { loginWithGoogle, checkGoogleRedirect } from "@/lib/auth/providers";
 
@@ -205,7 +206,10 @@ function WorkspaceLoginPageInner() {
       if (mode === "register") {
         if (password.length < 8) { setError("Password must be at least 8 characters"); setLoading(false); handlingSubmitRef.current = false; return; }
         if (password !== confirmPassword) { setError("Passwords do not match"); setLoading(false); handlingSubmitRef.current = false; return; }
-        const credential = await createUserWithEmailAndPassword(auth, email, password);
+        // registerWithEmail uses linkWithCredential under the hood when the
+        // visitor is signed in anonymously, so their Try Me trial property
+        // (and any analyses they did as anon) carry over to the real account.
+        const credential = await registerWithEmail(email, password);
         const fullName = `${firstName} ${lastName}`.trim();
         if (fullName) await updateProfile(credential.user, { displayName: fullName });
         await bootstrapUser(credential.user, { firstName, lastName, company: company || undefined });

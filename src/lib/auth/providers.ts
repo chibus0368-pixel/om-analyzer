@@ -10,6 +10,8 @@ import {
   confirmPasswordReset,
   updateProfile,
   signOut,
+  linkWithCredential,
+  EmailAuthProvider,
   GoogleAuthProvider,
   type UserCredential,
 } from 'firebase/auth';
@@ -19,6 +21,26 @@ const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 export async function registerWithEmail(email: string, password: string): Promise<UserCredential> {
+  // If the visitor is currently signed in anonymously (e.g. they came in
+  // through the Try Me trial flow and we want to preserve their property
+  // analyses), link the email/password credential to their existing
+  // anonymous account. Otherwise create a brand-new account.
+  const current = auth.currentUser;
+  if (current && current.isAnonymous) {
+    try {
+      const credential = EmailAuthProvider.credential(email, password);
+      return await linkWithCredential(current, credential);
+    } catch (err: any) {
+      // auth/email-already-in-use means an account with that email already
+      // exists. Fall through to the normal create flow so the user gets a
+      // sensible error - linkWithCredential here would silently drop their
+      // anon data anyway.
+      if (err?.code !== "auth/credential-already-in-use" && err?.code !== "auth/email-already-in-use") {
+        throw err;
+      }
+      console.warn("[auth] Anonymous link failed, falling back to create:", err.code);
+    }
+  }
   return createUserWithEmailAndPassword(auth, email, password);
 }
 
