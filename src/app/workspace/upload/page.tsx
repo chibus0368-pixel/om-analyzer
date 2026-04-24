@@ -559,7 +559,17 @@ export default function UploadPage() {
       {globalDragging && step !== "processing" && (
         <div
           onDragOver={e => e.preventDefault()}
-          onDragLeave={e => { e.preventDefault(); dragCounter.current = 0; setGlobalDragging(false); }}
+          onDragLeave={e => {
+            // Flicker fix: dragleave bubbles up from children (the inner
+            // decorative panel), not just when the cursor truly exits the
+            // overlay. Only clear when relatedTarget is outside, or null
+            // (cursor left the viewport).
+            e.preventDefault();
+            const next = e.relatedTarget as Node | null;
+            if (next && e.currentTarget.contains(next)) return;
+            dragCounter.current = 0;
+            setGlobalDragging(false);
+          }}
           onDrop={e => {
             e.preventDefault(); dragCounter.current = 0; setGlobalDragging(false);
             if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files);
@@ -574,6 +584,7 @@ export default function UploadPage() {
             padding: "48px 64px", borderRadius: 20,
             border: "2px dashed #4D7C0F", background: "rgba(132,204,22,0.05)",
             textAlign: "center",
+            pointerEvents: "none",
           }}>
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }}>
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
@@ -649,12 +660,26 @@ export default function UploadPage() {
             </div>
           )}
 
-          {/* Drop zone - matches landing page upload card */}
+          {/* Drop zone - matches landing page upload card
+              Flicker fix: dragleave fires every time the cursor crosses a
+              child element boundary (icon, text, button), which toggles
+              isDragging off/on as the user drags over the zone. Fix is to
+              check relatedTarget on dragleave and only clear state when
+              the cursor has actually exited the dropzone. Also use
+              dragenter (fires once) instead of dragover (fires continuously)
+              to set the state. Same pattern used on om-analyzer. */}
           <div
             className="ul-dropzone"
-            onDragOver={e => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
-            onDragLeave={e => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
-            onDrop={handleDrop}
+            onDragEnter={e => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+            onDragOver={e => { e.preventDefault(); e.stopPropagation(); if (!isDragging) setIsDragging(true); }}
+            onDragLeave={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              const next = e.relatedTarget as Node | null;
+              if (next && e.currentTarget.contains(next)) return;
+              setIsDragging(false);
+            }}
+            onDrop={e => { setIsDragging(false); handleDrop(e); }}
             onClick={(e) => { if ((e.target as HTMLElement).closest("button,input")) return; fileRef.current?.click(); }}
             style={{
               background: C.surfLowest,
