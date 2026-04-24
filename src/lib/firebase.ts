@@ -1,6 +1,6 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import { getFirestore, type Firestore } from "firebase/firestore";
-import { getAuth, type Auth } from "firebase/auth";
+import { getAuth, signInAnonymously, onAuthStateChanged, type Auth, type User } from "firebase/auth";
 import { getStorage, type FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -32,4 +32,30 @@ export function getAuthInstance(): Auth {
 
 export function getStorageInstance(): FirebaseStorage {
   return storage;
+}
+
+/**
+ * Anonymous trial users.
+ *
+ * Returns the current Firebase user, signing in anonymously if there isn't
+ * one yet. The resulting `User` has a real UID, can call `getIdToken()`, and
+ * can be promoted to a real account later via `linkWithCredential()` without
+ * losing any of their workspace data.
+ *
+ * Requires Anonymous sign-in to be enabled in Firebase Console > Authentication
+ * > Sign-in method. Without it, signInAnonymously() throws auth/operation-not-allowed.
+ */
+export async function ensureAnonymousUser(): Promise<User> {
+  // Wait briefly for any in-flight auth restore from IndexedDB before signing
+  // in anonymously - otherwise a real signed-in user could get pre-empted.
+  const existing = await new Promise<User | null>((resolve) => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      unsub();
+      resolve(u);
+    });
+  });
+  if (existing) return existing;
+
+  const cred = await signInAnonymously(auth);
+  return cred.user;
 }

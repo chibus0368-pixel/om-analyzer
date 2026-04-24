@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { runParseEngine } from "@/lib/workspace/parse-engine";
 import { runScoreEngine } from "@/lib/workspace/score-engine";
-import { getAdminDb } from "@/lib/firebase-admin";
+import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
 
 // Full Pro pipeline timeout
 export const maxDuration = 120;
@@ -62,17 +62,37 @@ export async function POST(request: NextRequest) {
   const db = getAdminDb();
   const propertyId = `tryme-${randomUUID()}`;
   const projectId = `tryme-${randomUUID()}`;
+  let firebaseUid: string | null = null;
+  let isAnonymousFirebase = false;
 
   try {
     const body = await request.json();
     const { documentText, fileName, analysisType: requestedType, anonId } = body;
 
-    // Key records to this browser's anon session so we can migrate them on
-    // signup. Falls back to a shared bucket only if the client failed to
-    // provide one (shouldn't happen in normal flow).
-    const userId = anonId && typeof anonId === "string"
-      ? `tryme-${anonId}`
-      : "tryme-anon";
+    // Prefer Firebase auth (signInAnonymously) - the trial user has a real
+    // UID and writing under it lets them see their property at
+    // /workspace/properties/[id] without any further auth handoff. Falls
+    // back to the legacy anonId pattern for clients that haven't upgraded
+    // to the Firebase-anon flow yet.
+    let userId: string;
+    const authHeader = request.headers.get("authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.replace("Bearer ", "");
+      try {
+        const decoded = await getAdminAuth().verifyIdToken(token);
+        firebaseUid = decoded.uid;
+        // Anonymous Firebase users have no email/identity claims.
+        isAnonymousFirebase = !decoded.email && (decoded.firebase?.sign_in_provider === "anonymous");
+        userId = decoded.uid;
+      } catch (err: any) {
+        console.error("[tryme-analyze] Bearer token verification failed:", err?.message);
+        return NextResponse.json({ error: "Invalid auth token" }, { status: 401 });
+      }
+    } else {
+      userId = anonId && typeof anonId === "string"
+        ? `tryme-${anonId}`
+        : "tryme-anon";
+    }
 
     if (!documentText || documentText.trim().length < 50) {
       return NextResponse.json(
@@ -104,6 +124,8 @@ export async function POST(request: NextRequest) {
       analysisType,
       parseStatus: "pending",
       isTryMe: true,
+      isAnonymousFirebase,
+      firebaseUid,
       anonId: anonId || null,
       expiresAt,
       createdAt: now,

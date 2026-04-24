@@ -8,6 +8,7 @@ import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
 import { extractTextFromFile } from "@/lib/workspace/file-reader";
 // Use Pro's brief/XLSX generators so Try Me downloads match Pro exactly.
 import { generateUnderwritingXLSX, generateBriefDownload } from "@/lib/workspace/generate-files";
+import { ensureAnonymousUser } from "@/lib/firebase";
 import { DEALSIGNALS_LOGO_B64 } from "@/lib/workspace/logo-b64";
 import { useWorkspaceAuth } from "@/lib/workspace/auth";
 
@@ -1943,6 +1944,22 @@ export default function OmAnalyzerPage() {
         documentText = `[${ext.toUpperCase()} file: ${selectedFile.name}]\n(Extraction failed - property name may be in filename)`;
       }
 
+      // Sign in anonymously (or reuse existing Firebase user) so the trial
+      // upload writes under a real Firebase UID. The user is then dropped into
+      // the actual Pro property page at /workspace/properties/[id] - no
+      // separate Try Me UI to maintain.
+      setStatusMsg("Preparing your workspace...");
+      let firebaseToken: string | null = null;
+      try {
+        const fbUser = await ensureAnonymousUser();
+        firebaseToken = await fbUser.getIdToken();
+      } catch (authErr: any) {
+        console.error("[om-analyzer] Anonymous Firebase sign-in failed:", authErr?.message);
+        // If signInAnonymously is disabled in Firebase Console this throws
+        // auth/operation-not-allowed. Fall through to the legacy anonId path
+        // so trial users still get their analysis even if anon auth is off.
+      }
+
       // Call unified tryme-analyze route - runs the EXACT SAME Pro pipeline
       // (runParseEngine + runScoreEngine) against an ephemeral Firestore
       // record. Guarantees Try Me scores match Pro scores byte-for-byte.
@@ -1950,7 +1967,10 @@ export default function OmAnalyzerPage() {
       const analysisType = selectedAssetType === "auto" ? undefined : selectedAssetType;
       const response = await fetch("/api/om-analyzer/tryme-analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(firebaseToken ? { Authorization: `Bearer ${firebaseToken}` } : {}),
+        },
         body: JSON.stringify({
           documentText: documentText.substring(0, 40000),
           fileName: selectedFile.name,
@@ -1968,6 +1988,18 @@ export default function OmAnalyzerPage() {
         setScoreResult(result.proScore);
       }
 
+      // If we authed via Firebase, the property is now scoped to the user's
+      // real UID and viewable at /workspace/properties/[id]. Drop them into
+      // the real Pro page instead of the inline Try Me result view.
+      if (firebaseToken && result?.propertyId) {
+        trackLiteResult(result?.propertyName || selectedFile.name, result?.proScore?.totalScore || computeDealScore(result));
+        incrementUsage();
+        router.push(`/workspace/properties/${result.propertyId}`);
+        return;
+      }
+
+      // Legacy fallback: anon Firebase auth not available (or disabled in
+      // Firebase Console). Render the inline result view as before.
       setData(result);
       setView("result");
       trackLiteResult(result?.propertyName || selectedFile.name, result?.proScore?.totalScore || computeDealScore(result));
