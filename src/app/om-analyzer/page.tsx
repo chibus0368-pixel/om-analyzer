@@ -1910,6 +1910,17 @@ export default function OmAnalyzerPage() {
         setScoreResult(result.proScore);
       }
 
+      // If the analyzer returned a shareId, hand off to the public /share/[id]
+      // route which renders the same Pro-style UI as authenticated users see.
+      // Fall back to the inline result view when shareId is absent (e.g. share
+      // record creation failed server-side).
+      if (result?.shareId && typeof result.shareId === "string") {
+        trackLiteResult(result?.propertyName || selectedFile.name, result?.proScore?.totalScore || computeDealScore(result));
+        incrementUsage();
+        router.push(`/share/${result.shareId}`);
+        return;
+      }
+
       setData(result);
       setView("result");
       trackLiteResult(result?.propertyName || selectedFile.name, result?.proScore?.totalScore || computeDealScore(result));
