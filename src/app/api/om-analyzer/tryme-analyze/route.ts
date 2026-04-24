@@ -154,6 +154,11 @@ export async function POST(request: NextRequest) {
       fields[`${data.fieldGroup}.${data.fieldName}`] = value;
     });
 
+    // Raw ExtractedField docs - the client passes these straight to Pro's
+    // generateUnderwritingXLSX / generateBriefDownload so Try Me's downloads
+    // are byte-for-byte the same as Pro's.
+    const extractedFields = fieldsSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
+
     const propDoc = await db.collection("workspace_properties").doc(propertyId).get();
     const prop = propDoc.data() || {};
 
@@ -341,7 +346,7 @@ export async function POST(request: NextRequest) {
     // 6. Persist the record (no cleanup). Records are keyed by anonId and
     // will be claimed on signup via /api/auth/bootstrap. Unclaimed records
     // are pruned by a TTL sweep after 7 days.
-    return NextResponse.json({ ...result, propertyId, projectId });
+    return NextResponse.json({ ...result, propertyId, projectId, extractedFields });
   } catch (error: any) {
     console.error("[tryme-analyze] Error:", error);
     void cleanup(db, propertyId, projectId);

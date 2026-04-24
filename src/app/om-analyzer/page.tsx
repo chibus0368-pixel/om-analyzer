@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
 import { extractTextFromFile } from "@/lib/workspace/file-reader";
+// Use Pro's brief/XLSX generators so Try Me downloads match Pro exactly.
+import { generateUnderwritingXLSX, generateBriefDownload } from "@/lib/workspace/generate-files";
 import { DEALSIGNALS_LOGO_B64 } from "@/lib/workspace/logo-b64";
 import { useWorkspaceAuth } from "@/lib/workspace/auth";
 
@@ -4535,6 +4537,13 @@ function computeDealScore(d: any): number {
   return Math.round(total / count);
 }
 
+// Normalize Try Me's loose analysisType string to one of Pro's accepted values.
+function normalizedAnalysisType(d: any): "retail" | "industrial" | "office" | "land" {
+  const raw = String(d?.analysisType || d?.assetType || "retail").toLowerCase();
+  if (raw === "industrial" || raw === "office" || raw === "land") return raw;
+  return "retail";
+}
+
 function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisData; heroImageUrl?: string; usageData?: { uploadsUsed: number; uploadLimit: number } | null }) {
   const [captureEmail, setCaptureEmail] = useState("");
   const [captureStatus, setCaptureStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -5159,7 +5168,15 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
             <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#0F172A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Download Assets</h3>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            <button className="dl-btn" onClick={() => { trackDownload("xlsx", d.propertyName || ""); downloadLiteXLSX(d); }} style={{
+            <button className="dl-btn" onClick={async () => {
+              trackDownload("xlsx", d.propertyName || "");
+              try {
+                await generateUnderwritingXLSX(d.propertyName || "Property", d.extractedFields || [], normalizedAnalysisType(d));
+              } catch (e: any) {
+                console.error("[try-me] XLSX failed:", e);
+                alert("XLSX download failed: " + (e?.message || "unknown error"));
+              }
+            }} style={{
               display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 18px",
               background: "rgba(5,150,105,0.05)", border: "1px solid rgba(5,150,105,0.15)", borderRadius: 6,
               color: "#374151", textAlign: "left", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -5173,7 +5190,26 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
                 <div style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.4 }}>Downloadable XLS worksheets: Inputs, Rent Roll, Operating Statement, Debt &amp; Returns, Breakeven, Cap Scenarios</div>
               </div>
             </button>
-            <button className="dl-btn" onClick={() => { trackDownload("docx", d.propertyName || ""); downloadLiteBrief(d); }} style={{
+            <button className="dl-btn" onClick={() => {
+              trackDownload("docx", d.propertyName || "");
+              try {
+                const briefText = typeof d.brief === "string"
+                  ? d.brief
+                  : Array.isArray(d.brief)
+                  ? d.brief.join("\n")
+                  : String(d.brief || "");
+                generateBriefDownload(
+                  d.propertyName || "Property",
+                  briefText,
+                  d.extractedFields || [],
+                  normalizedAnalysisType(d),
+                  { tenants: d.tenants || [] }
+                );
+              } catch (e: any) {
+                console.error("[try-me] Brief failed:", e);
+                alert("Brief download failed: " + (e?.message || "unknown error"));
+              }
+            }} style={{
               display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 18px",
               background: "rgba(37,99,235,0.05)", border: "1px solid rgba(37,99,235,0.15)", borderRadius: 6,
               color: "#374151", textAlign: "left", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif",
