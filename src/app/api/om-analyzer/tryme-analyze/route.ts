@@ -3,7 +3,6 @@ import { randomUUID } from "crypto";
 import { runParseEngine } from "@/lib/workspace/parse-engine";
 import { runScoreEngine } from "@/lib/workspace/score-engine";
 import { getAdminDb } from "@/lib/firebase-admin";
-import { nanoid } from "nanoid";
 
 // Full Pro pipeline timeout
 export const maxDuration = 120;
@@ -339,44 +338,10 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    // 6. Create a public share_links record so the trial result can render
-    // through the existing /share/[id] route (same UI as Pro). Same 30-day
-    // TTL convention used elsewhere; cleanup sweep prunes alongside the
-    // workspace_properties record.
-    let shareId: string | null = null;
-    try {
-      shareId = nanoid(12);
-      const shareExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-      await db.collection("share_links").add({
-        shareId,
-        userId,
-        workspaceId: propertyId,
-        workspaceName: "Try Me",
-        displayName: result?.propertyName || "Property",
-        whiteLabel: true,
-        hideDocuments: true,
-        contactName: "",
-        contactAgency: "",
-        contactPhone: "",
-        expiresAt: shareExpiresAt,
-        isActive: true,
-        viewCount: 0,
-        isTryMe: true,
-        anonId: anonId || null,
-        createdAt: now,
-        updatedAt: now,
-      });
-    } catch (shareErr: any) {
-      // Non-fatal - if share record fails, the inline Try Me result view
-      // still renders as fallback (no shareId in response).
-      console.error("[tryme-analyze] share_links create failed:", shareErr?.message || shareErr);
-      shareId = null;
-    }
-
-    // 7. Persist the record (no cleanup). Records are keyed by anonId and
+    // 6. Persist the record (no cleanup). Records are keyed by anonId and
     // will be claimed on signup via /api/auth/bootstrap. Unclaimed records
     // are pruned by a TTL sweep after 7 days.
-    return NextResponse.json({ ...result, propertyId, projectId, shareId });
+    return NextResponse.json({ ...result, propertyId, projectId });
   } catch (error: any) {
     console.error("[tryme-analyze] Error:", error);
     void cleanup(db, propertyId, projectId);
