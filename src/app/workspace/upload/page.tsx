@@ -449,11 +449,10 @@ export default function UploadPage() {
       console.warn("[upload] Usage increment failed:", err);
     }
 
-    if (selectedExistingId) {
-      setStep("done");
-    } else {
-      setStep("name");
-    }
+    // Skip the name + done confirmation steps - just drop them on the
+    // property page. They can rename via the inline EditablePropertyName
+    // control there if they want a different name than the auto-derived one.
+    router.push(`/workspace/properties/${propertyId}`);
   }
 
   async function handleSaveName() {
