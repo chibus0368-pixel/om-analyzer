@@ -635,6 +635,19 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [userTier, setUserTier] = useState<string>("free");
   const [userUsage, setUserUsage] = useState<{ used: number; limit: number } | null>(null);
+  // Per-session dismissal of the anon conversion banner. Keep dismissals in
+  // sessionStorage so they don't bleed across browser sessions but DO survive
+  // page navigations within the same workspace visit.
+  const [anonBannerDismissed, setAnonBannerDismissed] = useState(true);
+  useEffect(() => {
+    try {
+      const dismissed = typeof window !== "undefined"
+        && sessionStorage.getItem("ds_anon_banner_dismissed") === "1";
+      setAnonBannerDismissed(dismissed);
+    } catch {
+      setAnonBannerDismissed(false);
+    }
+  }, []);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [globalDrag, setGlobalDrag] = useState(false);
@@ -1508,6 +1521,66 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
       {/* Main Content - full width */}
       <main style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
         <div className="ws-main-content" style={{ flex: 1, overflow: "auto", padding: 32, display: "flex", flexDirection: "column" }}>
+          {/* ── Anonymous user conversion banner ──
+              Surfaces a clear "save your work" prompt for anon Firebase users
+              on every workspace page. Dismissible per session. Hidden once
+              they sign up (tier switches to free). */}
+          {(user as any).isAnonymous && !anonBannerDismissed && (
+            <div style={{
+              display: "flex", alignItems: "center", gap: 14,
+              padding: "12px 18px", marginBottom: 16,
+              borderRadius: 10,
+              background: "linear-gradient(135deg, rgba(132,204,22,0.12), rgba(132,204,22,0.04))",
+              border: "1px solid rgba(132,204,22,0.4)",
+            }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: 8,
+                background: "rgba(132,204,22,0.2)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2.5"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" /></svg>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0F172A", lineHeight: 1.3 }}>
+                  Your work is saved on this browser only.
+                </div>
+                <div style={{ fontSize: 12, color: "#374151", marginTop: 2 }}>
+                  Sign up free to keep your analyses forever &middot; 5 more this month
+                </div>
+              </div>
+              <Link
+                href="/workspace/login?mode=register"
+                prefetch={false}
+                style={{
+                  padding: "8px 16px", borderRadius: 8,
+                  background: "#4D7C0F", color: "#FFFFFF",
+                  fontSize: 12.5, fontWeight: 700, textDecoration: "none",
+                  whiteSpace: "nowrap", letterSpacing: 0.2,
+                  fontFamily: "'Inter', sans-serif",
+                  flexShrink: 0,
+                }}
+              >
+                Sign Up Free
+              </Link>
+              <button
+                type="button"
+                aria-label="Dismiss"
+                onClick={() => {
+                  try { sessionStorage.setItem("ds_anon_banner_dismissed", "1"); } catch {}
+                  setAnonBannerDismissed(true);
+                }}
+                style={{
+                  background: "transparent", border: "none", color: "#6B7280",
+                  cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "4px 6px",
+                  flexShrink: 0,
+                }}
+              >
+                &times;
+              </button>
+            </div>
+          )}
+
           {showUpgradeSuccess && (
             <div style={{
               display: "flex", alignItems: "center", gap: 10,
