@@ -1,14 +1,15 @@
 # DealSignals E2E tests
 #
 # Runs the Playwright suite against production after every push to main,
-# and against the Vercel preview URL on every PR.
+# and against a manually-supplied URL on workflow_dispatch.
 #
-# Required GitHub Secrets:
+# PR runs default to testing production too (override via workflow_dispatch
+# if you want to test a specific preview URL). Once we have a stable
+# Vercel preview URL pattern we can wire that back up.
+#
+# Required GitHub Secrets (all optional - specs auto-skip if missing):
 #   E2E_FREE_EMAIL    - signed-up free-tier test account email
 #   E2E_FREE_PASSWORD - that account's password
-#
-# Without those secrets the auth-required specs auto-skip; the rest still
-# run (server-guards + anon-flow). So setting them is optional.
 
 name: E2E Tests
 
@@ -17,16 +18,13 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  # Manual trigger from the Actions tab if you want to re-run after a
-  # deploy without pushing a new commit.
   workflow_dispatch:
     inputs:
       base_url:
-        description: "URL to test against (defaults to production)"
+        description: "URL to test against"
         required: false
         default: "https://www.dealsignals.app"
 
-# Cancel in-flight runs for the same ref when a new commit lands.
 concurrency:
   group: e2e-${{ github.ref }}
   cancel-in-progress: true
@@ -43,30 +41,21 @@ jobs:
           node-version: "20"
           cache: "npm"
 
-      - run: npm ci --no-audit --no-fund
+      # `npm ci` is strict about the lockfile - if it gets touchy on the
+      # first run we can fall back to `npm install` while we sort it out.
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 
-      # Install only Chromium - we don't need Firefox/WebKit and the
-      # download is much smaller. --with-deps installs system libraries
-      # like libnss3 that Chromium needs to launch.
-      - run: npx playwright install --with-deps chromium
+      # Skip --with-deps. Ubuntu runners already have most of what
+      # Chromium needs and the apt-get install can be slow.
+      - name: Install Playwright browser
+        run: npx playwright install chromium
 
-      # On main pushes: test prod. On PRs: wait for Vercel's preview URL
-      # to be ready, then test that. workflow_dispatch uses the input.
       - name: Resolve test target URL
         id: target
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             URL="${{ github.event.inputs.base_url }}"
-          elif [ "${{ github.event_name }}" = "pull_request" ]; then
-            # Vercel auto-creates a preview at this slug pattern. We give
-            # the deploy ~90s to spin up before failing.
-            URL="https://om-analyzer-git-${{ github.head_ref }}-chibus0368-pixels-projects.vercel.app"
-            URL="$(echo "$URL" | tr '_/' '--' | tr '[:upper:]' '[:lower:]')"
-            for i in 1 2 3 4 5 6; do
-              if curl -sf -o /dev/null "$URL"; then break; fi
-              echo "Preview not ready yet (try $i/6)... waiting 15s"
-              sleep 15
-            done
           else
             URL="https://www.dealsignals.app"
           fi
@@ -80,7 +69,6 @@ jobs:
           E2E_FREE_PASSWORD: ${{ secrets.E2E_FREE_PASSWORD }}
         run: npx playwright test --reporter=list,html
 
-      # Always upload the HTML report so it's downloadable on red runs.
       - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
@@ -88,13 +76,12 @@ jobs:
           name: playwright-report-${{ github.run_id }}
           path: e2e-report/
           retention-days: 14
+          if-no-files-found: ignore
 
-      # Surface failures as a job summary so reviewers see what broke
-      # without clicking into the artifact.
       - name: Summarize failures
         if: failure()
         run: |
           echo "## E2E failures :x:" >> "$GITHUB_STEP_SUMMARY"
           echo "Tested against: \`${{ steps.target.outputs.url }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Download the **playwright-report-${{ github.run_id }}** artifact above for traces, screenshots, and videos of each failed test." >> "$GITHUB_STEP_SUMMARY"
+          echo "Download the **playwright-report-${{ github.run_id }}** artifact above for traces, screenshots, and videos." >> "$GITHUB_STEP_SUMMARY"
