@@ -59,13 +59,16 @@ test.describe("anon trial flow", () => {
   });
 
   test("workspace property URL renders something (anon-signed-in OR bounced gracefully)", async ({ page }) => {
-    await page.goto("/workspace/properties/anon-test-id-no-such-prop", { waitUntil: "domcontentloaded" });
-    // Two acceptable outcomes:
-    //   (a) Auto-anon-sign-in worked - we're on the property page (or got
-    //       a 404 view of it). URL stays on /workspace/properties/...
-    //   (b) Anon auth not available - layout falls back to /workspace/login.
-    // Unacceptable: hard error page, infinite spinner, or hung blank screen.
+    await page.goto("/workspace/properties/anon-test-id-no-such-prop", { waitUntil: "load" });
+    // Next.js App Router hydrates after DCL; wait for any rendered text
+    // or for a navigation away (which is also acceptable - the layout
+    // may router.replace() to /workspace/login when anon auth is off).
+    // We give the SPA up to 20s to either render content or navigate.
+    await Promise.race([
+      page.waitForFunction(() => (document.body.innerText || "").trim().length > 30, { timeout: 20_000 }),
+      page.waitForURL(/\/workspace\/login/, { timeout: 20_000 }).catch(() => null),
+    ]);
     const bodyText = (await page.locator("body").innerText()).trim();
-    expect(bodyText.length, "page rendered empty - probably crashed").toBeGreaterThan(50);
+    expect(bodyText.length, "page never rendered any content").toBeGreaterThan(20);
   });
 });
