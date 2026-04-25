@@ -38,7 +38,7 @@ test.describe("anon trial flow", () => {
   });
 
   test("/workspace/profile does not show editable profile form to anon visitors", async ({ page }) => {
-    await page.goto("/workspace/profile", { waitUntil: "networkidle" });
+    await page.goto("/workspace/profile", { waitUntil: "domcontentloaded" });
     const url = page.url();
     const bodyText = (await page.locator("body").innerText()).toLowerCase();
 
@@ -59,7 +59,7 @@ test.describe("anon trial flow", () => {
   });
 
   test("workspace property URL renders something (anon-signed-in OR bounced gracefully)", async ({ page }) => {
-    await page.goto("/workspace/properties/anon-test-id-no-such-prop", { waitUntil: "networkidle" });
+    await page.goto("/workspace/properties/anon-test-id-no-such-prop", { waitUntil: "domcontentloaded" });
     // Two acceptable outcomes:
     //   (a) Auto-anon-sign-in worked - we're on the property page (or got
     //       a 404 view of it). URL stays on /workspace/properties/...
