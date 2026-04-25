@@ -156,19 +156,24 @@ export default function ProfilePage() {
   const initialTab = (tabParam === "account" || tabParam === "security" || tabParam === "notifications") ? tabParam : "profile";
   const [activeSection, setActiveSection] = useState<"profile" | "security" | "notifications" | "account">(initialTab);
 
-  // Listen for auth state. Anonymous Firebase users get the same empty
-  // state as signed-out users (we can't load a profile they don't have),
-  // so flip loading off immediately for them too. Otherwise the page sits
-  // on a spinner waiting for an API call that will fail.
+  // Listen for auth state. Anonymous Firebase users have no profile to
+  // manage - immediately redirect them to the register form. Signed-out
+  // users get the empty state (they may have an account they just need
+  // to sign back into).
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       setFirebaseUser(user);
-      if (!user || (user as any).isAnonymous === true) {
+      if (!user) {
         setLoading(false);
+        return;
+      }
+      if ((user as any).isAnonymous === true) {
+        // Preserve where they came from so signup -> profile redirect lands here
+        router.replace("/workspace/login?mode=register&redirect=/workspace/profile");
       }
     });
     return () => unsub();
-  }, []);
+  }, [router]);
 
   // Fetch profile when user is available. Skip for anon Firebase users
   // since they have no users/{uid} doc to load.
@@ -423,20 +428,25 @@ export default function ProfilePage() {
   const isPasswordUser = profile?.authProviders?.includes("password");
   const isGoogleUser = profile?.authProviders?.includes("google.com");
 
-  // Not signed in OR anonymous trial - render an empty state with a clear
-  // "what is this page" message and a Sign Up CTA. We deliberately do NOT
-  // show the editable form for anon users because they have nothing to
-  // save; clicking Save would do nothing and read as broken.
+  // Brief render between detecting an anon user and the router.replace
+  // landing them on the register form. Show the spinner so they don't see
+  // a flash of the editable form.
   const isAnonUser = !!firebaseUser && (firebaseUser as any).isAnonymous === true;
-  if (!loading && (!firebaseUser || isAnonUser)) {
-    const headline = isAnonUser
-      ? "Profile settings unlock when you sign up"
-      : "Sign in to manage your profile";
-    const sub = isAnonUser
-      ? "You're on a free trial. Sign up to save your name, company, and notification preferences - and keep all the deals you've already analyzed."
-      : "Create an account or sign in to access your profile settings.";
-    const cta = isAnonUser ? "Sign Up Free" : "Sign In";
-    const target = isAnonUser ? "/workspace/login?mode=register" : "/workspace/login";
+  if (isAnonUser) {
+    return (
+      <div style={{ maxWidth: 600, margin: "0 auto", padding: "60px 20px", textAlign: "center" }}>
+        <div style={{
+          width: 36, height: 36, border: `3px solid ${BORDER}`, borderTopColor: PRIMARY,
+          borderRadius: "50%", animation: "spin 0.7s linear infinite", margin: "0 auto 16px",
+        }} />
+        <p style={{ fontSize: 13, color: MUTED }}>Taking you to sign up...</p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  // Signed-out users: empty state with sign-in CTA.
+  if (!loading && !firebaseUser) {
     return (
       <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center", padding: "80px 20px 40px" }}>
         <div style={{
@@ -446,38 +456,24 @@ export default function ProfilePage() {
           border: "1px solid rgba(132,204,22,0.25)",
         }}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={PRIMARY} strokeWidth="2">
-            {isAnonUser ? (
-              <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            ) : (
-              <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            )}
+            <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         </div>
         <h2 style={{ fontSize: 22, fontWeight: 800, color: SURFACE, margin: "0 0 10px", fontFamily: "'Inter', sans-serif", letterSpacing: -0.3 }}>
-          {headline}
+          Sign in to manage your profile
         </h2>
         <p style={{ fontSize: 14, color: MUTED, margin: "0 0 28px", lineHeight: 1.6 }}>
-          {sub}
+          Create an account or sign in to access your profile settings.
         </p>
-        <button onClick={() => router.push(target)} style={{
+        <button onClick={() => router.push("/workspace/login")} style={{
           padding: "12px 28px", borderRadius: 8,
           background: PRIMARY, color: "#FFFFFF",
           border: "none", fontSize: 14, fontWeight: 700,
           cursor: "pointer", fontFamily: "'Inter', sans-serif",
           letterSpacing: 0.2,
         }}>
-          {cta}
+          Sign In
         </button>
-        {isAnonUser && (
-          <div style={{ marginTop: 16 }}>
-            <a href="/workspace" style={{
-              fontSize: 12.5, color: MUTED, textDecoration: "underline",
-              fontFamily: "'Inter', sans-serif",
-            }}>
-              Back to your workspace
-            </a>
-          </div>
-        )}
       </div>
     );
   }
