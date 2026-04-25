@@ -67,7 +67,11 @@ jobs:
           E2E_BASE_URL: ${{ steps.target.outputs.url }}
           E2E_FREE_EMAIL: ${{ secrets.E2E_FREE_EMAIL }}
           E2E_FREE_PASSWORD: ${{ secrets.E2E_FREE_PASSWORD }}
-        run: npx playwright test --reporter=list,html
+        # tee captures the verbose Playwright output to a file we always
+        # upload, even when the report dir is empty / tests crash early.
+        run: |
+          set -o pipefail
+          npx playwright test --reporter=list,html 2>&1 | tee e2e-stdout.txt
 
       - name: Upload Playwright HTML report
         if: always()
@@ -77,6 +81,29 @@ jobs:
           path: e2e-report/
           retention-days: 14
           if-no-files-found: ignore
+
+      # Always uploads, even when the HTML report doesn't exist. This is
+      # what we read to debug failures.
+      - name: Upload test stdout
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: e2e-stdout-${{ github.run_id }}
+          path: e2e-stdout.txt
+          retention-days: 14
+          if-no-files-found: warn
+
+      # Surface the last 60 lines of stdout in the GitHub job summary so we
+      # don't even have to download the artifact for most failures.
+      - name: Tail stdout into job summary
+        if: failure()
+        run: |
+          if [ -f e2e-stdout.txt ]; then
+            echo "## Last 60 lines of Playwright output" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            tail -n 60 e2e-stdout.txt >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Summarize failures
         if: failure()
