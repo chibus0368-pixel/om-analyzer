@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { auth } from "@/lib/firebase";
-import { onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential, type User } from "firebase/auth";
+import { onAuthStateChanged, updatePassword, updateProfile, EmailAuthProvider, reauthenticateWithCredential, type User } from "firebase/auth";
 import { requestPasswordReset } from "@/lib/auth/providers";
 import { PLANS } from "@/lib/stripe/config";
 
@@ -340,6 +340,27 @@ export default function ProfilePage() {
       if (!res.ok) throw new Error("Failed to save");
       const data = await res.json();
       if (data.userDoc) setProfile(data.userDoc);
+
+      // Sync displayName to Firebase Auth so the workspace header (which
+      // reads firebaseUser.displayName, not the Firestore doc) shows the
+      // updated name immediately. Fire-and-forget - if this fails the
+      // Firestore save still succeeded, so don't block the success toast.
+      const fullName = `${firstName} ${lastName}`.trim();
+      if (fullName && fullName !== firebaseUser.displayName) {
+        try {
+          await updateProfile(firebaseUser, { displayName: fullName });
+          // Bump the workspace shell so anyone listening to user-changed
+          // events refetches. The auth listener fires onAuthStateChanged
+          // automatically when Firebase syncs back, but a manual event
+          // makes the header update without waiting for that round-trip.
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event("firebase-displayname-updated"));
+          }
+        } catch (dnErr) {
+          console.warn("[profile] updateProfile (displayName) failed:", dnErr);
+        }
+      }
+
       setSaveMsg({ type: "success", text: "Profile saved successfully." });
       setTimeout(() => setSaveMsg(null), 3000);
     } catch {

@@ -642,6 +642,16 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   const [newWsType, setNewWsType] = useState<AnalysisType>("retail");
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [userTier, setUserTier] = useState<string>("free");
+  // Bump on displayName sync so the header refreshes after a profile save
+  // without waiting for the next onAuthStateChanged tick.
+  const [, forceRender] = useState(0);
+  useEffect(() => {
+    const handler = () => forceRender(n => n + 1);
+    if (typeof window !== "undefined") {
+      window.addEventListener("firebase-displayname-updated", handler);
+      return () => window.removeEventListener("firebase-displayname-updated", handler);
+    }
+  }, []);
   const [userUsage, setUserUsage] = useState<{ used: number; limit: number } | null>(null);
   // Per-session dismissal of the anon conversion banner. Keep dismissals in
   // sessionStorage so they don't bleed across browser sessions but DO survive
