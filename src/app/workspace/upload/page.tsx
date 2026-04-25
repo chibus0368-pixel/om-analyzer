@@ -166,13 +166,35 @@ export default function UploadPage() {
     if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
   }
 
-  // Consume any files handed off from the empty dealboard drop zone. Runs
-  // once on mount; the handoff module auto-clears after read.
+  // Track when files arrived via handoff (vs manual drop) so we can
+  // auto-fire the upload below. Manual-drop users still click Analyze.
+  const autoUploadRef = useRef(false);
+
+  // Consume any files handed off from the empty dealboard drop zone OR
+  // from the /om-analyzer trial flow. Runs once on mount; the handoff
+  // module auto-clears after read.
   useEffect(() => {
     const handoff = consumePendingUploadFiles();
-    if (handoff && handoff.length) addFiles(handoff);
+    if (handoff && handoff.length) {
+      addFiles(handoff);
+      autoUploadRef.current = true;
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // After a handoff, auto-trigger the upload as soon as the files settle in
+  // state and we have an authed user. Skips the manual "Analyze" click so
+  // the trial flow feels like one continuous action: drop on /om-analyzer
+  // -> land on property page. handleUpload guards against double-fire.
+  useEffect(() => {
+    if (!autoUploadRef.current) return;
+    if (!user) return;
+    if (files.length === 0) return;
+    if (step !== "upload") return;
+    autoUploadRef.current = false; // single-shot
+    void handleUpload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, files.length, step]);
 
   // Page-level drag-and-drop: accept files dropped anywhere on screen, not
   // just inside the visible upload box. Mirrors the Try-Me landing page.
