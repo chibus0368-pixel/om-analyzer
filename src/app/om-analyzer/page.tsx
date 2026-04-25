@@ -8,8 +8,9 @@ import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
 import { extractTextFromFile } from "@/lib/workspace/file-reader";
 // Use Pro's brief/XLSX generators so Try Me downloads match Pro exactly.
 import { generateUnderwritingXLSX, generateBriefDownload } from "@/lib/workspace/generate-files";
-import { ensureAnonymousUser } from "@/lib/firebase";
-import { setPendingUploadFiles } from "@/lib/workspace/upload-handoff";
+import { ensureAnonymousUser, storage } from "@/lib/firebase";
+import { ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { createProperty, createDocument, updateProperty } from "@/lib/workspace/firestore";
 import { DEALSIGNALS_LOGO_B64 } from "@/lib/workspace/logo-b64";
 import { useWorkspaceAuth } from "@/lib/workspace/auth";
 
@@ -1860,16 +1861,17 @@ export default function OmAnalyzerPage() {
     }
   }, [emailInput, getAnonId]);
 
-  // ===== ANALYSIS - hand off to Pro's upload engine =====
-  // Trial users now use the same upload pipeline as Pro: drop the file
-  // into upload-handoff, sign in anonymously if needed, then push to
-  // /workspace/upload which picks up the file from the handoff and runs
-  // the full Pro parse + score flow. End state: /workspace/properties/[id].
+  // ===== ANALYSIS - run the full workspace upload pipeline IN PLACE =====
+  // We used to setPendingUploadFiles + router.push("/workspace/upload"),
+  // but that caused a jarring layout-to-layout transition (marketing dark
+  // theme -> workspace shell -> property page). Now we run the same Pro
+  // upload pipeline directly here: the user stays on /om-analyzer with
+  // its branded processing animation the entire time, then a single
+  // router.push to /workspace/properties/[id] at the end. One navigation,
+  // no flicker.
   const startAnalysis = useCallback(async () => {
     if (!selectedFile) return;
 
-    // Quota gate stays here so anonymous users still see the email gate
-    // (or upgrade prompt) before being thrown into the workspace.
     if (usageData && usageData.uploadsUsed >= usageData.uploadLimit) {
       const tier = usageData.tier;
       if (!tier || tier === "anonymous") {
@@ -1886,29 +1888,125 @@ export default function OmAnalyzerPage() {
     trackLiteUpload(selectedFile.name, selectedFile.name.split(".").pop()?.toLowerCase() || "unknown");
 
     try {
-      // Sign in anonymously so the workspace shell loads instead of
-      // bouncing to login. ensureAnonymousUser is a no-op if already signed in.
-      try {
-        await ensureAnonymousUser();
-      } catch (authErr: any) {
-        console.error("[om-analyzer] Anonymous Firebase sign-in failed:", authErr?.message);
-        // Fall through - /workspace/upload will bounce to login if there's no session.
+      // 1. Sign in anonymously so writes are scoped to a real Firebase UID
+      const fbUser = await ensureAnonymousUser();
+
+      // 2. Create the property doc (user lands on this id at the end)
+      setStatusMsg("Creating your property...");
+      const autoName = selectedFile.name.replace(/\.[^.]+$/, "") || "Property";
+      const propertyId = await createProperty("workspace-default", {
+        propertyName: autoName,
+        userId: fbUser.uid,
+        workspaceId: "default",
+      } as any);
+
+      // 3. Upload the document file to Firebase Storage + create the document record
+      setStatusMsg("Uploading document...");
+      const ext = selectedFile.name.split(".").pop()?.toLowerCase() || "";
+      const storedName = `${Date.now()}_${selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+      const storagePath = `workspace/${fbUser.uid}/${propertyId}/inputs/${storedName}`;
+      const fileRefHandle = storageRef(storage, storagePath);
+      await uploadBytesResumable(fileRefHandle, selectedFile);
+      await createDocument({
+        projectId: "workspace-default",
+        userId: fbUser.uid,
+        propertyId,
+        originalFilename: selectedFile.name,
+        storedFilename: storedName,
+        fileExt: ext,
+        mimeType: selectedFile.type,
+        fileSizeBytes: selectedFile.size,
+        storagePath,
+        docCategory: "om",
+        parserStatus: "uploaded",
+        isArchived: false,
+        isDeleted: false,
+        uploadedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as any);
+
+      // 4. Hero image extraction (best-effort, non-blocking error)
+      if (ext === "pdf") {
+        setStatusMsg("Extracting property image...");
+        try {
+          const heroBlob = await extractHeroImageFromPDF(selectedFile);
+          if (heroBlob && heroBlob.size > 5000) {
+            const imgRef = storageRef(storage, `workspace/${fbUser.uid}/${propertyId}/hero.jpg`);
+            await uploadBytesResumable(imgRef, heroBlob);
+            const imgUrl = await getDownloadURL(imgRef);
+            await updateProperty(propertyId, { heroImageUrl: imgUrl } as any);
+          }
+        } catch (heroErr) {
+          console.warn("[om-analyzer] Hero extraction failed:", heroErr);
+        }
       }
 
-      // Hand the file off via the in-memory module variable that
-      // /workspace/upload's mount-effect consumes (60s TTL).
-      setPendingUploadFiles([selectedFile]);
+      // 5. Extract text + classify + run parse/generate/score on the server
+      setStatusMsg("Reading file contents...");
+      let extractedText = "";
+      try {
+        extractedText = await extractTextFromFile(selectedFile);
+      } catch (textErr) {
+        console.warn("[om-analyzer] Text extraction failed:", textErr);
+      }
 
-      // The Pro upload page will run parse + score + redirect to
-      // /workspace/properties/[id] when done.
-      router.push("/workspace/upload");
+      let detectedType = selectedAssetType && selectedAssetType !== "auto" ? selectedAssetType : "retail";
+      if (extractedText) {
+        try {
+          setStatusMsg("Detecting property type...");
+          const classifyRes = await fetch("/api/workspace/classify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ documentText: extractedText }),
+          });
+          if (classifyRes.ok) {
+            const classifyData = await classifyRes.json();
+            detectedType = classifyData.detected_type || detectedType;
+          }
+        } catch (classifyErr) {
+          console.warn("[om-analyzer] Classify failed, using default:", classifyErr);
+        }
+
+        setStatusMsg("Analyzing your document...");
+        try {
+          await fetch("/api/workspace/process", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              propertyId,
+              userId: fbUser.uid,
+              documentText: extractedText,
+              analysisType: detectedType,
+            }),
+          });
+        } catch (procErr) {
+          console.warn("[om-analyzer] Process failed:", procErr);
+        }
+      }
+
+      // 6. Increment usage + bump events so the workspace shell re-fetches
+      try {
+        const token = await fbUser.getIdToken();
+        await fetch("/api/workspace/usage", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({}),
+        });
+      } catch { /* non-fatal */ }
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("workspace-properties-changed"));
+        window.dispatchEvent(new Event("usage-updated"));
+      }
+
+      // 7. Single navigation to the real Pro property page
+      router.push(`/workspace/properties/${propertyId}`);
     } catch (err: any) {
-      console.error("[om-analyzer] Hand-off failed:", err);
+      console.error("[om-analyzer] Upload failed:", err);
       setView("upload");
       setStatusMsg("");
-      alert("Couldn\'t hand off to the workspace. Please try again.");
+      alert("Upload failed: " + (err?.message || "unknown error"));
     }
-  }, [selectedFile, usageData, router]);
+  }, [selectedFile, usageData, router, selectedAssetType]);
 
   const resetAnalyzer = useCallback(() => {
     // Hard reset via full navigation - bulletproof, clears every piece of
