@@ -93,17 +93,23 @@ jobs:
           retention-days: 14
           if-no-files-found: warn
 
-      # Surface the last 60 lines of stdout in the GitHub job summary so we
-      # don't even have to download the artifact for most failures.
-      - name: Tail stdout into job summary
+      # Surface the last 60 lines of stdout in BOTH the job summary AND
+      # as a workflow annotation. Annotations are exposed via the public
+      # /check-runs/{id}/annotations API (no auth needed for public repos),
+      # so failures are debuggable from a single curl call.
+      - name: Tail stdout into job summary + annotation
         if: failure()
         run: |
-          if [ -f e2e-stdout.txt ]; then
-            echo "## Last 60 lines of Playwright output" >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-            tail -n 60 e2e-stdout.txt >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-          fi
+          if [ ! -f e2e-stdout.txt ]; then exit 0; fi
+          # Job summary (visible in the Actions UI)
+          echo "## Last 60 lines of Playwright output" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          tail -n 60 e2e-stdout.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          # Annotation (visible via API). GitHub annotations cap at ~10KB
+          # and don't allow newlines, so we replace newlines with %0A.
+          MSG=$(tail -n 60 e2e-stdout.txt | sed -e 's/%/%25/g' -e ':a;N;$!ba;s/\n/%0A/g')
+          echo "::error title=Playwright failure tail::${MSG}"
 
       - name: Summarize failures
         if: failure()
