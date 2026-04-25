@@ -1057,7 +1057,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               href="/workspace/upgrade"
               prefetch={false}
               className="ws-plan-pill"
-              title="Sign up free for 5 more analyses, or upgrade to Pro for 100 per month"
+              title="Sign up free for 5 more analyses, or upgrade to Pro at $40/mo for 100 analyses"
               style={{
                 padding: "6px 14px", background: "linear-gradient(135deg, #84CC16, #a8d600)", color: "#FFFFFF",
                 border: "1px solid rgba(132,204,22,0.5)", borderRadius: 9999,
@@ -1076,7 +1076,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               href="/workspace/upgrade"
               prefetch={false}
               className="ws-plan-pill"
-              title={userUsage ? `${userUsage.used} of ${userUsage.limit} free analyses used this month. Upgrade to Pro for 100/mo.` : "Upgrade to Pro for 100 analyses per month"}
+              title={userUsage ? `${userUsage.used} of ${userUsage.limit} free analyses used this month. Pro is $40/mo for 100 analyses.` : "Pro is $40/mo for 100 analyses per month"}
               style={{
                 padding: "6px 14px", background: "rgba(132,204,22,0.2)", color: "#84CC16",
                 border: "1px solid rgba(132,204,22,0.3)", borderRadius: 9999,
@@ -1092,7 +1092,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                 </span>
               )}
               <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.2, textTransform: "none" }}>
-                Upgrade for 100/mo
+                Upgrade to Pro &middot; $40/mo
               </span>
             </Link>
           ) : (
