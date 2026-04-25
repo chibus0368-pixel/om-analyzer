@@ -212,7 +212,7 @@ export default function WorkspaceUpgradePage() {
             } else if (plan.key === "free") {
               if (isAnon) {
                 ctaLabel = "Sign up free";
-                ctaHref = "/workspace/login?signup=1";
+                ctaHref = "/workspace/login?mode=register";
               } else {
                 // Already on a higher tier - downgrade goes through profile.
                 ctaLabel = "Switch to Free";
@@ -222,7 +222,7 @@ export default function WorkspaceUpgradePage() {
               // Pro or Pro+
               if (isAnon) {
                 ctaLabel = `Sign up to start ${plan.name}`;
-                ctaHref = `/workspace/login?signup=1&upgrade=${plan.key}`;
+                ctaHref = `/workspace/login?mode=register&upgrade=${plan.key}`;
               } else if (isDowngradeTarget) {
                 ctaLabel = `Switch to ${plan.name}`;
                 ctaHref = "/workspace/profile?tab=account";

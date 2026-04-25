@@ -91,7 +91,17 @@ function WorkspaceLoginPageInner() {
     initialModeParam === "register" || initialModeParam === "signup"
       ? "register"
       : "login";
-  const [mode, setMode] = useState<"login" | "register">(initialMode);
+  // If a Firebase anon user lands here, they're in trial state and almost
+  // certainly came to convert. Force the register form regardless of param.
+  const looksAnon = !!user && (user as any).isAnonymous === true;
+  const [mode, setMode] = useState<"login" | "register">(looksAnon ? "register" : initialMode);
+
+  // If the user state flips to anonymous AFTER mount (e.g. we redirected them
+  // here from /workspace/upgrade and Firebase was still settling), still
+  // honor the conversion intent by switching to register mode.
+  useEffect(() => {
+    if (looksAnon) setMode("register");
+  }, [looksAnon]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -186,11 +196,17 @@ function WorkspaceLoginPageInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
-  /* ── if already logged in: route to checkout if upgrade param set, else workspace ── */
+  /* ── if already logged in (NOT anon): route to checkout / workspace ──
+     Anonymous Firebase users are in trial state; we deliberately keep them
+     on this page so they can register/link their account. Otherwise the
+     upgrade pill on the workspace header would silently route them through
+     to Stripe without ever capturing an email. */
   useEffect(() => {
-    if (user && !redirectChecking && !handlingSubmitRef.current) {
-      handlePostAuth(user);
-    }
+    if (!user) return;
+    if ((user as any).isAnonymous === true) return;
+    if (redirectChecking) return;
+    if (handlingSubmitRef.current) return;
+    handlePostAuth(user);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, redirectChecking]);
 
