@@ -1810,14 +1810,68 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
           }
         }
 
-        // Prefer a short street-address label ("136 Commercial Ave") as the
-        // property name - that's what investors recognize. Falls back to the
-        // extracted propName if the address can't be cleanly shortened.
+        // Smart property name priority - investors recognize tenant brands
+        // and shopping-center names better than street addresses. Pick the
+        // most descriptive label we can construct.
         const shortStreet = extractShortStreetAddress(propAddress);
-        if (shortStreet) {
-          propUpdate.propertyName = shortStreet;
+
+        // Helper: clean a tenant name for display ("Chipotle Mexican Grill, Inc."
+        // -> "Chipotle Mexican Grill"). Drops corporate suffixes that read as
+        // noise in a property title.
+        const cleanTenantName = (raw: string | undefined | null): string => {
+          if (!raw) return "";
+          let s = String(raw).trim();
+          // Strip leading/trailing punctuation
+          s = s.replace(/^[\s,;:.\-]+|[\s,;:.\-]+$/g, "");
+          // Drop common corporate suffixes
+          s = s.replace(/[,\s]+(inc\.?|llc|llp|l\.l\.c\.|corp\.?|corporation|co\.?|company|the)$/i, "");
+          // Reject obvious placeholders
+          if (/^(tenant|space|suite|unit|n\/?a|tbd|vacant)\s*\d*$/i.test(s)) return "";
+          if (s.length < 2) return "";
+          return s.trim();
+        };
+
+        // Detect single-tenant deal from the parsed tenant list
+        const tenantList: any[] = Array.isArray(stage1?.tenants) ? stage1.tenants : [];
+        const cleanTenants = tenantList
+          .map(t => cleanTenantName(t?.name))
+          .filter(n => n.length > 0);
+        const isSingleTenant = cleanTenants.length === 1;
+
+        // Helper: does propName look like a brand / center name (not a street
+        // address or junk)? A "real" name has letters, isn't mostly digits,
+        // and isn't the address itself.
+        const looksLikeRealName = (n: string | undefined | null): boolean => {
+          if (!n) return false;
+          const s = String(n).trim();
+          if (!s || s === "Unknown Property") return false;
+          // Mostly numeric -> probably an address
+          const digitCount = (s.match(/\d/g) || []).length;
+          if (digitCount / s.length > 0.4) return false;
+          // Equals the full address verbatim
+          if (propAddress && s.toLowerCase() === String(propAddress).toLowerCase()) return false;
+          // Looks like a US street address (starts with digits + has Street/Ave/Rd/etc)
+          if (/^\d+\s+\S+.*\b(st|street|ave|avenue|blvd|boulevard|rd|road|dr|drive|ln|lane|way|ct|court|pkwy|parkway|hwy|highway)\b/i.test(s)) return false;
+          return true;
+        };
+
+        let smartName = "";
+        if (isSingleTenant) {
+          // "Chipotle Mexican Grill - West Bend" - single tenant deals are
+          // overwhelmingly known by their tenant brand, not the street address.
+          const tn = cleanTenants[0];
+          smartName = propCity ? `${tn} - ${propCity}` : tn;
+        } else if (looksLikeRealName(propName)) {
+          // Multi-tenant + a real branded property name ("West Bend Plaza")
+          smartName = String(propName).trim();
+        } else if (shortStreet) {
+          smartName = shortStreet;
         } else if (propName && propName !== "Unknown Property") {
-          propUpdate.propertyName = propName;
+          smartName = String(propName).trim();
+        }
+
+        if (smartName) {
+          propUpdate.propertyName = smartName;
         }
         if (propAddress && propAddress !== "Unknown Address")
           propUpdate.address1 = propAddress;
