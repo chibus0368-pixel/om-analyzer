@@ -1092,7 +1092,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                 </span>
               )}
               <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.2, textTransform: "none" }}>
-                Upgrade to Pro &middot; $40/mo
+                Upgrade to Pro
               </span>
             </Link>
           ) : (
