@@ -1112,10 +1112,10 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             >
               <div className="ws-user-text" style={{ textAlign: "right" }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", lineHeight: 1.2, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                  {user.displayName || user.email?.split("@")[0] || "User"}
+                  {(user as any).isAnonymous ? "Anonymous user" : (user.displayName || user.email?.split("@")[0] || "User")}
                 </div>
                 <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", lineHeight: 1.3 }}>
-                  {user.email || ""}
+                  {(user as any).isAnonymous ? "Trial · not signed in" : (user.email || "")}
                 </div>
               </div>
               <div className="ws-avatar" style={{
@@ -1124,7 +1124,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                 fontSize: 12, fontWeight: 700, color: "#000", flexShrink: 0,
                 border: "2px solid rgba(255,255,255,0.1)",
               }}>
-                {user.displayName ? user.displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : (user.email?.split("@")[0] || "U").substring(0, 2).toUpperCase()}
+                {(user as any).isAnonymous ? "AU" : (user.displayName ? user.displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : (user.email?.split("@")[0] || "U").substring(0, 2).toUpperCase())}
               </div>
             </Link>
           )}
@@ -1364,10 +1364,10 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 12, fontWeight: 600, color: "#FFFFFF", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {user.displayName || user.email?.split("@")[0] || "User"}
+                      {(user as any).isAnonymous ? "Anonymous user" : (user.displayName || user.email?.split("@")[0] || "User")}
                     </div>
                     <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {user.email || ""}
+                      {(user as any).isAnonymous ? "Trial · not signed in" : (user.email || "")}
                     </div>
                   </div>
                 </div>

@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
           accountStatus: "active",
           email: null,
           fullName: null,
-          displayName: "Trial User",
+          displayName: "Anonymous user",
           defaultWorkspaceId: null,
           createdAt: provisionNow,
           updatedAt: provisionNow,

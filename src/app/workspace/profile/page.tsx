@@ -418,8 +418,18 @@ export default function ProfilePage() {
   const isPasswordUser = profile?.authProviders?.includes("password");
   const isGoogleUser = profile?.authProviders?.includes("google.com");
 
-  // Not logged in state
-  if (!loading && !firebaseUser) {
+  // Not signed in OR anonymous trial - show a sign-in empty state. Anon
+  // Firebase users are technically logged in (they have a UID) but have no
+  // email/password to manage, so showing them an editable profile form is
+  // misleading - they need to register first.
+  const isAnonUser = !!firebaseUser && (firebaseUser as any).isAnonymous === true;
+  if (!loading && (!firebaseUser || isAnonUser)) {
+    const headline = isAnonUser ? "You're using a trial account" : "Sign in to manage your profile";
+    const sub = isAnonUser
+      ? "Create a free account to save your work and unlock profile settings."
+      : "Create an account or sign in to access your profile settings.";
+    const cta = isAnonUser ? "Sign Up Free" : "Sign In";
+    const target = isAnonUser ? "/workspace/login?mode=register" : "/workspace/login";
     return (
       <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center", padding: "60px 20px" }}>
         <div style={{
@@ -431,13 +441,13 @@ export default function ProfilePage() {
           </svg>
         </div>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: SURFACE, margin: "0 0 8px", fontFamily: "'Inter', sans-serif" }}>
-          Sign in to manage your profile
+          {headline}
         </h2>
         <p style={{ fontSize: 13, color: MUTED, margin: "0 0 24px" }}>
-          Create an account or sign in to access your profile settings.
+          {sub}
         </p>
-        <button onClick={() => router.push("/login")} style={btnPrimary}>
-          Sign In
+        <button onClick={() => router.push(target)} style={btnPrimary}>
+          {cta}
         </button>
       </div>
     );
