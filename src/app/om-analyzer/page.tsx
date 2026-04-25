@@ -3699,7 +3699,7 @@ export default function OmAnalyzerPage() {
                     { text: "Location Intelligence", included: false },
                   ],
                   cta: "Sign Up Free",
-                  ctaLink: "/workspace/login?source=pricing",
+                  ctaLink: "/workspace/login?mode=register&source=pricing",
                   highlight: false,
                 },
                 {

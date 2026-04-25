@@ -711,29 +711,24 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   }, [globalDrag, activeWorkspace?.slug, activeWorkspace?.id, router]);
 
   // ── Auth gate ──
-  // Property pages auto-anon-sign-in for unauth'd visitors (e.g. recipients
-  // of "Email this property" links) so they land on the real Pro page
-  // instead of getting bounced to login. Other workspace pages still
-  // require a real session.
+  // ALL workspace routes auto-anon-sign-in for unauth'd visitors so the
+  // workspace shell never dead-ends on a spinner. Anonymous users get the
+  // empty dashboard, the upgrade pill, the trial usage banner, and can
+  // browse to /workspace/upgrade or /workspace/login to convert. Only
+  // /workspace/login itself is exempt (otherwise we'd never get a chance
+  // to show the register form to a visitor with no Firebase session).
   const isLoginPage = pathname === "/workspace/login";
-  const isPropertyPage = /^\/workspace\/properties\/[^/]+$/.test(pathname);
   useEffect(() => {
     // Parent WorkspaceLayout already waits for auth to load before rendering
     // this component, so user being null here is genuine (not in-flight).
     if (user) return;
     if (isLoginPage) return;
-    if (isPropertyPage) {
-      // Don't redirect - sign them in anonymously so the property page
-      // can load. They'll see the upgrade pill in the header.
-      ensureAnonymousUser().catch((err) => {
-        console.error("[workspace] anonymous sign-in failed:", err?.message);
-        // If anon auth is disabled, fall back to bouncing to login.
-        router.replace("/workspace/login");
-      });
-      return;
-    }
-    router.replace("/workspace/login");
-  }, [user, router, isLoginPage, isPropertyPage]);
+    ensureAnonymousUser().catch((err) => {
+      console.error("[workspace] anonymous sign-in failed:", err?.message);
+      // Anonymous auth disabled in Firebase Console - bounce to login as fallback.
+      router.replace("/workspace/login");
+    });
+  }, [user, router, isLoginPage]);
 
   // ── Auto-open upgrade modal if ?upgrade= param is present (after login redirect) ──
   useEffect(() => {

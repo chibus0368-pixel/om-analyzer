@@ -50,7 +50,7 @@ export default function PricingPage() {
             price="$0"
             cadence="7 deals per month"
             ctaLabel="Sign up free"
-            ctaHref="/workspace/login?signup=1"
+            ctaHref="/workspace/login?mode=register"
             highlight
             features={[
               "7 deal analyses per month",
