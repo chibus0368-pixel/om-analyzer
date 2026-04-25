@@ -294,6 +294,14 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
         .ws-bottom-tabs { display: none; }
 
         /* ─── Mobile responsive ─── */
+        @media (max-width: 640px) {
+          .ws-anon-banner {
+            border-radius: 12px !important;
+            padding: 10px 12px !important;
+            flex-wrap: wrap !important;
+          }
+          .ws-anon-banner > a, .ws-anon-banner > button { font-size: 11px !important; }
+        }
         @media (max-width: 768px) {
           /* === HEADER - Logo + three-dot menu only === */
           .ws-header { padding: 0 16px !important; height: 52px !important; min-height: 52px !important; justify-content: space-between !important; }
@@ -1522,62 +1530,66 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
       <main style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
         <div className="ws-main-content" style={{ flex: 1, overflow: "auto", padding: 32, display: "flex", flexDirection: "column" }}>
           {/* ── Anonymous user conversion banner ──
-              Surfaces a clear "save your work" prompt for anon Firebase users
-              on every workspace page. Dismissible per session. Hidden once
-              they sign up (tier switches to free). */}
+              A compact, centered pill instead of a full-width strip - matches
+              the visual weight of the header upgrade pill. Same lime accent
+              used everywhere else (pricing cards, header, /workspace/upgrade).
+              Dismissible per session. */}
           {(user as any).isAnonymous && !anonBannerDismissed && (
-            <div style={{
-              display: "flex", alignItems: "center", gap: 14,
-              padding: "12px 18px", marginBottom: 16,
-              borderRadius: 10,
-              background: "linear-gradient(135deg, rgba(132,204,22,0.12), rgba(132,204,22,0.04))",
-              border: "1px solid rgba(132,204,22,0.4)",
-            }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: 8,
-                background: "rgba(132,204,22,0.2)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                flexShrink: 0,
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}>
+              <div className="ws-anon-banner" style={{
+                display: "inline-flex", alignItems: "center", gap: 12,
+                padding: "10px 14px 10px 12px",
+                borderRadius: 999,
+                background: "rgba(132,204,22,0.08)",
+                border: "1px solid rgba(132,204,22,0.35)",
+                boxShadow: "0 1px 4px rgba(77,124,15,0.06)",
+                maxWidth: "100%",
               }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2.5"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" /></svg>
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0F172A", lineHeight: 1.3 }}>
+                <span aria-hidden style={{
+                  width: 22, height: 22, borderRadius: "50%",
+                  background: "rgba(132,204,22,0.2)",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  flexShrink: 0,
+                }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2.5"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" /></svg>
+                </span>
+                <span style={{ fontSize: 13, color: "#0F172A", fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
                   Your work is saved on this browser only.
-                </div>
-                <div style={{ fontSize: 12, color: "#374151", marginTop: 2 }}>
-                  Sign up free to keep your analyses forever &middot; 5 more this month
-                </div>
+                  {" "}
+                  <span style={{ color: "#374151", fontWeight: 500 }}>
+                    Sign up free for 5 more this month.
+                  </span>
+                </span>
+                <Link
+                  href="/workspace/login?mode=register"
+                  prefetch={false}
+                  style={{
+                    padding: "6px 14px", borderRadius: 999,
+                    background: "#4D7C0F", color: "#FFFFFF",
+                    fontSize: 12, fontWeight: 700, textDecoration: "none",
+                    whiteSpace: "nowrap", letterSpacing: 0.2,
+                    fontFamily: "'Inter', sans-serif",
+                    flexShrink: 0,
+                  }}
+                >
+                  Sign Up Free
+                </Link>
+                <button
+                  type="button"
+                  aria-label="Dismiss"
+                  onClick={() => {
+                    try { sessionStorage.setItem("ds_anon_banner_dismissed", "1"); } catch {}
+                    setAnonBannerDismissed(true);
+                  }}
+                  style={{
+                    background: "transparent", border: "none", color: "#9CA3AF",
+                    cursor: "pointer", fontSize: 14, lineHeight: 1, padding: "2px 4px",
+                    flexShrink: 0, fontFamily: "inherit",
+                  }}
+                >
+                  &times;
+                </button>
               </div>
-              <Link
-                href="/workspace/login?mode=register"
-                prefetch={false}
-                style={{
-                  padding: "8px 16px", borderRadius: 8,
-                  background: "#4D7C0F", color: "#FFFFFF",
-                  fontSize: 12.5, fontWeight: 700, textDecoration: "none",
-                  whiteSpace: "nowrap", letterSpacing: 0.2,
-                  fontFamily: "'Inter', sans-serif",
-                  flexShrink: 0,
-                }}
-              >
-                Sign Up Free
-              </Link>
-              <button
-                type="button"
-                aria-label="Dismiss"
-                onClick={() => {
-                  try { sessionStorage.setItem("ds_anon_banner_dismissed", "1"); } catch {}
-                  setAnonBannerDismissed(true);
-                }}
-                style={{
-                  background: "transparent", border: "none", color: "#6B7280",
-                  cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "4px 6px",
-                  flexShrink: 0,
-                }}
-              >
-                &times;
-              </button>
             </div>
           )}
 
