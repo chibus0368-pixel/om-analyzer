@@ -52,6 +52,23 @@ npx playwright show-report e2e-report
    `e2e/fixtures/sample-om.pdf`. The test reads it and uploads it through
    the real /om-analyzer flow.
 
+## Continuous integration
+
+`.github/workflows/e2e.yml` runs the full suite automatically on every
+push to `main` and every PR (against the matching Vercel preview URL).
+Manual runs against any URL are available from the Actions tab via the
+"E2E Tests" workflow's **Run workflow** button.
+
+To enable the auth-required specs in CI, add these GitHub Secrets to the
+repo (Settings -> Secrets and variables -> Actions -> Repository secrets):
+
+  E2E_FREE_EMAIL    - signed-up free-tier test account email
+  E2E_FREE_PASSWORD - that account's password
+
+Without those secrets the workflow still runs the no-auth specs
+(server-guards, anon-flow). Failed runs upload an HTML report as a
+build artifact with traces, screenshots, and videos of every red test.
+
 ## Adding a new test
 
 Each new flow we discover gets a test here. Drop a fresh `.spec.ts` in
