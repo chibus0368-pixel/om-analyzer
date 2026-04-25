@@ -1481,12 +1481,13 @@ function PropertyDetailInner({
      URL-backed so a link into ?tab=om-reverse-pricing lands on that tab.
      The tab bar sits directly below the hero; below it the existing
      property detail sections continue to render as "Deal Details".     */
-  type ProTab = "quick-screen" | "om-reverse-pricing" | "rent-roll";
+  type ProTab = "quick-screen" | "om-reverse-pricing" | "location" | "rent-roll";
   const [activeProTab, setActiveProTab] = useState<ProTab>(() => {
     if (typeof window === "undefined") return "quick-screen";
     const t = new URLSearchParams(window.location.search).get("tab");
     if (t === "om-reverse-pricing") return "om-reverse-pricing";
     if (t === "rent-roll") return "rent-roll";
+    if (t === "location") return "location";
     return "quick-screen";
   });
   const routerForTabs = useRouter();
@@ -2213,11 +2214,15 @@ function PropertyDetailInner({
           padding: "8px 12px 0",
           gap: 2,
         }}>
-          {[
+          {([
             { id: "quick-screen" as const, label: "Deal Quick Screen", ready: true },
             { id: "om-reverse-pricing" as const, label: "Offer Scenarios", ready: true },
-            { id: "rent-roll" as const, label: "Rent Roll", ready: true },
-          ].map(tab => {
+            { id: "location" as const, label: "Location", ready: true },
+            // Rent Roll is meaningless for land - hide it for that asset type.
+            ...(wsType === "land"
+              ? []
+              : [{ id: "rent-roll" as const, label: "Rent Roll", ready: true }]),
+          ]).map(tab => {
             const isActive = tab.id === activeProTab;
             return (
               <button
@@ -2286,7 +2291,70 @@ function PropertyDetailInner({
             <OmReversePricing property={property} fields={fields} />
           )}
 
-          {activeProTab === "rent-roll" && (
+          {activeProTab === "location" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <SectionHeader
+                eyebrow="Area"
+                title="Location & Surrounding Market"
+                subtitle={location || "Address not yet extracted"}
+                size="md"
+                bottomGap={4}
+              />
+              {location ? (
+                <>
+                  <div style={{
+                    width: "100%", borderRadius: C.radius, overflow: "hidden",
+                    border: `1px solid ${C.ghost}`, height: 360, background: "#F3F4F6",
+                  }}>
+                    {/* Google Maps embed - lightweight, no API key required for the
+                        public maps preview URL. The address comes from extracted
+                        fields; if missing we fall back to the property name. */}
+                    <iframe
+                      src={`https://www.google.com/maps?q=${encodedAddress}&z=15&output=embed`}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0, display: "block" }}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title={`Map of ${property.propertyName}`}
+                    />
+                  </div>
+                  <div style={{
+                    background: "#F9FAFB", borderRadius: C.radius,
+                    border: `1px solid ${C.ghost}`, padding: "14px 16px",
+                    display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                    gap: 14, fontSize: 13,
+                  }}>
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: C.secondary, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>Address</div>
+                      <div style={{ color: C.onSurface, fontWeight: 600 }}>{location}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: C.secondary, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>Quick Links</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                        <a href={`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`} target="_blank" rel="noreferrer" style={{ color: C.primaryText, fontWeight: 700, fontSize: 12.5, textDecoration: "none" }}>Open in Maps &rarr;</a>
+                        <a href={`https://earth.google.com/web/search/${encodedAddress}`} target="_blank" rel="noreferrer" style={{ color: C.primaryText, fontWeight: 700, fontSize: 12.5, textDecoration: "none" }}>Earth view &rarr;</a>
+                        <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`} target="_blank" rel="noreferrer" style={{ color: C.primaryText, fontWeight: 700, fontSize: 12.5, textDecoration: "none" }}>Directions &rarr;</a>
+                      </div>
+                    </div>
+                  </div>
+                  <p style={{ fontSize: 12, color: C.secondary, margin: 0 }}>
+                    Demographics + nearby competition are coming to this tab next. For now, use the Google links above to scout the surrounding market.
+                  </p>
+                </>
+              ) : (
+                <div style={{
+                  background: "#F9FAFB", borderRadius: C.radius,
+                  border: `1px solid ${C.ghost}`, padding: "32px 20px",
+                  textAlign: "center", color: C.secondary, fontSize: 13,
+                }}>
+                  No address extracted from the document yet. Once the address is parsed, this tab will show a map of the area and nearby market context.
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeProTab === "rent-roll" && wsType !== "land" && (
             <>
               {wsType !== "land" && tenants.length > 0 ? (
             <>
