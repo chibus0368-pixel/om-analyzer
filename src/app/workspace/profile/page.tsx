@@ -616,7 +616,7 @@ export default function ProfilePage() {
             <div className="pf-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
               <div>
                 <label style={labelStyle}>Email</label>
-                <input style={{ ...inputStyle, background: "#f9fafb", color: MUTED }} value={profile?.email || ""} disabled />
+                <input style={{ ...inputStyle, background: "#f9fafb", color: MUTED }} value={profile?.email || firebaseUser?.email || ""} disabled />
               </div>
               <div>
                 <label style={labelStyle}>Phone</label>
