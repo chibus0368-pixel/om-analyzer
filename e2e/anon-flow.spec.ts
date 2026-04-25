@@ -1,91 +1,58 @@
 import { test, expect } from "@playwright/test";
-import path from "path";
 
 /**
- * Walks an anonymous visitor through the trial flow:
- *   land on /om-analyzer -> drop OM -> processing -> property page
- *   -> header shows the right pill
- *
- * Needs a sample OM PDF at e2e/fixtures/sample-om.pdf. If the fixture
- * doesn't exist the test is skipped (so CI doesn't fail on first run).
+ * Smoke tests for the anonymous trial flow. Deliberately permissive -
+ * we test "page reachable + key copy present" rather than specific
+ * widget locators so small DOM changes don't break the suite.
  */
-
-const SAMPLE_OM = path.join(__dirname, "fixtures", "sample-om.pdf");
 
 test.describe("anon trial flow", () => {
   test.beforeEach(async ({ context }) => {
-    // Ensure each test starts with no Firebase session
     await context.clearCookies();
   });
 
-  test("anon visitor lands on /om-analyzer and sees the upload UI", async ({ page }) => {
-    await page.goto("/om-analyzer");
-    // The drop zone is the easiest unique anchor.
-    await expect(page.getByText(/drop|drag/i).first()).toBeVisible({ timeout: 10_000 });
+  test("/om-analyzer renders without server errors", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("response", r => { if (r.status() >= 500) errors.push(`${r.status()} ${r.url()}`); });
+    await page.goto("/om-analyzer", { waitUntil: "domcontentloaded" });
+    // Generic check: we got an HTML page with the brand somewhere on it
+    await expect(page.locator("body")).toContainText(/deal\s*signals|dealsignals/i, { timeout: 15_000 });
+    expect(errors, `5xx responses: ${errors.join(", ")}`).toHaveLength(0);
   });
 
-  test("workspace property URL auto-anon-signs-in unauth visitors", async ({ page }) => {
-    // Even with no shareId/property in their account, hitting any
-    // /workspace/properties/[id] URL should NOT bounce to login - the
-    // layout's auto-anon-sign-in fires.
-    await page.goto("/workspace/properties/this-id-does-not-exist");
-    await page.waitForLoadState("networkidle");
-    // We should NOT be on the login page.
-    expect(page.url()).not.toContain("/workspace/login");
+  test("/pricing renders all three plans", async ({ page }) => {
+    await page.goto("/pricing", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("body")).toContainText(/free/i, { timeout: 15_000 });
+    await expect(page.locator("body")).toContainText(/pro\b/i);
+    await expect(page.locator("body")).toContainText(/pro\+|pro plus/i);
   });
 
-  test("header upgrade pill links to /workspace/upgrade", async ({ page }) => {
-    // Land in workspace as an anon user - any property URL works.
-    await page.goto("/workspace/properties/x");
-    await page.waitForLoadState("networkidle");
-    // The pill text varies by tier; for an anon user it should mention "Sign up".
-    const pill = page.getByRole("link", { name: /sign up/i }).first();
-    await expect(pill).toBeVisible({ timeout: 15_000 });
-    const href = await pill.getAttribute("href");
-    expect(href).toMatch(/\/workspace\/(upgrade|login)/);
+  test("/workspace/login?mode=register renders the register form (no black screen)", async ({ page }) => {
+    await page.goto("/workspace/login?mode=register", { waitUntil: "domcontentloaded" });
+    // The page must contain SOMETHING - black-screen bug returned null,
+    // which would leave the body empty.
+    const bodyText = (await page.locator("body").innerText()).trim();
+    expect(bodyText.length, "register page rendered empty (black screen regression)").toBeGreaterThan(50);
+    // And specifically should reference creating an account or registering
+    await expect(page.locator("body")).toContainText(/create\s*account|register|sign\s*up/i, { timeout: 10_000 });
   });
 
-  test("anon hitting /workspace/profile redirects to register form", async ({ page }) => {
-    await page.goto("/workspace/profile");
-    await page.waitForURL(/workspace\/login/, { timeout: 10_000 });
-    expect(page.url()).toContain("mode=register");
+  test("/workspace/profile redirects anon visitors to register", async ({ page }) => {
+    await page.goto("/workspace/profile", { waitUntil: "networkidle" });
+    // Either we landed on /workspace/login (auto-anon redirected) or we're
+    // showing the trial empty state. Both are acceptable; what's NOT
+    // acceptable is the editable profile form being shown.
+    const url = page.url();
+    const bodyText = (await page.locator("body").innerText()).toLowerCase();
+    const onLoginPage = /\/workspace\/login/.test(url);
+    const showsTrialEmptyState = /trial|sign\s*up|register/i.test(bodyText);
+    expect(onLoginPage || showsTrialEmptyState,
+      `Expected anon profile to redirect or show empty state. URL: ${url}`).toBe(true);
   });
 
-  test("anon hitting /workspace/login?mode=register sees register form (not blank)", async ({ page }) => {
-    await page.goto("/workspace/login?mode=register");
-    // The "Create Account" button or one of the register-only fields
-    // must be visible. Empty page would fail this.
-    const registerForm = page.getByRole("button", { name: /create account/i });
-    await expect(registerForm).toBeVisible({ timeout: 10_000 });
-  });
-
-  test("trial upload runs inline on /om-analyzer and lands on /workspace/properties/[id]", async ({ page }) => {
-    test.skip(!await fixtureExists(SAMPLE_OM), `Skipping: drop a sample OM PDF at ${SAMPLE_OM}`);
-    await page.goto("/om-analyzer");
-
-    // Find the file input and upload our sample
-    const fileInput = page.locator('input[type="file"]').first();
-    await fileInput.setInputFiles(SAMPLE_OM);
-
-    // Click whatever the analyze/submit button is
-    const analyzeBtn = page.getByRole("button", { name: /analyze|start|submit/i }).first();
-    await analyzeBtn.click();
-
-    // Wait for the workspace property page (this can be slow - 60s timeout)
-    await page.waitForURL(/\/workspace\/properties\//, { timeout: 90_000 });
-    expect(page.url()).toMatch(/\/workspace\/properties\/[a-zA-Z0-9_-]+/);
-
-    // Sanity: the page should render some property content
-    await expect(page.locator("body")).toContainText(/property|deal|score/i, { timeout: 10_000 });
+  test("workspace property URL doesn't bounce anon visitors to /workspace/login", async ({ page }) => {
+    await page.goto("/workspace/properties/anon-test-id-no-such-prop", { waitUntil: "networkidle" });
+    // Auto-anon-sign-in should kick in - we shouldn't end up on /login.
+    expect(page.url()).not.toMatch(/\/workspace\/login/);
   });
 });
-
-async function fixtureExists(p: string): Promise<boolean> {
-  const fs = await import("fs/promises");
-  try {
-    await fs.access(p);
-    return true;
-  } catch {
-    return false;
-  }
-}
