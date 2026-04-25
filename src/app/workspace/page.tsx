@@ -446,7 +446,10 @@ function EmptyDealboardDropZone({ onFiles }: { onFiles: (files: FileList) => voi
         ref={inputRef} type="file" multiple
         accept=".pdf,.xls,.xlsx,.csv,.doc,.docx"
         style={{ display: "none" }}
-        onChange={e => { if (e.target.files?.length) onFiles(e.target.files); }}
+        onChange={e => {
+          console.log("[dropzone] onChange fired, files:", e.target.files?.length);
+          if (e.target.files?.length) onFiles(e.target.files);
+        }}
       />
       <div style={{
         width: 56, height: 56, borderRadius: "50%", background: "rgba(132, 204, 22, 0.1)",
@@ -857,6 +860,7 @@ export default function WorkspaceDashboard() {
         </div>
       ) : properties.length === 0 ? (
         <EmptyDealboardDropZone onFiles={(fl) => {
+          console.log("[dealboard] onFiles called with", fl.length, "file(s); pushing to /workspace/upload");
           setPendingUploadFiles(fl);
           router.push("/workspace/upload");
         }} />

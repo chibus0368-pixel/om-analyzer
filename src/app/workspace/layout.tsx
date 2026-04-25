@@ -754,9 +754,11 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
     // this component, so user being null here is genuine (not in-flight).
     if (user) return;
     if (isLoginPage) return;
-    ensureAnonymousUser().catch((err) => {
-      console.error("[workspace] anonymous sign-in failed:", err?.message);
-      // Anonymous auth disabled in Firebase Console - bounce to login as fallback.
+    console.log("[workspace] no user, calling ensureAnonymousUser()...");
+    ensureAnonymousUser().then(() => {
+      console.log("[workspace] anonymous sign-in succeeded");
+    }).catch((err) => {
+      console.error("[workspace] anonymous sign-in failed:", err?.message, "- bouncing to /workspace/login");
       router.replace("/workspace/login");
     });
   }, [user, router, isLoginPage]);

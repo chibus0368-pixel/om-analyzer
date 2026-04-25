@@ -175,6 +175,7 @@ export default function UploadPage() {
   // module auto-clears after read.
   useEffect(() => {
     const handoff = consumePendingUploadFiles();
+    console.log("[upload] mount: handoff =", handoff ? `${handoff.length} file(s)` : "none");
     if (handoff && handoff.length) {
       addFiles(handoff);
       autoUploadRef.current = true;
@@ -187,10 +188,17 @@ export default function UploadPage() {
   // the trial flow feels like one continuous action: drop on /om-analyzer
   // -> land on property page. handleUpload guards against double-fire.
   useEffect(() => {
-    if (!autoUploadRef.current) return;
-    if (!user) return;
-    if (files.length === 0) return;
-    if (step !== "upload") return;
+    if (!autoUploadRef.current) {
+      // Only log when it would have fired except for one missing condition
+      if (user && files.length > 0 && step === "upload") {
+        console.log("[upload] auto-trigger: ref already consumed");
+      }
+      return;
+    }
+    if (!user) { console.log("[upload] auto-trigger waiting on user..."); return; }
+    if (files.length === 0) { console.log("[upload] auto-trigger waiting on files..."); return; }
+    if (step !== "upload") { console.log("[upload] auto-trigger skipped: step=", step); return; }
+    console.log("[upload] auto-trigger firing handleUpload");
     autoUploadRef.current = false; // single-shot
     void handleUpload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
