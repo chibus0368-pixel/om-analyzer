@@ -91,14 +91,16 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
     );
   }
 
-  // ── Free user or anonymous ── show two paths: Free signup + Pro trial
-  const isAnon = reason === "anon_limit";
+  // ── Anonymous OR free user ── show conversion paths
+  // Anon detection prefers the actual tier (reflects the user's Firebase
+  // anonymous state) over the legacy `reason="anon_limit"` param.
+  const isAnon = reason === "anon_limit" || currentTier === "anonymous";
   const isFreeLimit = reason === "limit_reached" && currentTier === "free";
 
   const headline = isAnon
-    ? "Keep analyzing deals"
+    ? "Sign up to keep going"
     : isFreeLimit
-    ? "You've used your 5 free deals"
+    ? "You've used your 7 monthly analyses"
     : reason === "save_required"
     ? "Save your deals and track them over time"
     : reason === "feature_locked"
@@ -106,12 +108,12 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
     : "Upgrade to Pro";
 
   const subtitle = isAnon
-    ? "Create a free account to save deals and get 5 total analyses, or start a Pro trial for unlimited access."
+    ? "You've used your 2 free trial analyses. Sign up free to get 5 more this month, plus your work saved to your workspace."
     : isFreeLimit
-    ? "Start a 7-day free Pro trial to keep analyzing - 100 deals/month, full workspace, and more."
+    ? "Upgrade to Pro for 100 analyses/month - 7-day free trial, cancel anytime."
     : reason === "save_required"
-    ? "Sign up free to save this deal, or start a Pro trial for the full experience."
-    : `Get full access with a 7-day free Pro trial.`;
+    ? "Sign up free to save this deal, or start a 7-day Pro trial for the full experience."
+    : "Get full access with a 7-day free Pro trial.";
 
   async function handleCheckout(plan: string) {
     setLoading(plan);
@@ -119,7 +121,7 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
       const auth = getAuth();
       const user = auth.currentUser;
       if (!user) {
-        window.location.href = `/workspace/login?redirect=${encodeURIComponent(window.location.pathname)}&upgrade=${plan}`;
+        window.location.href = `/workspace/login?mode=register&redirect=${encodeURIComponent(window.location.pathname)}&upgrade=${plan}`;
         return;
       }
 
@@ -145,7 +147,9 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
   }
 
   function handleFreeSignup() {
-    window.location.href = "/workspace/login?source=upgrade_modal";
+    // For anon users this triggers linkWithCredential under the hood
+    // so their existing trial properties carry over to the new account.
+    window.location.href = "/workspace/login?mode=register&source=upgrade_modal";
   }
 
   const pro = PLANS.pro;
@@ -234,15 +238,17 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
                 Free Account
               </div>
               <div style={{ fontSize: 12, color: "#64748b" }}>
-                5 deals total · Save to workspace · No card required
+                7 deals per month &middot; Save to workspace &middot; No card required
               </div>
             </div>
             <button
               onClick={handleFreeSignup}
               style={{
-                padding: "8px 20px", border: "1px solid #e2e8f0",
-                borderRadius: 8, background: "#fff", color: "#0B1120",
-                fontSize: 13, fontWeight: 600, cursor: "pointer",
+                padding: "10px 22px", border: isAnon ? "none" : "1px solid #e2e8f0",
+                borderRadius: 8,
+                background: isAnon ? "#4D7C0F" : "#fff",
+                color: isAnon ? "#FFFFFF" : "#0B1120",
+                fontSize: 13, fontWeight: 700, cursor: "pointer",
                 fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap",
               }}
             >

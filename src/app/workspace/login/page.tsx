@@ -300,7 +300,10 @@ function WorkspaceLoginPageInner() {
     );
   }
 
-  if (user) return null;
+  // Only short-circuit for fully-authenticated users (the useEffect above
+  // is about to router.push them out). Anonymous Firebase users need to see
+  // the register form so they can convert their UID via linkWithCredential.
+  if (user && !(user as any).isAnonymous) return null;
 
   /* ─── shared input style ─── */
   const inputStyle: React.CSSProperties = {
