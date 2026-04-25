@@ -156,20 +156,25 @@ export default function ProfilePage() {
   const initialTab = (tabParam === "account" || tabParam === "security" || tabParam === "notifications") ? tabParam : "profile";
   const [activeSection, setActiveSection] = useState<"profile" | "security" | "notifications" | "account">(initialTab);
 
-  // Listen for auth state
+  // Listen for auth state. Anonymous Firebase users get the same empty
+  // state as signed-out users (we can't load a profile they don't have),
+  // so flip loading off immediately for them too. Otherwise the page sits
+  // on a spinner waiting for an API call that will fail.
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       setFirebaseUser(user);
-      if (!user) {
+      if (!user || (user as any).isAnonymous === true) {
         setLoading(false);
       }
     });
     return () => unsub();
   }, []);
 
-  // Fetch profile when user is available
+  // Fetch profile when user is available. Skip for anon Firebase users
+  // since they have no users/{uid} doc to load.
   const fetchProfile = useCallback(async () => {
     if (!firebaseUser) return;
+    if ((firebaseUser as any).isAnonymous === true) return;
     try {
       const token = await firebaseUser.getIdToken();
       const res = await fetch("/api/auth/profile", {
@@ -418,37 +423,61 @@ export default function ProfilePage() {
   const isPasswordUser = profile?.authProviders?.includes("password");
   const isGoogleUser = profile?.authProviders?.includes("google.com");
 
-  // Not signed in OR anonymous trial - show a sign-in empty state. Anon
-  // Firebase users are technically logged in (they have a UID) but have no
-  // email/password to manage, so showing them an editable profile form is
-  // misleading - they need to register first.
+  // Not signed in OR anonymous trial - render an empty state with a clear
+  // "what is this page" message and a Sign Up CTA. We deliberately do NOT
+  // show the editable form for anon users because they have nothing to
+  // save; clicking Save would do nothing and read as broken.
   const isAnonUser = !!firebaseUser && (firebaseUser as any).isAnonymous === true;
   if (!loading && (!firebaseUser || isAnonUser)) {
-    const headline = isAnonUser ? "You're using a trial account" : "Sign in to manage your profile";
+    const headline = isAnonUser
+      ? "Profile settings unlock when you sign up"
+      : "Sign in to manage your profile";
     const sub = isAnonUser
-      ? "Create a free account to save your work and unlock profile settings."
+      ? "You're on a free trial. Sign up to save your name, company, and notification preferences - and keep all the deals you've already analyzed."
       : "Create an account or sign in to access your profile settings.";
     const cta = isAnonUser ? "Sign Up Free" : "Sign In";
     const target = isAnonUser ? "/workspace/login?mode=register" : "/workspace/login";
     return (
-      <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center", padding: "60px 20px" }}>
+      <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center", padding: "80px 20px 40px" }}>
         <div style={{
-          width: 64, height: 64, borderRadius: "50%", background: "rgba(132, 204, 22, 0.08)",
-          display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 16,
+          width: 64, height: 64, borderRadius: 16,
+          background: "rgba(132, 204, 22, 0.1)",
+          display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 20,
+          border: "1px solid rgba(132,204,22,0.25)",
         }}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={PRIMARY} strokeWidth="1.5">
-            <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={PRIMARY} strokeWidth="2">
+            {isAnonUser ? (
+              <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            ) : (
+              <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            )}
           </svg>
         </div>
-        <h2 style={{ fontSize: 18, fontWeight: 700, color: SURFACE, margin: "0 0 8px", fontFamily: "'Inter', sans-serif" }}>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: SURFACE, margin: "0 0 10px", fontFamily: "'Inter', sans-serif", letterSpacing: -0.3 }}>
           {headline}
         </h2>
-        <p style={{ fontSize: 13, color: MUTED, margin: "0 0 24px" }}>
+        <p style={{ fontSize: 14, color: MUTED, margin: "0 0 28px", lineHeight: 1.6 }}>
           {sub}
         </p>
-        <button onClick={() => router.push(target)} style={btnPrimary}>
+        <button onClick={() => router.push(target)} style={{
+          padding: "12px 28px", borderRadius: 8,
+          background: PRIMARY, color: "#FFFFFF",
+          border: "none", fontSize: 14, fontWeight: 700,
+          cursor: "pointer", fontFamily: "'Inter', sans-serif",
+          letterSpacing: 0.2,
+        }}>
           {cta}
         </button>
+        {isAnonUser && (
+          <div style={{ marginTop: 16 }}>
+            <a href="/workspace" style={{
+              fontSize: 12.5, color: MUTED, textDecoration: "underline",
+              fontFamily: "'Inter', sans-serif",
+            }}>
+              Back to your workspace
+            </a>
+          </div>
+        )}
       </div>
     );
   }

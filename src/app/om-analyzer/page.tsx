@@ -2401,7 +2401,7 @@ export default function OmAnalyzerPage() {
               }}
               style={{
                 display: "inline-block", padding: "14px 36px",
-                background: "linear-gradient(135deg, #84CC16, #a8d600)", color: "#0d0d14",
+                background: "linear-gradient(135deg, #84CC16, #a8d600)", color: "#FFFFFF",
                 borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: "none",
                 marginBottom: 8, cursor: "pointer",
               }}
@@ -3247,7 +3247,7 @@ export default function OmAnalyzerPage() {
                             </div>
                           </div>
                           {/* BUY badge */}
-                          <div style={{ position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%)", padding: "3px 14px", borderRadius: 50, background: "#84CC16", color: "#0d0d14", fontSize: 10, fontWeight: 800, letterSpacing: 1, whiteSpace: "nowrap" as const }}>BUY SIGNAL</div>
+                          <div style={{ position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%)", padding: "3px 14px", borderRadius: 50, background: "#84CC16", color: "#FFFFFF", fontSize: 10, fontWeight: 800, letterSpacing: 1, whiteSpace: "nowrap" as const }}>BUY SIGNAL</div>
                         </div>
                       </div>
 
@@ -3375,7 +3375,7 @@ export default function OmAnalyzerPage() {
 
                       {/* Download bar */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", borderTop: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.01)" }}>
-                        <div style={{ padding: "6px 16px", borderRadius: 8, background: "#84CC16", color: "#0d0d14", fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                        <div style={{ padding: "6px 16px", borderRadius: 8, background: "#84CC16", color: "#FFFFFF", fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
                           Download .xlsx
                         </div>
@@ -3619,7 +3619,7 @@ export default function OmAnalyzerPage() {
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></svg>
                             <span style={{ fontSize: 11, color: "#9ca3af", fontFamily: "monospace" }}>dealsignals.app/s/NRC7wA...</span>
                           </div>
-                          <div style={{ padding: "10px 16px", borderRadius: 8, background: "#84CC16", color: "#0d0d14", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" as const, animation: "fadeInUp 0.3s ease-out 0.3s both" }}>Copy</div>
+                          <div style={{ padding: "10px 16px", borderRadius: 8, background: "#84CC16", color: "#FFFFFF", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" as const, animation: "fadeInUp 0.3s ease-out 0.3s both" }}>Copy</div>
                         </div>
 
                         {/* Access control */}
@@ -3677,7 +3677,7 @@ export default function OmAnalyzerPage() {
                         {/* Bright number circle */}
                         <div style={{
                           width: 44, height: 44, borderRadius: "50%",
-                          background: "#84CC16", color: "#0d0d14",
+                          background: "#84CC16", color: "#FFFFFF",
                           display: "inline-flex", alignItems: "center", justifyContent: "center",
                           fontSize: 16, fontWeight: 800, marginBottom: 16,
                           boxShadow: "0 4px 16px rgba(132,204,22,0.25)",
@@ -3886,17 +3886,17 @@ export default function OmAnalyzerPage() {
                       when the logged-in user is on this tier, so the signal is
                       unambiguous. */}
                   {isCurrent && (
-                    <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#0d0d14", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                    <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#FFFFFF", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
                       Your current plan
                     </div>
                   )}
                   {!isCurrent && tier.highlight && (
-                    <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#0d0d14", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                    <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#FFFFFF", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
                       Most Popular
                     </div>
                   )}
                   {!isCurrent && (tier as any).bestValue && (
-                    <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#0d0d14", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                    <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#FFFFFF", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
                       Best Value
                     </div>
                   )}
@@ -5288,7 +5288,7 @@ function PropertyOutput({ data: d, heroImageUrl, usageData }: { data: AnalysisDa
               style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 padding: "14px 36px", borderRadius: 10,
-                background: "#84CC16", color: "#0d0d14",
+                background: "#84CC16", color: "#FFFFFF",
                 fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
                 boxShadow: "0 0 30px rgba(132,204,22,0.4), 0 0 60px rgba(132,204,22,0.15)",

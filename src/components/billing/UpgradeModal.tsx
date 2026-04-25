@@ -72,7 +72,7 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
           <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
             {currentTier === "pro" && (
               <a href="/workspace/profile?tab=account" style={{
-                padding: "10px 24px", background: "#4D7C0F", color: "#0F172A", borderRadius: 8,
+                padding: "10px 24px", background: "#4D7C0F", color: "#FFFFFF", borderRadius: 8,
                 fontSize: 14, fontWeight: 600, textDecoration: "none", fontFamily: "'Inter', sans-serif",
               }}>
                 Upgrade to Pro+
@@ -98,9 +98,9 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
   const isFreeLimit = reason === "limit_reached" && currentTier === "free";
 
   const headline = isAnon
-    ? "Sign up to keep going"
+    ? "You've used your 2 free deals"
     : isFreeLimit
-    ? "You've used your 7 monthly analyses"
+    ? "You've used your 7 monthly deals"
     : reason === "save_required"
     ? "Save your deals and track them over time"
     : reason === "feature_locked"
@@ -108,9 +108,9 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
     : "Upgrade to Pro";
 
   const subtitle = isAnon
-    ? "You've used your 2 free trial analyses. Sign up free to get 5 more this month, plus your work saved to your workspace."
+    ? "Sign up free to keep going - 5 more deals this month, all your work saved, no card required."
     : isFreeLimit
-    ? "Upgrade to Pro for 100 analyses/month - 7-day free trial, cancel anytime."
+    ? "Upgrade to Pro for 100 analyses every month."
     : reason === "save_required"
     ? "Sign up free to save this deal, or start a 7-day Pro trial for the full experience."
     : "Get full access with a 7-day free Pro trial.";
@@ -177,104 +177,155 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
             width: 56, height: 56, borderRadius: "50%",
             background: "rgba(132,204,22,0.08)", display: "flex", alignItems: "center", justifyContent: "center",
             margin: "0 auto 16px", fontSize: 24,
-          }}>{isAnon || isFreeLimit ? "📊" : "🔒"}</div>
+          }}>{isAnon ? "🎯" : isFreeLimit ? "⚡" : "🔒"}</div>
           <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 700, color: "#0B1120", margin: "0 0 8px" }}>
             {headline}
           </h2>
           <p style={{ fontSize: 14, color: "#64748b", margin: 0, lineHeight: 1.5 }}>{subtitle}</p>
         </div>
 
-        {/* ── Pro Trial Card (Primary) ── */}
-        <div style={{
-          border: "2px solid #4D7C0F", borderRadius: 12, padding: "20px 24px", marginBottom: 12,
-          position: "relative",
-        }}>
-          <div style={{
-            position: "absolute", top: -10, right: 16,
-            background: "#4D7C0F", color: "#0F172A", fontSize: 10, fontWeight: 700,
-            padding: "3px 10px", borderRadius: 10, textTransform: "uppercase", letterSpacing: "0.05em",
-          }}>7-Day Free Trial</div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: "#0B1120", fontFamily: "'Inter', sans-serif" }}>Pro</div>
-              <div style={{ fontSize: 13, color: "#64748b" }}>
-                Then ${pro.priceMonthly}/mo · Cancel anytime
-              </div>
-            </div>
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
-            {["100 deal analyses/month", "Save deals to workspace", "XLS worksheets", "Interactive property map", "Deal comparison scoreboard", "Location Intelligence"].map(f => (
-              <span key={f} style={{
-                fontSize: 11, color: "#475569", background: "#f1f5f9", padding: "3px 10px",
-                borderRadius: 20, display: "inline-flex", alignItems: "center", gap: 4,
-              }}>
-                <span style={{ color: "#10b981", fontSize: 12 }}>✓</span> {f}
-              </span>
-            ))}
-          </div>
-          <button
-            onClick={() => handleCheckout("pro")}
-            disabled={!!loading}
-            style={{
-              width: "100%", padding: "12px 0", border: "none",
-              borderRadius: 8, background: "#4D7C0F", color: "#0F172A",
-              fontSize: 15, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer",
-              fontFamily: "'Inter', sans-serif",
-            }}
-          >
-            {loading === "pro" ? "Loading..." : "Start Free Trial"}
-          </button>
-        </div>
-
-        {/* ── Free Account Option ── */}
-        {(isAnon || reason === "save_required") && (
-          <div style={{
-            border: "1px solid #e2e8f0", borderRadius: 12, padding: "16px 24px",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            marginBottom: 12,
-          }}>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: "#0B1120", fontFamily: "'Inter', sans-serif" }}>
-                Free Account
-              </div>
-              <div style={{ fontSize: 12, color: "#64748b" }}>
-                7 deals per month &middot; Save to workspace &middot; No card required
-              </div>
-            </div>
-            <button
-              onClick={handleFreeSignup}
-              style={{
-                padding: "10px 22px", border: isAnon ? "none" : "1px solid #e2e8f0",
-                borderRadius: 8,
-                background: isAnon ? "#4D7C0F" : "#fff",
-                color: isAnon ? "#FFFFFF" : "#0B1120",
-                fontSize: 13, fontWeight: 700, cursor: "pointer",
-                fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap",
-              }}
-            >
-              Sign Up Free
-            </button>
-          </div>
-        )}
-
-        {/* ── Free user at limit: only show Pro trial + workspace link ── */}
-        {isFreeLimit && (
+        {/* ── ANONYMOUS USER: Free signup is the primary card ── */}
+        {isAnon && (
           <>
-            <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8", margin: "8px 0 0" }}>
-              Your card won&apos;t be charged during the 7-day trial. Cancel anytime.
-            </p>
-            <div style={{ textAlign: "center", marginTop: 10 }}>
-              <a
-                href="/workspace"
+            <div style={{
+              border: "2px solid #4D7C0F", borderRadius: 12, padding: "20px 22px",
+              marginBottom: 12, position: "relative",
+              background: "linear-gradient(180deg, rgba(132,204,22,0.04), #FFFFFF)",
+            }}>
+              <div style={{
+                position: "absolute", top: -10, left: 16,
+                background: "#4D7C0F", color: "#FFFFFF", fontSize: 10, fontWeight: 800,
+                padding: "3px 12px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.08em",
+              }}>Recommended</div>
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 14, marginTop: 4 }}>
+                <div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: "#0B1120", fontFamily: "'Inter', sans-serif" }}>Free Account</div>
+                  <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>$0 forever &middot; No card required</div>
+                </div>
+              </div>
+              <ul style={{ listStyle: "none", margin: "0 0 16px", padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+                {["5 more deal analyses this month", "Save your trial deals to your workspace", "All Pro analytics + brief & XLS downloads", "Deal Signals scoring on every deal"].map(f => (
+                  <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 9, fontSize: 13, color: "#374151", lineHeight: 1.5 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2.5" style={{ flexShrink: 0, marginTop: 2 }}><path d="M5 13l4 4L19 7" /></svg>
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={handleFreeSignup}
                 style={{
-                  fontSize: 12, color: "#64748b", textDecoration: "underline",
-                  fontFamily: "'Inter', sans-serif",
+                  width: "100%", padding: "12px 0", border: "none",
+                  borderRadius: 8, background: "#4D7C0F", color: "#FFFFFF",
+                  fontSize: 15, fontWeight: 700, cursor: "pointer",
+                  fontFamily: "'Inter', sans-serif", letterSpacing: 0.2,
                 }}
               >
-                View your saved deals in workspace
-              </a>
+                Sign Up Free
+              </button>
+            </div>
+
+            {/* Pro is a small "need more?" tile, not a competing big CTA */}
+            <button
+              type="button"
+              onClick={() => handleCheckout("pro")}
+              disabled={!!loading}
+              style={{
+                width: "100%",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                gap: 12, padding: "12px 16px",
+                border: "1px solid #E5E7EB", borderRadius: 12,
+                background: "#FFFFFF", cursor: loading ? "not-allowed" : "pointer",
+                fontFamily: "'Inter', sans-serif", textAlign: "left",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0B1120" }}>
+                  Need more? Try Pro &middot; 100 deals/mo
+                </div>
+                <div style={{ fontSize: 11.5, color: "#64748b", marginTop: 2 }}>
+                  ${pro.priceMonthly}/month after 7-day free trial &middot; Cancel anytime
+                </div>
+              </div>
+              <span style={{ fontSize: 13, color: "#4D7C0F", fontWeight: 700, whiteSpace: "nowrap" }}>
+                {loading === "pro" ? "Loading..." : "Start trial →"}
+              </span>
+            </button>
+          </>
+        )}
+
+        {/* ── FREE USER AT LIMIT: Pro is the primary card ── */}
+        {isFreeLimit && (
+          <>
+            <div style={{
+              border: "2px solid #4D7C0F", borderRadius: 12, padding: "20px 22px",
+              marginBottom: 12, position: "relative",
+              background: "linear-gradient(180deg, rgba(132,204,22,0.04), #FFFFFF)",
+            }}>
+              <div style={{
+                position: "absolute", top: -10, left: 16,
+                background: "#4D7C0F", color: "#FFFFFF", fontSize: 10, fontWeight: 800,
+                padding: "3px 12px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.08em",
+              }}>7-Day Free Trial</div>
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 14, marginTop: 4 }}>
+                <div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: "#0B1120", fontFamily: "'Inter', sans-serif" }}>Pro</div>
+                  <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>${pro.priceMonthly}/month after trial &middot; Cancel anytime</div>
+                </div>
+              </div>
+              <ul style={{ listStyle: "none", margin: "0 0 16px", padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+                {["100 deal analyses per month", "Pro DealBoard with history", "Interactive property map", "Deal comparison scoreboard", "Location Intelligence", "White-label shareable links"].map(f => (
+                  <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 9, fontSize: 13, color: "#374151", lineHeight: 1.5 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2.5" style={{ flexShrink: 0, marginTop: 2 }}><path d="M5 13l4 4L19 7" /></svg>
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => handleCheckout("pro")}
+                disabled={!!loading}
+                style={{
+                  width: "100%", padding: "12px 0", border: "none",
+                  borderRadius: 8, background: "#4D7C0F", color: "#FFFFFF",
+                  fontSize: 15, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer",
+                  fontFamily: "'Inter', sans-serif", letterSpacing: 0.2,
+                }}
+              >
+                {loading === "pro" ? "Loading..." : "Start 7-Day Free Trial"}
+              </button>
+              <p style={{ textAlign: "center", fontSize: 11.5, color: "#94a3b8", margin: "10px 0 0" }}>
+                Card not charged during trial. Cancel anytime.
+              </p>
             </div>
           </>
+        )}
+
+        {/* ── Other reasons (save_required, feature_locked, plain upgrade) ── */}
+        {!isAnon && !isFreeLimit && (
+          <div style={{
+            border: "2px solid #4D7C0F", borderRadius: 12, padding: "20px 24px", marginBottom: 12,
+            position: "relative",
+          }}>
+            <div style={{
+              position: "absolute", top: -10, right: 16,
+              background: "#4D7C0F", color: "#FFFFFF", fontSize: 10, fontWeight: 700,
+              padding: "3px 10px", borderRadius: 10, textTransform: "uppercase", letterSpacing: "0.05em",
+            }}>7-Day Free Trial</div>
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: "#0B1120" }}>Pro</div>
+              <div style={{ fontSize: 13, color: "#64748b" }}>${pro.priceMonthly}/month &middot; Cancel anytime</div>
+            </div>
+            <button
+              onClick={() => handleCheckout("pro")}
+              disabled={!!loading}
+              style={{
+                width: "100%", padding: "12px 0", border: "none",
+                borderRadius: 8, background: "#4D7C0F", color: "#FFFFFF",
+                fontSize: 15, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer",
+              }}
+            >
+              {loading === "pro" ? "Loading..." : "Start Free Trial"}
+            </button>
+          </div>
         )}
 
         {/* Maybe Later */}

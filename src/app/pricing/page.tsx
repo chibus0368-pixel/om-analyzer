@@ -111,7 +111,7 @@ function PlanCard({
       {highlight && (
         <div style={{
           position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)",
-          background: "#84CC16", color: "#0d0d14",
+          background: "#84CC16", color: "#FFFFFF",
           fontSize: 9, fontWeight: 800, letterSpacing: 0.6, textTransform: "uppercase",
           padding: "4px 12px", borderRadius: 999,
         }}>

@@ -1059,7 +1059,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               className="ws-plan-pill"
               title="Sign up free for 5 more analyses, or upgrade to Pro for 100 per month"
               style={{
-                padding: "6px 14px", background: "linear-gradient(135deg, #84CC16, #a8d600)", color: "#0d0d14",
+                padding: "6px 14px", background: "linear-gradient(135deg, #84CC16, #a8d600)", color: "#FFFFFF",
                 border: "1px solid rgba(132,204,22,0.5)", borderRadius: 9999,
                 textDecoration: "none", fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
                 display: "inline-flex", alignItems: "center", gap: 8,
