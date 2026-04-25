@@ -1564,10 +1564,10 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2.5"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" /></svg>
                 </span>
                 <span style={{ fontSize: 13, color: "#0F172A", fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
-                  Your work is saved on this browser only.
+                  Sign up to save deals to your account.
                   {" "}
                   <span style={{ color: "#374151", fontWeight: 500 }}>
-                    Sign up free for 5 more this month.
+                    5 more analyses this month, free.
                   </span>
                 </span>
                 <Link
