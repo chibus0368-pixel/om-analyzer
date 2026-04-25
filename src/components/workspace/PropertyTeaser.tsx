@@ -129,7 +129,7 @@ function SignupModal({ onClose, propertyName }: { onClose: () => void; propertyN
         {/* CTA buttons */}
         <Link href="/workspace/login?signup=true" style={{
           display: "block", textAlign: "center", textDecoration: "none",
-          background: "#84CC16", color: "#0d0d14", fontWeight: 700,
+          background: "#84CC16", color: "#FFFFFF", fontWeight: 700,
           padding: "13px 24px", borderRadius: 10, fontSize: 15,
           marginBottom: 10,
         }}>
@@ -208,7 +208,7 @@ export default function PropertyTeaser() {
         <p>This property may have been removed or the link may be invalid.</p>
         <Link href="/" style={{
           display: "inline-block", marginTop: 20,
-          background: "#84CC16", color: "#0d0d14", fontWeight: 600,
+          background: "#84CC16", color: "#FFFFFF", fontWeight: 600,
           padding: "10px 20px", borderRadius: 8, textDecoration: "none",
         }}>Go to DealSignals</Link>
       </div>
@@ -345,7 +345,7 @@ export default function PropertyTeaser() {
             textDecoration: "none", padding: "7px 14px",
           }}>Log in</Link>
           <Link href="/workspace/login?signup=true" style={{
-            background: "#84CC16", color: "#0d0d14", fontSize: 13, fontWeight: 700,
+            background: "#84CC16", color: "#FFFFFF", fontSize: 13, fontWeight: 700,
             textDecoration: "none", padding: "7px 16px", borderRadius: 8,
           }}>Sign up free</Link>
         </div>
@@ -489,7 +489,7 @@ export default function PropertyTeaser() {
           </p>
           <Link href="/workspace/login?signup=true" style={{
             display: "inline-block", textDecoration: "none",
-            background: "#84CC16", color: "#0d0d14", fontWeight: 700,
+            background: "#84CC16", color: "#FFFFFF", fontWeight: 700,
             padding: "12px 28px", borderRadius: 10, fontSize: 15,
           }}>
             Sign Up Free

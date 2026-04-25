@@ -226,7 +226,7 @@ function generateAdminNotificationEmail(
               </div>
 
               <p style="margin: 22px 0 0 0;">
-                <a href="${dashboardUrl}" style="background-color: #4D7C0F; color: #0d0d14; padding: 11px 26px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 700; font-size: 13px;">Open in Dashboard</a>
+                <a href="${dashboardUrl}" style="background-color: #4D7C0F; color: #FFFFFF; padding: 11px 26px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 700; font-size: 13px;">Open in Dashboard</a>
               </p>
             </td>
           </tr>
@@ -280,7 +280,7 @@ function generateUserConfirmationEmail(name: string): string {
         <table width="100%" cellpadding="0" cellspacing="0" style="margin: 28px 0;">
           <tr>
             <td style="text-align: center;">
-              <a href="${appUrl}/workspace" style="background-color: #4D7C0F; color: #0d0d14; padding: 14px 36px; font-weight: 700; font-size: 14px; text-decoration: none; border-radius: 8px; display: inline-block; letter-spacing: 0.02em;">
+              <a href="${appUrl}/workspace" style="background-color: #4D7C0F; color: #FFFFFF; padding: 14px 36px; font-weight: 700; font-size: 14px; text-decoration: none; border-radius: 8px; display: inline-block; letter-spacing: 0.02em;">
                 Open My Workspace
               </a>
             </td>

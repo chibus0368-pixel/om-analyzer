@@ -314,7 +314,7 @@ export default function DealSignalNav() {
             {authedUser ? (
               <Link href="/workspace" onClick={() => setMobileMenuOpen(false)} style={{
                 flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                padding: "10px 0", background: "#84CC16", color: "#0d0d14",
+                padding: "10px 0", background: "#84CC16", color: "#FFFFFF",
                 borderRadius: 8, fontSize: 14, fontWeight: 700, textDecoration: "none",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}>
@@ -333,7 +333,7 @@ export default function DealSignalNav() {
                 </Link>
                 <Link href="/workspace/login" onClick={() => setMobileMenuOpen(false)} style={{
                   flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
-                  padding: "10px 0", background: "#84CC16", color: "#0d0d14",
+                  padding: "10px 0", background: "#84CC16", color: "#FFFFFF",
                   borderRadius: 8, fontSize: 14, fontWeight: 700, textDecoration: "none",
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                 }}>
