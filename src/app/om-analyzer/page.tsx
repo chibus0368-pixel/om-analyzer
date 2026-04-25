@@ -2183,7 +2183,7 @@ export default function OmAnalyzerPage() {
         .ds-card:hover { transform: translateY(-3px); box-shadow: 0 0 30px rgba(132,204,22,0.06); }
         .ds-btn { display: inline-flex; align-items: center; justify-content: center; font-weight: 700; border-radius: 50px; cursor: pointer; transition: all 0.2s ease; text-decoration: none; border: none; }
         .ds-btn:hover { transform: translateY(-1px); }
-        .ds-btn-primary { background: #84CC16; color: #0d0d14; box-shadow: 0 0 30px rgba(132,204,22,0.4), 0 0 60px rgba(132,204,22,0.15); }
+        .ds-btn-primary { background: #84CC16; color: #FFFFFF; box-shadow: 0 0 30px rgba(132,204,22,0.4), 0 0 60px rgba(132,204,22,0.15); }
         .ds-btn-primary:hover { box-shadow: 0 0 30px rgba(132,204,22,0.4), 0 0 60px rgba(132,204,22,0.15); transform: translateY(-2px); }
         .ds-btn-outline { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.12); }
         .ds-btn-outline:hover { border-color: #84CC16; color: #84CC16; box-shadow: 0 0 20px rgba(132,204,22,0.15); }

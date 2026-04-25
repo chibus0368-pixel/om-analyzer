@@ -2784,7 +2784,7 @@ function PropertyDetailInner({
             </div>
             <div style={{ display: "flex", gap: 4, marginTop: 6 }}>
               {["PDF", "XLS", "XLSX", "DOCX", "CSV"].map(ext => (
-                <span key={ext} style={{ padding: "2px 6px", background: ext === "PDF" ? "#4D7C0F" : "#F3F4F6", color: ext === "PDF" ? "#0F172A" : C.secondary, borderRadius: 3, fontSize: 9, fontWeight: 700 }}>
+                <span key={ext} style={{ padding: "2px 6px", background: ext === "PDF" ? "#4D7C0F" : "#F3F4F6", color: ext === "PDF" ? "#FFFFFF" : C.secondary, borderRadius: 3, fontSize: 9, fontWeight: 700 }}>
                   {ext}
                 </span>
               ))}

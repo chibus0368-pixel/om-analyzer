@@ -633,7 +633,7 @@ export default function SharedViewPage() {
           <a
             href="/workspace/login"
             style={{
-              background: "#84CC16", color: "#06080F", padding: "5px 14px",
+              background: "#84CC16", color: "#FFFFFF", padding: "5px 14px",
               borderRadius: 999, fontWeight: 700, fontSize: 12.5,
               textDecoration: "none", letterSpacing: 0.2,
             }}
