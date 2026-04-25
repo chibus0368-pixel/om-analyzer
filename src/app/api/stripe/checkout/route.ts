@@ -44,7 +44,17 @@ export async function POST(req: NextRequest) {
     }
 
     const adminAuth = getAdminAuth();
-    const decoded = await adminAuth.verifyIdToken(token);
+    let decoded: any;
+    try {
+      decoded = await adminAuth.verifyIdToken(token);
+    } catch (verifyErr: any) {
+      // Bad/expired/wrong-project token. Return 401 instead of letting
+      // the throw bubble up to the outer catch (which would 500).
+      return NextResponse.json({
+        error: "Unauthorized",
+        detail: verifyErr?.message || "Invalid token",
+      }, { status: 401 });
+    }
     const uid = decoded.uid;
 
     // ── Block anonymous Firebase users ─────────────────────
