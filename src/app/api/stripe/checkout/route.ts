@@ -47,6 +47,19 @@ export async function POST(req: NextRequest) {
     const decoded = await adminAuth.verifyIdToken(token);
     const uid = decoded.uid;
 
+    // ── Block anonymous Firebase users ─────────────────────
+    // Stripe checkout needs an email + a real customer. Anonymous trial
+    // users have neither. Send them through the register flow first so
+    // we capture an email and create a real account before they pay.
+    const isAnonFirebase = (decoded.firebase?.sign_in_provider === "anonymous");
+    if (isAnonFirebase) {
+      return NextResponse.json({
+        error: "Sign up required",
+        signupRequired: true,
+        message: "Sign up free to add an email before upgrading to Pro.",
+      }, { status: 403 });
+    }
+
     // ── Validate plan ──────────────────────────────────────
     const { plan } = await req.json();
     const planConfig = PLANS[plan];

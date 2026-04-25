@@ -129,8 +129,17 @@ function WorkspaceLoginPageInner() {
     return redirectPath || "/workspace";
   }
 
-  /* ── Post-auth handler: if upgrade param set, go straight to Stripe; else workspace ── */
+  /* ── Post-auth handler: if upgrade param set, go straight to Stripe; else workspace ──
+     Anonymous Firebase users get caught by the server's 403 guard on
+     /api/stripe/checkout. We don't auto-redirect them through this path
+     because the parent useEffect already skips it for isAnonymous=true. */
   async function handlePostAuth(firebaseUser: any) {
+    if (firebaseUser?.isAnonymous) {
+      // Should never reach here for an anon user (the auto-redirect effect
+      // skips them) but if it does, push to register instead of Stripe.
+      router.push(`/workspace/login?mode=register&upgrade=${upgradePlan || ""}`);
+      return;
+    }
     if (upgradePlan && (upgradePlan === "pro" || upgradePlan === "pro_plus")) {
       try {
         const token = await firebaseUser.getIdToken();

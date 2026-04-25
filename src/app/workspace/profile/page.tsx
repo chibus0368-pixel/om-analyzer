@@ -238,6 +238,11 @@ export default function ProfilePage() {
   // Handle Stripe checkout for upgrade
   const handleUpgradeCheckout = async (plan: string) => {
     if (!firebaseUser) return;
+    if ((firebaseUser as any).isAnonymous) {
+      // Anon users must register first - Stripe needs an email.
+      window.location.href = `/workspace/login?mode=register&redirect=${encodeURIComponent("/workspace/profile?tab=account")}&upgrade=${plan}`;
+      return;
+    }
     setBillingLoading(plan);
     try {
       const token = await firebaseUser.getIdToken();

@@ -120,7 +120,10 @@ export default function UpgradeModal({ open, onClose, reason = "limit_reached", 
     try {
       const auth = getAuth();
       const user = auth.currentUser;
-      if (!user) {
+      // Anonymous Firebase users need to register first so Stripe has an
+      // email + real account to attach the subscription to. Without this
+      // they'd hit a 403 on /api/stripe/checkout (server-side guard).
+      if (!user || (user as any).isAnonymous) {
         window.location.href = `/workspace/login?mode=register&redirect=${encodeURIComponent(window.location.pathname)}&upgrade=${plan}`;
         return;
       }

@@ -53,6 +53,11 @@ export default function WorkspaceUpgradePage() {
 
   async function startProCheckout(targetTier: "pro" | "pro_plus") {
     if (!user) return;
+    // Anon users must register first so Stripe has an email/account.
+    if ((user as any).isAnonymous) {
+      window.location.href = `/workspace/login?mode=register&redirect=${encodeURIComponent("/workspace/upgrade")}&upgrade=${targetTier}`;
+      return;
+    }
     try {
       const token = await user.getIdToken();
       const res = await fetch("/api/stripe/checkout", {
