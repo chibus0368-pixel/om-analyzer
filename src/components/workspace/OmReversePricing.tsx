@@ -235,8 +235,8 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
         subtitle={`Returns under adjusted assumptions at asking +/- 15%. Green clears the ${baseline.targetLeveredIrrPct.toFixed(0)}% target IRR; red misses by more than 3 points.`}
         accent="#0891B2"
       >
-        <div style={{ overflow: "auto" }}>
-          <table className="orp-price-scenarios" style={{ width: "100%", fontSize: 12, borderCollapse: "collapse", minWidth: 480 }}>
+        <div style={{ overflowX: "auto", overflowY: "visible" }}>
+          <table className="orp-price-scenarios" style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ color: C.secondary, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, fontSize: 10 }}>
                 <th style={{ padding: "8px 10px", borderBottom: `1px solid ${C.ghost}`, textAlign: "left" }}>Scenario</th>
@@ -302,8 +302,8 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
         subtitle={`How your levered IRR holds up when the market exit cap shifts (rows) or rents grow slower than hoped (columns). Green clears the ${baseline.targetLeveredIrrPct.toFixed(0)}% target; amber is below target; red misses by more than 3 points. Hover any cell for a plain-English read.`}
         accent="#7C3AED"
       >
-        <div style={{ overflow: "auto" }}>
-          <table className="orp-heatmap" style={{ width: "100%", fontSize: 12, borderCollapse: "collapse", minWidth: 420 }}>
+        <div style={{ overflowX: "auto", overflowY: "visible" }}>
+          <table className="orp-heatmap" style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
             <thead>
               {/* Axis banner: tells you what columns vs rows represent */}
               <tr>
