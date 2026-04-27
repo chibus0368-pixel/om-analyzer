@@ -11,6 +11,8 @@ import {
   updateProfile,
   signOut,
   linkWithCredential,
+  linkWithPopup,
+  linkWithRedirect,
   EmailAuthProvider,
   GoogleAuthProvider,
   type UserCredential,
@@ -160,6 +162,23 @@ export async function loginWithGoogle(): Promise<UserCredential> {
         try {
           // Create Firebase credential from Google access token
           const credential = GoogleAuthProvider.credential(null, response.access_token);
+          // If currently signed in anonymously (Try Me trial), link the
+          // Google credential so the anon UID and all attached trial
+          // properties carry over to the new Google account.
+          const current = auth.currentUser;
+          if (current && current.isAnonymous) {
+            try {
+              const linked = await linkWithCredential(current, credential);
+              resolve(linked);
+              return;
+            } catch (linkErr: any) {
+              // auth/credential-already-in-use means a Google account with this
+              // email already exists - fall back to a fresh sign-in. Trial
+              // data won't carry over, but the user can still proceed.
+              if (linkErr?.code !== "auth/credential-already-in-use") throw linkErr;
+              console.warn("[auth] Google linkWithCredential failed:", linkErr.code, "- falling back to signInWithCredential");
+            }
+          }
           const result = await signInWithCredential(auth, credential);
           resolve(result);
         } catch (err) {
@@ -184,9 +203,35 @@ export async function loginWithGoogle(): Promise<UserCredential> {
 /**
  * Legacy Firebase popup/redirect flow.
  * Shows deal-signals.firebaseapp.com on the consent screen.
+ *
+ * Anon-aware: if the visitor is signed in anonymously (Try Me trial),
+ * link the Google credential to the anon account instead of replacing it.
  */
 async function loginWithGoogleLegacy(): Promise<UserCredential> {
+  const current = auth.currentUser;
+  const isAnon = !!current && current.isAnonymous;
+
   try {
+    if (isAnon) {
+      try {
+        return await linkWithPopup(current!, googleProvider);
+      } catch (linkErr: any) {
+        if (linkErr?.code === "auth/credential-already-in-use") {
+          // Account exists - fall through to normal sign-in below. The
+          // trial data won\'t carry over but the user can still proceed.
+          console.warn("[auth] Google linkWithPopup: credential-already-in-use, falling back");
+        } else if (
+          linkErr?.code === "auth/popup-blocked" ||
+          linkErr?.code === "auth/cancelled-popup-request" ||
+          linkErr?.code === "auth/operation-not-supported-in-this-environment"
+        ) {
+          await linkWithRedirect(current!, googleProvider);
+          return null as any;
+        } else {
+          throw linkErr;
+        }
+      }
+    }
     return await signInWithPopup(auth, googleProvider);
   } catch (err: any) {
     const code = err?.code || '';
