@@ -1147,10 +1147,15 @@ function PropertyDetail({
         </div>
       )}
 
-      {/* Scrollable content. On mobile we flatten this into the
-          parent .share-sidebar scroll so sticky back bar + tabs actually
-          work as designed. */}
-      <div className="detail-content" style={{ flex: 1, overflow: "auto", padding: "16px 18px", background: "#fff" }}>
+      {/* Scrollable content. The parent `.share-sidebar` already owns the
+          scroll for the entire detail panel, so this inner div stays
+          `overflow: visible`. Two nested scrollers caused the double
+          scrollbar on desktop and broke `position: sticky` on the back
+          bar + tab strip (they could only stick to the inner container's
+          viewport, not the actual sidebar viewport). One scroll is
+          correct on every breakpoint now; the mobile @media override is
+          redundant but harmless. */}
+      <div className="detail-content" style={{ flex: 1, overflow: "visible", padding: "16px 18px", background: "#fff" }}>
         {/* ═══ QUICK SCREEN TAB ═══ */}
         {tab === "quick-screen" && (
           <div>
