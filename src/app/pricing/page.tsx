@@ -64,7 +64,7 @@ export default function PricingPage() {
             price="$40"
             cadence="100 deals per month"
             ctaLabel="Start 7-day free trial"
-            ctaHref="/workspace/login?upgrade=pro"
+            ctaHref="/workspace/login?mode=register&upgrade=pro"
             features={[
               "100 deal analyses per month",
               "Pro DealBoard with history",

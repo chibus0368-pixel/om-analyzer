@@ -33,7 +33,7 @@ test.describe("pricing CTAs", () => {
     expect(registerLink, `expected at least one login link with mode=register or signup=1, got: ${hrefs.join(", ")}`).toBeTruthy();
   });
 
-  test("Pro card has a link to /workspace/login with upgrade=pro", async ({ page }) => {
+  test("Pro card has a link to /workspace/login with BOTH mode=register AND upgrade=pro", async ({ page }) => {
     await page.goto("/pricing", { waitUntil: "load" });
     await page.waitForFunction(
       () => (document.body.innerText || "").length > 100,
@@ -41,7 +41,14 @@ test.describe("pricing CTAs", () => {
     );
     const links = await page.locator('a[href*="/workspace/login"]').all();
     const hrefs = await Promise.all(links.map(l => l.getAttribute("href")));
-    const upgradeLink = hrefs.find(h => h && h.includes("upgrade=pro"));
-    expect(upgradeLink, `expected a login link with upgrade=pro, got: ${hrefs.join(", ")}`).toBeTruthy();
+    // The Pro CTA must trigger the register form (so the user can convert)
+    // AND carry upgrade=pro (so handlePostAuth routes to Stripe checkout
+    // after signup). Missing either one breaks the funnel - either the
+    // user lands on a login form they can\'t use, or they sign up but
+    // don\'t reach Stripe.
+    const upgradeLink = hrefs.find(h => h && h.includes("upgrade=pro") && /mode=register|signup=1/.test(h));
+    expect(upgradeLink,
+      `expected a login link with mode=register AND upgrade=pro, got: ${hrefs.join(", ")}`
+    ).toBeTruthy();
   });
 });
