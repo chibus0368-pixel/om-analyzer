@@ -19,7 +19,13 @@ test.describe("signup + checkout flow", () => {
     await page.fill('input[type="email"]', FREE_EMAIL);
     await page.fill('input[type="password"]', FREE_PASSWORD);
     await page.getByRole("button", { name: /sign in/i }).click();
-    await page.waitForURL(/\/workspace(?:$|\/|\?)/, { timeout: 15_000 });
+    // Wait for actual navigation AWAY from the login page. The previous
+    // regex /\/workspace(?:$|\/|\?)/ matched /workspace/login itself,
+    // resolving instantly without waiting for sign-in to complete.
+    await page.waitForURL(url => {
+      const u = new URL(url);
+      return u.pathname.startsWith("/workspace") && u.pathname !== "/workspace/login";
+    }, { timeout: 20_000 });
   });
 
   test("free user clicking 'Upgrade to Pro' on /workspace/upgrade hits Stripe checkout", async ({ page }) => {
@@ -27,7 +33,13 @@ test.describe("signup + checkout flow", () => {
     await page.fill('input[type="email"]', FREE_EMAIL);
     await page.fill('input[type="password"]', FREE_PASSWORD);
     await page.getByRole("button", { name: /sign in/i }).click();
-    await page.waitForURL(/\/workspace(?:$|\/|\?)/, { timeout: 15_000 });
+    // Wait for actual navigation AWAY from the login page. The previous
+    // regex /\/workspace(?:$|\/|\?)/ matched /workspace/login itself,
+    // resolving instantly without waiting for sign-in to complete.
+    await page.waitForURL(url => {
+      const u = new URL(url);
+      return u.pathname.startsWith("/workspace") && u.pathname !== "/workspace/login";
+    }, { timeout: 20_000 });
 
     await page.goto("/workspace/upgrade", { waitUntil: "load" });
     // Wait for the Pro card's CTA to appear (post-hydration). Actual labels:
@@ -47,7 +59,13 @@ test.describe("signup + checkout flow", () => {
     await page.fill('input[type="email"]', FREE_EMAIL);
     await page.fill('input[type="password"]', FREE_PASSWORD);
     await page.getByRole("button", { name: /sign in/i }).click();
-    await page.waitForURL(/\/workspace(?:$|\/|\?)/, { timeout: 15_000 });
+    // Wait for actual navigation AWAY from the login page. The previous
+    // regex /\/workspace(?:$|\/|\?)/ matched /workspace/login itself,
+    // resolving instantly without waiting for sign-in to complete.
+    await page.waitForURL(url => {
+      const u = new URL(url);
+      return u.pathname.startsWith("/workspace") && u.pathname !== "/workspace/login";
+    }, { timeout: 20_000 });
 
     await page.goto("/workspace/profile", { waitUntil: "load" });
     // Wait for the editable form to hydrate. The Save Profile button is
