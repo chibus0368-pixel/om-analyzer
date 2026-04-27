@@ -218,9 +218,9 @@ export default function DealSignalNav() {
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#e0e0e6"; }}
               >Sign in</Link>
               {!resultShowing && (
-                <Link href="/workspace/login" style={{
+                <Link href="/workspace/login?mode=register" style={{
                   display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 14, fontWeight: 600, color: "#0d0d14", textDecoration: "none",
+                  fontSize: 14, fontWeight: 600, color: "#FFFFFF", textDecoration: "none",
                   padding: "0 14px", borderRadius: 8, background: "#84CC16",
                   height: 32, transition: "all 0.2s",
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -331,7 +331,7 @@ export default function DealSignalNav() {
                 }}>
                   Sign in
                 </Link>
-                <Link href="/workspace/login" onClick={() => setMobileMenuOpen(false)} style={{
+                <Link href="/workspace/login?mode=register" onClick={() => setMobileMenuOpen(false)} style={{
                   flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
                   padding: "10px 0", background: "#84CC16", color: "#FFFFFF",
                   borderRadius: 8, fontSize: 14, fontWeight: 700, textDecoration: "none",

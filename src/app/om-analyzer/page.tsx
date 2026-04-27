@@ -2388,12 +2388,12 @@ export default function OmAnalyzerPage() {
               );
             })()}
             <a
-              href="/workspace/login?upgrade=pro"
+              href="/workspace/login?mode=register&upgrade=pro"
               onClick={(e) => {
                 e.preventDefault();
                 try { trackProCTAClick("lite_result_upgrade_prompt"); } catch {}
                 setShowUpgradePrompt(false);
-                window.location.href = "/workspace/login?upgrade=pro";
+                window.location.href = "/workspace/login?mode=register&upgrade=pro";
               }}
               style={{
                 display: "inline-block", padding: "14px 36px",
@@ -3803,7 +3803,7 @@ export default function OmAnalyzerPage() {
                     { text: "White-label shareable links", included: true },
                   ],
                   cta: "Start 7-Day Free Trial",
-                  ctaLink: "/workspace/login?upgrade=pro",
+                  ctaLink: "/workspace/login?mode=register&upgrade=pro",
                   highlight: true,
                 },
                 {
@@ -3822,7 +3822,7 @@ export default function OmAnalyzerPage() {
                     { text: "Custom branding", included: true },
                   ],
                   cta: "Start 7-Day Free Trial",
-                  ctaLink: "/workspace/login?upgrade=pro_plus",
+                  ctaLink: "/workspace/login?mode=register&upgrade=pro_plus",
                   highlight: false,
                   bestValue: true,
                 },

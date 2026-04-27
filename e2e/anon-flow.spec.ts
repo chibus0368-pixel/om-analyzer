@@ -90,3 +90,38 @@ test.describe("forgot password recovery", () => {
     await expect(page.locator('input[type="email"]').first()).toBeVisible({ timeout: 10_000 });
   });
 });
+
+test.describe("marketing CTAs route to register", () => {
+  test("/om-analyzer 'Get Started Free' nav button links to register form", async ({ page }) => {
+    await page.goto("/om-analyzer", { waitUntil: "load" });
+    await page.waitForFunction(
+      () => (document.body.innerText || "").length > 200,
+      { timeout: 15_000 }
+    );
+    // The nav has a "Get Started Free" CTA. Match by href - must include
+    // mode=register so the visitor lands on the register form, not login.
+    const links = await page.locator('a[href*="/workspace/login"]').all();
+    const hrefs = await Promise.all(links.map(l => l.getAttribute("href")));
+    const registerLinks = hrefs.filter(h => h && /mode=register/.test(h));
+    expect(registerLinks.length,
+      `expected at least one /workspace/login?mode=register link in marketing nav, got: ${hrefs.join(", ")}`
+    ).toBeGreaterThan(0);
+  });
+
+  test("no marketing CTA links to bare /workspace/login (login form)", async ({ page }) => {
+    // We want anon visitors converting through the marketing surface to
+    // always hit the register form, not the login form. A bare
+    // /workspace/login link from marketing is almost always a regression.
+    await page.goto("/om-analyzer", { waitUntil: "load" });
+    await page.waitForFunction(
+      () => (document.body.innerText || "").length > 200,
+      { timeout: 15_000 }
+    );
+    const links = await page.locator('a[href="/workspace/login"]').all();
+    // Allow ONE bare /workspace/login link - that's the "Sign in" link
+    // which is appropriate for returning users. More than one is a smell.
+    expect(links.length,
+      `expected at most 1 bare /workspace/login link (the 'Sign in' for returning users)`
+    ).toBeLessThanOrEqual(1);
+  });
+});
