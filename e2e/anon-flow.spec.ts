@@ -72,3 +72,21 @@ test.describe("anon trial flow", () => {
     expect(bodyText.length, "page never rendered any content").toBeGreaterThan(20);
   });
 });
+
+test.describe("forgot password recovery", () => {
+  test("login form has a 'Forgot password?' link to /forgot-password", async ({ page }) => {
+    await page.goto("/workspace/login", { waitUntil: "load" });
+    await page.waitForFunction(
+      () => (document.body.innerText || "").length > 50,
+      { timeout: 15_000 }
+    );
+    const link = page.locator('a[href*="/forgot-password"]').first();
+    await expect(link).toBeVisible({ timeout: 10_000 });
+    expect(await link.getAttribute("href")).toContain("/forgot-password");
+  });
+
+  test("/forgot-password page renders with an email input", async ({ page }) => {
+    await page.goto("/forgot-password", { waitUntil: "load" });
+    await expect(page.locator('input[type="email"]').first()).toBeVisible({ timeout: 10_000 });
+  });
+});

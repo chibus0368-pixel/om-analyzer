@@ -464,7 +464,14 @@ function WorkspaceLoginPageInner() {
           </div>
           <div style={mode === "register" ? { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 } : {}}>
             <div>
-              <label style={labelStyle}>Password</label>
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+                <label style={labelStyle}>Password</label>
+                {mode === "login" && (
+                  <a href="/forgot-password" style={{ fontSize: 12, color: "#4D7C0F", fontWeight: 600, textDecoration: "none", fontFamily: "'Inter', sans-serif" }}>
+                    Forgot password?
+                  </a>
+                )}
+              </div>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)}
                 placeholder={mode === "register" ? "Min 8 characters" : "Your password"} required
                 style={inputStyle} onFocus={focusIn} onBlur={focusOut} />
