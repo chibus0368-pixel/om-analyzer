@@ -377,6 +377,149 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
   );
 }
 
+/**
+ * Lime lightning-bolt button shown in the header. On hover (or focus),
+ * shows a small popover with the user's deal usage, a progress bar, and
+ * a tier-appropriate CTA. Mirrors the "credits" pattern from chat tools
+ * but in DealSignals brand (lime + dark navy) instead of blue.
+ *
+ * Hide-on-leave uses a short delay so the cursor can travel from button
+ * to popover without flicker. The popover anchors below the button.
+ */
+function HeaderUsageBolt({
+  userTier,
+  userUsage,
+}: {
+  userTier: string;
+  userUsage: { used: number; limit: number } | null;
+}) {
+  const [open, setOpen] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const cancelClose = () => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+  const scheduleClose = () => {
+    cancelClose();
+    closeTimer.current = setTimeout(() => setOpen(false), 120);
+  };
+
+  // Tier-aware copy. Anonymous + free see usage with a CTA to upgrade;
+  // pro / pro_plus see their plan label and a "Manage plan" link.
+  const used = userUsage?.used ?? 0;
+  const limit = userUsage?.limit ?? (userTier === "anonymous" ? 2 : 7);
+  const pct = Math.min(100, Math.round((used / Math.max(1, limit)) * 100));
+  const label =
+    userTier === "anonymous"
+      ? "Trial Credits"
+      : userTier === "free"
+      ? "Monthly Deal Credits"
+      : userTier === "pro_plus"
+      ? "Pro+ Plan Usage"
+      : "Pro Plan Usage";
+  const ctaHref =
+    userTier === "anonymous"
+      ? "/workspace/login?mode=register"
+      : userTier === "free"
+      ? "/workspace/upgrade"
+      : "/workspace/profile?tab=account";
+  const ctaLabel =
+    userTier === "anonymous"
+      ? "Sign Up Free"
+      : userTier === "free"
+      ? "Upgrade to Pro"
+      : "Manage Plan";
+
+  return (
+    <div
+      style={{ position: "relative", display: "inline-flex", alignItems: "center" }}
+      onMouseEnter={() => { cancelClose(); setOpen(true); }}
+      onMouseLeave={scheduleClose}
+    >
+      <button
+        type="button"
+        aria-label="Usage"
+        aria-expanded={open}
+        onFocus={() => { cancelClose(); setOpen(true); }}
+        onBlur={scheduleClose}
+        style={{
+          width: 34, height: 34, borderRadius: "50%",
+          background: "#84CC16", color: "#0F172A",
+          border: "1px solid rgba(132,204,22,0.6)",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          cursor: "pointer", padding: 0,
+          boxShadow: "0 1px 3px rgba(132,204,22,0.35)",
+          transition: "transform 0.12s ease, box-shadow 0.12s ease",
+        }}
+        onMouseDown={e => { e.currentTarget.style.transform = "scale(0.95)"; }}
+        onMouseUp={e => { e.currentTarget.style.transform = "scale(1)"; }}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+          <path d="M13 2L4.09 12.97a.5.5 0 0 0 .39.81H10l-1.5 8.22a.5.5 0 0 0 .89.39L20 11.41a.5.5 0 0 0-.39-.81H14l1-7.81A.5.5 0 0 0 13 2z" />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          role="dialog"
+          style={{
+            position: "absolute", top: "calc(100% + 10px)", right: 0,
+            width: 280, padding: 18,
+            background: "#0F172A",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: 16,
+            boxShadow: "0 16px 40px rgba(0,0,0,0.45)",
+            zIndex: 1200,
+            fontFamily: "'Inter', system-ui, sans-serif",
+          }}
+        >
+          {/* Tiny tail/arrow */}
+          <div style={{
+            position: "absolute", top: -6, right: 12,
+            width: 12, height: 12, background: "#0F172A",
+            borderTop: "1px solid rgba(255,255,255,0.08)",
+            borderLeft: "1px solid rgba(255,255,255,0.08)",
+            transform: "rotate(45deg)",
+          }} />
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.65)" }}>
+              {label}
+            </span>
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.01em" }}>
+            {used}/{limit}
+          </div>
+          <div style={{
+            marginTop: 10, height: 6, borderRadius: 999,
+            background: "rgba(255,255,255,0.08)", overflow: "hidden",
+          }}>
+            <div style={{
+              width: `${pct}%`, height: "100%",
+              background: "linear-gradient(90deg, #84CC16, #a8d600)",
+              transition: "width 0.3s ease",
+            }} />
+          </div>
+          <a
+            href={ctaHref}
+            style={{
+              display: "block", textAlign: "center", marginTop: 16,
+              padding: "10px 14px", borderRadius: 999,
+              background: "#84CC16", color: "#FFFFFF",
+              textDecoration: "none", fontWeight: 700, fontSize: 13,
+              letterSpacing: 0.2,
+            }}
+          >
+            {ctaLabel}
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Workspace dropdown - used in sidebar (dark theme) */
 function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean; onAddNew: () => void }) {
   const { workspaces, activeWorkspace, switchWorkspace } = useWorkspace();
@@ -1064,6 +1207,8 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
         {/* Right: Pro Plan pill + user info + settings */}
         <div className="ws-header-right" style={{ display: "flex", alignItems: "center", gap: 24, marginLeft: "auto" }}>
+          {/* Lightning bolt usage chip - hover for credits popover */}
+          <HeaderUsageBolt userTier={userTier} userUsage={userUsage} />
           {userTier === "anonymous" ? (
             <Link
               href="/workspace/upgrade"
