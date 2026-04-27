@@ -191,22 +191,70 @@ export default function DealSignalNav() {
         </div>
 
         {/* Right side CTA - desktop */}
-        <div className="ds-nav-cta" style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div className="ds-nav-cta" style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {authedUser ? (
-            <Link href="/workspace" style={{
-              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-              fontSize: 14, fontWeight: 600, color: "#0d0d14", textDecoration: "none",
-              padding: "0 14px", borderRadius: 8, background: "#84CC16",
-              height: 32, transition: "all 0.2s",
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              boxShadow: "0 0 20px rgba(132,204,22,0.3), 0 0 40px rgba(132,204,22,0.1)",
-            }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 25px rgba(132,204,22,0.5), 0 0 50px rgba(132,204,22,0.2)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(132,204,22,0.3), 0 0 40px rgba(132,204,22,0.1)"; }}
-            >
-              Open App
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-            </Link>
+            <>
+              {/* Identity chip - shows who's signed in. Click goes to profile. */}
+              <Link
+                href="/workspace/profile"
+                title="Account & profile"
+                className="ds-nav-identity"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  padding: "4px 12px 4px 4px",
+                  borderRadius: 999,
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  textDecoration: "none",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  transition: "background 0.15s, border-color 0.15s",
+                  height: 32,
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(132,204,22,0.08)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(132,204,22,0.3)";
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
+                }}
+              >
+                <span style={{
+                  width: 24, height: 24, borderRadius: "50%",
+                  background: "#84CC16", color: "#0d0d14",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 10, fontWeight: 800, letterSpacing: "0.02em",
+                }}>
+                  {(() => {
+                    const name = authedUser.displayName || authedUser.email || "U";
+                    const initials = authedUser.displayName
+                      ? authedUser.displayName.split(/\s+/).filter(Boolean).slice(0, 2).map(n => n[0]).join("").toUpperCase()
+                      : (name.split("@")[0] || "U").substring(0, 2).toUpperCase();
+                    return initials || "U";
+                  })()}
+                </span>
+                <span className="ds-nav-identity-label" style={{
+                  fontSize: 12, fontWeight: 600, color: "#e0e0e6",
+                  maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                }}>
+                  {authedUser.displayName || (authedUser.email ? authedUser.email.split("@")[0] : "Account")}
+                </span>
+              </Link>
+              <Link href="/workspace" style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                fontSize: 14, fontWeight: 600, color: "#0d0d14", textDecoration: "none",
+                padding: "0 14px", borderRadius: 8, background: "#84CC16",
+                height: 32, transition: "all 0.2s",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                boxShadow: "0 0 20px rgba(132,204,22,0.3), 0 0 40px rgba(132,204,22,0.1)",
+              }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 25px rgba(132,204,22,0.5), 0 0 50px rgba(132,204,22,0.2)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(132,204,22,0.3), 0 0 40px rgba(132,204,22,0.1)"; }}
+              >
+                Go to App
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </Link>
+            </>
           ) : (
             <>
               <Link href="/workspace/login" style={{
@@ -310,6 +358,41 @@ export default function DealSignalNav() {
               {label}
             </Link>
           ))}
+          {authedUser && (
+            <Link
+              href="/workspace/profile"
+              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                marginTop: 12, padding: "10px 12px",
+                display: "flex", alignItems: "center", gap: 10,
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: 10, textDecoration: "none",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}
+            >
+              <span style={{
+                width: 32, height: 32, borderRadius: "50%",
+                background: "#84CC16", color: "#0d0d14",
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                fontSize: 12, fontWeight: 800,
+              }}>
+                {(authedUser.displayName
+                  ? authedUser.displayName.split(/\s+/).filter(Boolean).slice(0, 2).map(n => n[0]).join("").toUpperCase()
+                  : ((authedUser.email || "U").split("@")[0] || "U").substring(0, 2).toUpperCase()) || "U"}
+              </span>
+              <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.2, overflow: "hidden" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {authedUser.displayName || (authedUser.email ? authedUser.email.split("@")[0] : "Account")}
+                </span>
+                {authedUser.email && (
+                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {authedUser.email}
+                  </span>
+                )}
+              </span>
+            </Link>
+          )}
           <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
             {authedUser ? (
               <Link href="/workspace" onClick={() => setMobileMenuOpen(false)} style={{
@@ -318,7 +401,7 @@ export default function DealSignalNav() {
                 borderRadius: 8, fontSize: 14, fontWeight: 700, textDecoration: "none",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}>
-                Open App
+                Go to App
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
               </Link>
             ) : (
