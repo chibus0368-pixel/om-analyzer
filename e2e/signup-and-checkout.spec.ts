@@ -74,8 +74,9 @@ test.describe("signup + checkout flow", () => {
     await saveBtn.waitFor({ state: "visible", timeout: 20_000 });
 
     const newFirst = `Test${Date.now() % 10000}`;
-    // Fill firstName by label since the input may not have a name attr.
-    await page.getByLabel(/first name/i).fill(newFirst);
+    // Use placeholder selector - the form inputs have placeholder="First name"
+    // and there's no label htmlFor association on the actual page.
+    await page.getByPlaceholder(/first name/i).fill(newFirst);
     await saveBtn.click();
 
     // Wait for the success toast
