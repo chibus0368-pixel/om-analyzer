@@ -739,7 +739,10 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
         createdAt: now,
         updatedAt: now,
       };
-      if (propertyId) fieldData.propertyId = propertyId;
+      // Always write propertyId so the share API + property detail readers
+      // can join. If the caller didn't supply one, write empty string rather
+      // than omitting the field, so future backfills can target by equality.
+      fieldData.propertyId = propertyId || "";
       batch.set(fieldRef, fieldData);
       fieldCount++;
     }

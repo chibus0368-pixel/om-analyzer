@@ -114,9 +114,6 @@ export default function SharedViewPage() {
   const shareId = params.id as string;
 
   const [loading, setLoading] = useState(true);
-  // Upsell strip is shown by default and persists dismissal in localStorage.
-  // No Firebase Auth check on this public page (would slow first paint).
-  const [upsellDismissed, setUpsellDismissed] = useState(true);
   const [error, setError] = useState("");
   const [config, setConfig] = useState<ShareConfig | null>(null);
   const [properties, setProperties] = useState<SharedProperty[]>([]);
@@ -134,17 +131,6 @@ export default function SharedViewPage() {
   const [demographicsOn, setDemographicsOn] = useState(false);
   const [demographicsPropId, setDemographicsPropId] = useState<string | null>(null);
   const [geocodedCoords, setGeocodedCoords] = useState<Record<string, { lat: number; lng: number }>>({});
-
-  // Read upsell dismissal from localStorage. Default to "shown" once we've
-  // checked, so the strip doesn't flash on hydration.
-  useEffect(() => {
-    try {
-      const dismissed = typeof window !== "undefined" && window.localStorage.getItem("ds_share_upsell_dismissed") === "1";
-      setUpsellDismissed(dismissed);
-    } catch {
-      setUpsellDismissed(false);
-    }
-  }, []);
 
   useEffect(() => {
     if (!shareId) return;
@@ -616,46 +602,6 @@ export default function SharedViewPage() {
           }
         }
       `}</style>
-
-      {/* Upsell strip - shown to anonymous visitors and trial uploads.
-          Dismissible, persisted in localStorage. Public page so we deliberately
-          do not gate on Firebase Auth here (would block first paint). */}
-      {!upsellDismissed && (
-        <div style={{
-          background: "#06080F", color: "#E5E7EB", padding: "10px 20px",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          gap: 14, fontSize: 13, fontFamily: "'Inter', system-ui, sans-serif",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
-        }}>
-          <span style={{ opacity: 0.85 }}>
-            Save this analysis and unlock the full workspace.
-          </span>
-          <a
-            href="/workspace/login"
-            style={{
-              background: "#84CC16", color: "#FFFFFF", padding: "5px 14px",
-              borderRadius: 999, fontWeight: 700, fontSize: 12.5,
-              textDecoration: "none", letterSpacing: 0.2,
-            }}
-          >
-            Sign in &rarr;
-          </a>
-          <button
-            type="button"
-            aria-label="Dismiss"
-            onClick={() => {
-              try { window.localStorage.setItem("ds_share_upsell_dismissed", "1"); } catch {}
-              setUpsellDismissed(true);
-            }}
-            style={{
-              background: "transparent", border: "none", color: "#9CA3AF",
-              cursor: "pointer", fontSize: 16, lineHeight: 1, padding: "2px 6px",
-            }}
-          >
-            &times;
-          </button>
-        </div>
-      )}
 
       {/* Header - dark branded bar matching workspace */}
       <header className="share-header" style={{
