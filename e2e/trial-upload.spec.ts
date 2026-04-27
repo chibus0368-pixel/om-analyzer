@@ -34,9 +34,11 @@ test.describe("trial upload end-to-end", () => {
     const fileInput = page.locator('input[type="file"]').first();
     await fileInput.setInputFiles(SAMPLE_OM);
 
-    // The Analyze CTA appears once a file is selected. Try common labels.
-    const analyzeBtn = page.getByRole("button", { name: /analyze|start|submit/i }).first();
-    await analyzeBtn.click({ timeout: 10_000 });
+    // The Analyze CTA appears once a file is selected. Actual label is
+    // "Get Deal Signal" - keep the regex permissive in case copy changes.
+    const analyzeBtn = page.getByRole("button", { name: /get.*deal.*signal|analyze|start|submit/i }).first();
+    await analyzeBtn.waitFor({ state: "visible", timeout: 15_000 });
+    await analyzeBtn.click();
 
     // Either we land on /workspace/properties/[id] (success path), or the
     // anon auth fallback kicks us to the inline result view. The success
