@@ -98,6 +98,24 @@ jobs:
           retention-days: 14
           if-no-files-found: warn
 
+      # Always summarize the pass/fail/skip counts so we can confirm the
+      # auth-required spec isn't being silently skipped. Pulled from the
+      # last lines of the Playwright stdout (the 'X passed (Ys)' summary).
+      - name: Summarize test counts
+        if: always()
+        run: |
+          if [ ! -f e2e-stdout.txt ]; then exit 0; fi
+          echo "## Test counts" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          # Show the last block of summary lines (passed / failed / skipped)
+          tail -n 20 e2e-stdout.txt | grep -E "passed|failed|skipped|Slow test" >> "$GITHUB_STEP_SUMMARY" || echo "(no summary lines found)" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          # Also surface as an annotation so it shows up in API output.
+          MSG=$(tail -n 20 e2e-stdout.txt | grep -E "passed|failed|skipped" | head -3 | tr '\n' ' ')
+          if [ -n "$MSG" ]; then
+            echo "::notice title=Test counts::${MSG}"
+          fi
+
       # Surface the last 60 lines of stdout in BOTH the job summary AND
       # as a workflow annotation. Annotations are exposed via the public
       # /check-runs/{id}/annotations API (no auth needed for public repos),
