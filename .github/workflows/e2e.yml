@@ -107,14 +107,25 @@ jobs:
           if [ ! -f e2e-stdout.txt ]; then exit 0; fi
           echo "## Test counts" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
-          # Show the last block of summary lines (passed / failed / skipped)
           tail -n 20 e2e-stdout.txt | grep -E "passed|failed|skipped|Slow test" >> "$GITHUB_STEP_SUMMARY" || echo "(no summary lines found)" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
-          # Also surface as an annotation so it shows up in API output.
           MSG=$(tail -n 20 e2e-stdout.txt | grep -E "passed|failed|skipped" | head -3 | tr '\n' ' ')
-          if [ -n "$MSG" ]; then
-            echo "::notice title=Test counts::${MSG}"
-          fi
+          if [ -n "$MSG" ]; then echo "::notice title=Test counts::${MSG}"; fi
+
+      # Emit one annotation per failed test name so the full failure list
+      # shows up in the API even when the tail-stdout annotation is truncated.
+      - name: Per-test failure annotations
+        if: failure()
+        run: |
+          if [ ! -f e2e-stdout.txt ]; then exit 0; fi
+          # Playwright "list" reporter prints failed tests as e.g.:
+          #   ✘ ... > test name (chromium)
+          # Or in the bottom summary: "  1) [chromium] > spec > test name"
+          grep -E "^\s+[0-9]+\) \[chromium\]" e2e-stdout.txt | head -10 | while IFS= read -r line; do
+            # Strip control codes / leading whitespace
+            clean=$(echo "$line" | sed 's/\x1b\[[0-9;]*m//g' | sed 's/^[[:space:]]*//')
+            echo "::error title=Test failed::${clean}"
+          done
 
       # Surface the last 60 lines of stdout in BOTH the job summary AND
       # as a workflow annotation. Annotations are exposed via the public
