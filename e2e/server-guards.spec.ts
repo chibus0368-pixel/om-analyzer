@@ -35,3 +35,21 @@ test.describe("server guards", () => {
     expect([404, 410]).toContain(res.status());
   });
 });
+
+test.describe("usage API", () => {
+  test("GET /api/workspace/usage with no auth and no anonId returns 401", async ({ request }) => {
+    const res = await request.get("/api/workspace/usage");
+    expect(res.status()).toBe(401);
+  });
+
+  test("GET /api/workspace/usage?anonId=test returns anon tier shape", async ({ request }) => {
+    const res = await request.get("/api/workspace/usage?anonId=e2e-fake-anon-id-for-testing");
+    expect(res.status()).toBe(200);
+    const data = await res.json();
+    expect(data.tier).toMatch(/anonymous|lead/);
+    expect(typeof data.uploadLimit).toBe("number");
+    expect(data.uploadLimit).toBeGreaterThanOrEqual(1);
+    expect(typeof data.uploadsUsed).toBe("number");
+    expect(data.isAnonymous).toBe(true);
+  });
+});
