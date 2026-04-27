@@ -156,6 +156,27 @@ export async function GET(req: NextRequest) {
         .where("propertyId", "==", prop.id)
         .get();
 
+      // Also look for documents that exist for this user/workspace but
+      // might have lost their propertyId association. This tells us
+      // whether the source PDFs are recoverable.
+      const docsByUserSnap = prop.userId
+        ? await db
+            .collection("workspace_documents")
+            .where("userId", "==", prop.userId)
+            .get()
+        : null;
+      const docsForWorkspace = docsByUserSnap
+        ? docsByUserSnap.docs
+            .map((d) => d.data() as any)
+            .filter((d) => !d.workspaceId || d.workspaceId === prop.workspaceId)
+        : [];
+      const docsOrphanedNoPropertyId = docsForWorkspace.filter(
+        (d) => !d.propertyId
+      );
+      const docsForOtherProperty = docsForWorkspace.filter(
+        (d) => d.propertyId && d.propertyId !== prop.id
+      );
+
       const matchingSamples = fieldsByPropertyId.docs.slice(0, 3).map((d) => {
         const data = d.data();
         return {
