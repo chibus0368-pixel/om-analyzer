@@ -152,7 +152,7 @@ export function registrationWelcomeTemplate(data: { name: string; email: string 
 
       <tr>
         <td style="padding: 30px 40px 10px; text-align: center;">
-          <a href="${appUrl}/workspace" style="background-color: ${COLORS.lime}; color: ${COLORS.ink}; padding: 14px 40px; font-weight: 700; font-size: 14px; text-decoration: none; border-radius: 8px; display: inline-block; letter-spacing: 0.02em;">
+          <a href="${appUrl}/workspace" style="background-color: ${COLORS.lime}; color: #FFFFFF; padding: 14px 40px; font-weight: 700; font-size: 14px; text-decoration: none; border-radius: 8px; display: inline-block; letter-spacing: 0.02em;">
             Analyze Your First Deal
           </a>
         </td>
@@ -168,7 +168,7 @@ export function registrationWelcomeTemplate(data: { name: string; email: string 
                 <p style="margin: 0 0 14px 0; color: rgba(255,255,255,0.72); font-size: 13px; line-height: 1.6;">
                   Running more than a handful of deals? Pro unlocks 100 analyses per month, Excel exports, portfolio scoreboards, and white-label sharing. 7-day free trial, cancel anytime.
                 </p>
-                <a href="${appUrl}/pricing" style="display: inline-block; padding: 10px 24px; background-color: ${COLORS.lime}; color: ${COLORS.ink}; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 6px; letter-spacing: 0.04em;">View Plans</a>
+                <a href="${appUrl}/pricing" style="display: inline-block; padding: 10px 24px; background-color: ${COLORS.lime}; color: #FFFFFF; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 6px; letter-spacing: 0.04em;">View Plans</a>
               </td>
             </tr>
           </table>
@@ -285,7 +285,7 @@ export function purchaseConfirmationTemplate(data: { name: string; email: string
 
       <tr>
         <td style="padding: 30px 40px 10px; text-align: center;">
-          <a href="${appUrl}/workspace" style="background-color: ${COLORS.lime}; color: ${COLORS.ink}; padding: 14px 40px; font-weight: 700; font-size: 14px; text-decoration: none; border-radius: 8px; display: inline-block; letter-spacing: 0.02em;">
+          <a href="${appUrl}/workspace" style="background-color: ${COLORS.lime}; color: #FFFFFF; padding: 14px 40px; font-weight: 700; font-size: 14px; text-decoration: none; border-radius: 8px; display: inline-block; letter-spacing: 0.02em;">
             Start Analyzing Deals
           </a>
         </td>
