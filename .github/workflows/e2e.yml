@@ -33,6 +33,11 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      # Opts JS-based GitHub Actions (checkout, setup-node, upload-artifact)
+      # into Node 24, silencing the 'Node.js 20 is deprecated' warning.
+      # Remove once all the actions ship versions that default to Node 24.
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     steps:
       - uses: actions/checkout@v5
 
