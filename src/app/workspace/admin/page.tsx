@@ -69,6 +69,7 @@ const TIER_LABELS: Record<string, string> = {
 export default function AdminPage() {
   const { user, isAdmin, loading: authLoading } = useAuth();
   const [users, setUsers] = useState<UserRecord[]>([]);
+  const [anonStats, setAnonStats] = useState<{ total: number; withDeals: number; activeLast24h: number; activeLast7d: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
@@ -144,6 +145,7 @@ export default function AdminPage() {
       }
       const data = await res.json();
       setUsers(data.users || []);
+      setAnonStats(data.anonStats || null);
     } catch (err: any) {
       setError(err?.message || "Failed to load users");
     } finally {
@@ -526,17 +528,28 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* KPI Row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 28 }}>
+      {/* KPI Row - 'Total Users' is registered users only; trial visitors
+          (anonymous Firebase) get their own tile so they don't inflate the
+          headline number. Hover the Trial tile for activity breakdown. */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14, marginBottom: 28 }}>
         {[
-          { label: "Total Users", value: String(totalUsers), color: "#2563EB" },
-          { label: "Active Users", value: String(activeUsers), color: "#059669" },
-          { label: "Total Deals", value: String(totalDeals), color: "#D97706" },
-          { label: "Paid Users", value: String(proUsers), color: "#7C3AED" },
+          { label: "Registered Users", value: String(totalUsers), color: "#2563EB", tooltip: "" },
+          { label: "Active Users", value: String(activeUsers), color: "#059669", tooltip: "Not disabled" },
+          { label: "Paid Users", value: String(proUsers), color: "#7C3AED", tooltip: "Pro / Pro+" },
+          { label: "Total Deals", value: String(totalDeals), color: "#D97706", tooltip: "" },
+          {
+            label: "Trial Visitors",
+            value: anonStats ? String(anonStats.total) : "-",
+            color: "#0F172A",
+            tooltip: anonStats
+              ? `${anonStats.withDeals} uploaded a deal\n${anonStats.activeLast24h} active in last 24h\n${anonStats.activeLast7d} active in last 7 days`
+              : "",
+          },
         ].map(kpi => (
-          <div key={kpi.label} style={{
+          <div key={kpi.label} title={kpi.tooltip} style={{
             background: "#fff", borderRadius: 10, border: "1px solid rgba(0,0,0,0.05)",
             padding: "16px 20px", boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+            cursor: kpi.tooltip ? "help" : "default",
           }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.5 }}>{kpi.label}</div>
             <div style={{ fontSize: 28, fontWeight: 800, color: kpi.color, marginTop: 2 }}>{kpi.value}</div>

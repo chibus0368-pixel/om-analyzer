@@ -77,24 +77,57 @@ export async function GET(req: NextRequest) {
       });
     });
 
-    const users = listResult.users.map(u => ({
-      uid: u.uid,
-      email: u.email || "",
-      displayName: u.displayName || "",
-      photoURL: u.photoURL || "",
-      createdAt: u.metadata.creationTime || "",
-      lastSignIn: u.metadata.lastSignInTime || "",
-      provider: u.providerData?.[0]?.providerId || "email",
-      disabled: u.disabled,
-      dealboards: workspacesByUser.get(u.uid) || 0,
-      deals: dealsByUser.get(u.uid) || 0,
-      subscription: subsByUser.get(u.uid) || { tier: "free", status: "active" },
-    }));
+    // Anonymous Firebase users (trial visitors) have an empty
+    // providerData array. Pull them out of the main users list so the
+    // admin table only shows registered accounts. We still surface
+    // their count + activity as an aggregate stat for analytics.
+    const allUsers = listResult.users.map(u => {
+      const isAnon = !u.providerData || u.providerData.length === 0;
+      return {
+        uid: u.uid,
+        email: u.email || "",
+        displayName: u.displayName || "",
+        photoURL: u.photoURL || "",
+        createdAt: u.metadata.creationTime || "",
+        lastSignIn: u.metadata.lastSignInTime || "",
+        provider: isAnon ? "anonymous" : (u.providerData?.[0]?.providerId || "email"),
+        isAnonymous: isAnon,
+        disabled: u.disabled,
+        dealboards: workspacesByUser.get(u.uid) || 0,
+        deals: dealsByUser.get(u.uid) || 0,
+        subscription: subsByUser.get(u.uid) || { tier: "free", status: "active" },
+      };
+    });
+
+    const users = allUsers.filter(u => !u.isAnonymous);
+    const anonymous = allUsers.filter(u => u.isAnonymous);
 
     // Sort by most recent sign-in first
     users.sort((a, b) => new Date(b.lastSignIn).getTime() - new Date(a.lastSignIn).getTime());
+    anonymous.sort((a, b) => new Date(b.lastSignIn).getTime() - new Date(a.lastSignIn).getTime());
 
-    return NextResponse.json({ users, total: users.length });
+    // Anon analytics summary - what we actually care about for trial
+    // visitors: how many, how many uploaded a deal, how many converted
+    // (we can\'t know that here, but we can show recent activity).
+    const anonStats = {
+      total: anonymous.length,
+      withDeals: anonymous.filter(a => a.deals > 0).length,
+      activeLast24h: anonymous.filter(a => {
+        const last = new Date(a.lastSignIn).getTime();
+        return last && Date.now() - last < 24 * 60 * 60 * 1000;
+      }).length,
+      activeLast7d: anonymous.filter(a => {
+        const last = new Date(a.lastSignIn).getTime();
+        return last && Date.now() - last < 7 * 24 * 60 * 60 * 1000;
+      }).length,
+    };
+
+    return NextResponse.json({
+      users,
+      total: users.length,
+      anonymous,        // full list available if the UI wants it
+      anonStats,        // summary for the dashboard tile
+    });
   } catch (err: any) {
     console.error("[admin/users] Error:", err?.message);
     return NextResponse.json({ error: err?.message || "Failed to list users" }, { status: 500 });

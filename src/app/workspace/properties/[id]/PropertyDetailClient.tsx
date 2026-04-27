@@ -23,7 +23,6 @@ import Link from "next/link";
 
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import PropertyHeroImage from "@/components/workspace/PropertyHeroImage";
-import PropertyLocationMap from "@/components/workspace/PropertyLocationMap";
 import PropertyImageEditor from "@/components/workspace/PropertyImageEditor";
 import DealQuickScreen, { buildInput as buildQuickScreenInput, type StandardizedBaseline } from "@/components/workspace/DealQuickScreen";
 import { runQuickScreen } from "@/lib/analysis/quick-screen";
@@ -1482,13 +1481,12 @@ function PropertyDetailInner({
      URL-backed so a link into ?tab=om-reverse-pricing lands on that tab.
      The tab bar sits directly below the hero; below it the existing
      property detail sections continue to render as "Deal Details".     */
-  type ProTab = "quick-screen" | "om-reverse-pricing" | "rent-roll" | "demographics";
+  type ProTab = "quick-screen" | "om-reverse-pricing" | "rent-roll";
   const [activeProTab, setActiveProTab] = useState<ProTab>(() => {
     if (typeof window === "undefined") return "quick-screen";
     const t = new URLSearchParams(window.location.search).get("tab");
     if (t === "om-reverse-pricing") return "om-reverse-pricing";
     if (t === "rent-roll") return "rent-roll";
-    if (t === "demographics" || t === "location") return "demographics";
     return "quick-screen";
   });
   const routerForTabs = useRouter();
@@ -2218,11 +2216,10 @@ function PropertyDetailInner({
           {([
             { id: "quick-screen" as const, label: "Deal Quick Screen", ready: true },
             { id: "om-reverse-pricing" as const, label: "Offer Scenarios", ready: true },
-            // Rent Roll comes before Demographics. Hidden for land deals.
+            // Rent Roll hidden for land deals (no tenants).
             ...(wsType === "land"
               ? []
               : [{ id: "rent-roll" as const, label: "Rent Roll", ready: true }]),
-            { id: "demographics" as const, label: "Demographics", ready: true },
           ]).map(tab => {
             const isActive = tab.id === activeProTab;
             return (
@@ -2290,51 +2287,6 @@ function PropertyDetailInner({
 
           {activeProTab === "om-reverse-pricing" && (
             <OmReversePricing property={property} fields={fields} />
-          )}
-
-          {activeProTab === "demographics" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <SectionHeader
-                eyebrow="Area"
-                title="Demographics"
-                subtitle={location || "Address not yet extracted"}
-                size="md"
-                bottomGap={4}
-              />
-              {location ? (
-                <>
-                  {/* Real Leaflet map with demographics overlay enabled by default.
-                      Same map + overlay components as /workspace/map, scoped to one
-                      property and embedded inline. Toggle in the upper-right of the
-                      map turns demographics on/off without leaving the tab. */}
-                  <PropertyLocationMap
-                    propertyName={property.propertyName}
-                    address={location}
-                    lat={(property as any).latitude || null}
-                    lng={(property as any).longitude || null}
-                    initialDemographicsOn={true}
-                  />
-                  <div style={{
-                    background: "#F9FAFB", borderRadius: C.radius,
-                    border: `1px solid ${C.ghost}`, padding: "12px 16px",
-                    display: "flex", flexWrap: "wrap", gap: 14, fontSize: 12.5,
-                  }}>
-                    <span style={{ color: C.secondary }}>Quick links:</span>
-                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`} target="_blank" rel="noreferrer" style={{ color: C.primaryText, fontWeight: 700, textDecoration: "none" }}>Open in Maps &rarr;</a>
-                    <a href={`https://earth.google.com/web/search/${encodedAddress}`} target="_blank" rel="noreferrer" style={{ color: C.primaryText, fontWeight: 700, textDecoration: "none" }}>Earth view &rarr;</a>
-                    <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`} target="_blank" rel="noreferrer" style={{ color: C.primaryText, fontWeight: 700, textDecoration: "none" }}>Directions &rarr;</a>
-                  </div>
-                </>
-              ) : (
-                <div style={{
-                  background: "#F9FAFB", borderRadius: C.radius,
-                  border: `1px solid ${C.ghost}`, padding: "32px 20px",
-                  textAlign: "center", color: C.secondary, fontSize: 13,
-                }}>
-                  No address extracted from the document yet. Once the address is parsed, this tab will show the area map with population, income, and household demographics.
-                </div>
-              )}
-            </div>
           )}
 
           {activeProTab === "rent-roll" && wsType !== "land" && (
