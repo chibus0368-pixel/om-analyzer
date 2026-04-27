@@ -124,12 +124,10 @@ const nextConfig: NextConfig = {
         destination: '/',
         permanent: true,
       },
-      // Legacy standalone /pricing page removed — jump to homepage pricing section
-      {
-        source: '/pricing',
-        destination: '/#pricing',
-        permanent: true,
-      },
+      // (Removed: /pricing -> /#pricing redirect. The standalone /pricing
+      // page now exists again at src/app/pricing/page.tsx as a public
+      // marketing page with shareable URL. Keeping the redirect would
+      // shadow the route and 308 every visitor back to the home anchor.)
       // WordPress admin and login pages
       {
         source: '/wp-admin',
