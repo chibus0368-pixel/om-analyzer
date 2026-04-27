@@ -29,9 +29,12 @@ test.describe("signup + checkout flow", () => {
     await page.getByRole("button", { name: /sign in/i }).click();
     await page.waitForURL(/\/workspace(?:$|\/|\?)/, { timeout: 15_000 });
 
-    await page.goto("/workspace/upgrade");
-    // Click the Pro card's CTA - "Start 7-day free trial" or "Upgrade to Pro"
-    const proCta = page.getByRole("button", { name: /start.*trial|upgrade to pro/i }).first();
+    await page.goto("/workspace/upgrade", { waitUntil: "load" });
+    // Wait for the Pro card's CTA to appear (post-hydration). Actual labels:
+    //   - "Start 7-day free trial" (free user, hitting the upgrade target)
+    //   - "Upgrade to Pro" (less common path)
+    const proCta = page.getByRole("button", { name: /start.*trial|upgrade.*pro/i }).first();
+    await proCta.waitFor({ state: "visible", timeout: 20_000 });
     await proCta.click();
 
     // Should redirect to checkout.stripe.com
@@ -46,11 +49,16 @@ test.describe("signup + checkout flow", () => {
     await page.getByRole("button", { name: /sign in/i }).click();
     await page.waitForURL(/\/workspace(?:$|\/|\?)/, { timeout: 15_000 });
 
-    await page.goto("/workspace/profile");
+    await page.goto("/workspace/profile", { waitUntil: "load" });
+    // Wait for the editable form to hydrate. The Save Profile button is
+    // the most reliable signal that the form is fully rendered.
+    const saveBtn = page.getByRole("button", { name: /save profile/i });
+    await saveBtn.waitFor({ state: "visible", timeout: 20_000 });
 
     const newFirst = `Test${Date.now() % 10000}`;
-    await page.fill('input[name="firstName"], input:near(:text("First Name"))', newFirst);
-    await page.getByRole("button", { name: /save profile/i }).click();
+    // Fill firstName by label since the input may not have a name attr.
+    await page.getByLabel(/first name/i).fill(newFirst);
+    await saveBtn.click();
 
     // Wait for the success toast
     await expect(page.getByText(/saved successfully/i)).toBeVisible({ timeout: 10_000 });

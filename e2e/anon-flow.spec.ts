@@ -28,12 +28,13 @@ test.describe("anon trial flow", () => {
   });
 
   test("/workspace/login?mode=register renders the register form (no black screen)", async ({ page }) => {
-    await page.goto("/workspace/login?mode=register", { waitUntil: "domcontentloaded" });
-    // The page must contain SOMETHING - black-screen bug returned null,
-    // which would leave the body empty.
-    const bodyText = (await page.locator("body").innerText()).trim();
-    expect(bodyText.length, "register page rendered empty (black screen regression)").toBeGreaterThan(50);
-    // And specifically should reference creating an account or registering
+    await page.goto("/workspace/login?mode=register", { waitUntil: "load" });
+    // Wait for hydration - Next.js fills body AFTER DCL.
+    await page.waitForFunction(
+      () => (document.body.innerText || "").trim().length > 50,
+      { timeout: 15_000 }
+    );
+    // Specifically should reference creating an account / register form text.
     await expect(page.locator("body")).toContainText(/create\s*account|register|sign\s*up/i, { timeout: 10_000 });
   });
 
