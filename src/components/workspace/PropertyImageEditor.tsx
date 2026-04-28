@@ -63,6 +63,10 @@ interface Props {
   userId: string;
   currentImageUrl?: string;
   propertyName: string;
+  /** Optional - when no currentImageUrl, the editor uses this address
+   *  to fetch the same Places/Street-View fallback the dashboard cards
+   *  use, so the modal never opens empty when an image is renderable. */
+  address?: string;
   onClose: () => void;
   onSaved: (newUrl: string) => void;
 }
@@ -122,7 +126,7 @@ function clampRectInside(r: Rect, boundsW: number, boundsH: number): Rect {
 
 export default function PropertyImageEditor({
   propertyId, projectId, userId,
-  currentImageUrl, propertyName,
+  currentImageUrl, propertyName, address,
   onClose, onSaved,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -162,6 +166,33 @@ export default function PropertyImageEditor({
     if (proxyFailed) return sourceUrl;
     return resolveLoadableSrc(sourceUrl);
   }, [sourceUrl, proxyFailed]);
+
+  // If the property has no stored hero yet, hit the same fallback ladder
+  // the dashboard cards use (/api/workspace/places-photo) so the editor
+  // opens with the Places photo (or Street View / satellite) the user
+  // has been seeing on cards. Without this the modal opens empty even
+  // though something IS rendering elsewhere in the app.
+  useEffect(() => {
+    if (sourceUrl) return;             // already have something to crop
+    if (!address || !address.trim()) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/workspace/places-photo?address=${encodeURIComponent(address)}&maxwidth=1200`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled && data?.url && typeof data.url === "string") {
+          setSourceUrl(data.url);
+        }
+      } catch {
+        // non-fatal; user can still upload a fresh image
+      }
+    })();
+    return () => { cancelled = true; };
+  // Only fire on initial mount when there's no current image - avoid
+  // re-firing on every state change.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* ---- image load handler ---------------------------------------- */
   const handleImgLoad = useCallback(() => {

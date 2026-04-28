@@ -2935,6 +2935,10 @@ function PropertyDetailInner({
           userId={user.uid}
           currentImageUrl={(property as any).heroImageUrl}
           propertyName={property.propertyName || "Property"}
+          // Address feeds the editor's fallback fetch when no stored hero
+          // exists yet, so the modal mirrors the same Places/Street View
+          // image the dashboard card is showing.
+          address={[property.address1, property.city, property.state, property.zip].filter(Boolean).join(", ")}
           onClose={() => setImageEditorOpen(false)}
           onSaved={(newUrl) => {
             // Reflect the new hero locally so the page updates without a reload.
