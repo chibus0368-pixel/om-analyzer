@@ -398,6 +398,12 @@ export default function SharedViewPage() {
             left: 0;
             z-index: 20;
             box-shadow: 0 0 40px rgba(15,23,43,0.15);
+            /* Mobile: flatten back to a single page scroll so the sticky
+               back bar + tab strip work and there's no nested scroller.
+               Inline style sets overflow:hidden for desktop's pinned tab
+               strip pattern; this override re-enables outer scroll on
+               narrow screens where .detail-content is overflow:visible. */
+            overflow: auto !important;
           }
         }
         .back-pill {
@@ -721,7 +727,11 @@ export default function SharedViewPage() {
         <div className={`share-sidebar ${viewMode === "detail" ? "share-sidebar-detail" : ""}`} style={{
           width: viewMode === "detail" ? 680 : 420,
           minWidth: viewMode === "detail" ? 680 : 420,
-          background: "#fff", overflow: "auto",
+          background: "#fff",
+          // Detail view owns its own scroll inside .detail-content so the
+          // back bar + property header + tab strip stay pinned. List view
+          // needs the outer scroll for the property cards.
+          overflow: viewMode === "detail" ? "hidden" : "auto",
           borderLeft: "1px solid #e5e7eb",
           transition: "width 0.25s ease, min-width 0.25s ease",
         }}>
@@ -1147,15 +1157,14 @@ function PropertyDetail({
         </div>
       )}
 
-      {/* Scrollable content. The parent `.share-sidebar` already owns the
-          scroll for the entire detail panel, so this inner div stays
-          `overflow: visible`. Two nested scrollers caused the double
-          scrollbar on desktop and broke `position: sticky` on the back
-          bar + tab strip (they could only stick to the inner container's
-          viewport, not the actual sidebar viewport). One scroll is
-          correct on every breakpoint now; the mobile @media override is
-          redundant but harmless. */}
-      <div className="detail-content" style={{ flex: 1, overflow: "visible", padding: "16px 18px", background: "#fff" }}>
+      {/* Scrollable content. .detail-content is the ONLY scroller in
+          detail view (parent .share-sidebar is overflow:hidden in detail
+          mode). That keeps the back bar + property header + tab strip
+          static at the top and only the tab body scrolls. minHeight:0 on
+          the flex item is required for overflow:auto to actually take
+          effect inside a flex column. Mobile @media block flips this to
+          overflow:visible to flatten everything onto the page scroll. */}
+      <div className="detail-content" style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "16px 18px", background: "#fff" }}>
         {/* ═══ QUICK SCREEN TAB ═══ */}
         {tab === "quick-screen" && (
           <div>
