@@ -845,30 +845,60 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   // ── Global drag-and-drop overlay for file uploads ──
   useEffect(() => {
     const isUploadPage = () => window.location.pathname.includes("/workspace/upload");
+
+    // Helper: is this drag carrying actual files (vs. a text selection,
+    // an internal element drag, etc.)?
+    const isFileDrag = (e: DragEvent): boolean => {
+      const types = e.dataTransfer?.types;
+      if (!types) return false;
+      // DOMStringList vs Array; both expose includes/contains
+      if (typeof (types as any).includes === "function") {
+        return (types as any).includes("Files");
+      }
+      for (let i = 0; i < (types as any).length; i++) {
+        if ((types as any)[i] === "Files") return true;
+      }
+      return false;
+    };
+
     const handleDragEnter = (e: DragEvent) => {
       if (isUploadPage()) return; // upload page has its own handler
-      if (e.dataTransfer?.types?.includes("Files")) {
-        globalDragCounter.current++;
-        setGlobalDrag(true);
+      if (!isFileDrag(e)) return;
+      e.preventDefault();
+      globalDragCounter.current++;
+      setGlobalDrag(true);
+    };
+    const handleDragLeave = (e: DragEvent) => {
+      if (isUploadPage()) return;
+      if (!isFileDrag(e)) return;
+      globalDragCounter.current--;
+      if (globalDragCounter.current <= 0) {
+        globalDragCounter.current = 0;
+        setGlobalDrag(false);
       }
     };
-    const handleDragLeave = () => {
-      globalDragCounter.current--;
-      if (globalDragCounter.current <= 0) { globalDragCounter.current = 0; setGlobalDrag(false); }
+    // CRITICAL: dragover MUST preventDefault on every tick the drag
+    // carries files, regardless of React state. The previous version
+    // gated this on `globalDrag`, which meant the very first dragover
+    // (before React had a chance to flip state from the dragenter)
+    // didn't preventDefault - so the browser treated the page as
+    // non-droppable, the drop event never fired on our handler, and
+    // the file silently opened in a new tab. The user then dropped
+    // again, state had settled, and it worked. That's exactly the
+    // "first drop does nothing, second drop works" symptom.
+    const handleDragOver = (e: DragEvent) => {
+      if (isUploadPage()) return;
+      if (!isFileDrag(e)) return;
+      e.preventDefault();
     };
-    const handleDragOver = (e: DragEvent) => { if (globalDrag) e.preventDefault(); };
     const handleDrop = (e: DragEvent) => {
+      if (isUploadPage()) return;
+      if (!isFileDrag(e)) return;
       e.preventDefault();
       globalDragCounter.current = 0;
       setGlobalDrag(false);
-      if (isUploadPage()) return;
       if (e.dataTransfer?.files?.length) {
-        // In-memory module handoff so the actual File objects survive
-        // the SPA navigation. The previous version stored only filenames
-        // in sessionStorage and expected the user to RE-DROP on the
-        // upload page - which is why drag+drop on any other page
-        // appeared to do nothing. /workspace/upload reads these on
-        // mount and auto-fires the upload pipeline.
+        // In-memory module handoff - File objects survive the SPA nav.
         setPendingUploadFiles(e.dataTransfer.files);
         const ws = activeWorkspace?.slug || activeWorkspace?.id || "";
         router.push(`/workspace/upload${ws ? `?ws=${ws}` : ""}`);
@@ -885,7 +915,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
       window.removeEventListener("drop", handleDrop);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [globalDrag, activeWorkspace?.slug, activeWorkspace?.id, router]);
+  }, [activeWorkspace?.slug, activeWorkspace?.id, router]);
 
   // ── Auth gate ──
   // ALL workspace routes auto-anon-sign-in for unauth'd visitors so the
