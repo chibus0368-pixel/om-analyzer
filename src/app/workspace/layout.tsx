@@ -1883,30 +1883,22 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         </div>
       )}
 
-      {/* ─── Mobile Bottom Tab Bar (hidden on desktop via CSS) ─── */}
+      {/* ─── Mobile Bottom Tab Bar (hidden on desktop via CSS) ───
+          Upload was previously rendered as a popped-out lime circle to
+          call attention to it; user said it doesn't need that
+          treatment. All four tabs are now rendered the same way and
+          the active tab gets the standard lime underline + label. */}
       <nav className="ws-bottom-tabs">
         {[
-          { href: "/workspace", label: "Dealboard", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>, isUpload: false },
-          { href: "/workspace/scoreboard", label: "Scorecard", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>, isUpload: false },
-          { href: "/workspace/upload", label: "Upload", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 13v8"/><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="m8 17 4-4 4 4"/></svg>, isUpload: true },
-          { href: "/workspace/map", label: "Map", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>, isUpload: false },
+          { href: "/workspace", label: "Dealboard", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
+          { href: "/workspace/scoreboard", label: "Scorecard", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg> },
+          { href: "/workspace/upload", label: "Upload", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M12 13v8"/><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="m8 17 4-4 4 4"/></svg> },
+          { href: "/workspace/map", label: "Map", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg> },
         ].map(tab => {
           const active = tab.href === "/workspace"
             ? pathname === "/workspace" || pathname.startsWith("/workspace/properties")
             : pathname.startsWith(tab.href);
           const wsSlug = activeWorkspace?.slug ? `?ws=${activeWorkspace.slug}` : "";
-
-          if (tab.isUpload) {
-            return (
-              <Link key={tab.href} href={`${tab.href}${wsSlug}`} prefetch={false} className="ws-bottom-tab ws-bottom-tab-upload" style={{ textDecoration: "none" }}>
-                <div className="ws-bottom-tab-upload-circle">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
-                </div>
-                <span>Upload</span>
-              </Link>
-            );
-          }
-
           return (
             <Link key={tab.href} href={`${tab.href}${wsSlug}`} prefetch={false} className={`ws-bottom-tab${active ? " active" : ""}`} style={{ textDecoration: "none" }}>
               {tab.icon}

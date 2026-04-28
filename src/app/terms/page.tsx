@@ -42,7 +42,7 @@ export default function TermsPage() {
           {[
             {
               title: "Acceptance of Terms",
-              content: "By accessing and using Deal Signals.com, you agree to be bound by these Terms of Use. If you do not agree to these terms, please do not use the site. We reserve the right to modify these terms at any time; continued use constitutes acceptance of changes."
+              content: "By accessing and using DealSignals.app, you agree to be bound by these Terms of Use. If you do not agree to these terms, please do not use the site. We reserve the right to modify these terms at any time; continued use constitutes acceptance of changes."
             },
             {
               title: "Not Investment Advice",
@@ -58,7 +58,7 @@ export default function TermsPage() {
             },
             {
               title: "Intellectual Property",
-              content: "All content on Deal Signals.com, including text, graphics, logos, tools, and software, is the property of Deal Signals or its content suppliers and is protected by copyright laws. You may not reproduce, distribute, or create derivative works from our content without express written permission."
+              content: "All content on DealSignals.app, including text, graphics, logos, tools, and software, is the property of Deal Signals or its content suppliers and is protected by copyright laws. You may not reproduce, distribute, or create derivative works from our content without express written permission."
             },
             {
               title: "Permitted Use",
