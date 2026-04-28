@@ -194,8 +194,8 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
           OM Reverse Pricing needs core inputs
         </div>
         <div style={{ fontSize: 12, color: C.secondary, maxWidth: 440, margin: "0 auto", lineHeight: 1.5 }}>
-          To reverse-engineer a bid, we need at minimum an asking price and property size (units or SF).
-          Upload the OM or fill those fields on the Details tab and this view will populate.
+          To reverse-engineer a bid, we need at minimum an asking price and property size (units or SF for buildings; acres for land).
+          Re-upload a more detailed OM, or click any extracted value on the Summary tab to edit it inline.
         </div>
       </div>
     );

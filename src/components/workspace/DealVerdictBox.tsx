@@ -250,6 +250,13 @@ export default function DealVerdictBox({ property, fields, variant = "main", bri
     // Quiet empty state. Main page keeps its normal layout; tabs don't need
     // a second "waiting on inputs" card since the tab body will show one.
     if (variant === "slim") return null;
+
+    // Land deals don't fit the per-unit / per-SF Quick Screen model
+    // (price/acre + entitlement timing matter, not NOI/unit). Show a
+    // land-specific message instead of pretending we'll auto-screen
+    // it once a unit count appears.
+    const isLand = ((property as any)?.analysisType || "").toLowerCase() === "land";
+
     return (
       <div style={{
         background: "#fff",
@@ -261,9 +268,21 @@ export default function DealVerdictBox({ property, fields, variant = "main", bri
         color: C.secondary,
         lineHeight: 1.5,
       }}>
-        <strong style={{ color: C.onSurface }}>Verdict pending.</strong>{" "}
-        The screen needs at least an asking price and unit count (or building SF).
-        Upload the OM or fill those fields on the Details tab.
+        {isLand ? (
+          <>
+            <strong style={{ color: C.onSurface }}>Land deal — no auto-verdict.</strong>{" "}
+            Quick Screen runs on building cash flow and doesn&apos;t apply to raw land.
+            See <strong>Offer Scenarios</strong> for price/acre and reverse-pricing math, and
+            the <strong>Rent Roll</strong> tab is hidden for land deals as expected.
+          </>
+        ) : (
+          <>
+            <strong style={{ color: C.onSurface }}>Verdict pending.</strong>{" "}
+            The screen needs at least an asking price and unit count (or building SF).
+            Re-upload a more detailed OM, or click the property name / address /
+            metric values above to edit them inline.
+          </>
+        )}
       </div>
     );
   }

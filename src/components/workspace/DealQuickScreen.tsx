@@ -266,7 +266,8 @@ export default function DealQuickScreen({ property, fields, overrides }: DealQui
         </div>
         <div style={{ fontSize: 12, color: C.secondary, maxWidth: 420, margin: "0 auto", lineHeight: 1.5 }}>
           A Buy / Neutral / Pass read needs at minimum an asking price and unit count (or building SF).
-          Upload the OM or fill those fields on the Details tab and this view will run automatically.
+          Re-upload a more detailed OM, or click any extracted value on the Summary tab to edit it inline.
+          Land deals don&apos;t run through Quick Screen; see Offer Scenarios for $/acre math.
         </div>
       </div>
     );
