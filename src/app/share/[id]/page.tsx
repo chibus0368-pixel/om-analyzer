@@ -375,7 +375,16 @@ export default function SharedViewPage() {
   const detailProp = selectedProp ? properties.find(p => p.id === selectedProp) : null;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f7f8fc", fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div
+      // Lock the page to one viewport on desktop so .detail-content owns
+      // the only scrollbar in detail mode. Without this, the body grows
+      // past 100vh on tall content and the browser-level scrollbar
+      // appears OUTSIDE .share-sidebar — that's the second scrollbar
+      // people were seeing to the right of the tab strip. Mobile @media
+      // (max-width:900px) opts out and lets the page scroll naturally.
+      className="share-page-root"
+      style={{ minHeight: "100vh", height: "100vh", overflow: "hidden", background: "#f7f8fc", fontFamily: "'Inter', system-ui, sans-serif" }}
+    >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -388,6 +397,13 @@ export default function SharedViewPage() {
            actually usable. The "Back to Map" pill at the top of the detail
            panel returns to list mode which restores the map. */
         @media (max-width: 900px) {
+          /* Phones use natural body scroll for the detail flow (the
+             .share-sidebar-detail rule below opts the inner panel into
+             auto overflow). Reverse the desktop lock here. */
+          .share-page-root {
+            height: auto !important;
+            overflow: visible !important;
+          }
           .share-sidebar-detail {
             width: 100% !important;
             min-width: 0 !important;
