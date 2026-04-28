@@ -14,6 +14,7 @@ import TrialStatusBar from "@/components/billing/TrialStatusBar";
 
 import UpgradeModal from "@/components/billing/UpgradeModal";
 import { ensureAnonymousUser } from "@/lib/firebase";
+import { setPendingUploadFiles } from "@/lib/workspace/upload-handoff";
 
 /* Sidebar nav - matches Deal Signals design - NO "DealBoard" link */
 const SIDEBAR_NAV = [
@@ -862,11 +863,13 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
       setGlobalDrag(false);
       if (isUploadPage()) return;
       if (e.dataTransfer?.files?.length) {
-        // Store files in sessionStorage so upload page can pick them up
-        const names = Array.from(e.dataTransfer.files).map(f => f.name);
-        sessionStorage.setItem("globalDropFiles", JSON.stringify(names));
-        // We can't pass File objects through sessionStorage, so redirect to upload
-        // The upload page already has its own drop zone - user just needs to re-drop or select
+        // In-memory module handoff so the actual File objects survive
+        // the SPA navigation. The previous version stored only filenames
+        // in sessionStorage and expected the user to RE-DROP on the
+        // upload page - which is why drag+drop on any other page
+        // appeared to do nothing. /workspace/upload reads these on
+        // mount and auto-fires the upload pipeline.
+        setPendingUploadFiles(e.dataTransfer.files);
         const ws = activeWorkspace?.slug || activeWorkspace?.id || "";
         router.push(`/workspace/upload${ws ? `?ws=${ws}` : ""}`);
       }
