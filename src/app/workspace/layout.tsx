@@ -379,20 +379,22 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
 }
 
 /**
- * Lime lightning-bolt button shown in the header. On hover (or focus),
- * shows a small popover with the user's deal usage, a progress bar, and
- * a tier-appropriate CTA. Mirrors the "credits" pattern from chat tools
- * but in DealSignals brand (lime + dark navy) instead of blue.
+ * Hover-wrapper that shows a small usage popover when the cursor hovers
+ * the existing Pro/Free/upgrade pill. The pill itself stays the visible
+ * trigger - we just attach a popover to it. Removes the previous
+ * standalone lightning-bolt button (one less thing in the header).
  *
- * Hide-on-leave uses a short delay so the cursor can travel from button
- * to popover without flicker. The popover anchors below the button.
+ * Hide-on-leave uses a short delay so the cursor can travel from pill
+ * to popover without flicker. The popover anchors below the trigger.
  */
-function HeaderUsageBolt({
+function PlanPillWithUsagePopover({
   userTier,
   userUsage,
+  children,
 }: {
   userTier: string;
   userUsage: { used: number; limit: number } | null;
+  children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -439,29 +441,11 @@ function HeaderUsageBolt({
       style={{ position: "relative", display: "inline-flex", alignItems: "center" }}
       onMouseEnter={() => { cancelClose(); setOpen(true); }}
       onMouseLeave={scheduleClose}
+      onFocus={() => { cancelClose(); setOpen(true); }}
+      onBlur={scheduleClose}
     >
-      <button
-        type="button"
-        aria-label="Usage"
-        aria-expanded={open}
-        onFocus={() => { cancelClose(); setOpen(true); }}
-        onBlur={scheduleClose}
-        style={{
-          width: 34, height: 34, borderRadius: "50%",
-          background: "#84CC16", color: "#0F172A",
-          border: "1px solid rgba(132,204,22,0.6)",
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-          cursor: "pointer", padding: 0,
-          boxShadow: "0 1px 3px rgba(132,204,22,0.35)",
-          transition: "transform 0.12s ease, box-shadow 0.12s ease",
-        }}
-        onMouseDown={e => { e.currentTarget.style.transform = "scale(0.95)"; }}
-        onMouseUp={e => { e.currentTarget.style.transform = "scale(1)"; }}
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-          <path d="M13 2L4.09 12.97a.5.5 0 0 0 .39.81H10l-1.5 8.22a.5.5 0 0 0 .89.39L20 11.41a.5.5 0 0 0-.39-.81H14l1-7.81A.5.5 0 0 0 13 2z" />
-        </svg>
-      </button>
+      {/* The Pro/Free pill itself is the trigger - no separate icon. */}
+      {children}
 
       {open && (
         <div
@@ -1238,10 +1222,11 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           </div>
         </div>
 
-        {/* Right: Pro Plan pill + user info + settings */}
+        {/* Right: Pro Plan pill + user info + settings.
+            The pill itself is now the hover-trigger for the usage popover
+            (no separate lightning-bolt button anymore). */}
         <div className="ws-header-right" style={{ display: "flex", alignItems: "center", gap: 24, marginLeft: "auto" }}>
-          {/* Lightning bolt usage chip - hover for credits popover */}
-          <HeaderUsageBolt userTier={userTier} userUsage={userUsage} />
+          <PlanPillWithUsagePopover userTier={userTier} userUsage={userUsage}>
           {userTier === "anonymous" ? (
             <Link
               href="/workspace/upgrade"
@@ -1298,6 +1283,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               {userTier === "pro" ? "Pro Plan" : userTier === "pro_plus" ? "Pro+" : "My Plan"}
             </Link>
           )}
+          </PlanPillWithUsagePopover>
 
           {/* User section - border-left divider */}
           {user && (

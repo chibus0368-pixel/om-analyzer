@@ -14,7 +14,7 @@ import {
 import type { Property, ProjectDocument, ExtractedField, ProjectOutput, Note, DocCategory } from "@/lib/workspace/types";
 import { DOC_CATEGORY_LABELS, ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
 import { AnalysisTypeIcon } from "@/lib/workspace/AnalysisTypeIcon";
-import { generateUnderwritingXLSX, generateBriefDownload, generateStrategyLensXLSX } from "@/lib/workspace/generate-files";
+import { generateUnderwritingXLSX, generateBriefDownload } from "@/lib/workspace/generate-files";
 import { renderPropertyEmailHTML } from "@/lib/workspace/email-property-html";
 import { extractTextFromFiles } from "@/lib/workspace/file-reader";
 import { useWorkspace } from "@/lib/workspace/workspace-context";
@@ -2033,45 +2033,10 @@ function PropertyDetailInner({
               Brief
               <span style={{ padding: "1px 5px", background: "#DBEAFE", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#1E40AF" }}>DOC</span>
             </button>
-            {userTier === "pro_plus" ? (
-              <button
-                onClick={async () => { try { await generateStrategyLensXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("Strategy XLS failed: " + (e?.message || "unknown")); } }}
-                className="dl-btn"
-                style={{
-                  padding: "6px 14px", borderRadius: 8,
-                  border: `1px solid ${C.ghostBorder}`, background: "linear-gradient(135deg, #FEF3C7, #FDE68A)",
-                  color: "#92400E", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
-                }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
-                Strategy
-                <span style={{ padding: "1px 5px", background: "#FCD34D", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#78350F" }}>PRO+</span>
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  if (confirm("Strategy Analysis is a Pro+ feature. Upgrade to unlock detailed Core / Value-Add / Opportunistic analysis for every deal.\n\nGo to upgrade page?")) {
-                    window.location.href = "/workspace?upgrade=true";
-                  }
-                }}
-                className="dl-btn"
-                title="Upgrade to Pro+ to unlock Strategy Analysis"
-                style={{
-                  padding: "6px 14px", borderRadius: 8,
-                  border: "1px solid #E5E7EB", background: "#F3F4F6",
-                  color: "#9CA3AF", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
-                }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0110 0v4" />
-                </svg>
-                Strategy
-                <span style={{ padding: "1px 5px", background: "#E5E7EB", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#6B7280" }}>PRO+</span>
-              </button>
-            )}
+            {/* Strategy Pro+ pill removed per user request - was visual
+                noise in the hero cluster. Strategy XLSX is still
+                generatable via the mobile header below if a Pro+ user
+                wants it; keep the import alive. */}
             {user && (
               <EmailPropertyButton
                 property={property}
@@ -2455,49 +2420,7 @@ function PropertyDetailInner({
                 Brief
                 <span style={{ padding: "1px 5px", background: "#DBEAFE", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#1E40AF" }}>DOC</span>
               </button>
-              {/* Strategy Analysis - Pro+ only */}
-              {userTier === "pro_plus" ? (
-                <button
-                  onClick={async () => { try { await generateStrategyLensXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("Strategy XLS failed: " + (e?.message || "unknown")); } }}
-                  className="dl-btn"
-                  style={{
-                    padding: "6px 14px", borderRadius: 8,
-                    border: `1px solid ${C.ghostBorder}`, background: "linear-gradient(135deg, #FEF3C7, #FDE68A)",
-                    color: "#92400E", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                    display: "inline-flex", alignItems: "center", gap: 6,
-                  }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
-                  Strategy
-                  <span style={{ padding: "1px 5px", background: "#FCD34D", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#78350F" }}>PRO+</span>
-                </button>
-              ) : (
-                // Locked state: render as a muted/disabled-looking button so it
-                // doesn't compete with the active downloads. Still clickable -
-                // the click routes to the upgrade flow - just visually gated.
-                <button
-                  onClick={() => {
-                    if (confirm("Strategy Analysis is a Pro+ feature. Upgrade to unlock detailed Core / Value-Add / Opportunistic analysis for every deal.\n\nGo to upgrade page?")) {
-                      window.location.href = "/workspace?upgrade=true";
-                    }
-                  }}
-                  className="dl-btn"
-                  title="Upgrade to Pro+ to unlock Strategy Analysis"
-                  style={{
-                    padding: "6px 14px", borderRadius: 8,
-                    border: "1px solid #E5E7EB",
-                    background: "#F3F4F6",
-                    color: "#9CA3AF", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                    display: "inline-flex", alignItems: "center", gap: 6,
-                  }}>
-                  {/* Lock icon */}
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0110 0v4" />
-                  </svg>
-                  Strategy
-                  <span style={{ padding: "1px 5px", background: "#E5E7EB", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#6B7280" }}>PRO+</span>
-                </button>
-              )}
+              {/* Strategy Pro+ pill removed per user request. */}
               {/* Email this property (all tiers) */}
               {user && (
                 <EmailPropertyButton
