@@ -1762,6 +1762,11 @@ function PropertyDetailInner({
           .pd-prop-name { font-size: 22px !important; }
           .pd-prop-location { font-size: 13px !important; }
           .pd-dl-buttons { display: none !important; }
+          /* Mobile-only horizontal scroll-snap tools strip with the
+             CRE Chatbot + Workbook + Brief + Email buttons so the
+             user can flick through all four with one thumb instead
+             of seeing them wrap awkwardly. */
+          .pd-mobile-tools { display: flex !important; }
 
           /* Mobile score card - the signature look */
           .pd-mobile-score-card {
@@ -2409,16 +2414,13 @@ function PropertyDetailInner({
             propertyId={propertyId}
             onSave={(newName: string) => setProperty((prev: Property | null) => prev ? { ...prev, propertyName: newName } : prev)}
           />
+          {/* Desktop download cluster (hidden on mobile via .pd-dl-buttons
+              CSS rule above). Mobile uses the .pd-mobile-tools menu
+              rendered just below the property name to avoid the
+              awkward wrapping that happened when these buttons stayed
+              in the same row as the property title at narrow widths. */}
           {hasData && (
             <div className="pd-dl-buttons" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-              {/*
-                Download CTAs: tint each button in its format's canonical hue
-                (Excel-green for the XLSX, Word-blue for the brief DOC) so they
-                scan as "this is a spreadsheet" / "this is a document" at a
-                glance instead of a row of identical grey pills. Soft tinted
-                background + matching border keeps them readable and in-brand
-                with the lime green accents elsewhere on the page.
-              */}
               <button
                 onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
                 className="dl-btn"
@@ -2447,8 +2449,6 @@ function PropertyDetailInner({
                 Brief
                 <span style={{ padding: "1px 5px", background: "#DBEAFE", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#1E40AF" }}>DOC</span>
               </button>
-              {/* Strategy Pro+ pill removed per user request. */}
-              {/* Email this property (all tiers) */}
               {user && (
                 <EmailPropertyButton
                   property={property}
@@ -2462,6 +2462,72 @@ function PropertyDetailInner({
               )}
             </div>
           )}
+        </div>
+        {/* ── Mobile-only Tools row (hidden on desktop via CSS).
+            Single horizontal scroll-snap strip with chunky tap targets;
+            no wrap, no overflow menu - the user can flick across all
+            four actions with one thumb. */}
+        {hasData && (
+          <div className="pd-mobile-tools" style={{
+            display: "none",
+            gap: 8, marginTop: 12,
+            overflowX: "auto", scrollSnapType: "x mandatory",
+            paddingBottom: 4,
+          }}>
+            <button
+              onClick={() => setCoachOpen((prev) => !prev)}
+              style={{
+                flex: "0 0 auto", scrollSnapAlign: "start",
+                padding: "8px 14px", borderRadius: 10,
+                border: `1px solid ${coachOpen ? "#4D7C0F" : "#BBF77A"}`,
+                background: coachOpen ? "#4D7C0F" : "#F0FDF4",
+                color: coachOpen ? "#FFFFFF" : "#3F6212",
+                fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap",
+              }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+              </svg>
+              CRE Chatbot
+            </button>
+            <button
+              onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
+              style={{
+                flex: "0 0 auto", scrollSnapAlign: "start",
+                padding: "8px 14px", borderRadius: 10,
+                border: "1px solid #A7F3D0", background: "#ECFDF5",
+                color: "#065F46", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap",
+              }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#065F46" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+              Workbook
+            </button>
+            <button
+              onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType, { quickScreen: downloadQuickScreen, tenants })}
+              style={{
+                flex: "0 0 auto", scrollSnapAlign: "start",
+                padding: "8px 14px", borderRadius: 10,
+                border: "1px solid #BFDBFE", background: "#EFF6FF",
+                color: "#1E40AF", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap",
+              }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E40AF" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+              Brief
+            </button>
+            {user && (
+              <EmailPropertyButton
+                property={property}
+                fields={fields}
+                brief={brief}
+                wsType={wsType}
+                scoreTotal={scoreTotal}
+                scoreBand={scoreBand}
+                user={user}
+              />
+            )}
+          </div>
+        )}
+        <div style={{ display: "none" }}>{/* spacer so JSX flow is clean */}</div>
         </div>
         {location && (
           <div className="pd-prop-location" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
