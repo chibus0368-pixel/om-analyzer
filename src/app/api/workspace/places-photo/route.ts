@@ -224,7 +224,53 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ url: mediaUrl, placeId: newPlace?.id, source: "places_new" });
     }
 
-    return fail(404, { error: "no_photo", detail: "Photo found but no resolvable URL returned." });
+    // ── ATTEMPT 3: Street View metadata + image (server-side fallback) ──
+    // If neither Places API surfaced a photo for this address, fall back
+    // to a Street View static image. We hit the metadata endpoint first
+    // so we only return a URL when imagery actually exists at that spot
+    // (otherwise Street View serves a generic "no imagery" placeholder
+    // that looks broken in our UI). Going server-side here means the
+    // image URL we return uses the unrestricted server key, so the
+    // browser doesn't need Street View enabled on the public key.
+    try {
+      const svMetaUrl =
+        `https://maps.googleapis.com/maps/api/streetview/metadata` +
+        `?location=${encodeURIComponent(address)}` +
+        `&key=${key}`;
+      const svMetaRes = await fetch(svMetaUrl, { signal: AbortSignal.timeout(5000) });
+      if (svMetaRes.ok) {
+        const svMeta = (await svMetaRes.json()) as { status: string };
+        attempts.push({ api: "streetview_metadata", status: svMeta.status });
+        if (svMeta.status === "OK") {
+          const svImgUrl =
+            `https://maps.googleapis.com/maps/api/streetview` +
+            `?size=1200x800&location=${encodeURIComponent(address)}` +
+            `&fov=80&pitch=5&key=${key}`;
+          return NextResponse.json({ url: svImgUrl, source: "streetview" });
+        }
+      } else {
+        attempts.push({ api: "streetview_metadata", httpStatus: svMetaRes.status });
+      }
+    } catch (svErr: any) {
+      attempts.push({ api: "streetview_metadata", error: svErr?.message });
+    }
+
+    // ── ATTEMPT 4: Static Maps satellite (always works if key has Maps Static API) ──
+    try {
+      const satUrl =
+        `https://maps.googleapis.com/maps/api/staticmap` +
+        `?center=${encodeURIComponent(address)}` +
+        `&zoom=18&size=1200x800&maptype=satellite&key=${key}`;
+      // No metadata endpoint for static maps; we just hand back the URL.
+      // The component should always be able to render this as long as the
+      // address geocodes (which the legacy Places call already proved).
+      attempts.push({ api: "satellite_static", note: "url-only, no precheck" });
+      return NextResponse.json({ url: satUrl, source: "satellite" });
+    } catch (satErr: any) {
+      attempts.push({ api: "satellite_static", error: satErr?.message });
+    }
+
+    return fail(404, { error: "no_photo", detail: "No Places photo, no Street View imagery, no satellite fallback." });
   } catch (err: any) {
     console.warn("[places-photo] lookup failed:", err?.message || err);
     return fail(503, { error: "places_unavailable", detail: err?.message || "Unknown error" });
