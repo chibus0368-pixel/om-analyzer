@@ -1984,26 +1984,49 @@ function PropertyDetailInner({
             position: "absolute", top: 14, right: 14, zIndex: 2,
             display: "flex", gap: 8, flexShrink: 0,
           }}>
-            {/* CRE Chatbot - labeled lime button so it's findable. Opens
-                the controlled DealCoachChat panel mounted near the bottom
-                of this component. */}
+            {/* CRE Chatbot - matches the Workbook XLSX / Brief DOC sibling
+                pattern: tinted background + matching border + canonical
+                darker brand lime (#4D7C0F) so it doesn't shout next to
+                its quieter neighbors. Active state (panel open) flips
+                to a solid fill so the user can see at a glance that
+                the chat is currently expanded. */}
             <button
               onClick={() => setCoachOpen((prev) => !prev)}
               className="dl-btn"
-              title="Open CRE Chatbot"
+              title={coachOpen ? "Close CRE Chatbot" : "Open CRE Chatbot"}
               style={{
                 padding: "6px 14px", borderRadius: 8,
-                border: "1px solid rgba(132,204,22,0.55)",
-                background: "#84CC16",
-                color: "#FFFFFF", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                border: `1px solid ${coachOpen ? "#4D7C0F" : "#BBF77A"}`,
+                background: coachOpen ? "#4D7C0F" : "#F0FDF4",
+                color: coachOpen ? "#FFFFFF" : "#3F6212",
+                fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
                 display: "inline-flex", alignItems: "center", gap: 6,
-                boxShadow: "0 2px 8px rgba(132,204,22,0.45)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
                 letterSpacing: 0.2,
+                transition: "background 0.12s ease, color 0.12s ease, border-color 0.12s ease",
+              }}
+              onMouseEnter={(e) => {
+                if (coachOpen) return;
+                (e.currentTarget as HTMLElement).style.background = "#DCFCE7";
+                (e.currentTarget as HTMLElement).style.borderColor = "#4D7C0F";
+              }}
+              onMouseLeave={(e) => {
+                if (coachOpen) return;
+                (e.currentTarget as HTMLElement).style.background = "#F0FDF4";
+                (e.currentTarget as HTMLElement).style.borderColor = "#BBF77A";
               }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
               </svg>
               CRE Chatbot
+              <span style={{
+                padding: "1px 5px",
+                background: coachOpen ? "rgba(255,255,255,0.18)" : "#BBF77A",
+                color: coachOpen ? "#FFFFFF" : "#3F6212",
+                borderRadius: 3, fontSize: 8, fontWeight: 700,
+              }}>
+                BETA
+              </span>
             </button>
             <button
               onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
