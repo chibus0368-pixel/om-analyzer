@@ -26,7 +26,7 @@ interface WorkspaceContextValue {
   workspaces: Workspace[];
   activeWorkspace: Workspace | null;
   loading: boolean;
-  switchWorkspace: (id: string) => void;
+  switchWorkspace: (id: string, opts?: { navigate?: boolean }) => void;
   addWorkspace: (name: string, analysisType?: AnalysisType) => Promise<Workspace>;
   renameWorkspace: (id: string, newName: string) => void;
   deleteWorkspace: (id: string) => void;
@@ -301,11 +301,28 @@ export function WorkspaceProvider({ children, userId }: { children: ReactNode; u
     }
   }, [searchParams, workspaces, activeId]);
 
-  const switchWorkspace = useCallback((id: string) => {
+  const switchWorkspace = useCallback((id: string, opts?: { navigate?: boolean }) => {
     setActiveId(id);
     if (typeof window !== "undefined") localStorage.setItem(ACTIVE_WS_KEY, id);
     window.dispatchEvent(new Event("workspace-changed"));
-  }, []);
+
+    // Hop to the dealboard's dashboard view for the newly-selected board
+    // unless the caller opts out (e.g. the upload page switches workspace
+    // mid-flow and immediately router.push()es the user to the new
+    // property page itself). Without this jump, switching from a property
+    // detail or scoreboard view would leave the user on the previous
+    // page with a stale workspace badge in the header.
+    if (opts?.navigate !== false && typeof window !== "undefined") {
+      const target = workspaces.find(w => w.id === id);
+      const slug = target?.slug;
+      const url = slug ? `/workspace?ws=${encodeURIComponent(slug)}` : "/workspace";
+      // router.push must run after React processes the setActiveId batch
+      // so the dashboard mounts with the new activeWorkspace already in
+      // context. queueMicrotask is enough — we just need to defer past
+      // the current render tick.
+      queueMicrotask(() => router.push(url));
+    }
+  }, [workspaces, router]);
 
   const addWorkspace = useCallback(async (name: string, analysisType: AnalysisType = "retail"): Promise<Workspace> => {
     // Optimistic local insert so the UI updates immediately.

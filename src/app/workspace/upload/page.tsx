@@ -516,8 +516,11 @@ export default function UploadPage() {
       } as any);
 
       // Move the user to the newly created dealboard so when they land on the
-      // property page, sidebar / header context matches.
-      switchWorkspace(newWs.id);
+      // property page, sidebar / header context matches. navigate:false
+      // because we're mid-upload and the next router.push below sends the
+      // user straight to the new property page - we don't want to flash
+      // through the dashboard.
+      switchWorkspace(newWs.id, { navigate: false });
 
       // Files were already uploaded before classification ran. Skip re-upload
       // and go straight to the full analysis pipeline against the new model.
