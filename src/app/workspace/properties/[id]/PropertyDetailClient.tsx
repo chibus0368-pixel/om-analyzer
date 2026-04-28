@@ -24,6 +24,10 @@ import Link from "next/link";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import PropertyHeroImage from "@/components/workspace/PropertyHeroImage";
 import PropertyImageEditor from "@/components/workspace/PropertyImageEditor";
+// CRE Chatbot temporarily disabled (not quite ready). Rendering is gated
+// behind `{false && (...)}` wrappers below; flip those to `{true && (...)}`
+// or remove the wrapper to re-enable. Import + state are kept live so TS
+// still typechecks the disabled JSX.
 import DealCoachChat from "@/components/workspace/DealCoachChat";
 import DealQuickScreen, { buildInput as buildQuickScreenInput, type StandardizedBaseline } from "@/components/workspace/DealQuickScreen";
 import { runQuickScreen } from "@/lib/analysis/quick-screen";
@@ -1993,6 +1997,10 @@ function PropertyDetailInner({
             position: "absolute", top: 14, right: 14, zIndex: 2,
             display: "flex", gap: 8, flexShrink: 0,
           }}>
+            {/* CRE Chatbot disabled (not quite ready) */}
+            {false && (
+              <>
+
             {/* CRE Chatbot - matches the Workbook XLSX / Brief DOC sibling
                 pattern: tinted background + matching border + canonical
                 darker brand lime (#4D7C0F) so it doesn't shout next to
@@ -2037,6 +2045,8 @@ function PropertyDetailInner({
                 BETA
               </span>
             </button>
+              </>
+            )}
             <button
               onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
               className="dl-btn"
@@ -2474,6 +2484,10 @@ function PropertyDetailInner({
             overflowX: "auto", scrollSnapType: "x mandatory",
             paddingBottom: 4,
           }}>
+            {/* CRE Chatbot disabled (not quite ready) */}
+            {false && (
+              <>
+
             <button
               onClick={() => setCoachOpen((prev) => !prev)}
               style={{
@@ -2490,6 +2504,8 @@ function PropertyDetailInner({
               </svg>
               CRE Chatbot
             </button>
+              </>
+            )}
             <button
               onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
               style={{
@@ -2970,7 +2986,7 @@ function PropertyDetailInner({
       {/* Floating Deal Coach chat - context-loaded brainstorming partner.
           Anchored bottom-right; rendered alongside the modal so the user
           can ask questions without losing whatever tab they're on. */}
-      {user && property && (
+      {false && user && property && ( /* CRE Chatbot disabled */
         <DealCoachChat
           propertyId={propertyId}
           propertyName={property.propertyName || "Untitled property"}
