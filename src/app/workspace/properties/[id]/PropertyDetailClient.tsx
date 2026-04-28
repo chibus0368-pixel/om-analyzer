@@ -24,6 +24,7 @@ import Link from "next/link";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import PropertyHeroImage from "@/components/workspace/PropertyHeroImage";
 import PropertyImageEditor from "@/components/workspace/PropertyImageEditor";
+import DealCoachChat from "@/components/workspace/DealCoachChat";
 import DealQuickScreen, { buildInput as buildQuickScreenInput, type StandardizedBaseline } from "@/components/workspace/DealQuickScreen";
 import { runQuickScreen } from "@/lib/analysis/quick-screen";
 import OmReversePricing from "@/components/workspace/OmReversePricing";
@@ -2926,6 +2927,20 @@ function PropertyDetailInner({
           Delete Deal
         </button>
       </div>
+
+      {/* Floating Deal Coach chat - context-loaded brainstorming partner.
+          Anchored bottom-right; rendered alongside the modal so the user
+          can ask questions without losing whatever tab they're on. */}
+      {user && property && (
+        <DealCoachChat
+          propertyId={propertyId}
+          propertyName={property.propertyName || "Untitled property"}
+          analysisType={(property as any)?.analysisType}
+          getToken={async () => {
+            try { return await user.getIdToken(); } catch { return null; }
+          }}
+        />
+      )}
 
       {/* Image editor modal - crop existing or upload new */}
       {imageEditorOpen && user && property && (
