@@ -118,6 +118,14 @@ export default function DealCoachChat({
   // chips by default to keep the body uncluttered, but they're one
   // click away via the header "💡" pill.
   const [showStarters, setShowStarters] = useState(false);
+  // Transient toast when the bot just saved a field via tool call.
+  // Auto-dismisses after 4s.
+  const [savedNote, setSavedNote] = useState<string | null>(null);
+  useEffect(() => {
+    if (!savedNote) return;
+    const t = setTimeout(() => setSavedNote(null), 4000);
+    return () => clearTimeout(t);
+  }, [savedNote]);
   const bodyRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -294,6 +302,16 @@ export default function DealCoachChat({
                 }
                 return copy;
               });
+            }
+            // Server tells us a property field just got persisted via
+            // the save_property_field tool. Surface a tiny inline
+            // "Saved" chip and tell the property page to refetch so
+            // the new value shows up without a manual reload.
+            const saved = parsed?.saved_field;
+            if (saved && typeof window !== "undefined") {
+              setSavedNote(`Saved ${saved.group}.${saved.name} = ${saved.value} to property profile.`);
+              window.dispatchEvent(new Event("workspace-properties-changed"));
+              window.dispatchEvent(new CustomEvent("deal-coach-saved-field", { detail: saved }));
             }
           } catch {
             // skip
@@ -511,6 +529,24 @@ export default function DealCoachChat({
           </div>
         )}
       </div>
+
+      {/* "Saved to profile" chip - shows briefly when the bot has just
+          persisted a field via the save_property_field tool. */}
+      {savedNote && (
+        <div style={{
+          padding: "8px 12px",
+          background: "rgba(132,204,22,0.12)",
+          borderTop: "1px solid rgba(132,204,22,0.35)",
+          color: "#3F6212",
+          fontSize: 12, fontWeight: 600,
+          display: "flex", alignItems: "center", gap: 6,
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          {savedNote}
+        </div>
+      )}
 
       {/* Input */}
       <div style={{

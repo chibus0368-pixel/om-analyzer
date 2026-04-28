@@ -277,6 +277,44 @@ export async function POST(req: NextRequest) {
 
     const addr = [prop.address1, prop.city, prop.state, prop.zip].filter(Boolean).join(", ");
 
+    // ── Identify missing-but-important fields ──────────────────────
+    // Asset-type-aware list of "things every analyst expects to see
+    // before they can underwrite". We tell the bot which of these are
+    // missing so it can proactively ask the user and call the
+    // save_property_field tool with their answer.
+    const at = String(prop.analysisType || "").toLowerCase();
+    const importantFields: { group: string; name: string; label: string; ask: string }[] = [
+      { group: "pricing_deal_terms", name: "asking_price", label: "Asking price", ask: "Do you know the asking price?" },
+      { group: "pricing_deal_terms", name: "cap_rate_om", label: "Cap rate (OM-stated)", ask: "What's the OM-stated cap rate?" },
+      { group: "expenses", name: "noi_om", label: "NOI (OM-stated)", ask: "What's the stated NOI?" },
+      { group: "property_basics", name: "year_built", label: "Year built", ask: "Do you know the year built?" },
+      { group: "property_basics", name: "occupancy_pct", label: "Occupancy %", ask: "What's the current occupancy %?" },
+    ];
+    if (at !== "land" && at !== "multifamily") {
+      importantFields.push({ group: "property_basics", name: "building_sf", label: "Building SF / GLA", ask: "What's the building SF / GLA?" });
+    }
+    if (at === "multifamily") {
+      importantFields.push({ group: "multifamily_addons", name: "unit_count", label: "Unit count", ask: "How many units?" });
+      importantFields.push({ group: "multifamily_addons", name: "avg_rent_per_unit", label: "Avg rent / unit", ask: "What's the average in-place rent per unit?" });
+    }
+    if (at === "land") {
+      importantFields.push({ group: "property_basics", name: "total_acres", label: "Total acres", ask: "What's the total acreage?" });
+      importantFields.push({ group: "property_basics", name: "zoning", label: "Zoning code", ask: "What's the zoning code?" });
+    }
+    if (at === "retail" || at === "industrial" || at === "office") {
+      importantFields.push({ group: "property_basics", name: "tenant_count", label: "Tenant count", ask: "How many tenants?" });
+    }
+
+    const missingFields = importantFields.filter((f) => {
+      const k = `${f.group}.${f.name}`;
+      const v = fields[k];
+      return v == null || v === "" || v === 0;
+    });
+
+    const missingBlock = missingFields.length > 0
+      ? `\n\nMISSING DATA (proactively offer to fill these via save_property_field tool calls):\n${missingFields.map((f) => `- ${f.group}.${f.name} (${f.label}) — suggested ask: "${f.ask}"`).join("\n")}\n`
+      : "";
+
     const systemPrompt = `You are Deal Coach, a senior CRE acquisitions analyst working alongside the user on a specific deal.
 
 ALWAYS reason from the deal data below. If a number isn't in the data, say so plainly instead of inventing one. Cite the field/group when you reference an extracted value.
@@ -286,6 +324,8 @@ When the user asks open-ended questions ("what should I do", "is this a good dea
 Keep answers tight: lead with the answer, then 3-6 bullets of reasoning. Use the deal's numbers, not generic CRE advice.
 
 When peer deals from the same dealboard are listed below, USE them for comparison ("vs your other 4 retail centers, this cap rate is high/low"). Reference peers by name, not ID.
+
+PROACTIVE DATA-FILL: If MISSING DATA fields are listed below AND the user's question would benefit from one of those values, ASK them for the missing piece in plain English. When they answer, IMMEDIATELY call the save_property_field tool to persist the value. Confirm in the next sentence ("Saved 12,500 SF to the property profile"). Don't batch ask 5 questions at once - ask one or two, save, continue.${missingBlock}
 
 DEAL CONTEXT
 ============
@@ -307,19 +347,167 @@ ${fieldDigest || "(no extracted fields yet — parse may not have run)"}${tenant
 ${renderSkillsBlock(prop.analysisType)}`;
 
     // ── Compose OpenAI messages ──
-    const messages = [
-      { role: "system" as const, content: systemPrompt },
+    const messages: any[] = [
+      { role: "system", content: systemPrompt },
       ...history.map((m) => ({ role: m.role, content: m.content })),
-      { role: "user" as const, content: message },
+      { role: "user", content: message },
     ];
 
-    // ── Stream from OpenAI ──
+    // ── Tool definitions (function calling) ──
+    // The save_property_field tool lets the bot persist a user-given
+    // value (e.g. "the building is 12,500 SF") to the property's
+    // extracted_fields collection. Backed by the save-field endpoint.
+    const tools = [
+      {
+        type: "function",
+        function: {
+          name: "save_property_field",
+          description:
+            "Save a single property field (with the user's confirmed value) into the property profile. " +
+            "Use this whenever the user supplies a piece of MISSING DATA listed in the system prompt. " +
+            "Always use the canonical group/name from the MISSING DATA list. Do NOT call this for values you computed - only for values the USER told you.",
+          parameters: {
+            type: "object",
+            properties: {
+              group: { type: "string", description: "Canonical field group, e.g. 'pricing_deal_terms', 'property_basics', 'expenses'." },
+              name: { type: "string", description: "Canonical field name within the group, e.g. 'asking_price', 'building_sf', 'noi_om'." },
+              value: { type: ["string", "number"], description: "The value the user gave (raw or numeric)." },
+            },
+            required: ["group", "name", "value"],
+          },
+        },
+      },
+    ];
+
+    // Server-side tool executor. Returns a string result that gets
+    // appended to the conversation as a `tool` message before we
+    // re-call OpenAI for the follow-up assistant turn.
+    const executeTool = async (name: string, args: any): Promise<string> => {
+      if (name === "save_property_field") {
+        try {
+          // Re-use the save-field endpoint logic inline so we don't
+          // need a self-fetch (which Vercel docs warn against).
+          const g = String(args?.group || "").trim();
+          const n = String(args?.name || "").trim();
+          const v = args?.value;
+          if (!g || !n || v === undefined || v === null || v === "") {
+            return JSON.stringify({ ok: false, error: "missing arguments" });
+          }
+          const stringValue = String(v).trim();
+          const numericTry = Number(stringValue.replace(/[$,%\s]/g, ""));
+          const normalized: any = Number.isFinite(numericTry) && stringValue.match(/[\d.]/) ? numericTry : stringValue;
+          const now = new Date().toISOString();
+
+          const existing = await db
+            .collection("workspace_extracted_fields")
+            .where("propertyId", "==", propertyId)
+            .where("fieldGroup", "==", g)
+            .where("fieldName", "==", n)
+            .limit(1)
+            .get();
+          if (!existing.empty) {
+            await existing.docs[0].ref.update({
+              rawValue: stringValue,
+              normalizedValue: normalized,
+              isUserOverridden: true,
+              isUserConfirmed: true,
+              userOverrideValue: normalized,
+              sourceLocator: "deal_coach_chat",
+              updatedAt: now,
+            });
+          } else {
+            await db.collection("workspace_extracted_fields").doc().set({
+              propertyId,
+              projectId: prop.projectId || "workspace-default",
+              documentId: "",
+              fieldGroup: g,
+              fieldName: n,
+              rawValue: stringValue,
+              normalizedValue: normalized,
+              confidenceScore: 1.0,
+              extractionMethod: "deal_coach_chat",
+              sourceLocator: "deal_coach_chat",
+              isUserConfirmed: true,
+              isUserOverridden: true,
+              userOverrideValue: normalized,
+              createdAt: now,
+              updatedAt: now,
+            });
+          }
+          return JSON.stringify({ ok: true, saved: { group: g, name: n, value: normalized } });
+        } catch (err: any) {
+          return JSON.stringify({ ok: false, error: err?.message || "save failed" });
+        }
+      }
+      return JSON.stringify({ ok: false, error: `unknown tool ${name}` });
+    };
+
+    // ── Helper to call OpenAI (non-streaming) for the tool-call
+    //    discovery turn(s), then stream the final answer. We loop up
+    //    to MAX_TOOL_TURNS times in case the model wants to call the
+    //    save tool for multiple fields in a row. ──
+    const MAX_TOOL_TURNS = 3;
+    let savedFields: any[] = [];
+
+    for (let turn = 0; turn < MAX_TOOL_TURNS; turn++) {
+      const probe = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          temperature: 0.4,
+          max_tokens: 1200,
+          messages,
+          tools,
+          tool_choice: "auto",
+        }),
+      });
+      if (!probe.ok) {
+        const detail = await probe.text().catch(() => "");
+        console.error("[deal-coach] OpenAI tool-probe HTTP", probe.status, detail.slice(0, 300));
+        return NextResponse.json(
+          { error: "deal_coach_unavailable", detail: `OpenAI HTTP ${probe.status}` },
+          { status: 502 }
+        );
+      }
+      const probeJson = await probe.json();
+      const choice = probeJson?.choices?.[0];
+      const msg = choice?.message;
+      const toolCalls = msg?.tool_calls;
+
+      if (!toolCalls || toolCalls.length === 0) {
+        // No tool calls — re-issue as a streaming completion for the
+        // final answer. Push the assistant message we already have to
+        // make sure the streamed turn matches.
+        break;
+      }
+
+      // Execute each tool call, append assistant + tool messages,
+      // then loop to ask the model for its next move.
+      messages.push({ role: "assistant", content: msg?.content || "", tool_calls: toolCalls });
+      for (const tc of toolCalls) {
+        let parsedArgs: any = {};
+        try { parsedArgs = JSON.parse(tc?.function?.arguments || "{}"); } catch { /* skip */ }
+        const result = await executeTool(tc?.function?.name, parsedArgs);
+        if (tc?.function?.name === "save_property_field") {
+          try {
+            const r = JSON.parse(result);
+            if (r?.ok && r?.saved) savedFields.push(r.saved);
+          } catch { /* skip */ }
+        }
+        messages.push({
+          role: "tool",
+          tool_call_id: tc.id,
+          content: result,
+        });
+      }
+    }
+
+    // ── Final streaming turn (no tools — just the assistant's reply
+    //    after any tool execution). ──
     const upstream = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
         model: "gpt-4o-mini",
         temperature: 0.4,
@@ -338,11 +526,15 @@ ${renderSkillsBlock(prop.analysisType)}`;
       );
     }
 
-    // Re-stream OpenAI's SSE to the client, unwrapping the JSON deltas
-    // into plain text chunks so the client can append directly without
-    // JSON-parsing each frame.
+    // Re-stream OpenAI SSE → plain delta JSON. Also emit a
+    // `saved_field` event up front so the client can refresh the
+    // property page and show a confirmation chip immediately.
     const stream = new ReadableStream({
       async start(controller) {
+        const enc = new TextEncoder();
+        for (const sf of savedFields) {
+          controller.enqueue(enc.encode(`data: ${JSON.stringify({ saved_field: sf })}\n\n`));
+        }
         const reader = upstream.body!.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
@@ -358,20 +550,14 @@ ${renderSkillsBlock(prop.analysisType)}`;
               if (!trimmed.startsWith("data: ")) continue;
               const payload = trimmed.slice(6);
               if (payload === "[DONE]") {
-                controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+                controller.enqueue(enc.encode("data: [DONE]\n\n"));
                 continue;
               }
               try {
                 const parsed = JSON.parse(payload);
                 const delta = parsed?.choices?.[0]?.delta?.content;
-                if (delta) {
-                  controller.enqueue(
-                    new TextEncoder().encode(`data: ${JSON.stringify({ delta })}\n\n`)
-                  );
-                }
-              } catch {
-                // skip malformed frame
-              }
+                if (delta) controller.enqueue(enc.encode(`data: ${JSON.stringify({ delta })}\n\n`));
+              } catch { /* skip malformed frame */ }
             }
           }
         } catch (err: any) {
