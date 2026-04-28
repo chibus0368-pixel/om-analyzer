@@ -69,7 +69,19 @@ export default function BulkUploadPage() {
     setItems(prev => {
       const remaining = MAX_PROPERTIES - prev.length;
       if (remaining <= 0) return prev;
-      const toAdd = arr.slice(0, remaining).map(file => ({
+      // Dedup by filename + byte size against everything already queued.
+      // The dropzone fires for every drop and the file picker for every
+      // selection, so users routinely add the same OM twice (drag, then
+      // drag again, or pick + drag). Without this guard each duplicate
+      // creates its own property card on the dealboard.
+      const existingKeys = new Set(prev.map(i => `${i.file.name}|${i.file.size}`));
+      const deduped = arr.filter(f => {
+        const key = `${f.name}|${f.size}`;
+        if (existingKeys.has(key)) return false;
+        existingKeys.add(key);
+        return true;
+      });
+      const toAdd = deduped.slice(0, remaining).map(file => ({
         id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
         file,
         propertyName: derivePropertyName(file.name),
@@ -98,6 +110,10 @@ export default function BulkUploadPage() {
   // Process all items sequentially
   async function handleBulkUpload() {
     if (!user || items.length === 0) return;
+    // Guard against double-click. Without this, a second click while the
+    // first run is still iterating spawns a parallel pass that hits
+    // createProperty for the same files again and dupes the dealboard.
+    if (processing) return;
     setProcessing(true);
     setCompletedCount(0);
 
@@ -156,18 +172,32 @@ export default function BulkUploadPage() {
           );
         });
 
-        // Extract hero image from PDF
+        // Extract hero image from PDF.
+        // Threshold matches single-upload path (5KB floor + extractor's
+        // own internal floor). Previously bulk used 10KB which silently
+        // dropped valid hero candidates that single-upload would accept.
+        // When extraction fails, the property page falls back to the
+        // server-side hero cascade (Google Places > Street View >
+        // satellite > placeholder) once the address is parsed.
         if (file.name.toLowerCase().endsWith(".pdf")) {
           try {
+            console.log(`[bulk] Extracting hero from ${file.name} (${(file.size / 1024).toFixed(0)}KB)`);
             const heroBlob = await extractHeroImageFromPDF(file);
-            if (heroBlob && heroBlob.size > 10000) {
+            if (heroBlob && heroBlob.size > 5000) {
               const imgRef = ref(storage, `workspace/${user.uid}/${propertyId}/hero.jpg`);
               await uploadBytesResumable(imgRef, heroBlob);
               const imgUrl = await getDownloadURL(imgRef);
               const { updateProperty } = await import("@/lib/workspace/firestore");
               await updateProperty(propertyId, { heroImageUrl: imgUrl } as any);
+              console.log(`[bulk] Hero saved for ${file.name} (${(heroBlob.size / 1024).toFixed(0)}KB)`);
+            } else if (heroBlob) {
+              console.warn(`[bulk] Hero blob too small to use: ${heroBlob.size} bytes (min 5000). Map fallback will kick in.`);
+            } else {
+              console.warn(`[bulk] Hero extractor returned null for ${file.name} - no page scored above threshold. Map fallback will kick in.`);
             }
-          } catch { /* non-blocking */ }
+          } catch (heroErr) {
+            console.warn(`[bulk] Hero extraction failed for ${file.name}:`, heroErr);
+          }
         }
 
         // Extract text client-side, then hand off full pipeline to server
