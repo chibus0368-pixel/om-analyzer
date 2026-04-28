@@ -50,25 +50,32 @@ function fmtNum(v: any): string {
   return n.toLocaleString("en-US", { maximumFractionDigits: 0 });
 }
 
+// Score-band-to-color mapping. Canonical bands come from score-engine
+// (`strong_buy`, `buy`, `hold`, `pass`, `strong_reject`). Letter-grade
+// inputs (A/B/C/D/F) are still accepted for backward compat with any
+// older callers, mapped to the equivalent band color.
 function gradeColor(grade: string): string {
-  switch ((grade || "").toUpperCase()) {
-    case "A": return "#059669";
-    case "B": return "#10B981";
-    case "C": return "#F59E0B";
-    case "D": return "#EF4444";
-    case "F": return "#DC2626";
-    default:  return "#6B7280";
+  switch ((grade || "").toLowerCase()) {
+    case "strong_buy":     case "a": return "#059669"; // green
+    case "buy":            case "b": return "#2563EB"; // blue
+    case "hold": case "neutral": case "c": return "#D97706"; // amber
+    case "pass":           case "d": return "#EA580C"; // orange
+    case "strong_reject": case "reject": case "f": return "#DC2626"; // red
+    default: return "#6B7280"; // gray (no score)
   }
 }
 
+// Display label - matches the dashboard / map legend / share view exactly.
+// "hold" is shown as "Neutral", "strong_reject" as "Reject", etc.
+// Using uppercase for the verdict pill to keep the bold callout style.
 function gradeLabel(grade: string): string {
-  switch ((grade || "").toUpperCase()) {
-    case "A": return "STRONG BUY";
-    case "B": return "BUY";
-    case "C": return "CONSIDER";
-    case "D": return "CAUTION";
-    case "F": return "PASS";
-    default:  return "";
+  switch ((grade || "").toLowerCase()) {
+    case "strong_buy":     case "a": return "STRONG BUY";
+    case "buy":            case "b": return "BUY";
+    case "hold": case "neutral": case "c": return "NEUTRAL";
+    case "pass":           case "d": return "PASS";
+    case "strong_reject": case "reject": case "f": return "REJECT";
+    default: return "";
   }
 }
 
@@ -248,7 +255,7 @@ export function renderPropertyEmailHTML(args: RenderArgs): string {
               </td>
               <td valign="middle" align="right">
                 ${verdict ? `<div style="display: inline-block; padding: 10px 18px; background: ${gc}; color: #FFFFFF; border-radius: 999px; font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;">${esc(verdict)}</div>` : ""}
-                ${gradeStr ? `<div style="margin-top: 8px; font-size: 11px; color: #6B7280; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">Grade <span style="color: ${gc}; font-weight: 800;">${esc(gradeStr)}</span></div>` : ""}
+                ${/^[A-F]$/.test(gradeStr) ? `<div style="margin-top: 8px; font-size: 11px; color: #6B7280; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">Grade <span style="color: ${gc}; font-weight: 800;">${esc(gradeStr)}</span></div>` : ""}
               </td>
             </tr>
           </table>
