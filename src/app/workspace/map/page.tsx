@@ -415,7 +415,12 @@ export default function MapPage() {
   return (
     <>
       <style>{styles}</style>
-      <div style={{ height: "calc(100vh - 88px)", display: "flex", flexDirection: "column" }}>
+      {/* Fill the parent .ws-main-content (workspace layout strips its
+          padding + outer scroll for /workspace/map) so the map goes
+          edge-to-edge like the share view. height:100% inherits whatever
+          the workspace shell allots. minHeight:0 keeps the inner flex
+          children from growing past the container. */}
+      <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column" }}>
       <div className="mp-header-container" style={{ padding: "12px 20px", background: "#fff", borderBottom: "1px solid rgba(227, 190, 189, 0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div className="mp-title-section">
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -458,14 +463,10 @@ export default function MapPage() {
           <span className="mp-legend-item" style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <span className="mp-legend-dot" style={{ width: 10, height: 10, borderRadius: "50%", background: "#94a3b8", display: "inline-block" }} /> Not scored
           </span>
-          {/* Divider + demographics toggle. Sits to the right of the score
-              legend so the existing pill chrome stays grouped. */}
-          <span style={{ width: 1, height: 18, background: "#E5E1D6", display: "inline-block", marginLeft: 4, marginRight: 4 }} />
-          <DemographicsToggle
-            enabled={demographicsOn}
-            onToggle={setDemographicsOn}
-            disabled={Object.keys(geocodedCoords).length === 0}
-          />
+          {/* Demographics toggle moved out of the header into the map
+              overlay (top-right corner) so it reads as a layer switch
+              rather than chrome. Matches the share-view layout the user
+              wants this page to mirror. */}
         </div>
       </div>
       {/* Map container - isolation creates a new stacking context so
@@ -487,6 +488,20 @@ export default function MapPage() {
           }}
         >
           <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
+          {/* Demographics toggle pill - top-right overlay. Sits above
+              Leaflet's controls (zoom is at top:10 left:10 by default;
+              this is right:12 top:12). Hidden when the user has no
+              geocoded properties yet so the disabled state isn't a tap
+              target into nothing. */}
+          {Object.keys(geocodedCoords).length > 0 && (
+            <div style={{ position: "absolute", top: 12, right: 12, zIndex: 600 }}>
+              <DemographicsToggle
+                enabled={demographicsOn}
+                onToggle={setDemographicsOn}
+                disabled={false}
+              />
+            </div>
+          )}
           <DemographicsOverlay
             map={mapInstanceRef.current}
             L={leafletRef.current}

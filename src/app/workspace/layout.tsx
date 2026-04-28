@@ -1685,7 +1685,19 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
       {/* Main Content - full width */}
       <main style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
-        <div className="ws-main-content" style={{ flex: 1, overflow: "auto", padding: 32, display: "flex", flexDirection: "column" }}>
+        {/* Full-bleed routes (the map view, share view inside the workspace
+            shell, etc.) want zero gutter and no outer scroll so the inner
+            map can go edge-to-edge with sidebars handling their own scroll
+            (the Trulia layout pattern). Detect by pathname and strip the
+            32px padding + outer overflow:auto for those routes. */}
+        <div
+          className="ws-main-content"
+          style={
+            pathname === "/workspace/map"
+              ? { flex: 1, overflow: "hidden", padding: 0, display: "flex", flexDirection: "column", minHeight: 0 }
+              : { flex: 1, overflow: "auto", padding: 32, display: "flex", flexDirection: "column" }
+          }
+        >
           {/* ── Anonymous user conversion banner ──
               A compact, centered pill instead of a full-width strip - matches
               the visual weight of the header upgrade pill. Same lime accent
