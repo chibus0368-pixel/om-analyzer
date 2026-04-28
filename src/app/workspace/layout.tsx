@@ -1694,7 +1694,15 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           className="ws-main-content"
           style={
             pathname === "/workspace/map"
-              ? { flex: 1, overflow: "hidden", padding: 0, display: "flex", flexDirection: "column", minHeight: 0 }
+              ? {
+                  // Make ws-main-content a positioned container so the
+                  // map page can use position:absolute inset:0 to fill
+                  // it edge-to-edge. This bypasses the flex height
+                  // propagation issue that was leaving the sidebar with
+                  // no resolvable height (so its overflow:auto never
+                  // triggered).
+                  flex: 1, position: "relative", overflow: "hidden", padding: 0, minHeight: 0,
+                }
               : { flex: 1, overflow: "auto", padding: 32, display: "flex", flexDirection: "column" }
           }
         >
