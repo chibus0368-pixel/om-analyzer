@@ -602,7 +602,11 @@ export default function SharedViewPage() {
             top: 48px !important;
             padding: 6px 8px 0 !important;
             gap: 0 !important;
-            overflow-x: visible !important;
+            /* Mobile re-enables horizontal scroll for narrow phones where
+               5-tab strips might overflow. Desktop uses overflow:visible
+               (set via inline style) to avoid the reserved scrollbar
+               sliver in the tabs panel. */
+            overflow-x: auto !important;
           }
           .pd-tab {
             padding: 9px 10px !important;
@@ -1120,7 +1124,7 @@ function PropertyDetail({
         background: "#fff",
       }}>
         {prop.heroImageUrl && (
-          <div style={{
+          <div className="detail-hero" style={{
             height: 140, borderRadius: 10, overflow: "hidden", marginBottom: 14,
             background: `url(${prop.heroImageUrl}) center/cover no-repeat`,
           }} />
@@ -1144,12 +1148,17 @@ function PropertyDetail({
           background: "#F9FAFB",
           borderTop: "1px solid #F1F5F9",
           borderBottom: "1px solid #e5e7eb",
-          padding: "8px 12px 0",
+          padding: "10px 12px 0",
           gap: 2,
+          minHeight: 46,
           position: "sticky",
           top: 62,
           zIndex: 4,
-          overflowX: "auto",
+          // overflow:auto on the strip was reserving scrollbar space and
+          // showing as a sliver on the right edge of the tabs panel. The
+          // mobile @media block re-enables overflow-x:auto where the
+          // strip might genuinely need to scroll horizontally.
+          overflow: "visible",
         }}>
           {visibleTabs.map(t => {
             // Mobile needs shorter labels so the whole strip fits without
