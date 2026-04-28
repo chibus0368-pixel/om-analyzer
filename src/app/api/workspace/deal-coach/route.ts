@@ -211,6 +211,70 @@ export async function POST(req: NextRequest) {
       console.warn("[deal-coach] peer fetch failed:", peerErr?.message);
     }
 
+    // Per-property research enrichment (nearby Places + ACS demographics).
+    // Normally populated by the background pipeline after parse, but
+    // for properties that pre-date the research feature, kick off a
+    // one-shot enrichment in the background here. The CURRENT chat
+    // turn won't see it (we only read the cached doc) but the next
+    // turn will.
+    let researchBlock = "";
+    try {
+      const rSnap = await db.collection("workspace_research").doc(propertyId).get();
+      if (!rSnap.exists && process.env.CRON_SECRET) {
+        const baseUrl =
+          process.env.NEXT_PUBLIC_APP_URL ||
+          process.env.NEXT_PUBLIC_SITE_URL ||
+          "https://www.dealsignals.app";
+        void fetch(`${baseUrl}/api/workspace/research/${propertyId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-cron-secret": process.env.CRON_SECRET,
+          },
+          body: JSON.stringify({}),
+        }).catch(() => {});
+      }
+      if (rSnap.exists) {
+        const r = rSnap.data() as any;
+        const nearby: any[] = Array.isArray(r?.nearby) ? r.nearby : [];
+        const dem = r?.demographics || null;
+
+        if (nearby.length > 0 || dem) {
+          const grouped: Record<string, any[]> = {};
+          for (const n of nearby) {
+            const c = n.category || "other";
+            if (!grouped[c]) grouped[c] = [];
+            grouped[c].push(n);
+          }
+          const nearbyLines = Object.entries(grouped).map(([cat, items]) => {
+            const list = items
+              .slice(0, 6)
+              .map((n) => `${n.name}${n.distanceMeters ? ` (${n.distanceMeters}m)` : ""}${n.rating ? ` ★${n.rating}` : ""}`)
+              .join(", ");
+            return `  - ${cat}: ${list}`;
+          }).join("\n");
+
+          const demLines: string[] = [];
+          if (dem?.population) demLines.push(`Population: ${dem.population.toLocaleString()}`);
+          if (dem?.medianIncome) demLines.push(`Median household income: $${dem.medianIncome.toLocaleString()}`);
+          if (dem?.medianAge) demLines.push(`Median age: ${dem.medianAge}`);
+          if (dem?.medianHomeValue) demLines.push(`Median home value: $${dem.medianHomeValue.toLocaleString()}`);
+          if (dem?.housingUnits) demLines.push(`Housing units: ${dem.housingUnits.toLocaleString()}`);
+          if (dem?.laborForce && dem?.unemployed) {
+            const ur = ((dem.unemployed / dem.laborForce) * 100).toFixed(1);
+            demLines.push(`Unemployment: ${ur}%`);
+          }
+
+          researchBlock = `\n\n### Local context (background research)\n` +
+            (nearbyLines ? `Nearby (within ~1 mi):\n${nearbyLines}\n` : "") +
+            (demLines.length ? `\nDemographics (${dem.geo || "city"}):\n  - ${demLines.join("\n  - ")}\n` : "") +
+            `\n_Refreshed ${r.refreshedAt || "(unknown)"} — comp transactions are not auto-enriched yet._`;
+        }
+      }
+    } catch (rErr: any) {
+      console.warn("[deal-coach] research fetch failed:", rErr?.message);
+    }
+
     const addr = [prop.address1, prop.city, prop.state, prop.zip].filter(Boolean).join(", ");
 
     const systemPrompt = `You are Deal Coach, a senior CRE acquisitions analyst working alongside the user on a specific deal.
@@ -239,7 +303,7 @@ Card metrics:
 - Occupancy: ${prop.occupancyPct ? `${prop.occupancyPct}%` : "(unknown)"}
 
 EXTRACTED FIELDS (${fieldsSnap.size} total)
-${fieldDigest || "(no extracted fields yet — parse may not have run)"}${tenantBlock}${briefBlock}${peerBlock}
+${fieldDigest || "(no extracted fields yet — parse may not have run)"}${tenantBlock}${briefBlock}${peerBlock}${researchBlock}
 ${renderSkillsBlock(prop.analysisType)}`;
 
     // ── Compose OpenAI messages ──

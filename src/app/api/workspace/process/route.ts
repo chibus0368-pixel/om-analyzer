@@ -157,6 +157,29 @@ export async function POST(req: NextRequest) {
 
     console.log("[process] Pipeline complete:", { propertyId, fieldsExtracted, parseStatus: finalStatus });
 
+    // Fire-and-forget background research enrichment so it's ready by
+    // the time the user opens the CRE Chatbot. We only kick this off
+    // when parse actually produced fields (no point researching a
+    // failed parse) AND we have a CRON_SECRET (server-to-server auth).
+    if (fieldsExtracted > 0 && process.env.CRON_SECRET) {
+      try {
+        const baseUrl =
+          process.env.NEXT_PUBLIC_APP_URL ||
+          process.env.NEXT_PUBLIC_SITE_URL ||
+          "https://www.dealsignals.app";
+        // Don't await - the response we return below shouldn't block
+        // on Google Places + Census round-trips.
+        void fetch(`${baseUrl}/api/workspace/research/${propertyId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-cron-secret": process.env.CRON_SECRET,
+          },
+          body: JSON.stringify({}),
+        }).catch((err) => console.warn("[process] research kickoff failed:", err?.message));
+      } catch { /* non-blocking */ }
+    }
+
     return NextResponse.json({
       success: true,
       fieldsExtracted,
