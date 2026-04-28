@@ -15,8 +15,12 @@
  *    a one-click first prompt instead of staring at a blank box.
  *  - Streaming: we read text/event-stream chunks and append to the
  *    last assistant message in state so the UI feels reactive.
- *  - History persistence is in-memory per-property only (resets on
- *    page reload). Firestore persistence is a follow-up if useful.
+ *  - Per-property history is persisted to workspace_chats/{propertyId}
+ *    via /api/workspace/deal-coach/history (GET on mount, PUT after
+ *    each completed exchange). Comes back to the deal a week later,
+ *    conversation resumes where it left off.
+ *  - "Show suggestions" pill is always available in the chat header
+ *    so the prebaked starter chips can be re-opened mid-conversation.
  */
 
 import { useState, useRef, useEffect, useMemo } from "react";
@@ -108,6 +112,12 @@ export default function DealCoachChat({
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  // Toggle that lets the user re-open the starter-question chip strip
+  // after they've already sent a message. Mid-conversation we hide the
+  // chips by default to keep the body uncluttered, but they're one
+  // click away via the header "💡" pill.
+  const [showStarters, setShowStarters] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -126,6 +136,66 @@ export default function DealCoachChat({
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 80);
   }, [open]);
+
+  // Hydrate prior conversation from Firestore the first time the panel
+  // is opened. We only fire this once per mount even if the user closes
+  // and re-opens the panel, since history is also kept in component
+  // state for subsequent renders.
+  useEffect(() => {
+    if (!open || historyLoaded) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const t = await getToken();
+        if (!t) return;
+        const res = await fetch(
+          `/api/workspace/deal-coach/history?propertyId=${encodeURIComponent(propertyId)}`,
+          { headers: { Authorization: `Bearer ${t}` } }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        if (Array.isArray(data?.messages) && data.messages.length) {
+          setMsgs(
+            data.messages
+              .filter((m: any) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+              .map((m: any) => ({ role: m.role, content: m.content })),
+          );
+        }
+      } catch {
+        // non-fatal - just start fresh
+      } finally {
+        if (!cancelled) setHistoryLoaded(true);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  // Persist history after each completed exchange. We debounce to a
+  // 600ms tail-call so streaming token deltas don't trigger N writes.
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!historyLoaded) return;            // don't write during initial load
+    if (msgs.length === 0) return;          // nothing to save
+    if (busy) return;                       // wait until the assistant finished
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(async () => {
+      try {
+        const t = await getToken();
+        if (!t) return;
+        await fetch("/api/workspace/deal-coach/history", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${t}` },
+          body: JSON.stringify({ propertyId, messages: msgs }),
+        });
+      } catch { /* non-fatal */ }
+    }, 600);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [msgs, busy, historyLoaded]);
 
   async function sendMessage(text: string) {
     const trimmed = text.trim();
@@ -278,25 +348,90 @@ export default function DealCoachChat({
             </div>
           </div>
         </div>
-        <button
-          type="button"
-          aria-label="Close"
-          onClick={() => setOpen(false)}
-          style={{
-            background: "transparent", color: "#FFFFFF",
-            border: "none", cursor: "pointer", padding: 4,
-            display: "inline-flex", alignItems: "center", justifyContent: "center",
-            opacity: 0.7,
-          }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = "0.7"; }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          {/* Re-open the prebaked starter chips at any point, including
+              mid-conversation. Toggle text reflects current state. */}
+          <button
+            type="button"
+            onClick={() => setShowStarters((s) => !s)}
+            title={showStarters ? "Hide suggestions" : "Show suggestions"}
+            style={{
+              background: showStarters ? "rgba(132,204,22,0.25)" : "rgba(255,255,255,0.08)",
+              color: "#FFFFFF",
+              border: "1px solid rgba(132,204,22,0.4)",
+              borderRadius: 999,
+              padding: "3px 9px",
+              fontSize: 10, fontWeight: 700,
+              letterSpacing: 0.3, textTransform: "uppercase",
+              cursor: "pointer", fontFamily: "inherit",
+            }}
+          >
+            💡 Ideas
+          </button>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => setOpen(false)}
+            style={{
+              background: "transparent", color: "#FFFFFF",
+              border: "none", cursor: "pointer", padding: 4,
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              opacity: 0.7,
+            }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = "0.7"; }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
       </div>
+
+      {/* Inline suggestions strip. Shown automatically when the chat
+          is empty, and on demand whenever the user toggles the "💡
+          Ideas" pill in the header. Sits between the header and the
+          message body so it doesn't push the input down. */}
+      {(showStarters || msgs.length === 0) && (
+        <div style={{
+          padding: "10px 12px", borderBottom: "1px solid #E2E8F0",
+          background: "#F8FAFC", maxHeight: 180, overflowY: "auto",
+        }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#64748B", letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>
+            Suggestions
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {starters.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => { setShowStarters(false); sendMessage(s); }}
+                disabled={busy}
+                style={{
+                  textAlign: "left", padding: "8px 12px",
+                  background: "#FFFFFF", color: "#0F172A",
+                  border: "1px solid #E2E8F0", borderRadius: 10,
+                  fontSize: 12, fontWeight: 500, cursor: busy ? "not-allowed" : "pointer",
+                  fontFamily: "inherit", opacity: busy ? 0.6 : 1,
+                  transition: "border-color 0.12s, background 0.12s",
+                }}
+                onMouseEnter={(e) => {
+                  if (busy) return;
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(132,204,22,0.5)";
+                  (e.currentTarget as HTMLElement).style.background = "rgba(132,204,22,0.04)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "#E2E8F0";
+                  (e.currentTarget as HTMLElement).style.background = "#FFFFFF";
+                }}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Body */}
       <div ref={bodyRef} style={{
@@ -304,38 +439,9 @@ export default function DealCoachChat({
         background: "#F8FAFC",
         display: "flex", flexDirection: "column", gap: 10,
       }}>
-        {msgs.length === 0 && (
-          <div>
-            <div style={{ fontSize: 12, color: "#64748B", marginBottom: 8, lineHeight: 1.5 }}>
-              I&apos;ve got this deal&apos;s data loaded. Ask me anything — or pick a starter:
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {starters.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => sendMessage(s)}
-                  style={{
-                    textAlign: "left", padding: "9px 12px",
-                    background: "#FFFFFF", color: "#0F172A",
-                    border: "1px solid #E2E8F0", borderRadius: 10,
-                    fontSize: 12, fontWeight: 500, cursor: "pointer",
-                    fontFamily: "inherit",
-                    transition: "border-color 0.12s, background 0.12s",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.borderColor = "rgba(132,204,22,0.5)";
-                    (e.currentTarget as HTMLElement).style.background = "rgba(132,204,22,0.04)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.borderColor = "#E2E8F0";
-                    (e.currentTarget as HTMLElement).style.background = "#FFFFFF";
-                  }}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
+        {msgs.length === 0 && historyLoaded && (
+          <div style={{ fontSize: 12, color: "#64748B", marginBottom: 4, lineHeight: 1.5 }}>
+            I&apos;ve got this deal&apos;s data loaded. Pick a suggestion above or ask anything below.
           </div>
         )}
 
