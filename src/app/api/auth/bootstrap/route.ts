@@ -324,8 +324,13 @@ export async function POST(request: NextRequest) {
             }
           }
 
-          // Rewrite scores / parser_runs / activity_logs (keyed by old projectId)
+          // Rewrite scores / parser_runs / activity_logs (keyed by old projectId).
+          // Skip "workspace-default" - it's the global default projectId
+          // shared across every workspace, so a where("projectId","==",
+          // "workspace-default") query would match and rewrite records
+          // belonging to other users/workspaces.
           for (const oldPid of oldProjectIds) {
+            if (!oldPid || oldPid === "workspace-default") continue;
             const scoresSnap = await db
               .collection("workspace_scores")
               .where("projectId", "==", oldPid)

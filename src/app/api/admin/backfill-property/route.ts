@@ -108,30 +108,14 @@ export async function POST(req: NextRequest) {
           continue;
         }
 
-        // Best-effort cleanup: delete existing orphaned fields for this
-        // property's projectId that have no propertyId. We don't touch
-        // fields owned by other properties even if they share a project.
-        if (prop.projectId) {
-          try {
-            const orphans = await db
-              .collection("workspace_extracted_fields")
-              .where("projectId", "==", prop.projectId)
-              .get();
-            const toDelete = orphans.docs.filter((d) => !d.data().propertyId);
-            // Firestore batch caps at 500 ops; chunk if needed.
-            for (let i = 0; i < toDelete.length; i += 400) {
-              const chunk = toDelete.slice(i, i + 400);
-              const batch = db.batch();
-              chunk.forEach((d) => batch.delete(d.ref));
-              await batch.commit();
-            }
-          } catch (cleanupErr: any) {
-            console.warn(
-              "[backfill-property] orphan cleanup failed (non-blocking):",
-              cleanupErr?.message
-            );
-          }
-        }
+        // Orphan cleanup intentionally REMOVED. Earlier version queried
+        // workspace_extracted_fields where("projectId","==",prop.projectId)
+        // and deleted rows with no propertyId. For prop.projectId =
+        // "workspace-default" (the global default), that query matches
+        // every other user's data too. The new parse engine writes a
+        // proper propertyId on every row, so leaving any historical
+        // orphans alone is the safer trade-off than a destructive
+        // cross-tenant query.
 
         await runExtensionUploadPipeline({
           propertyId: pid,

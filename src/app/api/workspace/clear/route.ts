@@ -55,7 +55,15 @@ export async function POST(req: NextRequest) {
     });
 
     const propIds = allDocs.map(d => d.id);
-    const projectIds = allDocs.map(d => d.data().projectId).filter(Boolean);
+    // CRITICAL: We deliberately DROPPED the old "delete by projectId" path.
+    // Every property defaults to projectId="workspace-default" (it's a
+    // global default, not a per-workspace value), so a where("projectId",
+    // "==", "workspace-default") query against extracted_fields/parser_runs/
+    // documents matches data across EVERY workspace this user owns - not
+    // just the one being cleared. That bug silently nuked unrelated
+    // workspaces' parsed data after a single Clear click. Now we only
+    // delete by propertyId (unique per property) so blast radius is
+    // strictly the properties we just deleted in the loop above.
 
     let totalDeleted = 0;
 
@@ -67,9 +75,12 @@ export async function POST(req: NextRequest) {
       totalDeleted += Math.min(450, allDocs.length - i);
     }
 
-    // Delete related data from all workspace collections
+    // Delete related data from all workspace collections - by propertyId
+    // ONLY. propertyId is unique per property; using it as the sole
+    // delete key guarantees we never touch data from a different
+    // property/workspace.
     const relatedCollections = [
-      "workspace_projects", "workspace_documents", "workspace_extracted_fields",
+      "workspace_documents", "workspace_extracted_fields",
       "workspace_underwriting_models", "workspace_underwriting_outputs",
       "workspace_scores", "workspace_property_snapshots", "workspace_outputs",
       "workspace_notes", "workspace_tasks", "workspace_activity_logs",
@@ -78,19 +89,8 @@ export async function POST(req: NextRequest) {
 
     for (const coll of relatedCollections) {
       try {
-        // Delete by propertyId
         for (const pid of propIds) {
           const snap = await db.collection(coll).where("propertyId", "==", pid).get();
-          for (let i = 0; i < snap.docs.length; i += 450) {
-            const batch = db.batch();
-            snap.docs.slice(i, i + 450).forEach(d => batch.delete(d.ref));
-            await batch.commit();
-            totalDeleted += Math.min(450, snap.docs.length - i);
-          }
-        }
-        // Delete by projectId
-        for (const pid of projectIds) {
-          const snap = await db.collection(coll).where("projectId", "==", pid).get();
           for (let i = 0; i < snap.docs.length; i += 450) {
             const batch = db.batch();
             snap.docs.slice(i, i + 450).forEach(d => batch.delete(d.ref));

@@ -81,8 +81,14 @@ export async function GET(request: NextRequest) {
       for (const d of notesSnap.docs) await del(d.ref);
     }
 
-    // Delete scores / parser_runs / activity_logs keyed by projectId
+    // Delete scores / parser_runs / activity_logs keyed by projectId.
+    // CRITICAL: skip the shared "workspace-default" projectId - it would
+    // match records across every other (claimed, real) property in the
+    // database and silently delete them. Only sweep projectIds that
+    // belong to ephemeral tryme runs (those use the unique
+    // "tryme-<uuid>" pattern set in tryme-analyze).
     for (const oldPid of projectIds) {
+      if (!oldPid || oldPid === "workspace-default") continue;
       const scoresSnap = await db
         .collection("workspace_scores")
         .where("projectId", "==", oldPid)
