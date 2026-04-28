@@ -142,13 +142,40 @@ function scorePageImage(ctx: CanvasRenderingContext2D, width: number, height: nu
 }
 
 /* ═══════════════════════════════════════════════════════
-   MAIN EXPORT: Smart hero image extraction
-   Scans up to first 5 pages, scores each, picks best.
-   Returns null if no page scores above threshold (40).
+   MAIN EXPORT: Hero image extraction (cover-page-first)
+
+   Strategy:
+   - The OM cover page is the broker's deliberately-chosen marketing
+     hero ~90% of the time. Default to using page 1.
+   - Only scan further pages if page 1 is clearly a text/contents
+     page (very high white ratio + low color variance) so we don't
+     end up with a literal "Table of Contents" as the hero.
+   - When we DO scan further, we still prefer the EARLIEST decent
+     page (small bias) so brand promotional shots win over deep
+     financial-table pages with tinted bars.
    ═══════════════════════════════════════════════════════ */
 
-const PHOTO_THRESHOLD = 35; // minimum score to consider a page as a photo
-const MAX_PAGES_TO_SCAN = 5; // don't scan the whole doc - first 5 pages covers most OMs
+const TEXT_PAGE_WHITE_THRESHOLD = 0.78;   // > 78% white = likely text page
+const TEXT_PAGE_COLOR_VARIANCE_MAX = 0.15; // < 15% color variance reinforces "text"
+const MIN_USABLE_BLOB_BYTES = 5000;        // 5KB floor to filter empty renders
+const FALLBACK_SCAN_PAGES = 4;             // pages 2..5 if page 1 is text-heavy
+const FALLBACK_SCORE_FLOOR = 30;           // anything reasonable beats no hero
+
+async function renderPageBlob(
+  page: any,
+  ctx: CanvasRenderingContext2D,
+  canvas: HTMLCanvasElement,
+  scale: number
+): Promise<Blob | null> {
+  const viewport = page.getViewport({ scale });
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  ctx.clearRect(0, 0, viewport.width, viewport.height);
+  await page.render({ canvasContext: ctx, viewport }).promise;
+  return await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob((b) => resolve(b), "image/jpeg", 0.85);
+  });
+}
 
 export async function extractHeroImageFromPDF(file: File): Promise<Blob | null> {
   try {
@@ -158,51 +185,74 @@ export async function extractHeroImageFromPDF(file: File): Promise<Blob | null> 
 
     if (pdf.numPages < 1) return null;
 
-    const pagesToScan = Math.min(pdf.numPages, MAX_PAGES_TO_SCAN);
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
 
-    let bestPage: { pageNum: number; score: PageScore; blob: Blob } | null = null;
+    // ── Step 1: Score page 1 to decide if it's a usable cover ──
+    const page1 = await pdf.getPage(1);
+    const scoreViewport = page1.getViewport({ scale: 1.0 });
+    canvas.width = scoreViewport.width;
+    canvas.height = scoreViewport.height;
+    ctx.clearRect(0, 0, scoreViewport.width, scoreViewport.height);
+    await page1.render({ canvasContext: ctx, viewport: scoreViewport }).promise;
+    const page1Score = scorePageImage(ctx, scoreViewport.width, scoreViewport.height);
 
-    for (let i = 1; i <= pagesToScan; i++) {
+    console.log(
+      `[image-extractor] Page 1 score: ${page1Score.score.toFixed(0)} ` +
+      `(white: ${(page1Score.whiteRatio * 100).toFixed(0)}%, color: ${(page1Score.colorVariance * 100).toFixed(0)}%)`
+    );
+
+    const page1IsTextHeavy =
+      page1Score.whiteRatio > TEXT_PAGE_WHITE_THRESHOLD &&
+      page1Score.colorVariance < TEXT_PAGE_COLOR_VARIANCE_MAX;
+
+    if (!page1IsTextHeavy) {
+      // Default path: use page 1. Re-render at higher quality and ship it.
+      const blob = await renderPageBlob(page1, ctx, canvas, 1.5);
+      if (blob && blob.size > MIN_USABLE_BLOB_BYTES) {
+        console.log(`[image-extractor] Using cover page (page 1) - ${(blob.size / 1024).toFixed(0)}KB`);
+        return blob;
+      }
+      // Cover page rendered too small to be meaningful - fall through to scan.
+      console.warn(`[image-extractor] Cover render too small (${blob?.size ?? 0} bytes) - scanning later pages`);
+    } else {
+      console.log(`[image-extractor] Page 1 looks like a contents/text page - scanning pages 2-${1 + FALLBACK_SCAN_PAGES}`);
+    }
+
+    // ── Step 2 (rare): cover was a text page. Scan a few more pages
+    //    and pick the first one that scores reasonably. Earliest wins
+    //    on ties so we prefer broker-curated hero shots over deep
+    //    interior financial diagrams. ──
+    const lastPageToScan = Math.min(pdf.numPages, 1 + FALLBACK_SCAN_PAGES);
+    let bestFallback: { pageNum: number; score: PageScore; blob: Blob } | null = null;
+    for (let i = 2; i <= lastPageToScan; i++) {
       const page = await pdf.getPage(i);
-      const viewport = page.getViewport({ scale: 1.0 }); // lower scale for scoring (faster)
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-      ctx.clearRect(0, 0, viewport.width, viewport.height);
-
-      await page.render({ canvasContext: ctx, viewport }).promise;
-
-      const result = scorePageImage(ctx, viewport.width, viewport.height);
-      const pageScore: PageScore = { pageNum: i, ...result };
-
-      console.log(`[image-extractor] Page ${i} score: ${pageScore.score.toFixed(0)} (white: ${(pageScore.whiteRatio * 100).toFixed(0)}%, color: ${(pageScore.colorVariance * 100).toFixed(0)}%, sat: ${(pageScore.saturation * 100).toFixed(0)}%, edges: ${(pageScore.edgeDensity * 100).toFixed(0)}%)`);
-
-      if (pageScore.score >= PHOTO_THRESHOLD && (!bestPage || pageScore.score > bestPage.score.score)) {
-        // Re-render at higher quality for the candidate
-        const hqViewport = page.getViewport({ scale: 1.5 });
-        canvas.width = hqViewport.width;
-        canvas.height = hqViewport.height;
-        ctx.clearRect(0, 0, hqViewport.width, hqViewport.height);
-        await page.render({ canvasContext: ctx, viewport: hqViewport }).promise;
-
-        const blob: Blob | null = await new Promise((resolve) => {
-          canvas.toBlob((b) => resolve(b), "image/jpeg", 0.85);
-        });
-
-        if (blob && blob.size > 5000) { // at least 5KB to be meaningful
-          bestPage = { pageNum: i, score: pageScore, blob };
+      const v = page.getViewport({ scale: 1.0 });
+      canvas.width = v.width;
+      canvas.height = v.height;
+      ctx.clearRect(0, 0, v.width, v.height);
+      await page.render({ canvasContext: ctx, viewport: v }).promise;
+      const result = scorePageImage(ctx, v.width, v.height);
+      const ps: PageScore = { pageNum: i, ...result };
+      console.log(`[image-extractor] Page ${i} score: ${ps.score.toFixed(0)}`);
+      if (ps.score >= FALLBACK_SCORE_FLOOR) {
+        const blob = await renderPageBlob(page, ctx, canvas, 1.5);
+        if (blob && blob.size > MIN_USABLE_BLOB_BYTES) {
+          // First passing page wins (don't keep hunting for "best score" -
+          // earlier pages are almost always the property hero).
+          bestFallback = { pageNum: i, score: ps, blob };
+          break;
         }
       }
     }
 
-    if (bestPage) {
-      console.log(`[image-extractor] Selected page ${bestPage.pageNum} as hero image (score: ${bestPage.score.score.toFixed(0)}, ${(bestPage.blob.size / 1024).toFixed(0)}KB)`);
-      return bestPage.blob;
+    if (bestFallback) {
+      console.log(`[image-extractor] Selected page ${bestFallback.pageNum} as hero (${(bestFallback.blob.size / 1024).toFixed(0)}KB)`);
+      return bestFallback.blob;
     }
 
-    console.log(`[image-extractor] No page scored above threshold (${PHOTO_THRESHOLD}). Skipping PDF image - will use map/street view fallback.`);
+    console.log(`[image-extractor] No usable page found - falling back to map/street view`);
     return null;
   } catch (err) {
     console.warn("[image-extractor] Failed to extract hero image:", err);
