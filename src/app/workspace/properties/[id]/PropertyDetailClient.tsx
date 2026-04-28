@@ -2527,8 +2527,6 @@ function PropertyDetailInner({
             )}
           </div>
         )}
-        <div style={{ display: "none" }}>{/* spacer so JSX flow is clean */}</div>
-        </div>
         {location && (
           <div className="pd-prop-location" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <p style={{ fontSize: 14, color: C.secondary, margin: 0 }}>{location}</p>
