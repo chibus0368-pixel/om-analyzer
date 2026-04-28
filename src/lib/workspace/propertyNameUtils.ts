@@ -339,11 +339,14 @@ export function extractPropertyNameFromText(
     if (v && !brokerish.test(v) && !junk.test(v)) return v.substring(0, 80);
   }
 
-  // 3. Shopping-center / mixed-use suffix pattern anywhere in the head.
-  // Catches things like "The Shoppes at Riverview", "Oakridge Plaza",
-  // "Sunset Crossing", "Main Street Commons".
+  // 3. Shopping-center / mixed-use / multifamily / industrial suffix
+  // pattern anywhere in the head. Catches things like "The Shoppes at
+  // Riverview", "Oakridge Plaza", "Sunset Crossing", "Main Street
+  // Commons", "Sussex Gateway", "Riverwalk Lofts", "The Reserve at
+  // Eastmont". Suffix list expanded to cover the names brokers use
+  // beyond just retail centers.
   const centerRe =
-    /\b((?:the\s+)?[A-Z][A-Za-z'&.]*(?:\s+(?:at|of|on|&|and)\s+)?(?:\s+[A-Z][A-Za-z'&.]+){0,4}\s+(?:Plaza|Center|Centre|Mall|Crossing|Crossings|Commons|Square|Shoppes|Shops|Village|Park|Pointe|Point|Place|Terrace|Gardens|Heights|Ridge|Landing|Station|Junction|Marketplace|Market|Promenade|Galleria|Pavilion|Courtyard|Corners|Corner))\b/;
+    /\b((?:the\s+)?[A-Z][A-Za-z'&.]*(?:\s+(?:at|of|on|&|and)\s+)?(?:\s+[A-Z][A-Za-z'&.]+){0,4}\s+(?:Plaza|Center|Centre|Mall|Crossing|Crossings|Commons|Common|Square|Shoppes|Shops|Village|Park|Parks|Pointe|Point|Place|Terrace|Gardens|Garden|Heights|Height|Ridge|Landing|Station|Junction|Marketplace|Market|Promenade|Galleria|Pavilion|Courtyard|Corners|Corner|Gateway|Gateways|Tower|Towers|Estates|Estate|Lofts|Loft|Court|Courts|Reserve|Hills|Hill|Trail|Trails|Run|Vista|Vistas|Quarter|Quarters|Yard|Yards|District|Districts|Hub|Cove|Bay|Bend|View|Views|Walk|Walks|Row|Rows|Hollow|Crest|Mews|Annex|Pointe|Heights|Trace|Greens|Green|Glen|Grove|Groves|Bluff|Bluffs|Centre|Boulevard|Court|Plaza)\b)/;
   const centerMatch = head.match(centerRe);
   if (centerMatch) {
     const v = clean(centerMatch[1]);

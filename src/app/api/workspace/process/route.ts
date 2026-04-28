@@ -65,36 +65,14 @@ export async function POST(req: NextRequest) {
         parsedData = parseResult.fields;
         console.log("[process] Parse success:", fieldsExtracted, "fields extracted, runId:", parseResult.runId);
 
-        // Update property name if parsed
-        if (parsedData) {
-          const p = parsedData.property || {};
-          const parsedName = p.name || p.property_name;
-          const parsedAddress = p.address;
-          const parsedCity = p.city;
-          const parsedState = p.state;
-
-          // Prefer a short street-address label ("136 Commercial Ave") over the
-          // raw parsed name - that's what brokers/owners recognize and keeps
-          // card titles compact. Falls back to buildSmartPropertyName if we
-          // couldn't extract a usable street address from parsed content.
-          const shortStreet = extractShortStreetAddress(parsedAddress);
-          const hasUsableParsedName = parsedName && parsedName !== "Unknown Property";
-          const textExtracted = !shortStreet && !hasUsableParsedName
-            ? extractPropertyNameFromText(documentText)
-            : "";
-          const finalName = shortStreet
-            ? shortStreet
-            : (hasUsableParsedName
-                ? buildSmartPropertyName(parsedName, parsedAddress, parsedCity, parsedState)
-                : (textExtracted || null));
-
-          if (finalName) {
-            await db.collection("workspace_properties").doc(propertyId).set({
-              propertyName: finalName,
-              updatedAt: new Date().toISOString(),
-            }, { merge: true }).catch(() => {});
-          }
-        }
+        // Property name is now resolved entirely inside parse-engine.ts
+        // (single-tenant brand naming, text-scan for center names like
+        // "Sussex Gateway", short-street fallback). Process route used
+        // to re-derive the name here and overwrote parse-engine's
+        // smarter answer with a generic short-street label - removing
+        // that double-write so the parse-engine name sticks. The other
+        // property fields (address, card metrics, score) are still
+        // updated by parse-engine + score-engine as before.
       } else {
         parseError = parseResult.error || "Parse returned success=false";
         console.error("[process] Parse failed:", parseError);

@@ -1,5 +1,5 @@
 import { getAdminDb } from "@/lib/firebase-admin";
-import { extractShortStreetAddress } from "./propertyNameUtils";
+import { extractShortStreetAddress, extractPropertyNameFromText } from "./propertyNameUtils";
 
 // ===== OpenAI API Helper =====
 async function callOpenAI(
@@ -1858,6 +1858,12 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
           return true;
         };
 
+        // Text-scan the OM body for branded center names like "Sussex
+        // Gateway", "The Shoppes at Riverview", "Riverwalk Lofts" - the
+        // LLM often returns the address as `name` even when the OM
+        // clearly headlines a center name. This catches that case.
+        const textBrandName = extractPropertyNameFromText(documentText);
+
         let smartName = "";
         if (isSingleTenant) {
           // "Chipotle Mexican Grill - West Bend" - single tenant deals are
@@ -1867,6 +1873,10 @@ Return JSON only.\n\n${documentText.substring(0, 40000)}`;
         } else if (looksLikeRealName(propName)) {
           // Multi-tenant + a real branded property name ("West Bend Plaza")
           smartName = String(propName).trim();
+        } else if (textBrandName) {
+          // Multi-tenant + LLM didn't surface a branded name, but the OM
+          // body has one (e.g. "Sussex Gateway" appearing in a heading).
+          smartName = textBrandName;
         } else if (shortStreet) {
           smartName = shortStreet;
         } else if (propName && propName !== "Unknown Property") {
