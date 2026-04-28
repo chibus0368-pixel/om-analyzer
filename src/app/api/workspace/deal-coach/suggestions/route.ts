@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
+import { scoreBandLabel } from "@/lib/workspace/score-band-labels";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -101,7 +102,7 @@ export async function GET(req: NextRequest) {
 
   // ── Deal-specific add-ons (regardless of asset type) ──
   if (band && band !== "strong_buy" && band !== "buy") {
-    out.push(`The score is ${score} (${band.replace("_", " ")}). What would push it into Buy territory?`);
+    out.push(`The score is ${score} (${scoreBandLabel(band)}). What would push it into Buy territory?`);
   }
   if (askPrice > 0 && cap > 0 && noi > 0) {
     out.push(`At what price would the deal pencil to a 1.30x DSCR with 65% LTV?`);

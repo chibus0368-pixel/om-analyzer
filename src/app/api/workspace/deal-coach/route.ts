@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
 import { renderSkillsBlock } from "@/lib/workspace/skill-loader";
+import { scoreBandLabel } from "@/lib/workspace/score-band-labels";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -200,7 +201,7 @@ export async function POST(req: NextRequest) {
                   p.cap ? `${p.cap}% cap` : "",
                   p.noi ? `NOI $${Number(p.noi).toLocaleString()}` : "",
                   p.sf ? `${Number(p.sf).toLocaleString()} SF` : "",
-                  p.score != null ? `score ${p.score}${p.band ? ` (${p.band})` : ""}` : "",
+                  p.score != null ? `score ${p.score}${p.band ? ` (${scoreBandLabel(p.band)})` : ""}` : "",
                 ].filter(Boolean).join(" · ");
                 return `- ${parts}`;
               })
@@ -332,7 +333,7 @@ DEAL CONTEXT
 Property: ${prop.propertyName || "(unnamed)"}
 Address: ${addr || "(unknown)"}
 Asset type: ${prop.analysisType || "unknown"}
-Score: ${prop.scoreTotal ?? "(not scored)"} / 100${prop.scoreBand ? ` (${prop.scoreBand})` : ""}
+Score: ${prop.scoreTotal ?? "(not scored)"} / 100${prop.scoreBand ? ` (${scoreBandLabel(prop.scoreBand)})` : ""}
 Recommendation: ${prop.recommendation || "(none)"}
 
 Card metrics:
