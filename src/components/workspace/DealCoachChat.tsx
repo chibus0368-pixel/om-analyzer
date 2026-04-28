@@ -192,7 +192,7 @@ export default function DealCoachChat({
         aria-label="Open Deal Coach"
         onClick={() => setOpen(true)}
         style={{
-          position: "fixed", bottom: 24, right: 24, zIndex: 950,
+          position: "fixed", bottom: 24, right: 24, zIndex: 9999,
           width: 56, height: 56, borderRadius: "50%",
           background: "#84CC16", color: "#0F172A",
           border: "1px solid rgba(132,204,22,0.6)",
@@ -217,7 +217,7 @@ export default function DealCoachChat({
       role="dialog"
       aria-label="Deal Coach"
       style={{
-        position: "fixed", bottom: 24, right: 24, zIndex: 950,
+        position: "fixed", bottom: 24, right: 24, zIndex: 9999,
         width: 380, maxWidth: "calc(100vw - 32px)",
         height: 560, maxHeight: "calc(100vh - 100px)",
         background: "#FFFFFF",
