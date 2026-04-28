@@ -157,6 +157,60 @@ export async function POST(req: NextRequest) {
     }
     const briefBlock = briefBody ? `\n\n### Investment brief (parsed narrative)\n${briefBody}` : "";
 
+    // Pull peer deals from the same dealboard so the bot can compare
+    // ("how does this cap rate stack up against the rest of my Dave
+    // Retail board?"). Capped at 25 most recent, only key card
+    // metrics + score so we don't bloat the prompt.
+    let peerBlock = "";
+    try {
+      const wsId = (prop as any)?.workspaceId;
+      if (wsId) {
+        const peersSnap = await db
+          .collection("workspace_properties")
+          .where("userId", "==", userId)
+          .where("workspaceId", "==", wsId)
+          .get();
+        const peers = peersSnap.docs
+          .filter((d) => d.id !== propertyId)
+          .map((d) => {
+            const p = d.data() as any;
+            return {
+              id: d.id,
+              name: p.propertyName || "(unnamed)",
+              type: p.analysisType,
+              price: p.cardAskingPrice,
+              cap: p.cardCapRate,
+              noi: p.cardNoi,
+              sf: p.cardBuildingSf,
+              score: p.scoreTotal,
+              band: p.scoreBand,
+              created: p.createdAt,
+            };
+          })
+          .sort((a, b) => String(b.created || "").localeCompare(String(a.created || "")))
+          .slice(0, 25);
+        if (peers.length > 0) {
+          peerBlock = `\n\n### Peer deals on this dealboard (${peers.length})\n` +
+            peers
+              .map((p) => {
+                const parts = [
+                  `${p.name}`,
+                  p.type ? `(${p.type})` : "",
+                  p.price ? `$${(Number(p.price) / 1_000_000).toFixed(2)}M` : "",
+                  p.cap ? `${p.cap}% cap` : "",
+                  p.noi ? `NOI $${Number(p.noi).toLocaleString()}` : "",
+                  p.sf ? `${Number(p.sf).toLocaleString()} SF` : "",
+                  p.score != null ? `score ${p.score}${p.band ? ` (${p.band})` : ""}` : "",
+                ].filter(Boolean).join(" · ");
+                return `- ${parts}`;
+              })
+              .join("\n");
+        }
+      }
+    } catch (peerErr: any) {
+      console.warn("[deal-coach] peer fetch failed:", peerErr?.message);
+    }
+
     const addr = [prop.address1, prop.city, prop.state, prop.zip].filter(Boolean).join(", ");
 
     const systemPrompt = `You are Deal Coach, a senior CRE acquisitions analyst working alongside the user on a specific deal.
@@ -166,6 +220,8 @@ ALWAYS reason from the deal data below. If a number isn't in the data, say so pl
 When the user asks open-ended questions ("what should I do", "is this a good deal", "highest and best use"), give 2-4 concrete options with the pros/cons and the assumption that drives each.
 
 Keep answers tight: lead with the answer, then 3-6 bullets of reasoning. Use the deal's numbers, not generic CRE advice.
+
+When peer deals from the same dealboard are listed below, USE them for comparison ("vs your other 4 retail centers, this cap rate is high/low"). Reference peers by name, not ID.
 
 DEAL CONTEXT
 ============
@@ -183,7 +239,7 @@ Card metrics:
 - Occupancy: ${prop.occupancyPct ? `${prop.occupancyPct}%` : "(unknown)"}
 
 EXTRACTED FIELDS (${fieldsSnap.size} total)
-${fieldDigest || "(no extracted fields yet — parse may not have run)"}${tenantBlock}${briefBlock}
+${fieldDigest || "(no extracted fields yet — parse may not have run)"}${tenantBlock}${briefBlock}${peerBlock}
 ${renderSkillsBlock(prop.analysisType)}`;
 
     // ── Compose OpenAI messages ──

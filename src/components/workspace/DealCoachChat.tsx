@@ -121,10 +121,19 @@ export default function DealCoachChat({
   const bodyRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const starters = useMemo(() => {
+  // Static fallback - used until /suggestions resolves with deal-
+  // specific starters. The server-side endpoint also factors in
+  // asset type, so its answers always strictly improve on this.
+  const staticStarters = useMemo(() => {
     const k = (analysisType || "").toLowerCase();
     return STARTERS_BY_TYPE[k] || FALLBACK_STARTERS;
   }, [analysisType]);
+
+  // Server-rendered, deal-aware starters. Refetched whenever the panel
+  // opens so a recently-edited price / occupancy / tenant count is
+  // reflected.
+  const [dynamicStarters, setDynamicStarters] = useState<string[] | null>(null);
+  const starters = dynamicStarters ?? staticStarters;
 
   // Auto-scroll body to the latest message when content changes.
   useEffect(() => {
@@ -135,6 +144,33 @@ export default function DealCoachChat({
   // Focus the input when the panel opens.
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 80);
+  }, [open]);
+
+  // Fetch deal-aware starter suggestions when the panel opens. Falls
+  // back to the static asset-type list if the request fails.
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const t = await getToken();
+        if (!t) return;
+        const res = await fetch(
+          `/api/workspace/deal-coach/suggestions?propertyId=${encodeURIComponent(propertyId)}`,
+          { headers: { Authorization: `Bearer ${t}` } }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        if (Array.isArray(data?.suggestions) && data.suggestions.length > 0) {
+          setDynamicStarters(data.suggestions);
+        }
+      } catch {
+        // Fall back to static starters - no big deal.
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   // Hydrate prior conversation from Firestore the first time the panel

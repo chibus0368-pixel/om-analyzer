@@ -407,7 +407,11 @@ function PlanPillWithUsagePopover({
   };
   const scheduleClose = () => {
     cancelClose();
-    closeTimer.current = setTimeout(() => setOpen(false), 120);
+    // Generous delay so the cursor can travel from pill → popover
+    // without the popover snapping shut mid-traverse. The DOM bridge
+    // below also keeps the wrapper continuously under the cursor, but
+    // the timer is the second line of defense for slower trackpads.
+    closeTimer.current = setTimeout(() => setOpen(false), 280);
   };
 
   // Tier-aware copy. Anonymous + free see usage with a CTA to upgrade;
@@ -450,17 +454,27 @@ function PlanPillWithUsagePopover({
       {open && (
         <div
           role="dialog"
+          // Bridge the gap between the pill and the popover so the
+          // hover region is continuous. paddingTop:10 keeps the visual
+          // breathing room but the wrapper is still under the cursor
+          // while traversing - no more "popover snaps shut as soon as
+          // I move down". The card's actual chrome (background, border,
+          // shadow) lives on the inner div below.
           style={{
-            position: "absolute", top: "calc(100% + 10px)", right: 0,
-            width: 280, padding: 18,
-            background: "#0F172A",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: 16,
-            boxShadow: "0 16px 40px rgba(0,0,0,0.45)",
+            position: "absolute", top: "100%", right: 0,
+            paddingTop: 10,
             zIndex: 1200,
             fontFamily: "'Inter', system-ui, sans-serif",
           }}
         >
+        <div style={{
+          width: 280, padding: 18,
+          background: "#0F172A",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: 16,
+          boxShadow: "0 16px 40px rgba(0,0,0,0.45)",
+          position: "relative",
+        }}>
           {/* Tiny tail/arrow */}
           <div style={{
             position: "absolute", top: -6, right: 12,
@@ -499,6 +513,7 @@ function PlanPillWithUsagePopover({
           >
             {ctaLabel}
           </a>
+        </div>
         </div>
       )}
     </div>
@@ -1611,9 +1626,13 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                 display: "inline-flex", alignItems: "center", gap: 8,
                 height: "100%",
                 fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "2.2px",
-                color: active ? "#84CC16" : "#9CA3AF",
+                // Active state uses the darker brand lime (#4D7C0F) for
+                // legibility on the white nav bar; the bright lime
+                // (#84CC16) reads washed out against white at this
+                // letter-spacing. Underline matches.
+                color: active ? "#4D7C0F" : "#9CA3AF",
                 textDecoration: "none",
-                borderBottom: active ? "2px solid #84CC16" : "2px solid transparent",
+                borderBottom: active ? "2px solid #4D7C0F" : "2px solid transparent",
                 paddingTop: 4,
                 fontFamily: "'Inter', sans-serif",
                 transition: "all 0.15s",
