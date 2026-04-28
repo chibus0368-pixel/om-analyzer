@@ -417,10 +417,11 @@ export default function MapPage() {
       <style>{styles}</style>
       {/* Fill the parent .ws-main-content (workspace layout strips its
           padding + outer scroll for /workspace/map) so the map goes
-          edge-to-edge like the share view. height:100% inherits whatever
-          the workspace shell allots. minHeight:0 keeps the inner flex
-          children from growing past the container. */}
-      <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column" }}>
+          edge-to-edge like the share view. flex:1 + minHeight:0 inside
+          the shell's flex column gives the wrapper an explicit pixel
+          height, which is what the sidebar's overflow:auto needs to
+          actually start scrolling when its content overflows. */}
+      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
       <div className="mp-header-container" style={{ padding: "12px 20px", background: "#fff", borderBottom: "1px solid rgba(227, 190, 189, 0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div className="mp-title-section">
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
