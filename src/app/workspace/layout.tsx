@@ -1744,69 +1744,12 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               : { flex: 1, overflow: "auto", padding: 32, display: "flex", flexDirection: "column" }
           }
         >
-          {/* ── Anonymous user conversion banner ──
-              A compact, centered pill instead of a full-width strip - matches
-              the visual weight of the header upgrade pill. Same lime accent
-              used everywhere else (pricing cards, header, /workspace/upgrade).
-              Dismissible per session. */}
-          {(user as any).isAnonymous && !anonBannerDismissed && (
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}>
-              <div className="ws-anon-banner" style={{
-                display: "inline-flex", alignItems: "center", gap: 12,
-                padding: "10px 14px 10px 12px",
-                borderRadius: 999,
-                background: "rgba(132,204,22,0.08)",
-                border: "1px solid rgba(132,204,22,0.35)",
-                boxShadow: "0 1px 4px rgba(77,124,15,0.06)",
-                maxWidth: "100%",
-              }}>
-                <span aria-hidden style={{
-                  width: 22, height: 22, borderRadius: "50%",
-                  background: "rgba(132,204,22,0.2)",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0,
-                }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2.5"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" /></svg>
-                </span>
-                <span style={{ fontSize: 13, color: "#0F172A", fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
-                  Sign up to save deals to your account.
-                  {" "}
-                  <span style={{ color: "#374151", fontWeight: 500 }}>
-                    5 more analyses this month, free.
-                  </span>
-                </span>
-                <Link
-                  href="/workspace/login?mode=register"
-                  prefetch={false}
-                  style={{
-                    padding: "6px 14px", borderRadius: 999,
-                    background: "#4D7C0F", color: "#FFFFFF",
-                    fontSize: 12, fontWeight: 700, textDecoration: "none",
-                    whiteSpace: "nowrap", letterSpacing: 0.2,
-                    fontFamily: "'Inter', sans-serif",
-                    flexShrink: 0,
-                  }}
-                >
-                  Sign Up Free
-                </Link>
-                <button
-                  type="button"
-                  aria-label="Dismiss"
-                  onClick={() => {
-                    try { sessionStorage.setItem("ds_anon_banner_dismissed", "1"); } catch {}
-                    setAnonBannerDismissed(true);
-                  }}
-                  style={{
-                    background: "transparent", border: "none", color: "#9CA3AF",
-                    cursor: "pointer", fontSize: 14, lineHeight: 1, padding: "2px 4px",
-                    flexShrink: 0, fontFamily: "inherit",
-                  }}
-                >
-                  &times;
-                </button>
-              </div>
-            </div>
-          )}
+          {/* Anonymous-user conversion banner removed per user request -
+              redundant with the global header pill ("Sign up now to get
+              5 more deals") which already says the same thing in the
+              same spot every page. anonBannerDismissed state + the
+              ws-anon-banner CSS rule are kept harmless above so older
+              cached bundles don't crash referencing them. */}
 
           {showUpgradeSuccess && (
             <div style={{
