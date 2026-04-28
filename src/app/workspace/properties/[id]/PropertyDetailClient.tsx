@@ -345,9 +345,13 @@ function EmailPropertyButton({
         throw new Error("Failed to build attachments");
       }
 
-      // 2. Render HTML body
+      // 2. Render HTML body.
+      // Public single-deal page (/p/[id]) instead of /workspace/properties/[id]
+      // so non-logged-in recipients see a clean marketing-style page
+      // with the deal info + a CTA to the homepage, not an auto-anon
+      // workspace shell with a signup wall.
       const origin = (typeof window !== "undefined" && window.location?.origin) || "https://dealsignals.app";
-      const propertyUrl = property?.id ? `${origin}/workspace/properties/${property.id}` : undefined;
+      const propertyUrl = property?.id ? `${origin}/p/${property.id}` : undefined;
       const html = renderPropertyEmailHTML({
         propertyName: property.propertyName,
         address: property.address1,
