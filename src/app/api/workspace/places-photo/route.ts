@@ -80,13 +80,21 @@ export async function GET(req: NextRequest) {
   // Helper to wrap a debug payload onto error responses without
   // changing the production happy-path shape.
   const fail = (status: number, body: Record<string, any>) =>
-    NextResponse.json(debug ? { ...body, address, keySource: keySourceLabel() } : body, { status });
+    NextResponse.json(
+      debug
+        ? { ...body, address, keySource: keySourceLabel(), attempts }
+        : body,
+      { status }
+    );
   const keySourceLabel = () =>
     process.env.GOOGLE_PLACES_API_KEY
       ? "GOOGLE_PLACES_API_KEY"
       : process.env.GOOGLE_MAPS_API_KEY
       ? "GOOGLE_MAPS_API_KEY"
       : "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY (browser-restricted - may fail server-side)";
+
+  // Track every attempt so debug=1 can return the full ladder of failures.
+  const attempts: any[] = [];
 
   try {
     // ── ATTEMPT 1: legacy Places API (findplacefromtext + details) ──
@@ -100,6 +108,12 @@ export async function GET(req: NextRequest) {
     const findRes = await fetch(findUrl, { signal: AbortSignal.timeout(6000) });
     if (findRes.ok) {
       const findData = (await findRes.json()) as FindPlaceResponse;
+      attempts.push({
+        api: "legacy_findplace",
+        status: findData.status,
+        candidates: findData.candidates?.length ?? 0,
+        error_message: findData.error_message,
+      });
       // Google returns 200 with status=REQUEST_DENIED when the key isn't
       // authorized for legacy Places API. Surface the real reason in logs
       // and the debug payload.
@@ -170,12 +184,14 @@ export async function GET(req: NextRequest) {
 
     if (!newSearchRes.ok) {
       const detail = await newSearchRes.text().catch(() => "");
+      attempts.push({ api: "new_searchText", httpStatus: newSearchRes.status, body: detail.slice(0, 400) });
       console.warn(`[places-photo] new Places searchText HTTP ${newSearchRes.status}:`, detail.slice(0, 300));
       return fail(503, {
         error: "places_unavailable",
         detail: `Places search failed: HTTP ${newSearchRes.status}. ${detail.slice(0, 200)}`,
       });
     }
+    attempts.push({ api: "new_searchText", httpStatus: 200, places: 0 /* updated below if found */ });
 
     const newData = (await newSearchRes.json()) as NewPlacesSearchResponse;
     const newPlace = newData.places?.[0];
