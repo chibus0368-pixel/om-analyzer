@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
+import { renderSkillsBlock } from "@/lib/workspace/skill-loader";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -183,7 +184,7 @@ Card metrics:
 
 EXTRACTED FIELDS (${fieldsSnap.size} total)
 ${fieldDigest || "(no extracted fields yet — parse may not have run)"}${tenantBlock}${briefBlock}
-`;
+${renderSkillsBlock(prop.analysisType)}`;
 
     // ── Compose OpenAI messages ──
     const messages = [
