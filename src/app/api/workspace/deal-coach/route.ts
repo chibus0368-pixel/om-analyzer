@@ -71,8 +71,18 @@ export async function POST(req: NextRequest) {
         : (data.normalizedValue ?? data.rawValue);
     });
 
-    // Compact the field map into a markdown digest so the LLM gets
-    // structured signal without 500+ raw rows.
+    // Compact the field map into a markdown digest. Two important
+    // calibrations vs the first version:
+    //   (a) Rent roll fields (tenant_N_name, tenant_N_sf, tenant_N_rent,
+    //       tenant_N_lease_end, etc) are NEVER capped - users want to
+    //       ask about specific tenants and lease terms, and those rows
+    //       were getting truncated at 30/group, which is why the bot
+    //       said "I don't know the lease terms" for big rent rolls.
+    //   (b) For other groups we still cap at 80 rows/group (was 30) so
+    //       a single bloated group can't blow the system prompt budget.
+    //   (c) Tenant-numbered fields are also reorganized into a tenant
+    //       table at the end of the digest so the LLM doesn't have to
+    //       reconstruct the rent roll from scattered tenant_3_* rows.
     const fieldsByGroup: Record<string, Array<[string, any]>> = {};
     for (const [k, v] of Object.entries(fields)) {
       if (v == null || v === "") continue;
@@ -83,13 +93,68 @@ export async function POST(req: NextRequest) {
     const fieldDigest = Object.entries(fieldsByGroup)
       .map(([g, rows]) => {
         const head = `### ${g}`;
+        const cap = g === "rent_roll" ? rows.length : 80;
         const lines = rows
-          .slice(0, 30)
+          .slice(0, cap)
           .map(([n, v]) => `- ${n}: ${typeof v === "string" ? v : JSON.stringify(v)}`)
           .join("\n");
         return `${head}\n${lines}`;
       })
       .join("\n\n");
+
+    // Pivot rent_roll fields into a tenant-by-tenant block so the LLM
+    // can answer "what's tenant X's lease end?" without joining
+    // tenant_3_name to tenant_3_lease_end across separate bullet rows.
+    const rentRollRows = fieldsByGroup["rent_roll"] || [];
+    const tenants: Record<string, Record<string, any>> = {};
+    for (const [name, value] of rentRollRows) {
+      const m = name.match(/^tenant_(\d+)_(.+)$/);
+      if (!m) continue;
+      const idx = m[1];
+      const attr = m[2];
+      if (!tenants[idx]) tenants[idx] = {};
+      tenants[idx][attr] = value;
+    }
+    const tenantBlock = Object.keys(tenants).length
+      ? "\n\n### tenant table (parsed from rent_roll)\n" +
+        Object.entries(tenants)
+          .sort((a, b) => Number(a[0]) - Number(b[0]))
+          .map(([idx, t]) => {
+            const tName = t.name ?? "(unnamed)";
+            const sf = t.sf ?? "?";
+            const rent = t.rent ?? t.monthly_rent ?? "?";
+            const psf = t.rent_psf ?? "?";
+            const start = t.lease_start ?? "?";
+            const end = t.lease_end ?? "?";
+            const type = t.type ?? "?";
+            const status = t.status ?? "?";
+            const ext = t.extension ?? "";
+            return `- Tenant ${idx}: ${tName} | SF: ${sf} | Rent: ${rent} | $/SF: ${psf} | Lease: ${start} → ${end} | Type: ${type} | Status: ${status}${ext ? ` | Options: ${ext}` : ""}`;
+          })
+          .join("\n")
+      : "";
+
+    // Pull the "First-Pass Investment Brief" note (or any pinned note)
+    // so the bot has access to the narrative summary the parse engine
+    // wrote, not just the raw fields.
+    let briefBody = "";
+    try {
+      const notesSnap = await db
+        .collection("workspace_notes")
+        .where("propertyId", "==", propertyId)
+        .get();
+      const briefDoc = notesSnap.docs.find((d) => {
+        const data = d.data() as any;
+        return data?.noteType === "investment_thesis" || data?.isPinned;
+      });
+      if (briefDoc) {
+        const c = (briefDoc.data() as any)?.content;
+        briefBody = typeof c === "string" ? c.slice(0, 3500) : JSON.stringify(c).slice(0, 3500);
+      }
+    } catch {
+      /* non-blocking */
+    }
+    const briefBlock = briefBody ? `\n\n### Investment brief (parsed narrative)\n${briefBody}` : "";
 
     const addr = [prop.address1, prop.city, prop.state, prop.zip].filter(Boolean).join(", ");
 
@@ -116,8 +181,8 @@ Card metrics:
 - Building SF: ${prop.cardBuildingSf ? `${Number(prop.cardBuildingSf).toLocaleString()} SF` : "(unknown)"}
 - Occupancy: ${prop.occupancyPct ? `${prop.occupancyPct}%` : "(unknown)"}
 
-EXTRACTED FIELDS (${fieldsSnap.size} total, top per group)
-${fieldDigest || "(no extracted fields yet — parse may not have run)"}
+EXTRACTED FIELDS (${fieldsSnap.size} total)
+${fieldDigest || "(no extracted fields yet — parse may not have run)"}${tenantBlock}${briefBlock}
 `;
 
     // ── Compose OpenAI messages ──
@@ -137,7 +202,7 @@ ${fieldDigest || "(no extracted fields yet — parse may not have run)"}
       body: JSON.stringify({
         model: "gpt-4o-mini",
         temperature: 0.4,
-        max_tokens: 900,
+        max_tokens: 1200,
         stream: true,
         messages,
       }),

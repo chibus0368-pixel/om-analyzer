@@ -27,6 +27,14 @@ interface Props {
   analysisType?: string;
   /** Bearer token for the deal-coach API. */
   getToken: () => Promise<string | null>;
+  /**
+   * Controlled mode: when defined, parent owns open state and the
+   * built-in floating launcher button is hidden. Lets the property
+   * page put its own labeled "CRE Chatbot" button wherever it wants
+   * (e.g. the hero's upper-right cluster) and toggle from there.
+   */
+  open?: boolean;
+  onOpenChange?: (next: boolean) => void;
 }
 
 interface Msg {
@@ -79,8 +87,23 @@ export default function DealCoachChat({
   propertyName,
   analysisType,
   getToken,
+  open: openProp,
+  onOpenChange,
 }: Props) {
-  const [open, setOpen] = useState(false);
+  // Controlled vs uncontrolled. When the parent passes `open`, we
+  // mirror that prop and route any internal close back through the
+  // callback. Otherwise we own the open state and render the
+  // built-in floating launcher button.
+  const isControlled = openProp !== undefined;
+  const [openInternal, setOpenInternal] = useState(false);
+  const open = isControlled ? !!openProp : openInternal;
+  const setOpen = (next: boolean) => {
+    if (isControlled) {
+      onOpenChange?.(next);
+    } else {
+      setOpenInternal(next);
+    }
+  };
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
@@ -186,6 +209,10 @@ export default function DealCoachChat({
   }
 
   if (!open) {
+    // Controlled mode: parent owns the launcher (the labeled "CRE
+    // Chatbot" button in the property hero). Render nothing here so
+    // we don't double-show a floating button.
+    if (isControlled) return null;
     return (
       <button
         type="button"
