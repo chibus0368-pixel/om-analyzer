@@ -182,47 +182,49 @@ export async function GET(req: NextRequest) {
       }
     );
 
-    if (!newSearchRes.ok) {
-      const detail = await newSearchRes.text().catch(() => "");
-      attempts.push({ api: "new_searchText", httpStatus: newSearchRes.status, body: detail.slice(0, 400) });
-      console.warn(`[places-photo] new Places searchText HTTP ${newSearchRes.status}:`, detail.slice(0, 300));
-      return fail(503, {
-        error: "places_unavailable",
-        detail: `Places search failed: HTTP ${newSearchRes.status}. ${detail.slice(0, 200)}`,
-      });
-    }
-    attempts.push({ api: "new_searchText", httpStatus: 200, places: 0 /* updated below if found */ });
+    // Try the new Places API but DO NOT fail the route if it errors.
+    // Many GCP projects only have legacy Places enabled, so a 403/404 here
+    // is expected. Fall through to Street View / Satellite below.
+    let newPhotoFound = false;
+    let newPlaceMeta: { id?: string; photoName?: string } = {};
+    if (newSearchRes.ok) {
+      attempts.push({ api: "new_searchText", httpStatus: 200 });
 
-    const newData = (await newSearchRes.json()) as NewPlacesSearchResponse;
-    const newPlace = newData.places?.[0];
-    const photoName = newPlace?.photos?.[0]?.name;
-    if (!photoName) {
-      return fail(404, { error: "no_photo", detail: "Place found but has no photos." });
-    }
-
-    // Resolve photo "name" (e.g. "places/ABC/photos/XYZ") to the actual
-    // googleusercontent URL via /v1/{name}/media. We follow the redirect
-    // manually to capture the final key-less URL.
-    const newPhotoRes = await fetch(
-      `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=${maxWidth}&skipHttpRedirect=true`,
-      {
-        headers: { "X-Goog-Api-Key": key },
-        signal: AbortSignal.timeout(6000),
+      const newData = (await newSearchRes.json()) as NewPlacesSearchResponse;
+      const newPlace = newData.places?.[0];
+      const photoName = newPlace?.photos?.[0]?.name;
+      newPlaceMeta = { id: newPlace?.id, photoName };
+      if (photoName) {
+        // Resolve photo "name" (e.g. "places/ABC/photos/XYZ") to the actual
+        // googleusercontent URL via /v1/{name}/media.
+        const newPhotoRes = await fetch(
+          `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=${maxWidth}&skipHttpRedirect=true`,
+          {
+            headers: { "X-Goog-Api-Key": key },
+            signal: AbortSignal.timeout(6000),
+          }
+        );
+        if (newPhotoRes.ok) {
+          const mediaJson = await newPhotoRes.json().catch(() => ({}));
+          const mediaUrl = (mediaJson as any)?.photoUri;
+          if (mediaUrl && typeof mediaUrl === "string") {
+            return NextResponse.json({ url: mediaUrl, placeId: newPlace?.id, source: "places_new" });
+          }
+        } else {
+          const detail = await newPhotoRes.text().catch(() => "");
+          attempts.push({ api: "new_photo_media", httpStatus: newPhotoRes.status, body: detail.slice(0, 200) });
+          console.warn(`[places-photo] new Places media HTTP ${newPhotoRes.status}:`, detail.slice(0, 200));
+        }
       }
-    );
-    if (!newPhotoRes.ok) {
-      const detail = await newPhotoRes.text().catch(() => "");
-      console.warn(`[places-photo] new Places media HTTP ${newPhotoRes.status}:`, detail.slice(0, 300));
-      return fail(503, {
-        error: "places_unavailable",
-        detail: `Places photo media failed: HTTP ${newPhotoRes.status}.`,
-      });
+      newPhotoFound = !!photoName;
+    } else {
+      // 403/404/etc from new Places. Logged + falls through to Street View.
+      const detail = await newSearchRes.text().catch(() => "");
+      attempts.push({ api: "new_searchText", httpStatus: newSearchRes.status, body: detail.slice(0, 300) });
+      console.warn(`[places-photo] new Places searchText HTTP ${newSearchRes.status} (falling through to Street View):`, detail.slice(0, 200));
     }
-    const mediaJson = await newPhotoRes.json().catch(() => ({}));
-    const mediaUrl = (mediaJson as any)?.photoUri;
-    if (mediaUrl && typeof mediaUrl === "string") {
-      return NextResponse.json({ url: mediaUrl, placeId: newPlace?.id, source: "places_new" });
-    }
+    void newPhotoFound;
+    void newPlaceMeta;
 
     // ── ATTEMPT 3: Street View metadata + image (server-side fallback) ──
     // If neither Places API surfaced a photo for this address, fall back
