@@ -35,7 +35,6 @@ import OmReversePricing from "@/components/workspace/OmReversePricing";
 import DealVerdictBox from "@/components/workspace/DealVerdictBox";
 import RentRollDetailAnalysis from "@/components/workspace/RentRollDetailAnalysis";
 import SectionHeader from "@/components/workspace/SectionHeader";
-import DealCoachChat from "@/components/workspace/DealCoachChat";
 import LocationIntel from "@/components/workspace/LocationIntel";
 
 /* ── Design tokens ─────────────────────────────────────── */
@@ -3004,7 +3003,7 @@ function PropertyDetailInner({
       {/* Floating Deal Coach chat - context-loaded brainstorming partner.
           Anchored bottom-right; rendered alongside the modal so the user
           can ask questions without losing whatever tab they're on. */}
-      {false && user && property && ( /* CRE Chatbot disabled */
+      {user && property && (
         <DealCoachChat
           propertyId={propertyId}
           propertyName={property.propertyName || "Untitled property"}
@@ -3040,23 +3039,7 @@ function PropertyDetailInner({
           }}
         />
       )}
-    
-      {/* Floating CRE Chatbot - powered by Perplexity. Available on every
-          property detail page. The component renders its own bottom-right
-          launcher button when uncontrolled. */}
-      <DealCoachChat
-        propertyId={propertyId}
-        propertyName={property?.propertyName || "Deal"}
-        analysisType={String(property?.analysisType || "")}
-        getToken={async () => {
-          try {
-            const { getAuth } = await import("firebase/auth");
-            const fb = getAuth().currentUser;
-            if (!fb) return null;
-            return await fb.getIdToken();
-          } catch { return null; }
-        }}
-      />
+
 </div>
   );
 }
