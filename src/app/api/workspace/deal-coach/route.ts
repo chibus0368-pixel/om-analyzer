@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
 import { renderSkillsBlock } from "@/lib/workspace/skill-loader";
 import { scoreBandLabel } from "@/lib/workspace/score-band-labels";
+import { pplxStream, getPerplexityKey, type PplxMessage } from "@/lib/perplexity";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,16 +13,27 @@ export const maxDuration = 60;
  *
  * Streaming brainstorming chat scoped to a single property. Loads the
  * property doc + extracted_fields server-side, builds a context-rich
- * system prompt, then streams the OpenAI response back to the client.
+ * system prompt, then streams a Perplexity (sonar-pro) response back
+ * to the client. Perplexity gives us live web citations so the bot
+ * can answer "what's the latest cap rate trend in this submarket"
+ * with sourced evidence instead of training-data guesses.
+ *
+ * Note: we dropped the OpenAI function-calling loop (save_property_field)
+ * when we switched to Perplexity since sonar models don't support tool
+ * calling. That feature can be re-added as a separate post-processing
+ * step or a parallel OpenAI call if we miss it - for now the chatbot
+ * is read-only on property data.
  *
  * Request body: {
  *   propertyId: string,
- *   message: string,                       // latest user message
+ *   message: string,                          // latest user message
  *   history?: { role: "user"|"assistant"; content: string }[],
  * }
  *
- * Response: text/event-stream — newline-delimited "data: <chunk>\n\n"
- *           with a final "data: [DONE]\n\n".
+ * Response: text/event-stream - newline-delimited "data: <chunk>\n\n"
+ *   {"delta":"..."}                           streaming text
+ *   {"citations":["url1","url2",...]}         once, just before [DONE]
+ *   [DONE]
  */
 export async function POST(req: NextRequest) {
   try {
@@ -44,9 +56,9 @@ export async function POST(req: NextRequest) {
     if (!propertyId) return NextResponse.json({ error: "propertyId required" }, { status: 400 });
     if (!message) return NextResponse.json({ error: "message required" }, { status: 400 });
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ error: "OPENAI_API_KEY missing" }, { status: 503 });
+    const pplxKey = getPerplexityKey();
+    if (!pplxKey) {
+      return NextResponse.json({ error: "PERPLEXITY_API_KEY missing" }, { status: 503 });
     }
 
     // ── Load property + fields ──
@@ -347,198 +359,58 @@ EXTRACTED FIELDS (${fieldsSnap.size} total)
 ${fieldDigest || "(no extracted fields yet — parse may not have run)"}${tenantBlock}${briefBlock}${peerBlock}${researchBlock}
 ${renderSkillsBlock(prop.analysisType)}`;
 
-    // ── Compose OpenAI messages ──
-    const messages: any[] = [
+    // ── Compose Perplexity messages ──
+    // sonar-pro accepts the standard {role, content} message shape.
+    // We translate the {user, assistant} history straight through;
+    // Perplexity does not support a `tool` role so anything from the
+    // old tool-calling era would be filtered upstream of here.
+    const messages: PplxMessage[] = [
       { role: "system", content: systemPrompt },
       ...history.map((m) => ({ role: m.role, content: m.content })),
       { role: "user", content: message },
     ];
 
-    // ── Tool definitions (function calling) ──
-    // The save_property_field tool lets the bot persist a user-given
-    // value (e.g. "the building is 12,500 SF") to the property's
-    // extracted_fields collection. Backed by the save-field endpoint.
-    const tools = [
-      {
-        type: "function",
-        function: {
-          name: "save_property_field",
-          description:
-            "Save a single property field (with the user's confirmed value) into the property profile. " +
-            "Use this whenever the user supplies a piece of MISSING DATA listed in the system prompt. " +
-            "Always use the canonical group/name from the MISSING DATA list. Do NOT call this for values you computed - only for values the USER told you.",
-          parameters: {
-            type: "object",
-            properties: {
-              group: { type: "string", description: "Canonical field group, e.g. 'pricing_deal_terms', 'property_basics', 'expenses'." },
-              name: { type: "string", description: "Canonical field name within the group, e.g. 'asking_price', 'building_sf', 'noi_om'." },
-              value: { type: ["string", "number"], description: "The value the user gave (raw or numeric)." },
-            },
-            required: ["group", "name", "value"],
-          },
-        },
-      },
-    ];
-
-    // Server-side tool executor. Returns a string result that gets
-    // appended to the conversation as a `tool` message before we
-    // re-call OpenAI for the follow-up assistant turn.
-    const executeTool = async (name: string, args: any): Promise<string> => {
-      if (name === "save_property_field") {
-        try {
-          // Re-use the save-field endpoint logic inline so we don't
-          // need a self-fetch (which Vercel docs warn against).
-          const g = String(args?.group || "").trim();
-          const n = String(args?.name || "").trim();
-          const v = args?.value;
-          if (!g || !n || v === undefined || v === null || v === "") {
-            return JSON.stringify({ ok: false, error: "missing arguments" });
-          }
-          const stringValue = String(v).trim();
-          const numericTry = Number(stringValue.replace(/[$,%\s]/g, ""));
-          const normalized: any = Number.isFinite(numericTry) && stringValue.match(/[\d.]/) ? numericTry : stringValue;
-          const now = new Date().toISOString();
-
-          const existing = await db
-            .collection("workspace_extracted_fields")
-            .where("propertyId", "==", propertyId)
-            .where("fieldGroup", "==", g)
-            .where("fieldName", "==", n)
-            .limit(1)
-            .get();
-          if (!existing.empty) {
-            await existing.docs[0].ref.update({
-              rawValue: stringValue,
-              normalizedValue: normalized,
-              isUserOverridden: true,
-              isUserConfirmed: true,
-              userOverrideValue: normalized,
-              sourceLocator: "deal_coach_chat",
-              updatedAt: now,
-            });
-          } else {
-            await db.collection("workspace_extracted_fields").doc().set({
-              propertyId,
-              projectId: prop.projectId || "workspace-default",
-              documentId: "",
-              fieldGroup: g,
-              fieldName: n,
-              rawValue: stringValue,
-              normalizedValue: normalized,
-              confidenceScore: 1.0,
-              extractionMethod: "deal_coach_chat",
-              sourceLocator: "deal_coach_chat",
-              isUserConfirmed: true,
-              isUserOverridden: true,
-              userOverrideValue: normalized,
-              createdAt: now,
-              updatedAt: now,
-            });
-          }
-          return JSON.stringify({ ok: true, saved: { group: g, name: n, value: normalized } });
-        } catch (err: any) {
-          return JSON.stringify({ ok: false, error: err?.message || "save failed" });
-        }
-      }
-      return JSON.stringify({ ok: false, error: `unknown tool ${name}` });
-    };
-
-    // ── Helper to call OpenAI (non-streaming) for the tool-call
-    //    discovery turn(s), then stream the final answer. We loop up
-    //    to MAX_TOOL_TURNS times in case the model wants to call the
-    //    save tool for multiple fields in a row. ──
-    const MAX_TOOL_TURNS = 3;
-    let savedFields: any[] = [];
-
-    for (let turn = 0; turn < MAX_TOOL_TURNS; turn++) {
-      const probe = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          temperature: 0.4,
-          max_tokens: 1200,
-          messages,
-          tools,
-          tool_choice: "auto",
-        }),
+    // ── Stream from Perplexity sonar-pro ──
+    let upstream: Response;
+    try {
+      upstream = await pplxStream(messages, {
+        model: "sonar-pro",
+        temperature: 0.3,
+        maxTokens: 1500,
+        returnCitations: true,
       });
-      if (!probe.ok) {
-        const detail = await probe.text().catch(() => "");
-        console.error("[deal-coach] OpenAI tool-probe HTTP", probe.status, detail.slice(0, 300));
-        return NextResponse.json(
-          { error: "deal_coach_unavailable", detail: `OpenAI HTTP ${probe.status}` },
-          { status: 502 }
-        );
-      }
-      const probeJson = await probe.json();
-      const choice = probeJson?.choices?.[0];
-      const msg = choice?.message;
-      const toolCalls = msg?.tool_calls;
-
-      if (!toolCalls || toolCalls.length === 0) {
-        // No tool calls — re-issue as a streaming completion for the
-        // final answer. Push the assistant message we already have to
-        // make sure the streamed turn matches.
-        break;
-      }
-
-      // Execute each tool call, append assistant + tool messages,
-      // then loop to ask the model for its next move.
-      messages.push({ role: "assistant", content: msg?.content || "", tool_calls: toolCalls });
-      for (const tc of toolCalls) {
-        let parsedArgs: any = {};
-        try { parsedArgs = JSON.parse(tc?.function?.arguments || "{}"); } catch { /* skip */ }
-        const result = await executeTool(tc?.function?.name, parsedArgs);
-        if (tc?.function?.name === "save_property_field") {
-          try {
-            const r = JSON.parse(result);
-            if (r?.ok && r?.saved) savedFields.push(r.saved);
-          } catch { /* skip */ }
-        }
-        messages.push({
-          role: "tool",
-          tool_call_id: tc.id,
-          content: result,
-        });
-      }
-    }
-
-    // ── Final streaming turn (no tools — just the assistant's reply
-    //    after any tool execution). ──
-    const upstream = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        temperature: 0.4,
-        max_tokens: 1200,
-        stream: true,
-        messages,
-      }),
-    });
-
-    if (!upstream.ok || !upstream.body) {
-      const detail = await upstream.text().catch(() => "");
-      console.error("[deal-coach] OpenAI HTTP", upstream.status, detail.slice(0, 300));
+    } catch (e: any) {
+      console.error("[deal-coach] perplexity fetch threw", e?.message);
       return NextResponse.json(
-        { error: "deal_coach_unavailable", detail: `OpenAI HTTP ${upstream.status}` },
+        { error: "deal_coach_unavailable", detail: e?.message || "perplexity error" },
         { status: 502 }
       );
     }
 
-    // Re-stream OpenAI SSE → plain delta JSON. Also emit a
-    // `saved_field` event up front so the client can refresh the
-    // property page and show a confirmation chip immediately.
+    if (!upstream.ok || !upstream.body) {
+      const detail = await upstream.text().catch(() => "");
+      console.error("[deal-coach] Perplexity HTTP", upstream.status, detail.slice(0, 300));
+      return NextResponse.json(
+        { error: "deal_coach_unavailable", detail: `Perplexity HTTP ${upstream.status}` },
+        { status: 502 }
+      );
+    }
+
+    // ── Re-stream Perplexity SSE -> normalized delta JSON ──
+    // Perplexity's stream chunks look like
+    //   data: {"choices":[{"delta":{"content":"..."}}], "citations":["url",...]}
+    // The `citations` array typically appears on the LAST non-DONE chunk.
+    // We forward each text delta as `{"delta":"..."}` (matching what the
+    // OpenAI variant emitted, so the client doesn't need to change), and
+    // emit `{"citations":[...]}` exactly once before `[DONE]` so the UI
+    // can render footnotes.
     const stream = new ReadableStream({
       async start(controller) {
         const enc = new TextEncoder();
-        for (const sf of savedFields) {
-          controller.enqueue(enc.encode(`data: ${JSON.stringify({ saved_field: sf })}\n\n`));
-        }
         const reader = upstream.body!.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
+        let lastCitations: string[] = [];
         try {
           while (true) {
             const { done, value } = await reader.read();
@@ -550,17 +422,21 @@ ${renderSkillsBlock(prop.analysisType)}`;
               const trimmed = line.trim();
               if (!trimmed.startsWith("data: ")) continue;
               const payload = trimmed.slice(6);
-              if (payload === "[DONE]") {
-                controller.enqueue(enc.encode("data: [DONE]\n\n"));
-                continue;
-              }
+              if (payload === "[DONE]") continue; // we emit our own DONE below
               try {
                 const parsed = JSON.parse(payload);
                 const delta = parsed?.choices?.[0]?.delta?.content;
                 if (delta) controller.enqueue(enc.encode(`data: ${JSON.stringify({ delta })}\n\n`));
+                if (Array.isArray(parsed?.citations) && parsed.citations.length > 0) {
+                  lastCitations = parsed.citations;
+                }
               } catch { /* skip malformed frame */ }
             }
           }
+          if (lastCitations.length > 0) {
+            controller.enqueue(enc.encode(`data: ${JSON.stringify({ citations: lastCitations })}\n\n`));
+          }
+          controller.enqueue(enc.encode("data: [DONE]\n\n"));
         } catch (err: any) {
           console.error("[deal-coach] stream error", err?.message);
         } finally {

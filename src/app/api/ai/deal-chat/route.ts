@@ -1,33 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getProperty, getPropertyExtractedFields, getPropertyNotes } from "@/lib/workspace/firestore";
+import { pplxChat, getPerplexityKey, type PplxMessage } from "@/lib/perplexity";
 
 export const maxDuration = 60;
 
-/* ── Helper: call OpenAI chat completions ──────────────── */
-async function callOpenAI(
-  messages: { role: string; content: string }[],
+/* ── Helper: call Perplexity (returns content + citations) ─── */
+async function callPplx(
+  messages: PplxMessage[],
   maxTokens = 2000,
-  temperature = 0.35,
+  temperature = 0.3,
 ) {
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o",
-      messages,
-      temperature,
-      max_tokens: maxTokens,
-    }),
+  const r = await pplxChat(messages, {
+    model: "sonar-pro",
+    temperature,
+    maxTokens,
+    returnCitations: true,
   });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`OpenAI API error ${res.status}: ${err}`);
-  }
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content || "";
+  return { content: r.content, citations: r.citations };
 }
 
 /* ── Helper: extract field value from extracted fields ── */
@@ -63,9 +52,8 @@ Keep responses concise (3-5 bullet points or 2-3 short paragraphs).`;
 /* ── POST handler ──────────────────────────────────────── */
 export async function POST(req: NextRequest) {
   try {
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ error: "OpenAI API key not configured" }, { status: 500 });
+    if (!getPerplexityKey()) {
+      return NextResponse.json({ error: "PERPLEXITY_API_KEY missing" }, { status: 503 });
     }
 
     const body = await req.json();
@@ -122,17 +110,17 @@ export async function POST(req: NextRequest) {
     const systemPrompt = buildSystemPrompt(context, previousResponses || []);
 
     // Build messages array for OpenAI
-    const chatMessages = [
+    const chatMessages: PplxMessage[] = [
       { role: "system", content: systemPrompt },
       ...messages.slice(-8).map((m: any) => ({
-        role: m.role as string,
+        role: (m.role as PplxMessage["role"]),
         content: m.content as string,
       })),
     ];
 
-    const response = await callOpenAI(chatMessages, 1500, 0.4);
+    const { content, citations } = await callPplx(chatMessages, 1500, 0.4);
 
-    return NextResponse.json({ content: response });
+    return NextResponse.json({ content, citations });
   } catch (err: any) {
     console.error("[deal-chat] Error:", err);
     return NextResponse.json(

@@ -35,6 +35,8 @@ import OmReversePricing from "@/components/workspace/OmReversePricing";
 import DealVerdictBox from "@/components/workspace/DealVerdictBox";
 import RentRollDetailAnalysis from "@/components/workspace/RentRollDetailAnalysis";
 import SectionHeader from "@/components/workspace/SectionHeader";
+import DealCoachChat from "@/components/workspace/DealCoachChat";
+import LocationIntel from "@/components/workspace/LocationIntel";
 
 /* ── Design tokens ─────────────────────────────────────── */
 const C = {
@@ -1490,12 +1492,13 @@ function PropertyDetailInner({
      URL-backed so a link into ?tab=om-reverse-pricing lands on that tab.
      The tab bar sits directly below the hero; below it the existing
      property detail sections continue to render as "Deal Details".     */
-  type ProTab = "quick-screen" | "om-reverse-pricing" | "rent-roll";
+  type ProTab = "quick-screen" | "om-reverse-pricing" | "rent-roll" | "location-intel";
   const [activeProTab, setActiveProTab] = useState<ProTab>(() => {
     if (typeof window === "undefined") return "quick-screen";
     const t = new URLSearchParams(window.location.search).get("tab");
     if (t === "om-reverse-pricing") return "om-reverse-pricing";
     if (t === "rent-roll") return "rent-roll";
+    if (t === "location-intel") return "location-intel";
     return "quick-screen";
   });
   const routerForTabs = useRouter();
@@ -2253,6 +2256,7 @@ function PropertyDetailInner({
             ...(wsType === "land"
               ? []
               : [{ id: "rent-roll" as const, label: "Rent Roll", ready: true }]),
+            { id: "location-intel" as const, label: "Location Intel", ready: true },
           ]).map(tab => {
             const isActive = tab.id === activeProTab;
             return (
@@ -2409,7 +2413,21 @@ function PropertyDetailInner({
           )}
             </>
           )}
-        </div>
+        
+          {activeProTab === "location-intel" && (
+            <LocationIntel
+              propertyId={propertyId}
+              getToken={async () => {
+                try {
+                  const { getAuth } = await import("firebase/auth");
+                  const fb = getAuth().currentUser;
+                  if (!fb) return null;
+                  return await fb.getIdToken();
+                } catch { return null; }
+              }}
+            />
+          )}
+</div>
       </div>
 
       {/* ═══════════════════════════════════════════════════ */}
@@ -3022,6 +3040,23 @@ function PropertyDetailInner({
           }}
         />
       )}
-    </div>
+    
+      {/* Floating CRE Chatbot - powered by Perplexity. Available on every
+          property detail page. The component renders its own bottom-right
+          launcher button when uncontrolled. */}
+      <DealCoachChat
+        propertyId={propertyId}
+        propertyName={property?.propertyName || "Deal"}
+        analysisType={String(property?.analysisType || "")}
+        getToken={async () => {
+          try {
+            const { getAuth } = await import("firebase/auth");
+            const fb = getAuth().currentUser;
+            if (!fb) return null;
+            return await fb.getIdToken();
+          } catch { return null; }
+        }}
+      />
+</div>
   );
 }
