@@ -3,6 +3,7 @@ import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
 import { renderSkillsBlock } from "@/lib/workspace/skill-loader";
 import { scoreBandLabel } from "@/lib/workspace/score-band-labels";
 import { pplxStream, getPerplexityKey, type PplxMessage } from "@/lib/perplexity";
+import { loadOmText } from "@/lib/workspace/load-om-text";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -288,6 +289,19 @@ export async function POST(req: NextRequest) {
       console.warn("[deal-coach] research fetch failed:", rErr?.message);
     }
 
+    // ── Load OM text excerpt (lazy, cached). Adds raw verbatim OM
+    //    quotes to the prompt so the bot can answer "what does the OM
+    //    actually say about X" instead of relying only on extracted fields. ──
+    let omExcerpt = "";
+    try {
+      const omText = await loadOmText(propertyId);
+      if (omText && omText.length > 200) {
+        omExcerpt = `\n\n### OM EXCERPT (verbatim, first ~10 KB - quote specific claims back to the user)\n"""\n${omText.slice(0, 10_000)}\n"""`;
+      }
+    } catch (omErr: any) {
+      console.warn("[deal-coach] OM text load failed:", omErr?.message);
+    }
+
     const addr = [prop.address1, prop.city, prop.state, prop.zip].filter(Boolean).join(", ");
 
     // ── Identify missing-but-important fields ──────────────────────
@@ -328,15 +342,24 @@ export async function POST(req: NextRequest) {
       ? `\n\nMISSING DATA (proactively offer to fill these via save_property_field tool calls):\n${missingFields.map((f) => `- ${f.group}.${f.name} (${f.label}) — suggested ask: "${f.ask}"`).join("\n")}\n`
       : "";
 
-    const systemPrompt = `You are Deal Coach, a senior CRE acquisitions analyst working alongside the user on a specific deal.
+    const systemPrompt = `You are Deal Coach, a senior CRE acquisitions analyst pressure-testing this deal for an institutional buyer. You have web access via Perplexity for live market data; use it whenever the user asks about market conditions, comps, news, or comparables.
 
-ALWAYS reason from the deal data below. If a number isn't in the data, say so plainly instead of inventing one. Cite the field/group when you reference an extracted value.
+OPERATING RULES
+1. Be specific. Use numbers, dates, and sources for every market claim. Format inline citations like "[CBRE Q4 2024]" or "[Census ACS 2022]". Never write a market claim without a source.
+2. Reason from the deal data below FIRST. Quote the OM verbatim when you have an excerpt. If a number isn't in the data, look it up via web search; if you still can't find it, say so explicitly.
+3. Be skeptical of broker claims. When the OM stated cap rate / occupancy / NOI diverges from market data, FLAG the divergence with the magnitude.
+4. For open-ended questions ("what should I do", "is this a good deal", "highest and best use"), give 2-4 concrete options with pros/cons and the assumption driving each.
+5. When peer deals from the same dealboard are listed below, USE them for comparison ("vs your other 4 retail centers, this cap rate is 75 bps high"). Reference peers by name, not ID.
+6. End every substantive answer with a "Bottom line:" sentence stating the one action the user should take next.
 
-When the user asks open-ended questions ("what should I do", "is this a good deal", "highest and best use"), give 2-4 concrete options with the pros/cons and the assumption that drives each.
+ANSWER STRUCTURE (when the user asks for analysis, not a quick lookup)
+- Lead with a 1-sentence answer.
+- 3-6 bullets of reasoning, each with a specific number or comp.
+- "Highlights:" 2-4 bullets the buyer should be excited about.
+- "Worry list:" 2-4 bullets the buyer should pressure-test, with the question they should ask the broker.
+- "Bottom line:" the next action.
 
-Keep answers tight: lead with the answer, then 3-6 bullets of reasoning. Use the deal's numbers, not generic CRE advice.
-
-When peer deals from the same dealboard are listed below, USE them for comparison ("vs your other 4 retail centers, this cap rate is high/low"). Reference peers by name, not ID.
+For quick factual questions (e.g. "what's the WALE"), skip the structure and just answer.
 
 PROACTIVE DATA-FILL: If MISSING DATA fields are listed below AND the user's question would benefit from one of those values, ASK them for the missing piece in plain English. When they answer, IMMEDIATELY call the save_property_field tool to persist the value. Confirm in the next sentence ("Saved 12,500 SF to the property profile"). Don't batch ask 5 questions at once - ask one or two, save, continue.${missingBlock}
 
@@ -356,7 +379,7 @@ Card metrics:
 - Occupancy: ${prop.occupancyPct ? `${prop.occupancyPct}%` : "(unknown)"}
 
 EXTRACTED FIELDS (${fieldsSnap.size} total)
-${fieldDigest || "(no extracted fields yet — parse may not have run)"}${tenantBlock}${briefBlock}${peerBlock}${researchBlock}
+${fieldDigest || "(no extracted fields yet — parse may not have run)"}${tenantBlock}${briefBlock}${peerBlock}${researchBlock}${omExcerpt}
 ${renderSkillsBlock(prop.analysisType)}`;
 
     // ── Compose Perplexity messages ──
@@ -376,7 +399,7 @@ ${renderSkillsBlock(prop.analysisType)}`;
       upstream = await pplxStream(messages, {
         model: "sonar-pro",
         temperature: 0.3,
-        maxTokens: 1500,
+        maxTokens: 2500,
         returnCitations: true,
       });
     } catch (e: any) {

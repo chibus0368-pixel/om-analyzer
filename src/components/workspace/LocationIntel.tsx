@@ -3,20 +3,29 @@
 /**
  * LocationIntel
  *
- * Per-property location/market brief tab. Pulls a four-card brief
- * (submarket / demographics / comps / news+pipeline) from
- * /api/workspace/location-intel/[propertyId], which is backed by
- * Perplexity sonar-pro with citations.
+ * Per-property location/market brief tab. Pulls from
+ * /api/workspace/location-intel/[propertyId], which fans out to Perplexity
+ * sonar-pro (4 narrow cards) and sonar-reasoning (1 synthesis card with
+ * Highlights / Red Flags / Broker Questions).
  *
- * On mount: GET to load any cached doc (instant). Empty state shows
- * a single "Generate brief" button that POSTs and polls for ~30s.
- * Refresh button forces a re-run (force=true) and busts the 7-day cache.
+ * Layout:
+ *   [Synthesis card: Highlights / Red Flags / Broker Questions / Verdict]
+ *   [Submarket]    [Demographics]
+ *   [Comps]        [News & Pipeline]
  */
 
 import React, { useEffect, useState, useCallback } from "react";
 
 interface LocationCard {
   title: string;
+  body: string;
+  citations: string[];
+  generatedAt: string;
+}
+interface SynthesisOutput {
+  highlights: string[];
+  redFlags: string[];
+  brokerQuestions: string[];
   body: string;
   citations: string[];
   generatedAt: string;
@@ -32,6 +41,7 @@ interface LocationIntelDoc {
     comps: LocationCard | null;
     news: LocationCard | null;
   };
+  synthesis: SynthesisOutput | null;
 }
 
 interface Props {
@@ -40,10 +50,10 @@ interface Props {
 }
 
 const CARD_META: Array<{ key: keyof LocationIntelDoc["cards"]; label: string; icon: string; eyebrow: string }> = [
-  { key: "submarket",    label: "Submarket Fundamentals",   eyebrow: "Vacancy / rents / supply", icon: "M3 21l4-9 5 5 8-12" },
+  { key: "submarket",    label: "Submarket Fundamentals",   eyebrow: "Vacancy / rents / supply",       icon: "M3 21l4-9 5 5 8-12" },
   { key: "demographics", label: "Demographics & Trade Area", eyebrow: "Population, income, employment", icon: "M17 20h5v-2a4 4 0 0 0-3-3.87M9 20H4v-2a4 4 0 0 1 3-3.87m3 5.87a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6-12a4 4 0 1 0 0-2" },
-  { key: "comps",        label: "Recent Comps",              eyebrow: "Sales + leases, last 24 mo", icon: "M3 3v18h18M7 14l3-3 4 4 5-6" },
-  { key: "news",         label: "News & Dev Pipeline",       eyebrow: "Civic, employer, construction", icon: "M4 6h16M4 12h16M4 18h10" },
+  { key: "comps",        label: "Recent Comps",              eyebrow: "Sales + leases, last 24 mo",     icon: "M3 3v18h18M7 14l3-3 4 4 5-6" },
+  { key: "news",         label: "News & Dev Pipeline",       eyebrow: "Civic, employer, construction",  icon: "M4 6h16M4 12h16M4 18h10" },
 ];
 
 function formatTimestamp(iso: string | null | undefined): string {
@@ -77,7 +87,13 @@ function CitationsList({ items }: { items: string[] }) {
   );
 }
 
-/** Light markdown renderer - just bullets, bold, and paragraphs. */
+function inlineFormat(s: string): string {
+  return s
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#0369A1;text-decoration:none">$1</a>');
+}
+
 function renderMarkdown(text: string): React.ReactElement[] {
   const lines = text.split("\n");
   const out: React.ReactElement[] = [];
@@ -117,11 +133,140 @@ function renderMarkdown(text: string): React.ReactElement[] {
   flushBullets("end");
   return out;
 }
-function inlineFormat(s: string): string {
-  return s
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#0369A1;text-decoration:none">$1</a>');
+
+// ── Synthesis card: highlights / red flags / broker questions ─────
+function SynthesisCard({ s }: { s: SynthesisOutput }) {
+  return (
+    <div style={{
+      background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+      borderRadius: 14,
+      padding: 22,
+      color: "#FFFFFF",
+      boxShadow: "0 4px 16px rgba(15,23,43,0.18)",
+      marginBottom: 18,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+        <span style={{
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          width: 32, height: 32, borderRadius: 8, background: "rgba(132,204,22,0.18)",
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+          </svg>
+        </span>
+        <div>
+          <div style={{ fontSize: 9, fontWeight: 800, color: "#84CC16", letterSpacing: 0.8, textTransform: "uppercase" }}>
+            AI Synthesis · Powered by Perplexity sonar-reasoning
+          </div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#FFFFFF" }}>
+            Deal Verdict
+          </div>
+        </div>
+      </div>
+
+      {s.body && (
+        <div style={{
+          fontSize: 13, lineHeight: 1.6, color: "rgba(255,255,255,0.92)",
+          padding: "12px 14px", marginBottom: 16,
+          background: "rgba(255,255,255,0.05)", borderLeft: "3px solid #84CC16",
+          borderRadius: 4,
+        }}
+        dangerouslySetInnerHTML={{ __html: inlineFormat(s.body) }} />
+      )}
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
+        {/* Highlights */}
+        {s.highlights?.length > 0 && (
+          <div style={{
+            background: "rgba(34,197,94,0.10)",
+            borderRadius: 10,
+            padding: 14,
+            border: "1px solid rgba(34,197,94,0.25)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+              <span style={{ fontSize: 14 }}>{"✨"}</span>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#86EFAC", letterSpacing: 0.6, textTransform: "uppercase" }}>
+                Highlights
+              </div>
+            </div>
+            <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, lineHeight: 1.55, color: "rgba(255,255,255,0.92)" }}>
+              {s.highlights.map((h, i) => (
+                <li key={i} style={{ marginBottom: 6 }} dangerouslySetInnerHTML={{ __html: inlineFormat(h) }} />
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Red Flags */}
+        {s.redFlags?.length > 0 && (
+          <div style={{
+            background: "rgba(239,68,68,0.10)",
+            borderRadius: 10,
+            padding: 14,
+            border: "1px solid rgba(239,68,68,0.30)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+              <span style={{ fontSize: 14 }}>{"⚠️"}</span>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#FCA5A5", letterSpacing: 0.6, textTransform: "uppercase" }}>
+                Red Flags
+              </div>
+            </div>
+            <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, lineHeight: 1.55, color: "rgba(255,255,255,0.92)" }}>
+              {s.redFlags.map((r, i) => (
+                <li key={i} style={{ marginBottom: 6 }} dangerouslySetInnerHTML={{ __html: inlineFormat(r) }} />
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Broker Questions */}
+        {s.brokerQuestions?.length > 0 && (
+          <div style={{
+            background: "rgba(132,204,22,0.10)",
+            borderRadius: 10,
+            padding: 14,
+            border: "1px solid rgba(132,204,22,0.30)",
+            gridColumn: "1 / -1",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+              <span style={{ fontSize: 14 }}>{"❓"}</span>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#BEF264", letterSpacing: 0.6, textTransform: "uppercase" }}>
+                Questions for the Broker
+              </div>
+            </div>
+            <ol style={{ margin: 0, paddingLeft: 18, fontSize: 12, lineHeight: 1.55, color: "rgba(255,255,255,0.92)" }}>
+              {s.brokerQuestions.map((q, i) => (
+                <li key={i} style={{ marginBottom: 6 }} dangerouslySetInnerHTML={{ __html: inlineFormat(q) }} />
+              ))}
+            </ol>
+          </div>
+        )}
+      </div>
+
+      {s.citations?.length > 0 && (
+        <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.10)" }}>
+          <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: 0.6, textTransform: "uppercase", marginBottom: 6 }}>
+            Sources
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {s.citations.map((url, i) => {
+              let host = url;
+              try { host = new URL(url).hostname.replace(/^www\./, ""); } catch { /* keep raw */ }
+              return (
+                <a key={`${i}-${url}`} href={url} target="_blank" rel="noopener noreferrer"
+                  style={{
+                    fontSize: 11, color: "#BEF264", textDecoration: "none",
+                    padding: "3px 8px", borderRadius: 4, background: "rgba(132,204,22,0.10)",
+                  }}>
+                  {host}
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function LocationIntel({ propertyId, getToken }: Props) {
@@ -195,8 +340,8 @@ export default function LocationIntel({ propertyId, getToken }: Props) {
         <div style={{ fontSize: 14, fontWeight: 600, color: "#0F172A", marginBottom: 6 }}>
           No location brief yet
         </div>
-        <div style={{ fontSize: 13, color: "#6B7280", marginBottom: 16 }}>
-          Pull live submarket fundamentals, demographics, recent comps, and news from the web. Cached for 7 days.
+        <div style={{ fontSize: 13, color: "#6B7280", marginBottom: 16, maxWidth: 520, marginLeft: "auto", marginRight: "auto" }}>
+          Generates a deal-aware market intelligence brief: highlights and red flags pressure-tested against the OM, plus submarket fundamentals, demographics, recent comps, and news. Cached for 7 days.
         </div>
         {error && <div style={{ color: "#DC2626", fontSize: 12, marginBottom: 12 }}>{error}</div>}
         <button
@@ -221,7 +366,7 @@ export default function LocationIntel({ propertyId, getToken }: Props) {
           Pulling fresh location intelligence...
         </div>
         <div style={{ fontSize: 12, color: "#6B7280" }}>
-          Hitting Perplexity for submarket, demographics, comps, and news. ~20-40 seconds.
+          Synthesizing OM excerpts, submarket data, demographics, comps, and news. ~30-60 seconds.
         </div>
       </div>
     );
@@ -236,7 +381,7 @@ export default function LocationIntel({ propertyId, getToken }: Props) {
       }}>
         <div>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", letterSpacing: 0.6, textTransform: "uppercase" }}>
-            Powered by Perplexity sonar-pro
+            Powered by Perplexity (sonar-pro + sonar-reasoning)
           </div>
           <div style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}>
             {doc?.address || ""} · refreshed {formatTimestamp(doc?.refreshedAt)}
@@ -262,6 +407,10 @@ export default function LocationIntel({ propertyId, getToken }: Props) {
         </div>
       )}
 
+      {/* Synthesis card on top */}
+      {doc?.synthesis && <SynthesisCard s={doc.synthesis} />}
+
+      {/* Four detail cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
         {CARD_META.map((meta) => {
           const card = doc?.cards?.[meta.key];

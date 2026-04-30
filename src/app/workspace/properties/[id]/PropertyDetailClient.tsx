@@ -1998,12 +1998,7 @@ function PropertyDetailInner({
           <div className="pd-hero-dl" style={{
             position: "absolute", top: 14, right: 14, zIndex: 2,
             display: "flex", gap: 8, flexShrink: 0,
-          }}>
-            {/* CRE Chatbot disabled (not quite ready) */}
-            {false && (
-              <>
-
-            {/* CRE Chatbot - matches the Workbook XLSX / Brief DOC sibling
+          }}>            {/* CRE Chatbot - matches the Workbook XLSX / Brief DOC sibling
                 pattern: tinted background + matching border + canonical
                 darker brand lime (#4D7C0F) so it doesn't shout next to
                 its quieter neighbors. Active state (panel open) flips
@@ -2047,8 +2042,7 @@ function PropertyDetailInner({
                 BETA
               </span>
             </button>
-              </>
-            )}
+              
             <button
               onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
               className="dl-btn"
@@ -2500,12 +2494,7 @@ function PropertyDetailInner({
             gap: 8, marginTop: 12,
             overflowX: "auto", scrollSnapType: "x mandatory",
             paddingBottom: 4,
-          }}>
-            {/* CRE Chatbot disabled (not quite ready) */}
-            {false && (
-              <>
-
-            <button
+          }}>            <button
               onClick={() => setCoachOpen((prev) => !prev)}
               style={{
                 flex: "0 0 auto", scrollSnapAlign: "start",
@@ -2521,8 +2510,7 @@ function PropertyDetailInner({
               </svg>
               CRE Chatbot
             </button>
-              </>
-            )}
+              
             <button
               onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
               style={{
