@@ -11,11 +11,21 @@
  *   3. 5-Year Cash Flow Projection      - NOI growth, debt service, CoC
  *   4. Returns Snapshot                 - cap rate, DSCR, debt yield, IRR est.
  *
- * Values are pulled from the same `ExtractedField` set the rest of the
- * property page reads (income / expenses / pricing_deal_terms /
- * debt_assumptions / property_basics) and combined with the workspace's
- * UnderwritingDefaults (LTV, rate, amort, growth, hold, exit cap) so the
- * numbers are comparable across deals in the same dealboard.
+ * NOI inference (so this tab doesn't go dark for sparse OMs):
+ *   1. Full breakdown   - we have base rent + at least one expense line item.
+ *      All values are real; nothing is marked "Estimated".
+ *   2. Stated NOI       - OM provides noi_om or noi_adjusted but no full
+ *      income / expense breakdown. We back into PGI / OpEx using an
+ *      asset-class opex ratio (e.g. retail-NNN ~12%, multifamily ~38%).
+ *      Every back-filled row gets an "Estimated" tag.
+ *   3. Cap rate × price - the OM only states a cap and an asking price.
+ *      NOI = price × cap, then back into PGI / OpEx the same way.
+ *      NOI itself and every line item gets an "Estimated" tag.
+ *
+ * Inputs come from the same `ExtractedField` set the rest of the page reads
+ * (income / expenses / pricing_deal_terms / debt_assumptions / property_basics)
+ * combined with the workspace's UnderwritingDefaults so numbers stay
+ * comparable across deals on the same dealboard.
  */
 
 import { useMemo } from "react";
@@ -35,7 +45,21 @@ const C = {
   positive: "#15803D",
   negative: "#B91C1C",
   accent: "#84CC16",
+  estimateBg: "#FEF3C7",
+  estimateText: "#92400E",
 };
+
+/* Asset-class operating-expense ratios (OpEx / EGI). These are rough industry
+   proxies used ONLY when the OM gave us a clean NOI but no expense detail.
+   Sources: NCREIF / IREM expense surveys, rounded to round numbers. */
+const OPEX_RATIO_BY_TYPE: Record<string, number> = {
+  retail: 0.12,        // NNN-heavy, most opex passed through
+  industrial: 0.12,    // NNN-heavy
+  office: 0.35,
+  multifamily: 0.38,
+  mixed_use: 0.28,
+};
+const DEFAULT_OPEX_RATIO = 0.30;
 
 /* Helpers */
 function gf(fields: ExtractedField[], group: string, name: string): any {
@@ -60,6 +84,20 @@ function fmtPct(n: number | null | undefined, digits: number = 2): string {
 function fmtX(n: number | null | undefined, digits: number = 2): string {
   if (n === null || n === undefined || !isFinite(n) || isNaN(n)) return "--";
   return `${n.toFixed(digits)}x`;
+}
+
+/* "Estimated" inline tag */
+function EstTag({ label = "Estimated" }: { label?: string }) {
+  return (
+    <span style={{
+      marginLeft: 8,
+      fontSize: 9, fontWeight: 700, letterSpacing: 0.6,
+      padding: "2px 6px", borderRadius: 3,
+      background: C.estimateBg, color: C.estimateText,
+      textTransform: "uppercase",
+      verticalAlign: "middle",
+    }}>{label}</span>
+  );
 }
 
 /* Building blocks */
@@ -100,9 +138,10 @@ interface ProFormaRowProps {
   indent?: boolean;
   hint?: string;
   isNegative?: boolean;
+  estimated?: boolean;
 }
 
-function ProFormaRow({ label, value, bold, total, indent, hint, isNegative }: ProFormaRowProps) {
+function ProFormaRow({ label, value, bold, total, indent, hint, isNegative, estimated }: ProFormaRowProps) {
   return (
     <div style={{
       display: "flex", justifyContent: "space-between", alignItems: "baseline",
@@ -124,6 +163,7 @@ function ProFormaRow({ label, value, bold, total, indent, hint, isNegative }: Pr
             marginLeft: 8, fontSize: 10, fontWeight: 500, color: "#9CA3AF", letterSpacing: 0,
           }}>{hint}</span>
         )}
+        {estimated && <EstTag />}
       </span>
       <span style={{
         fontSize: total ? 14 : 12,
@@ -145,6 +185,8 @@ export interface FinancialsSummaryProps {
   omPurchasePrice: number | null;
 }
 
+type NoiSource = "breakdown" | "om_stated" | "om_adjusted" | "derived_from_cap";
+
 export default function FinancialsSummary({
   property, fields, wsType, omPurchasePrice,
 }: FinancialsSummaryProps) {
@@ -156,6 +198,7 @@ export default function FinancialsSummary({
     const askingPrice = Number(gf(fields, "pricing_deal_terms", "asking_price"))
       || omPurchasePrice
       || 0;
+    const capRateOm = Number(gf(fields, "pricing_deal_terms", "cap_rate_om")) || 0;
     const buildingSf = Number(gf(fields, "property_basics", "building_sf")) || 0;
     const noiOm = Number(gf(fields, "expenses", "noi_om")) || 0;
     const noiAdj = Number(gf(fields, "expenses", "noi_adjusted")) || 0;
@@ -171,30 +214,109 @@ export default function FinancialsSummary({
     const totalExpField = Number(gf(fields, "expenses", "total_expenses")) || 0;
 
     return {
-      askingPrice, buildingSf, noiOm, noiAdj, baseRent, nnnReimb, otherInc,
+      askingPrice, capRateOm, buildingSf,
+      noiOm, noiAdj,
+      baseRent, nnnReimb, otherInc,
       camExp, propTax, insurance, mgmtFee, reservesField, otherExp, totalExpField,
     };
   }, [fields, omPurchasePrice]);
 
-  /* Derived Year 1 pro forma */
+  /* Year 1 NOI resolution + back-filled income statement
+     ────────────────────────────────────────────────────
+     Decides which of the four "shapes" of OM data we have and produces
+     a complete pro forma with appropriate `estimated` flags so the UI
+     can mark anything we synthesized. */
   const year1 = useMemo(() => {
-    const pgi = inputs.baseRent + inputs.nnnReimb + inputs.otherInc;
     const vacancyPct = defaults.vacancy / 100;
-    const vacancyLoss = pgi * vacancyPct;
-    const egi = pgi - vacancyLoss;
+    const opexRatio = OPEX_RATIO_BY_TYPE[(wsType || "").toLowerCase()] ?? DEFAULT_OPEX_RATIO;
 
-    // Reserves: use OM value if present, otherwise fall back to a $0.25/SF
-    // floor so the pro forma reflects a realistic underwrite.
+    const breakdownExpenses = inputs.camExp + inputs.propTax + inputs.insurance
+      + inputs.mgmtFee + inputs.otherExp;
+    const hasBreakdown = inputs.baseRent > 0 && breakdownExpenses > 0;
+
+    // Reserves: real if in OM, else $0.25/SF floor (always tagged in the row).
     const reserves = inputs.reservesField > 0
       ? inputs.reservesField
       : (inputs.buildingSf > 0 ? inputs.buildingSf * 0.25 : 0);
+    const reservesEstimated = inputs.reservesField <= 0;
 
-    const totalExp = inputs.camExp + inputs.propTax + inputs.insurance
-      + inputs.mgmtFee + reserves + inputs.otherExp;
-    const noiUw = egi - totalExp;
+    /* PATH 1 - full breakdown */
+    if (hasBreakdown) {
+      const pgi = inputs.baseRent + inputs.nnnReimb + inputs.otherInc;
+      const vacancyLoss = pgi * vacancyPct;
+      const egi = pgi - vacancyLoss;
+      const totalExp = breakdownExpenses + reserves;
+      const noi = egi - totalExp;
 
-    return { pgi, vacancyPct, vacancyLoss, egi, reserves, totalExp, noiUw };
-  }, [inputs, defaults]);
+      return {
+        source: "breakdown" as NoiSource,
+        pgi, vacancyPct, vacancyLoss, egi, totalExp, reserves, noi,
+        // For projection
+        opexForGrowth: totalExp,
+        // Per-row flags
+        flags: {
+          income: false,         // we have real base_rent / reimbursements
+          vacancy: false,
+          opex: false,           // CAM / Tax / etc. are real
+          reserves: reservesEstimated,
+          noi: false,
+        },
+        // Per-line opex (for granular display)
+        opex: {
+          cam: inputs.camExp,
+          tax: inputs.propTax,
+          insurance: inputs.insurance,
+          mgmt: inputs.mgmtFee,
+          other: inputs.otherExp,
+          reserves,
+        },
+      };
+    }
+
+    /* PATH 2 / 3 - we need to pick a Year-1 NOI from a stated value or
+       a derived one, then back-fill PGI / OpEx. */
+    let noi = 0;
+    let source: NoiSource = "om_stated";
+    let noiEstimated = false; // flag for the NOI row itself
+
+    if (inputs.noiOm > 0) {
+      noi = inputs.noiOm;
+      source = "om_stated";
+      noiEstimated = false; // NOI itself is from OM; only the breakdown is estimated
+    } else if (inputs.noiAdj > 0) {
+      noi = inputs.noiAdj;
+      source = "om_adjusted";
+      noiEstimated = false;
+    } else if (inputs.askingPrice > 0 && inputs.capRateOm > 0) {
+      noi = inputs.askingPrice * (inputs.capRateOm / 100);
+      source = "derived_from_cap";
+      noiEstimated = true;
+    } else {
+      // No NOI signal at all - the empty-state guard below catches this.
+      noi = 0;
+    }
+
+    // Back-fill: NOI = EGI - OpEx; OpEx = EGI × opexRatio  =>  EGI = NOI / (1 - opexRatio)
+    const egi = noi > 0 ? noi / (1 - opexRatio) : 0;
+    const totalExp = noi > 0 ? egi * opexRatio : 0;
+    const pgi = egi > 0 && vacancyPct < 1 ? egi / (1 - vacancyPct) : egi;
+    const vacancyLoss = pgi * vacancyPct;
+
+    return {
+      source,
+      pgi, vacancyPct, vacancyLoss, egi, totalExp, reserves: 0, noi,
+      opexForGrowth: totalExp,
+      flags: {
+        income: true,
+        vacancy: true,
+        opex: true,
+        reserves: false, // not shown when path 2/3
+        noi: noiEstimated,
+      },
+      opex: null, // no per-line breakdown when estimated
+      opexRatio,
+    };
+  }, [inputs, defaults, wsType]);
 
   /* Capital stack */
   const capStack = useMemo(() => {
@@ -221,7 +343,7 @@ export default function FinancialsSummary({
     const expGr = defaults.expenseGrowth / 100;
 
     const pgi0 = year1.pgi;
-    const opex0 = year1.totalExp;
+    const opex0 = year1.opexForGrowth;
     const vacPct = year1.vacancyPct;
     const ds = capStack.annualDS;
     const equity = capStack.equity;
@@ -246,7 +368,7 @@ export default function FinancialsSummary({
   /* Returns snapshot */
   const returns = useMemo(() => {
     const { price, loan, equity, annualDS } = capStack;
-    const noi = year1.noiUw;
+    const noi = year1.noi;
 
     const capRate = price > 0 && noi > 0 ? (noi / price) * 100 : null;
     const priceSf = price > 0 && inputs.buildingSf > 0 ? price / inputs.buildingSf : null;
@@ -254,9 +376,6 @@ export default function FinancialsSummary({
     const debtYield = loan > 0 && noi > 0 ? (noi / loan) * 100 : null;
     const coc = equity > 0 ? ((noi - annualDS) / equity) * 100 : null;
 
-    // Rough levered IRR: assume sale at year `holdYears` at the workspace's
-    // exit cap, less 2.5% selling costs. Cash flows = annual levered CF +
-    // sale proceeds in final year.
     const exitCap = defaults.exitCap / 100;
     const holdYrs = defaults.holdYears || 5;
     const rentGr = defaults.rentGrowth / 100;
@@ -268,7 +387,7 @@ export default function FinancialsSummary({
       const flows: number[] = [-equity];
       for (let yr = 1; yr <= holdYrs; yr++) {
         const pgiY = year1.pgi * Math.pow(1 + rentGr, yr - 1);
-        const opexY = year1.totalExp * Math.pow(1 + expGr, yr - 1);
+        const opexY = year1.opexForGrowth * Math.pow(1 + expGr, yr - 1);
         const egiY = pgiY * (1 - year1.vacancyPct);
         const noiY = egiY - opexY;
         let cashY = noiY - annualDS;
@@ -287,7 +406,6 @@ export default function FinancialsSummary({
         }
         flows.push(cashY);
       }
-      // Bisection IRR
       let lo = -0.5, hi = 1.0;
       const npv = (r: number) => flows.reduce((acc, cf, i) => acc + cf / Math.pow(1 + r, i), 0);
       let nLo = npv(lo), nHi = npv(hi);
@@ -325,7 +443,13 @@ export default function FinancialsSummary({
     );
   }
 
-  if (!inputs.askingPrice || (!inputs.baseRent && !inputs.noiOm && !inputs.noiAdj)) {
+  // Need a price + at least ONE of: full breakdown, stated NOI, or cap rate.
+  const hasAnyNoiSignal = inputs.baseRent > 0
+    || inputs.noiOm > 0
+    || inputs.noiAdj > 0
+    || (inputs.askingPrice > 0 && inputs.capRateOm > 0);
+
+  if (!inputs.askingPrice || !hasAnyNoiSignal) {
     return (
       <div style={{
         background: C.surfLowest, border: `1px dashed ${C.ghost}`,
@@ -336,12 +460,25 @@ export default function FinancialsSummary({
           Financials need core inputs
         </div>
         <div style={{ fontSize: 12, color: C.secondary, maxWidth: 440, margin: "0 auto", lineHeight: 1.5 }}>
-          To build the pro forma we need at minimum a purchase price and either base rent or stated NOI.
-          Re-upload a more detailed OM, or click any extracted value on the Summary tab to edit it inline.
+          To build the pro forma we need at minimum a purchase price and one of: stated NOI,
+          a cap rate, or base rent. Click any extracted value on the Summary tab to edit it
+          inline, or re-upload a more detailed OM.
         </div>
       </div>
     );
   }
+
+  /* Source banner copy */
+  const sourceLabel = (() => {
+    switch (year1.source) {
+      case "breakdown": return "Built from OM income & expense line items.";
+      case "om_stated": return `Built from OM stated NOI; PGI / OpEx back-filled at ${((year1.opexRatio ?? DEFAULT_OPEX_RATIO) * 100).toFixed(0)}% opex ratio.`;
+      case "om_adjusted": return `Built from OM adjusted NOI; PGI / OpEx back-filled at ${((year1.opexRatio ?? DEFAULT_OPEX_RATIO) * 100).toFixed(0)}% opex ratio.`;
+      case "derived_from_cap": return `NOI derived from asking price × stated cap rate; PGI / OpEx back-filled at ${((year1.opexRatio ?? DEFAULT_OPEX_RATIO) * 100).toFixed(0)}% opex ratio.`;
+    }
+  })();
+
+  const isEstimatedPath = year1.source !== "breakdown";
 
   /* Render */
   return (
@@ -349,7 +486,7 @@ export default function FinancialsSummary({
       {/* 1. Year 1 Operating Statement */}
       <SectionCard
         title="Year 1 Operating Statement"
-        subtitle={`Pro forma at workspace baseline (vacancy ${defaults.vacancy.toFixed(1)}%). Reserves default to $0.25/SF when not in OM.`}
+        subtitle={`${sourceLabel} Vacancy ${defaults.vacancy.toFixed(1)}% from workspace defaults.`}
         accent={C.accent}
       >
         <div style={{
@@ -358,35 +495,78 @@ export default function FinancialsSummary({
           borderRadius: 8,
           overflow: "hidden",
         }}>
-          <ProFormaRow label="Base Rent" value={fmtMoney(inputs.baseRent)} indent />
-          <ProFormaRow label="NNN Reimbursements" value={fmtMoney(inputs.nnnReimb)} indent />
-          <ProFormaRow label="Other Income" value={fmtMoney(inputs.otherInc)} indent />
-          <ProFormaRow label="Potential Gross Income" value={fmtMoney(year1.pgi)} bold />
-          <ProFormaRow
-            label="Less: Vacancy & Credit Loss"
-            value={fmtMoney(-year1.vacancyLoss)}
-            indent
-            hint={`@ ${(defaults.vacancy).toFixed(1)}%`}
-            isNegative={year1.vacancyLoss > 0}
-          />
-          <ProFormaRow label="Effective Gross Income (EGI)" value={fmtMoney(year1.egi)} bold />
-          <ProFormaRow label="CAM / Common Area" value={fmtMoney(-inputs.camExp)} indent isNegative={inputs.camExp > 0} />
-          <ProFormaRow label="Real Estate Taxes" value={fmtMoney(-inputs.propTax)} indent isNegative={inputs.propTax > 0} />
-          <ProFormaRow label="Insurance" value={fmtMoney(-inputs.insurance)} indent isNegative={inputs.insurance > 0} />
-          <ProFormaRow label="Management Fee" value={fmtMoney(-inputs.mgmtFee)} indent isNegative={inputs.mgmtFee > 0} />
-          <ProFormaRow
-            label="Reserves / CapEx"
-            value={fmtMoney(-year1.reserves)}
-            indent
-            hint={inputs.reservesField > 0 ? "From OM" : "$0.25/SF default"}
-            isNegative={year1.reserves > 0}
-          />
-          <ProFormaRow label="Other Expenses" value={fmtMoney(-inputs.otherExp)} indent isNegative={inputs.otherExp > 0} />
-          <ProFormaRow label="Total Operating Expenses" value={fmtMoney(-year1.totalExp)} bold isNegative={year1.totalExp > 0} />
-          <ProFormaRow label="Net Operating Income" value={fmtMoney(year1.noiUw)} total />
+          {year1.source === "breakdown" ? (
+            <>
+              <ProFormaRow label="Base Rent" value={fmtMoney(inputs.baseRent)} indent />
+              <ProFormaRow label="NNN Reimbursements" value={fmtMoney(inputs.nnnReimb)} indent />
+              <ProFormaRow label="Other Income" value={fmtMoney(inputs.otherInc)} indent />
+              <ProFormaRow label="Potential Gross Income" value={fmtMoney(year1.pgi)} bold />
+              <ProFormaRow
+                label="Less: Vacancy & Credit Loss"
+                value={fmtMoney(-year1.vacancyLoss)}
+                indent
+                hint={`@ ${(defaults.vacancy).toFixed(1)}%`}
+                isNegative={year1.vacancyLoss > 0}
+              />
+              <ProFormaRow label="Effective Gross Income (EGI)" value={fmtMoney(year1.egi)} bold />
+              <ProFormaRow label="CAM / Common Area" value={fmtMoney(-(year1.opex?.cam ?? 0))} indent isNegative={(year1.opex?.cam ?? 0) > 0} />
+              <ProFormaRow label="Real Estate Taxes" value={fmtMoney(-(year1.opex?.tax ?? 0))} indent isNegative={(year1.opex?.tax ?? 0) > 0} />
+              <ProFormaRow label="Insurance" value={fmtMoney(-(year1.opex?.insurance ?? 0))} indent isNegative={(year1.opex?.insurance ?? 0) > 0} />
+              <ProFormaRow label="Management Fee" value={fmtMoney(-(year1.opex?.mgmt ?? 0))} indent isNegative={(year1.opex?.mgmt ?? 0) > 0} />
+              <ProFormaRow
+                label="Reserves / CapEx"
+                value={fmtMoney(-(year1.opex?.reserves ?? 0))}
+                indent
+                hint={inputs.reservesField > 0 ? "From OM" : "$0.25/SF default"}
+                isNegative={(year1.opex?.reserves ?? 0) > 0}
+                estimated={year1.flags.reserves}
+              />
+              <ProFormaRow label="Other Expenses" value={fmtMoney(-(year1.opex?.other ?? 0))} indent isNegative={(year1.opex?.other ?? 0) > 0} />
+              <ProFormaRow label="Total Operating Expenses" value={fmtMoney(-year1.totalExp)} bold isNegative={year1.totalExp > 0} />
+              <ProFormaRow label="Net Operating Income" value={fmtMoney(year1.noi)} total />
+            </>
+          ) : (
+            <>
+              <ProFormaRow
+                label="Potential Gross Income"
+                value={fmtMoney(year1.pgi)}
+                bold
+                estimated={year1.flags.income}
+              />
+              <ProFormaRow
+                label="Less: Vacancy & Credit Loss"
+                value={fmtMoney(-year1.vacancyLoss)}
+                indent
+                hint={`@ ${(defaults.vacancy).toFixed(1)}%`}
+                isNegative={year1.vacancyLoss > 0}
+                estimated={year1.flags.vacancy}
+              />
+              <ProFormaRow
+                label="Effective Gross Income (EGI)"
+                value={fmtMoney(year1.egi)}
+                bold
+                estimated={year1.flags.income}
+              />
+              <ProFormaRow
+                label="Operating Expenses (incl. reserves)"
+                value={fmtMoney(-year1.totalExp)}
+                indent
+                hint={`@ ${((year1.opexRatio ?? DEFAULT_OPEX_RATIO) * 100).toFixed(0)}% of EGI`}
+                isNegative={year1.totalExp > 0}
+                estimated={year1.flags.opex}
+              />
+              <ProFormaRow
+                label="Net Operating Income"
+                value={fmtMoney(year1.noi)}
+                total
+                estimated={year1.flags.noi}
+              />
+            </>
+          )}
         </div>
 
-        {(inputs.noiOm > 0 || inputs.noiAdj > 0) && (
+        {/* Reconciliation strip */}
+        {(inputs.noiOm > 0 || inputs.noiAdj > 0 || year1.source === "derived_from_cap") && (
           <div style={{
             marginTop: 12, padding: "10px 12px",
             background: "#F9FAFB", borderRadius: 8,
@@ -409,11 +589,20 @@ export default function FinancialsSummary({
                 </strong>
               </span>
             )}
+            {year1.source === "derived_from_cap" && inputs.capRateOm > 0 && (
+              <span>
+                Stated cap rate:{" "}
+                <strong style={{ color: C.onSurface, fontVariantNumeric: "tabular-nums" }}>
+                  {fmtPct(inputs.capRateOm)}
+                </strong>
+              </span>
+            )}
             <span>
-              NOI (underwritten):{" "}
+              NOI used in pro forma:{" "}
               <strong style={{ color: C.onSurface, fontVariantNumeric: "tabular-nums" }}>
-                {fmtMoney(year1.noiUw)}
+                {fmtMoney(year1.noi)}
               </strong>
+              {year1.flags.noi && <EstTag />}
             </span>
           </div>
         )}
@@ -497,7 +686,7 @@ export default function FinancialsSummary({
       {/* 3. 5-Year Cash Flow Projection */}
       <SectionCard
         title="5-Year Cash Flow Projection"
-        subtitle={`Rent growth ${(defaults.rentGrowth).toFixed(1)}% / yr, expense growth ${(defaults.expenseGrowth).toFixed(1)}% / yr.`}
+        subtitle={`Rent growth ${(defaults.rentGrowth).toFixed(1)}% / yr, expense growth ${(defaults.expenseGrowth).toFixed(1)}% / yr.${isEstimatedPath ? " EGI / OpEx are estimated; NOI grows from the back-filled split." : ""}`}
         accent={C.accent}
       >
         <div style={{ overflowX: "auto" }}>
@@ -514,19 +703,25 @@ export default function FinancialsSummary({
             </thead>
             <tbody>
               <tr>
-                <td style={tdStyle("left", false)}>EGI</td>
+                <td style={tdStyle("left", false)}>
+                  EGI{isEstimatedPath && <EstTag />}
+                </td>
                 {projection.rows.map(r => (
                   <td key={r.year} style={tdStyle("right", false)}>{fmtMoney(r.egi)}</td>
                 ))}
               </tr>
               <tr>
-                <td style={tdStyle("left", false)}>Operating Expenses</td>
+                <td style={tdStyle("left", false)}>
+                  Operating Expenses{isEstimatedPath && <EstTag />}
+                </td>
                 {projection.rows.map(r => (
                   <td key={r.year} style={tdStyle("right", false)}>{fmtMoney(-r.opex)}</td>
                 ))}
               </tr>
               <tr style={{ background: "#FAFAFA" }}>
-                <td style={tdStyle("left", true)}>NOI</td>
+                <td style={tdStyle("left", true)}>
+                  NOI{year1.flags.noi && <EstTag />}
+                </td>
                 {projection.rows.map(r => (
                   <td key={r.year} style={tdStyle("right", true)}>{fmtMoney(r.noi)}</td>
                 ))}
@@ -581,16 +776,36 @@ export default function FinancialsSummary({
           gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
           gap: 12,
         }}>
-          <ReturnTile label="Cap Rate" value={fmtPct(returns.capRate)} sub="NOI / Price" />
-          <ReturnTile label="Price / SF" value={returns.priceSf !== null ? `$${returns.priceSf.toFixed(0)}` : "--"} sub="Price / GLA" />
+          <ReturnTile
+            label="Cap Rate"
+            value={fmtPct(returns.capRate)}
+            sub="NOI / Price"
+            estimated={year1.flags.noi}
+          />
+          <ReturnTile
+            label="Price / SF"
+            value={returns.priceSf !== null ? `$${returns.priceSf.toFixed(0)}` : "--"}
+            sub="Price / GLA"
+          />
           <ReturnTile
             label="DSCR"
             value={fmtX(returns.dscr)}
             sub="NOI / Debt Service"
             emphasis={returns.dscr !== null ? (returns.dscr < 1.25 ? "warn" : "ok") : undefined}
+            estimated={isEstimatedPath}
           />
-          <ReturnTile label="Debt Yield" value={fmtPct(returns.debtYield)} sub="NOI / Loan" />
-          <ReturnTile label="Year-1 CoC" value={fmtPct(returns.coc)} sub="Levered CF / Equity" />
+          <ReturnTile
+            label="Debt Yield"
+            value={fmtPct(returns.debtYield)}
+            sub="NOI / Loan"
+            estimated={isEstimatedPath}
+          />
+          <ReturnTile
+            label="Year-1 CoC"
+            value={fmtPct(returns.coc)}
+            sub="Levered CF / Equity"
+            estimated={isEstimatedPath}
+          />
           <ReturnTile
             label={`Levered IRR (${defaults.holdYears}-yr)`}
             value={fmtPct(returns.irrPct, 1)}
@@ -598,6 +813,7 @@ export default function FinancialsSummary({
             emphasis={returns.irrPct !== null
               ? (returns.irrPct >= defaults.targetLeveredIrr ? "ok" : "warn")
               : undefined}
+            estimated={isEstimatedPath}
           />
         </div>
 
@@ -606,6 +822,7 @@ export default function FinancialsSummary({
         }}>
           Pro forma values use workspace underwriting defaults. To change them, edit defaults in
           Workspace Settings or override individual fields on the Summary tab.
+          {isEstimatedPath && " Tagged values are derived from cap rate / stated NOI plus an asset-class opex ratio - tighten them by entering real OM line items on the Summary tab."}
         </div>
       </SectionCard>
     </div>
@@ -639,8 +856,8 @@ function tdStyle(align: "left" | "right", bold: boolean): React.CSSProperties {
   };
 }
 
-function ReturnTile({ label, value, sub, emphasis }: {
-  label: string; value: string; sub: string; emphasis?: "ok" | "warn";
+function ReturnTile({ label, value, sub, emphasis, estimated }: {
+  label: string; value: string; sub: string; emphasis?: "ok" | "warn"; estimated?: boolean;
 }) {
   const accentColor =
     emphasis === "ok" ? C.positive
@@ -660,7 +877,11 @@ function ReturnTile({ label, value, sub, emphasis }: {
       <div style={{
         fontSize: 10, fontWeight: 700, color: C.secondary,
         textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4,
-      }}>{label}</div>
+        display: "flex", alignItems: "center",
+      }}>
+        {label}
+        {estimated && <EstTag />}
+      </div>
       <div style={{
         fontSize: 20, fontWeight: 700, color: accentColor,
         fontVariantNumeric: "tabular-nums", lineHeight: 1.1,
