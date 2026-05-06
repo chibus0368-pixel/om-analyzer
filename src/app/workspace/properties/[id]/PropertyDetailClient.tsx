@@ -35,7 +35,7 @@ import OmReversePricing from "@/components/workspace/OmReversePricing";
 import DealVerdictBox from "@/components/workspace/DealVerdictBox";
 import RentRollDetailAnalysis from "@/components/workspace/RentRollDetailAnalysis";
 import SectionHeader from "@/components/workspace/SectionHeader";
-import LocationIntel from "@/components/workspace/LocationIntel";
+import FinancialsSummary from "@/components/workspace/FinancialsSummary";
 
 /* ── Design tokens ─────────────────────────────────────── */
 const C = {
@@ -650,116 +650,6 @@ function DealSignalBadge({ score, band }: { score: number | null; band: string }
 }
 
 /* ── Editable property name (inline click-to-edit) ──── */
-/* ── Location Intel Map (Leaflet) ─────────────────────── */
-function LocationIntelMap({ mapData }: { mapData: any }) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-
-  useEffect(() => {
-    if (!mapRef.current || !mapData?.center || mapInstanceRef.current) return;
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const L = (await import("leaflet")).default || await import("leaflet");
-        await import("leaflet/dist/leaflet.css");
-        if (cancelled || !mapRef.current) return;
-
-        const map = L.map(mapRef.current, {
-          center: [mapData.center.lat, mapData.center.lng],
-          zoom: 14,
-          zoomControl: true,
-          scrollWheelZoom: false,
-        });
-        mapInstanceRef.current = map;
-
-        L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-          attribution: "&copy; OSM &amp; CARTO",
-          maxZoom: 19,
-        }).addTo(map);
-
-        // Property marker (large, centered)
-        const propIcon = L.divIcon({
-          className: "",
-          html: `<div style="width:24px;height:24px;background:#4338CA;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>`,
-          iconSize: [24, 24],
-          iconAnchor: [12, 12],
-        });
-        L.marker([mapData.center.lat, mapData.center.lng], { icon: propIcon })
-          .addTo(map)
-          .bindPopup(`<b>Subject Property</b>`);
-
-        // Category colors
-        const catColors: Record<string, string> = {
-          anchors: "#DC2626",
-          restaurants: "#EA580C",
-          retail: "#2563EB",
-          services: "#059669",
-          fitness_rec: "#7C3AED",
-          education: "#CA8A04",
-          automotive: "#6B7280",
-          other: "#9CA3AF",
-        };
-
-        // Nearby places markers
-        for (const p of (mapData.nearbyPlaces || [])) {
-          if (!p.lat || !p.lng) continue;
-          const color = catColors[p.category] || "#9CA3AF";
-          const icon = L.divIcon({
-            className: "",
-            html: `<div style="width:10px;height:10px;background:${color};border:1.5px solid #fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></div>`,
-            iconSize: [10, 10],
-            iconAnchor: [5, 5],
-          });
-          L.marker([p.lat, p.lng], { icon })
-            .addTo(map)
-            .bindPopup(`<b>${p.name}</b>${p.rating ? `<br>${p.rating}★` : ""}`);
-        }
-
-        // Development markers (orange diamonds)
-        for (const d of (mapData.developments || [])) {
-          if (!d.lat || !d.lng) continue;
-          const icon = L.divIcon({
-            className: "",
-            html: `<div style="width:12px;height:12px;background:#F59E0B;border:2px solid #fff;border-radius:2px;transform:rotate(45deg);box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>`,
-            iconSize: [12, 12],
-            iconAnchor: [6, 6],
-          });
-          L.marker([d.lat, d.lng], { icon })
-            .addTo(map)
-            .bindPopup(`<b>${d.name}</b>${d.address ? `<br>${d.address}` : ""}<br><i>Development</i>`);
-        }
-
-        // Draw 1-mile radius circle
-        L.circle([mapData.center.lat, mapData.center.lng], {
-          radius: 1609, // 1 mile in meters
-          color: "#6366F1",
-          weight: 1.5,
-          opacity: 0.5,
-          fillColor: "#6366F1",
-          fillOpacity: 0.04,
-          dashArray: "6 4",
-        }).addTo(map);
-
-        // Fit to 1-mile radius bounds
-        setTimeout(() => map.invalidateSize(), 100);
-      } catch (err) {
-        console.error("[LocationIntelMap] Failed to load:", err);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-    };
-  }, [mapData]);
-
-  return <div ref={mapRef} style={{ width: "100%", height: "100%" }} />;
-}
-
 function EditablePropertyName({ name, propertyId, onSave }: { name: string; propertyId: string; onSave: (n: string) => void }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(name);
@@ -1491,13 +1381,13 @@ function PropertyDetailInner({
      URL-backed so a link into ?tab=om-reverse-pricing lands on that tab.
      The tab bar sits directly below the hero; below it the existing
      property detail sections continue to render as "Deal Details".     */
-  type ProTab = "quick-screen" | "om-reverse-pricing" | "rent-roll" | "location-intel";
+  type ProTab = "quick-screen" | "om-reverse-pricing" | "rent-roll" | "financials";
   const [activeProTab, setActiveProTab] = useState<ProTab>(() => {
     if (typeof window === "undefined") return "quick-screen";
     const t = new URLSearchParams(window.location.search).get("tab");
     if (t === "om-reverse-pricing") return "om-reverse-pricing";
     if (t === "rent-roll") return "rent-roll";
-    if (t === "location-intel") return "location-intel";
+    if (t === "financials") return "financials";
     return "quick-screen";
   });
   const routerForTabs = useRouter();
@@ -2249,7 +2139,7 @@ function PropertyDetailInner({
             ...(wsType === "land"
               ? []
               : [{ id: "rent-roll" as const, label: "Rent Roll", ready: true }]),
-            { id: "location-intel" as const, label: "Location Intel", ready: true },
+            { id: "financials" as const, label: "Financials", ready: true },
           ]).map(tab => {
             const isActive = tab.id === activeProTab;
             return (
@@ -2407,17 +2297,12 @@ function PropertyDetailInner({
             </>
           )}
         
-          {activeProTab === "location-intel" && (
-            <LocationIntel
-              propertyId={propertyId}
-              getToken={async () => {
-                try {
-                  const { getAuth } = await import("firebase/auth");
-                  const fb = getAuth().currentUser;
-                  if (!fb) return null;
-                  return await fb.getIdToken();
-                } catch { return null; }
-              }}
+          {activeProTab === "financials" && (
+            <FinancialsSummary
+              property={property}
+              fields={fields}
+              wsType={wsType}
+              omPurchasePrice={omPurchasePrice}
             />
           )}
 </div>
