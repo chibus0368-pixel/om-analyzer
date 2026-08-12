@@ -24,6 +24,22 @@
  */
 
 import { useState, useRef, useEffect, useMemo } from "react";
+/**
+ * Soften any markdown the model might still emit so the chat panel
+ * stays readable. We render messages as plain text with whiteSpace
+ * pre-wrap, so raw "###" / "**" markers would otherwise show up
+ * literally. This strips heading hashes and bold stars, and squashes
+ * runs of 3+ blank lines down to 2.
+ */
+function cleanAssistantText(s: string): string {
+  if (!s) return s;
+  return s
+    .replace(/^[ \t]{0,3}#{1,6}[ \t]+/gm, "")   // leading ###, ## etc
+    .replace(/\*\*(.+?)\*\*/g, "$1")           // **bold** -> bold
+    .replace(/__(.+?)__/g, "$1")                   // __bold__ -> bold
+    .replace(/\n{3,}/g, "\n\n");                // collapse big blank gaps
+}
+
 
 interface Props {
   propertyId: string;
@@ -369,8 +385,8 @@ export default function DealCoachChat({
       aria-label="Deal Coach"
       style={{
         position: "fixed", bottom: 24, right: 24, zIndex: 9999,
-        width: 380, maxWidth: "calc(100vw - 32px)",
-        height: 560, maxHeight: "calc(100vh - 100px)",
+        width: 560, maxWidth: "calc(100vw - 32px)",
+        height: 680, maxHeight: "calc(100vh - 80px)",
         background: "#FFFFFF",
         borderRadius: 16,
         border: "1px solid #E2E8F0",
@@ -504,18 +520,18 @@ export default function DealCoachChat({
             key={i}
             style={{
               alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-              maxWidth: "92%",
-              padding: "9px 12px",
+              maxWidth: "94%",
+              padding: "10px 14px",
               borderRadius: 12,
-              fontSize: 13,
-              lineHeight: 1.5,
+              fontSize: 14,
+              lineHeight: 1.6,
               whiteSpace: "pre-wrap",
               background: m.role === "user" ? "#0F172A" : "#FFFFFF",
               color: m.role === "user" ? "#FFFFFF" : "#0F172A",
               border: m.role === "user" ? "none" : "1px solid #E2E8F0",
             }}
           >
-            {m.content || (m.role === "assistant" && busy ? "…" : "")}
+            {m.role === "assistant" ? (cleanAssistantText(m.content) || (busy ? "…" : "")) : m.content}
           </div>
         ))}
 

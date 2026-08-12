@@ -410,54 +410,64 @@ export default function LocationIntel({ propertyId, getToken }: Props) {
       {/* Synthesis card on top */}
       {doc?.synthesis && <SynthesisCard s={doc.synthesis} />}
 
-      {/* Four detail cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-        {CARD_META.map((meta) => {
-          const card = doc?.cards?.[meta.key];
+      {/* Four detail cards. Hide cards entirely if their body is null/empty
+          so we never display LLM refusal text ("I cannot provide...") or
+          generic punt recommendations ("broker should pull from CoStar").
+          Quality bar: only show cards backed by specific, sourced facts. */}
+      {(() => {
+        const visibleCards = CARD_META.filter((meta) => {
+          const c = doc?.cards?.[meta.key];
+          return !!(c && c.body && c.body.trim().length > 0);
+        });
+        if (visibleCards.length === 0 && !doc?.synthesis) {
           return (
-            <div
-              key={meta.key}
-              style={{
-                background: "#FFFFFF",
-                border: "1px solid rgba(0,0,0,0.06)",
-                borderRadius: 12,
-                padding: 16,
-                boxShadow: "0 1px 4px rgba(15,23,43,0.04)",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                <span style={{
-                  display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  width: 28, height: 28, borderRadius: 6, background: "rgba(132,204,22,0.12)",
-                }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                    <path d={meta.icon} />
-                  </svg>
-                </span>
-                <div>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: "#84CC16", letterSpacing: 0.6, textTransform: "uppercase" }}>
-                    {meta.eyebrow}
-                  </div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
-                    {meta.label}
-                  </div>
-                </div>
-              </div>
-
-              {card ? (
-                <>
-                  <div>{renderMarkdown(card.body)}</div>
-                  <CitationsList items={card.citations || []} />
-                </>
-              ) : (
-                <div style={{ fontSize: 12, color: "#9CA3AF", padding: "8px 0" }}>
-                  This card couldn't be generated this run. Try Refresh.
-                </div>
-              )}
+            <div style={{ padding: "24px 12px", textAlign: "center", color: "#6B7280", fontSize: 13 }}>
+              No high-confidence findings for this address yet. Try Refresh in a few minutes.
             </div>
           );
-        })}
-      </div>
+        }
+        if (visibleCards.length === 0) return null;
+        return (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
+            {visibleCards.map((meta) => {
+              const card = doc!.cards[meta.key]!;
+              return (
+                <div
+                  key={meta.key}
+                  style={{
+                    background: "#FFFFFF",
+                    border: "1px solid rgba(0,0,0,0.06)",
+                    borderRadius: 12,
+                    padding: 16,
+                    boxShadow: "0 1px 4px rgba(15,23,43,0.04)",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                      width: 28, height: 28, borderRadius: 6, background: "rgba(132,204,22,0.12)",
+                    }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <path d={meta.icon} />
+                      </svg>
+                    </span>
+                    <div>
+                      <div style={{ fontSize: 9, fontWeight: 700, color: "#84CC16", letterSpacing: 0.6, textTransform: "uppercase" }}>
+                        {meta.eyebrow}
+                      </div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
+                        {meta.label}
+                      </div>
+                    </div>
+                  </div>
+                  <div>{renderMarkdown(card.body)}</div>
+                  <CitationsList items={card.citations || []} />
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
     </div>
   );
 }

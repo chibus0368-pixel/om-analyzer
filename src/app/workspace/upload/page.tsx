@@ -94,6 +94,10 @@ export default function UploadPage() {
   const [showMismatchModal, setShowMismatchModal] = useState(false);
   const [mismatchInfo, setMismatchInfo] = useState<{ detected: string; workspace: string; propertyId: string; extractedText?: string } | null>(null);
   const skipMismatchRef = useRef(false);
+  // Guard against double-fire: the auto-trigger effect and the Upload button
+  // can both call handleUpload if state updates race. Once a run starts, this
+  // ref blocks any concurrent call until the previous one finishes.
+  const uploadInFlightRef = useRef(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [processingPct, setProcessingPct] = useState(0);
@@ -215,6 +219,9 @@ export default function UploadPage() {
 
   async function handleUpload() {
     if (!user || files.length === 0) return;
+    // Prevent concurrent runs (auto-trigger effect + button click can both fire)
+    if (uploadInFlightRef.current) return;
+    uploadInFlightRef.current = true;
 
     // ── Check usage limit before proceeding ──
     try {
@@ -228,17 +235,20 @@ export default function UploadPage() {
         const usageData = await usageRes.json();
         if (usageData.uploadsUsed >= usageData.uploadLimit) {
           setShowUpgradeModal(true);
+          uploadInFlightRef.current = false;
           return;
         }
       } else {
         // If we can't verify usage, block the upload for safety
         console.error("[upload] Usage check returned error:", usageRes.status);
         setStatusMsg("Unable to verify your usage limit. Please try again.");
+        uploadInFlightRef.current = false;
         return;
       }
     } catch (err) {
       console.error("[upload] Usage check failed:", err);
       setStatusMsg("Unable to verify your usage limit. Please try again.");
+      uploadInFlightRef.current = false;
       return;
     }
 
@@ -260,6 +270,7 @@ export default function UploadPage() {
       } catch (err: any) {
         setStatusMsg(`Failed to create property: ${err?.message || "Unknown error"}`);
         setStep("upload");
+        uploadInFlightRef.current = false;
         return;
       }
     }
@@ -382,6 +393,7 @@ export default function UploadPage() {
             });
             setShowMismatchModal(true);
             setStep("upload");
+            uploadInFlightRef.current = false;
             return;
           }
         }
@@ -452,6 +464,7 @@ export default function UploadPage() {
     // Skip the name + done confirmation steps - just drop them on the
     // property page. They can rename via the inline EditablePropertyName
     // control there if they want a different name than the auto-derived one.
+    uploadInFlightRef.current = false;
     router.push(`/workspace/properties/${propertyId}`);
   }
 
@@ -482,18 +495,75 @@ export default function UploadPage() {
   const hasFiles = files.length > 0;
 
   async function handleMismatchContinue() {
-    if (!mismatchInfo) return;
+    if (!mismatchInfo || !user) return;
+    const { propertyId, extractedText } = mismatchInfo;
     try {
-      const { updateProperty } = await import("@/lib/workspace/firestore");
-      await updateProperty(mismatchInfo.propertyId, { isMismatch: true } as any);
       setShowMismatchModal(false);
-      setMismatchInfo(null);
-      skipMismatchRef.current = true;
-      setSelectedExistingId(mismatchInfo.propertyId);
       setStep("processing");
-      handleUpload();
+      setStatusMsg("Analyzing your document - this takes 30-90 seconds...");
+
+      const { updateProperty } = await import("@/lib/workspace/firestore");
+      await updateProperty(propertyId, { isMismatch: true } as any);
+
+      // Files were already uploaded (and their Firestore document records
+      // already created) before classification ran. Previously this called
+      // handleUpload() again, which re-ran the entire upload loop — including
+      // createDocument() — for the same `files` state and duplicated every
+      // Source Document. Skip re-upload and go straight to the analysis
+      // pipeline against the current workspace's model, mirroring
+      // handleMismatchCreateWorkspace below.
+      const analysisType = activeWorkspace?.analysisType || "retail";
+      if (extractedText && extractedText.trim().length >= 50) {
+        setParseResult("Running full analysis pipeline (parse -> generate -> score)...");
+        try {
+          const processRes = await fetch("/api/workspace/process", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              propertyId,
+              userId: user.uid,
+              documentText: extractedText,
+              analysisType,
+            }),
+          });
+          if (processRes.ok) {
+            const processData = await processRes.json();
+            setParseResult(`Analysis complete - ${processData.fieldsExtracted || 0} fields extracted and scored.`);
+          } else {
+            setParseResult("Analysis encountered an issue. You can re-analyze from the property page.");
+          }
+        } catch (err) {
+          console.error("[upload] Process (mismatch-continue) failed:", err);
+          setParseResult("Analysis encountered an issue. You can re-analyze from the property page.");
+        }
+      } else {
+        setParseResult("Uploaded, but text extraction was limited. Try re-analyzing from the property page.");
+      }
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("workspace-properties-changed"));
+      }
+
+      // Bump usage once per successful deal, same as the normal path.
+      try {
+        const token = await user.getIdToken();
+        await fetch("/api/workspace/usage", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({}),
+        });
+        if (typeof window !== "undefined") window.dispatchEvent(new Event("usage-updated"));
+      } catch (err) {
+        console.warn("[upload] Usage increment failed:", err);
+      }
+
+      setMismatchInfo(null);
+      router.push(`/workspace/properties/${propertyId}`);
     } catch (err) {
-      console.error("[upload] Failed to mark property as mismatch:", err);
+      console.error("[upload] Failed to continue past mismatch:", err);
+      setParseResult("Analysis encountered an issue. You can re-analyze from the property page.");
+      setMismatchInfo(null);
+      router.push(`/workspace/properties/${propertyId}`);
     }
   }
 
@@ -686,9 +756,54 @@ export default function UploadPage() {
       {/* ===== STEP 1: Upload Files ===== */}
       {step === "upload" && (
         <>
-          {selectedExistingId && (
-            <div style={{ background: "#D1FAE5", padding: "10px 14px", borderRadius: C.radius, marginBottom: 14, fontSize: 13, color: "#0A7E5A", fontWeight: 500 }}>
-              Adding files to: {properties.find(p => p.id === selectedExistingId)?.propertyName || "Selected property"}
+          {/* Existing deal selector - lets users add docs to a property they already created
+              without needing to know the ?property=ID URL pattern. */}
+          {properties.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 10,
+                background: C.surfLowest, borderRadius: C.radius,
+                border: `1px solid ${C.ghost}`, padding: "10px 14px",
+                boxShadow: C.shadow,
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.secondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4" />
+                </svg>
+                <label style={{ fontSize: 12, fontWeight: 600, color: C.secondary, flexShrink: 0, whiteSpace: "nowrap" }}>
+                  Add to existing deal:
+                </label>
+                <select
+                  value={selectedExistingId}
+                  onChange={e => setSelectedExistingId(e.target.value)}
+                  style={{
+                    flex: 1, border: "none", background: "transparent",
+                    fontSize: 13, color: selectedExistingId ? C.onSurface : C.secondary,
+                    fontFamily: "'Inter', sans-serif", outline: "none", cursor: "pointer",
+                    minWidth: 0,
+                  }}
+                >
+                  <option value="">New deal (create automatically)</option>
+                  {properties.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {cleanDisplayName(p.propertyName, p.address1, p.city, p.state)}{p.city ? ` · ${p.city}, ${p.state}` : ""}
+                    </option>
+                  ))}
+                </select>
+                {selectedExistingId && (
+                  <button
+                    onClick={() => setSelectedExistingId("")}
+                    title="Clear selection"
+                    style={{ background: "none", border: "none", cursor: "pointer", color: C.secondary, padding: "2px 4px", fontSize: 14, lineHeight: 1, flexShrink: 0 }}
+                  >
+                    &times;
+                  </button>
+                )}
+              </div>
+              {selectedExistingId && (
+                <p style={{ fontSize: 11, color: "#0A7E5A", margin: "4px 0 0 2px", fontWeight: 500 }}>
+                  Files will be added to this deal and it will be re-analyzed.
+                </p>
+              )}
             </div>
           )}
 

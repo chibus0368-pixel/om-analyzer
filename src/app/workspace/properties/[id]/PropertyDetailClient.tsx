@@ -9,7 +9,7 @@ import { storage } from "@/lib/firebase";
 import {
   getProperty, getProjectDocuments, getPropertyExtractedFields,
   getProjectOutputs, getPropertyNotes, createDocument, logActivity, updateProperty, deleteProperty,
-  getWorkspaceProperties,
+  getWorkspaceProperties, saveExtractedFields, updateExtractedField,
 } from "@/lib/workspace/firestore";
 import type { Property, ProjectDocument, ExtractedField, ProjectOutput, Note, DocCategory } from "@/lib/workspace/types";
 import { DOC_CATEGORY_LABELS, ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
@@ -800,6 +800,127 @@ function PurchasePriceControl({ priceState }: {
 
 
 /* ══════════════════════════════════════════════════════════ */
+/*  MANUAL ENTRY PANEL                                       */
+/*  Lets users type in key deal metrics that weren't in the  */
+/*  documents. Values persist to Firestore and re-trigger    */
+/*  scoring.                                                 */
+/* ══════════════════════════════════════════════════════════ */
+type ManualFieldDef = { label: string; group: string; name: string; fmt: "dollar" | "pct" | "number" | "text"; placeholder: string };
+
+function ManualEntryPanel({ blankFields, saveManualField }: {
+  blankFields: ManualFieldDef[];
+  saveManualField: (group: string, name: string, value: string) => Promise<void>;
+}) {
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState<Record<string, boolean>>({});
+  const [saved, setSaved] = useState<Record<string, boolean>>({});
+  const [expanded, setExpanded] = useState(false);
+
+  async function handleSave(f: ManualFieldDef) {
+    const key = `${f.group}/${f.name}`;
+    const raw = (values[key] || "").trim();
+    if (!raw) return;
+    setSaving(prev => ({ ...prev, [key]: true }));
+    await saveManualField(f.group, f.name, raw);
+    setSaving(prev => ({ ...prev, [key]: false }));
+    setSaved(prev => ({ ...prev, [key]: true }));
+    // Saved badge auto-hides after 2s
+    setTimeout(() => setSaved(prev => ({ ...prev, [key]: false })), 2000);
+  }
+
+  return (
+    <div style={{
+      background: "#FFFFFF", borderRadius: C.radius, border: `1px solid rgba(0,0,0,0.06)`,
+      padding: 20, marginBottom: 16,
+    }}>
+      <button
+        onClick={() => setExpanded(e => !e)}
+        style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          width: "100%", background: "none", border: "none", cursor: "pointer",
+          padding: 0, fontFamily: "inherit",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: C.primary, textTransform: "uppercase", letterSpacing: 0.6 }}>
+            Missing Data
+          </span>
+          <span style={{
+            fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 999,
+            background: "rgba(220,38,38,0.08)", color: "#DC2626",
+          }}>
+            {blankFields.length} field{blankFields.length !== 1 ? "s" : ""}
+          </span>
+          <span style={{ fontSize: 12, color: C.secondary, fontWeight: 400 }}>
+            Click to fill in manually
+          </span>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.secondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+          style={{ transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s", flexShrink: 0 }}>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {expanded && (
+        <div style={{ marginTop: 14 }}>
+          <p style={{ fontSize: 12, color: C.secondary, margin: "0 0 12px", lineHeight: 1.5 }}>
+            These fields weren&apos;t found in your documents. Enter them below and they&apos;ll be saved and factored into scoring.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
+            {blankFields.map(f => {
+              const key = `${f.group}/${f.name}`;
+              const isSaving = saving[key];
+              const isSaved = saved[key];
+              return (
+                <div key={key} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: C.secondary }}>{f.label}</label>
+                  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    {f.fmt === "dollar" && (
+                      <span style={{ fontSize: 13, color: C.secondary, flexShrink: 0 }}>$</span>
+                    )}
+                    <input
+                      type="text"
+                      inputMode={f.fmt === "text" ? "text" : "decimal"}
+                      value={values[key] || ""}
+                      onChange={e => setValues(prev => ({ ...prev, [key]: e.target.value }))}
+                      onBlur={() => { if (values[key]?.trim()) handleSave(f); }}
+                      onKeyDown={e => { if (e.key === "Enter") { (e.target as HTMLInputElement).blur(); } }}
+                      placeholder={f.placeholder}
+                      style={{
+                        flex: 1, fontSize: 13, padding: "7px 10px",
+                        border: `1px solid ${isSaved ? "#4D7C0F" : "rgba(0,0,0,0.12)"}`,
+                        borderRadius: 6, outline: "none", fontFamily: "inherit",
+                        background: isSaved ? "rgba(77,124,15,0.04)" : "#FAFAFA",
+                        transition: "border-color 0.15s",
+                      }}
+                    />
+                    {f.fmt === "pct" && (
+                      <span style={{ fontSize: 13, color: C.secondary, flexShrink: 0 }}>%</span>
+                    )}
+                    {isSaving && (
+                      <div style={{ width: 14, height: 14, border: "2px solid #4D7C0F", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.6s linear infinite", flexShrink: 0 }} />
+                    )}
+                    {isSaved && !isSaving && (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                        <path d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p style={{ fontSize: 11, color: C.secondary, margin: "10px 0 0", opacity: 0.7 }}>
+            Values save on blur (or press Enter). They&apos;ll be used in calculations but won&apos;t overwrite future re-analysis.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+/* ══════════════════════════════════════════════════════════ */
 /*  MAIN PAGE COMPONENT                                      */
 /* ══════════════════════════════════════════════════════════ */
 export default function PropertyDetailClient() {
@@ -829,6 +950,8 @@ export default function PropertyDetailClient() {
   const [reviewExpanded, setReviewExpanded] = useState(false);
   const [userTier, setUserTier] = useState<string>("free");
   const [siblingProps, setSiblingProps] = useState<Property[]>([]);
+  const [pageDragging, setPageDragging] = useState(false);
+  const pageDragCounter = useRef(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Load sibling properties in workspace for sidebar navigation
@@ -1029,6 +1152,9 @@ export default function PropertyDetailClient() {
   async function handleFileUpload(fileList: FileList) {
     if (!fileList.length || !property || !user) return;
     setUploading(true);
+
+    const newPdfFiles: File[] = [];
+
     for (const file of Array.from(fileList)) {
       const ext = file.name.split(".").pop()?.toLowerCase() || "";
       const storedName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
@@ -1047,38 +1173,96 @@ export default function PropertyDetailClient() {
               isArchived: false, isDeleted: false,
               uploadedAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
             });
+            if (ext === "pdf") newPdfFiles.push(file);
             resolve();
           });
         });
       } catch (err) { console.error(err); }
     }
 
+    setUploading(false);
+
+    // Extract hero image if property has none and a PDF was just uploaded.
+    // Lazy-import so the heavy pdf.js bundle only loads when needed.
+    if (newPdfFiles.length > 0 && !(property as any).heroImageUrl) {
+      try {
+        const { extractHeroImageFromPDF } = await import("@/lib/workspace/image-extractor");
+        const heroBlob = await extractHeroImageFromPDF(newPdfFiles[0]);
+        if (heroBlob && heroBlob.size > 5000) {
+          const imgRef = ref(storage, `workspace/${user.uid}/${propertyId}/hero.jpg`);
+          await uploadBytesResumable(imgRef, heroBlob);
+          const imgUrl = await getDownloadURL(imgRef);
+          await updateProperty(propertyId, { heroImageUrl: imgUrl } as any);
+          // Optimistically update local state so the hero renders immediately
+          setProperty(prev => prev ? { ...prev, heroImageUrl: imgUrl } as any : prev);
+          console.log("[file-add] Hero image saved:", imgUrl);
+        }
+      } catch (imgErr) { console.warn("[file-add] Hero extraction failed:", imgErr); }
+    }
+
+    // Re-analyze using ALL docs for this property, not just the new ones.
+    // This ensures adding a rent roll or T-12 enriches (rather than replaces)
+    // the data the OM already contributed.
     setReparsing(true);
+    setReparseStatus("Downloading all files...");
     try {
-      const updatedDocs = await getProjectDocuments(property.projectId, propertyId);
-      setDocuments(updatedDocs);
-      const newFiles = Array.from(fileList);
-      const extractedText = await extractTextFromFiles(newFiles);
+      const allDocs = await getProjectDocuments(property.projectId, propertyId);
+      setDocuments(allDocs);
+
+      const fileObjects: File[] = [];
+      for (const doc of allDocs) {
+        if (!doc.storagePath) continue;
+        try {
+          const fileStorageRef = ref(storage, doc.storagePath);
+          const url = await getDownloadURL(fileStorageRef);
+          const resp = await fetch(url);
+          if (!resp.ok) continue;
+          const blob = await resp.blob();
+          fileObjects.push(new File([blob], doc.originalFilename || `file.${doc.fileExt}`, { type: doc.mimeType || blob.type }));
+        } catch (dlErr) { console.warn(`[file-add] Failed to download ${doc.originalFilename}:`, dlErr); }
+      }
+
+      if (fileObjects.length === 0) {
+        setReparseStatus("No files could be read.");
+        setReparsing(false);
+        return;
+      }
+
+      setReparseStatus(`Scanning ${fileObjects.length} file(s)...`);
+      const extractedText = await extractTextFromFiles(fileObjects);
+      if (!extractedText || extractedText.trim().length < 50) {
+        setReparseStatus("Could not extract usable text.");
+        setReparsing(false);
+        return;
+      }
+
       // Prefer the property's own analysisType (set at classification / manual override).
       // Falls back to the workspace type, then retail. This prevents re-parse from
       // overwriting a multifamily property in a "retail" workspace with retail parsing.
       const analysisType = (property as any)?.analysisType || activeWorkspace?.analysisType || "retail";
+      setReparseStatus("Scanning deal data...");
       const parseRes = await fetch("/api/workspace/parse", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ projectId: property.projectId, propertyId, userId: user.uid, documentText: extractedText, analysisType }),
       });
       const parseData = await parseRes.json().catch(() => ({}));
-      // Run generate + score after successful parse
+
       if (parseData.success && parseData.fieldsExtracted > 0) {
+        setReparseStatus("Generating outputs...");
         try { await fetch("/api/workspace/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ propertyId, userId: user.uid, parsedData: parseData.fields }) }); } catch { /* non-blocking */ }
+        setReparseStatus("Scoring...");
         try { await fetch("/api/workspace/score", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ propertyId, userId: user.uid, analysisType }) }); } catch { /* non-blocking */ }
+        setReparseStatus(`Complete - ${parseData.fieldsExtracted} fields extracted.`);
+      } else {
+        setReparseStatus("Scan returned limited data.");
       }
+
       const newFields = await getPropertyExtractedFields(propertyId);
       setFields(newFields);
     } catch (err) { console.error("[file-add] Parse pipeline failed:", err); }
     setReparsing(false);
-    setUploading(false);
     if (typeof window !== "undefined") window.dispatchEvent(new Event("workspace-properties-changed"));
+    setTimeout(() => setReparseStatus(""), 6000);
   }
 
   /* ── Re-analyze handler ─────────────────────────────── */
@@ -1133,6 +1317,53 @@ export default function PropertyDetailClient() {
     setTimeout(() => setReparseStatus(""), 6000);
   }
 
+  /* ── Manual field save ───────────────────────────────── */
+  // Persists a user-entered value to Firestore. If an extracted field with
+  // the same group/name already exists, it marks it as user-overridden; if
+  // not, it creates a new field record so the score engine can pick it up.
+  async function saveManualField(fieldGroup: string, fieldName: string, rawValue: string) {
+    if (!property || !user) return;
+    const trimmed = rawValue.trim();
+    const existing = fields.find(f => f.fieldGroup === fieldGroup && f.fieldName === fieldName);
+    try {
+      if (existing?.id) {
+        await updateExtractedField(existing.id, {
+          isUserOverridden: true,
+          userOverrideValue: trimmed,
+          updatedAt: new Date().toISOString(),
+        });
+      } else {
+        await saveExtractedFields([{
+          id: "",
+          projectId: property.projectId,
+          propertyId,
+          documentId: "manual",
+          fieldGroup,
+          fieldName,
+          rawValue: trimmed,
+          normalizedValue: trimmed,
+          isUserConfirmed: true,
+          isUserOverridden: true,
+          userOverrideValue: trimmed,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }]);
+      }
+      // Refresh fields + re-score so the new value flows through immediately
+      const refreshed = await getPropertyExtractedFields(propertyId);
+      setFields(refreshed);
+      try {
+        const analysisType = (property as any)?.analysisType || activeWorkspace?.analysisType || "retail";
+        await fetch("/api/workspace/score", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ propertyId, userId: user.uid, analysisType }),
+        });
+        const rescored = await getPropertyExtractedFields(propertyId);
+        setFields(rescored);
+      } catch { /* score failure is non-blocking */ }
+    } catch (err) { console.error("[manual-field] Save failed:", err); }
+  }
+
   /* ── Loading / not found states ─────────────────────── */
   if (loading) return (
     <div style={{ padding: 60, textAlign: "center", color: C.secondary }}>
@@ -1166,7 +1397,66 @@ export default function PropertyDetailClient() {
   const omPurchasePrice = Number(g("pricing_deal_terms", "asking_price")) || null;
 
   return (
-    <div className="pd-outer" style={{ display: "flex", minHeight: 0 }}>
+    <div
+      className="pd-outer"
+      style={{ display: "flex", minHeight: 0 }}
+      onDragEnter={e => {
+        e.preventDefault();
+        pageDragCounter.current++;
+        if (!reparsing && !uploading) setPageDragging(true);
+      }}
+      onDragOver={e => { e.preventDefault(); }}
+      onDragLeave={e => {
+        e.preventDefault();
+        pageDragCounter.current--;
+        if (pageDragCounter.current <= 0) { pageDragCounter.current = 0; setPageDragging(false); }
+      }}
+      onDrop={e => {
+        e.preventDefault();
+        pageDragCounter.current = 0;
+        setPageDragging(false);
+        if (!reparsing && !uploading && e.dataTransfer.files?.length) {
+          handleFileUpload(e.dataTransfer.files);
+        }
+      }}
+    >
+      {/* Page-wide drag-and-drop overlay */}
+      {pageDragging && (
+        <div
+          onDragOver={e => e.preventDefault()}
+          onDragLeave={e => {
+            e.preventDefault();
+            const next = e.relatedTarget as Node | null;
+            if (next && e.currentTarget.contains(next)) return;
+            pageDragCounter.current = 0;
+            setPageDragging(false);
+          }}
+          onDrop={e => {
+            e.preventDefault();
+            e.stopPropagation(); // prevent bubbling to pd-outer which would double-upload
+            pageDragCounter.current = 0;
+            setPageDragging(false);
+            if (e.dataTransfer.files?.length) handleFileUpload(e.dataTransfer.files);
+          }}
+          style={{
+            position: "fixed", inset: 0, zIndex: 9999,
+            background: "rgba(13,13,20,0.82)", backdropFilter: "blur(8px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <div style={{
+            padding: "48px 64px", borderRadius: 20,
+            border: "2px dashed #4D7C0F", background: "rgba(132,204,22,0.05)",
+            textAlign: "center", pointerEvents: "none",
+          }}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }}>
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", marginBottom: 6 }}>Drop files to add to this deal</div>
+            <div style={{ fontSize: 14, color: "#9ca3af" }}>OM, rent roll, T-12, lease, or images</div>
+          </div>
+        </div>
+      )}
       {/* Let the outer layout handle scrolling so sidebar's position:sticky snaps to the viewport, not a nested scroller */}
       <div className="pd-scroll" style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "flex-start" }}>
         {/* ── Main Content ──────────────────────────────────── */}
@@ -1182,6 +1472,7 @@ export default function PropertyDetailClient() {
           reparsing={reparsing} reparseStatus={reparseStatus} uploading={uploading}
           fileRef={fileRef} g={g}
           user={user}
+          saveManualField={saveManualField}
           deepResearchLoading={deepResearchLoading} setDeepResearchLoading={setDeepResearchLoading}
           deepResearch={deepResearch} setDeepResearch={setDeepResearch}
           feedbackSent={feedbackSent} setFeedbackSent={setFeedbackSent}
@@ -1348,7 +1639,7 @@ function PropertyDetailInner({
   uploading, fileRef, g, user,
   deepResearchLoading, setDeepResearchLoading, deepResearch, setDeepResearch,
   feedbackSent, setFeedbackSent, reviewExpanded, setReviewExpanded,
-  userTier,
+  userTier, saveManualField,
 }: any) {
 
   // Quick Screen report used by the Brief download buttons inside this
@@ -2696,22 +2987,31 @@ function PropertyDetailInner({
           }
           right={
             <>
-              {/* Only show Re-analyze if: property has docs but no extracted fields (scan failed/incomplete) */}
-              {documents.length > 0 && !hasData && (
-                <button onClick={handleReAnalyze} style={{
-                  padding: "8px 14px", background: C.surfLow, border: `1px solid rgba(0,0,0,0.06)`,
-                  borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: reparsing ? "not-allowed" : "pointer",
-                  fontFamily: "inherit", whiteSpace: "nowrap", color: C.secondary,
-                  opacity: reparsing ? 0.5 : 1,
+              {/* Re-analyze: always available when there are docs. Primary prominence when no data exists. */}
+              {documents.length > 0 && (
+                <button onClick={handleReAnalyze} disabled={reparsing || uploading} style={{
+                  padding: "8px 14px",
+                  background: !hasData ? "#0F172A" : C.surfLow,
+                  color: !hasData ? "#ffffff" : C.secondary,
+                  border: hasData ? `1px solid rgba(0,0,0,0.06)` : "none",
+                  borderRadius: 8, fontSize: 12, fontWeight: 600,
+                  cursor: (reparsing || uploading) ? "not-allowed" : "pointer",
+                  fontFamily: "inherit", whiteSpace: "nowrap",
+                  opacity: (reparsing || uploading) ? 0.5 : 1,
+                  boxShadow: !hasData ? `0 2px 8px rgba(15, 23, 42, 0.22)` : "none",
                 }}>
                   {reparsing ? "Scanning..." : "Re-analyze"}
                 </button>
               )}
-              <button onClick={() => fileRef.current?.click()} style={{
-                padding: "8px 18px", background: "#0F172A",
-                color: "#ffffff", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600,
-                cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
-                boxShadow: `0 2px 8px rgba(15, 23, 42, 0.22)`,
+              <button onClick={() => fileRef.current?.click()} disabled={uploading || reparsing} style={{
+                padding: "8px 18px", background: hasData ? C.surfLow : "#0F172A",
+                color: hasData ? C.secondary : "#ffffff",
+                border: hasData ? `1px solid rgba(0,0,0,0.06)` : "none",
+                borderRadius: 8, fontSize: 12, fontWeight: 600,
+                cursor: (uploading || reparsing) ? "not-allowed" : "pointer",
+                fontFamily: "inherit", whiteSpace: "nowrap",
+                opacity: (uploading || reparsing) ? 0.5 : 1,
+                boxShadow: hasData ? "none" : `0 2px 8px rgba(15, 23, 42, 0.22)`,
               }}>
                 {uploading ? "Uploading..." : "+ Add Files"}
               </button>
@@ -2775,10 +3075,82 @@ function PropertyDetailInner({
             })}
           </div>
         )}
+
+        {/* Missing-docs hint: show which useful doc types haven't been uploaded yet.
+            Only appears when there are some docs already (empty state handled above). */}
+        {documents.length > 0 && (() => {
+          const uploadedCategories = new Set(documents.map((d: ProjectDocument) => d.docCategory));
+          const suggestions: { category: DocCategory; label: string; hint: string }[] = [
+            { category: "om" as DocCategory, label: "Offering Memorandum", hint: "Full analysis requires an OM" },
+            { category: "rent_roll" as DocCategory, label: "Rent Roll", hint: "Tenant-level detail and rollover risk" },
+            { category: "t12" as DocCategory, label: "T-12 / Operating Statement", hint: "Trailing income + expense trends" },
+          ];
+          const missing = suggestions.filter(s => !uploadedCategories.has(s.category));
+          if (missing.length === 0) return null;
+          return (
+            <div style={{ marginTop: 12, padding: "10px 14px", background: "#FAFAFA", borderRadius: 8, border: "1px dashed rgba(0,0,0,0.10)" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.secondary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+                Might improve analysis
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {missing.map(s => (
+                  <button
+                    key={s.category}
+                    onClick={() => fileRef.current?.click()}
+                    title={s.hint}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 5,
+                      padding: "4px 10px", borderRadius: 999,
+                      background: "rgba(77,124,15,0.06)", border: "1px dashed rgba(77,124,15,0.3)",
+                      fontSize: 11, fontWeight: 600, color: "#4D7C0F",
+                      cursor: "pointer", fontFamily: "inherit",
+                    }}
+                  >
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* ═══════════════════════════════════════════════════ */}
-      {/*  9. FEEDBACK MODULE                                 */}
+      {/*  9. MANUAL DATA ENTRY                               */}
+      {/* ═══════════════════════════════════════════════════ */}
+      {saveManualField && (() => {
+        // Key fields users commonly need to fill in manually.
+        // Grouped: pricing first (most often missing), then property basics, then income.
+        const MANUAL_FIELDS: ManualFieldDef[] = [
+          { label: "Asking Price", group: "pricing_deal_terms", name: "asking_price", fmt: "dollar", placeholder: "e.g. 14,500,000" },
+          { label: "Cap Rate (Stated)", group: "pricing_deal_terms", name: "cap_rate_om", fmt: "pct", placeholder: "e.g. 6.5" },
+          { label: "NOI (Stated)", group: "expenses", name: "noi_om", fmt: "dollar", placeholder: "e.g. 940,000" },
+          { label: "Building SF", group: "property_basics", name: "building_sf", fmt: "number", placeholder: "e.g. 24,500" },
+          { label: "Year Built", group: "property_basics", name: "year_built", fmt: "number", placeholder: "e.g. 1998" },
+          { label: "Occupancy", group: "property_basics", name: "occupancy_pct", fmt: "pct", placeholder: "e.g. 95" },
+          { label: "Gross Rent", group: "expenses", name: "gross_rent", fmt: "dollar", placeholder: "e.g. 1,100,000" },
+        ];
+
+        // Show only fields that are currently blank so the panel stays focused.
+        const blankFields = MANUAL_FIELDS.filter(f => {
+          const val = g(f.group, f.name);
+          return !val || val === "--" || val === "0" || val === 0;
+        });
+        if (blankFields.length === 0) return null;
+
+        return (
+          <ManualEntryPanel
+            blankFields={blankFields}
+            saveManualField={saveManualField}
+          />
+        );
+      })()}
+
+      {/* ═══════════════════════════════════════════════════ */}
+      {/*  10. FEEDBACK MODULE                                */}
       {/* ═══════════════════════════════════════════════════ */}
       {hasData && (
         <div style={{

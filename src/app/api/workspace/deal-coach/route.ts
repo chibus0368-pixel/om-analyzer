@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
     }
     const fieldDigest = Object.entries(fieldsByGroup)
       .map(([g, rows]) => {
-        const head = `### ${g}`;
+        const head = `${g.toUpperCase()}:`;
         const cap = g === "rent_roll" ? rows.length : 80;
         const lines = rows
           .slice(0, cap)
@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
       tenants[idx][attr] = value;
     }
     const tenantBlock = Object.keys(tenants).length
-      ? "\n\n### tenant table (parsed from rent_roll)\n" +
+      ? "\n\nTENANT TABLE (parsed from rent_roll):\n" +
         Object.entries(tenants)
           .sort((a, b) => Number(a[0]) - Number(b[0]))
           .map(([idx, t]) => {
@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
     } catch {
       /* non-blocking */
     }
-    const briefBlock = briefBody ? `\n\n### Investment brief (parsed narrative)\n${briefBody}` : "";
+    const briefBlock = briefBody ? `\n\nINVESTMENT BRIEF (parsed narrative):\n${briefBody}` : "";
 
     // Pull peer deals from the same dealboard so the bot can compare
     // ("how does this cap rate stack up against the rest of my Dave
@@ -204,7 +204,7 @@ export async function POST(req: NextRequest) {
           .sort((a, b) => String(b.created || "").localeCompare(String(a.created || "")))
           .slice(0, 25);
         if (peers.length > 0) {
-          peerBlock = `\n\n### Peer deals on this dealboard (${peers.length})\n` +
+          peerBlock = `\n\nPEER DEALS on this dealboard (${peers.length}):\n` +
             peers
               .map((p) => {
                 const parts = [
@@ -279,7 +279,7 @@ export async function POST(req: NextRequest) {
             demLines.push(`Unemployment: ${ur}%`);
           }
 
-          researchBlock = `\n\n### Local context (background research)\n` +
+          researchBlock = `\n\nLOCAL CONTEXT (background research):\n` +
             (nearbyLines ? `Nearby (within ~1 mi):\n${nearbyLines}\n` : "") +
             (demLines.length ? `\nDemographics (${dem.geo || "city"}):\n  - ${demLines.join("\n  - ")}\n` : "") +
             `\n_Refreshed ${r.refreshedAt || "(unknown)"} — comp transactions are not auto-enriched yet._`;
@@ -296,7 +296,7 @@ export async function POST(req: NextRequest) {
     try {
       const omText = await loadOmText(propertyId);
       if (omText && omText.length > 200) {
-        omExcerpt = `\n\n### OM EXCERPT (verbatim, first ~10 KB - quote specific claims back to the user)\n"""\n${omText.slice(0, 10_000)}\n"""`;
+        omExcerpt = `\n\nOM EXCERPT (verbatim, first ~10 KB - quote specific claims back to the user):\n"""\n${omText.slice(0, 10_000)}\n"""`;
       }
     } catch (omErr: any) {
       console.warn("[deal-coach] OM text load failed:", omErr?.message);
@@ -352,14 +352,25 @@ OPERATING RULES
 5. When peer deals from the same dealboard are listed below, USE them for comparison ("vs your other 4 retail centers, this cap rate is 75 bps high"). Reference peers by name, not ID.
 6. End every substantive answer with a "Bottom line:" sentence stating the one action the user should take next.
 
-ANSWER STRUCTURE (when the user asks for analysis, not a quick lookup)
-- Lead with a 1-sentence answer.
-- 3-6 bullets of reasoning, each with a specific number or comp.
-- "Highlights:" 2-4 bullets the buyer should be excited about.
-- "Worry list:" 2-4 bullets the buyer should pressure-test, with the question they should ask the broker.
-- "Bottom line:" the next action.
+FORMATTING (this is the chat UI, render must stay readable)
+- DO NOT use markdown headers. Never write "###", "##", or "#" anywhere in your reply.
+- Keep paragraphs short: 1-3 sentences each, with a blank line between paragraphs.
+- For lists, use plain "- " bullets, one short line per bullet (under ~20 words).
+- For section labels (Highlights, Worry list, Bottom line), write them inline as bold-free plain text followed by a colon and a newline. Example:
+  Highlights:
+  - Bullet one
+  - Bullet two
+- No tables, no nested bullets, no bolded headings, no underscores, no all-caps section banners.
+- Aim for scannable answers: most replies should fit comfortably in 8-15 short lines.
 
-For quick factual questions (e.g. "what's the WALE"), skip the structure and just answer.
+ANSWER STRUCTURE (when the user asks for analysis, not a quick lookup)
+- Open with a single short paragraph (1-2 sentences) giving the headline answer.
+- Reasoning: 3-6 short bullets, each with a specific number, comp, or source.
+- Highlights: 2-4 short bullets the buyer should be excited about.
+- Worry list: 2-4 short bullets the buyer should pressure-test, each ending with the question they should ask the broker.
+- Bottom line: one short sentence stating the next action.
+
+For quick factual questions (e.g. "what's the WALE"), skip the structure and answer in one short paragraph.
 
 PROACTIVE DATA-FILL: If MISSING DATA fields are listed below AND the user's question would benefit from one of those values, ASK them for the missing piece in plain English. When they answer, IMMEDIATELY call the save_property_field tool to persist the value. Confirm in the next sentence ("Saved 12,500 SF to the property profile"). Don't batch ask 5 questions at once - ask one or two, save, continue.${missingBlock}
 
