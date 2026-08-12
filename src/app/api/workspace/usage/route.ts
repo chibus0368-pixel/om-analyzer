@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
-import { getUploadLimit, ANONYMOUS_LIMIT, LEAD_LIMIT, PLANS } from "@/lib/stripe/config";
+import { getUploadLimit, ANONYMOUS_LIMIT, LEAD_LIMIT, PLANS, FREE_ACCESS_MODE, UNLIMITED_UPLOADS } from "@/lib/stripe/config";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
       const data = anonDoc.data();
       // Email-claimed users get tier="lead" with LEAD_LIMIT, otherwise anonymous.
       const docTier = data?.tier === "lead" ? "lead" : "anonymous";
-      const docLimit = docTier === "lead" ? LEAD_LIMIT : ANONYMOUS_LIMIT;
+      const docLimit = FREE_ACCESS_MODE ? UNLIMITED_UPLOADS : (docTier === "lead" ? LEAD_LIMIT : ANONYMOUS_LIMIT);
       return NextResponse.json({
         uploadsUsed: data?.uploadsUsed || 0,
         uploadLimit: docLimit,
@@ -109,6 +109,7 @@ export async function GET(req: NextRequest) {
     const tierStatus = userData.tierStatus || "none";
     let uploadsUsed = userData.uploadsUsed || 0;
     let uploadLimit = userData.uploadLimit || getUploadLimit(tier);
+    if (FREE_ACCESS_MODE) uploadLimit = UNLIMITED_UPLOADS;
 
     // ── Backfill: if a paid user's stored uploadLimit is lower than the
     // current plan's configured limit (e.g. after a plan-wide quota bump
@@ -177,9 +178,9 @@ export async function POST(req: NextRequest) {
       const current = data.uploadsUsed || 0;
       // Per-doc tier so email-claimed leads keep their bumped limit.
       const docTier = data.tier === "lead" ? "lead" : "anonymous";
-      const docLimit = docTier === "lead" ? LEAD_LIMIT : ANONYMOUS_LIMIT;
+      const docLimit = FREE_ACCESS_MODE ? UNLIMITED_UPLOADS : (docTier === "lead" ? LEAD_LIMIT : ANONYMOUS_LIMIT);
 
-      if (current >= docLimit) {
+      if (!FREE_ACCESS_MODE && current >= docLimit) {
         // Anonymous hits prompt the email gate; lead hits prompt full signup.
         const emailGate = docTier === "anonymous";
         return NextResponse.json({
@@ -250,7 +251,7 @@ export async function POST(req: NextRequest) {
     }
 
     const tier = userData.tier || "free";
-    const uploadLimit = userData.uploadLimit || getUploadLimit(tier);
+    const uploadLimit = FREE_ACCESS_MODE ? UNLIMITED_UPLOADS : (userData.uploadLimit || getUploadLimit(tier));
     let currentUsed = userData.uploadsUsed || 0;
 
     // ── Auto-reset if new billing period (paid users only, not free lifetime) ──
@@ -262,7 +263,7 @@ export async function POST(req: NextRequest) {
 
     const uploadsUsed = currentUsed + 1;
 
-    if (uploadsUsed > uploadLimit) {
+    if (!FREE_ACCESS_MODE && uploadsUsed > uploadLimit) {
       return NextResponse.json({ error: "Upload limit reached", upgradeRequired: true }, { status: 403 });
     }
 

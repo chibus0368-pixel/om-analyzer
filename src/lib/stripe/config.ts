@@ -23,6 +23,17 @@ export interface PlanConfig {
 export const ANONYMOUS_LIMIT = 2; // free trial analyses before signup is prompted
 export const LEAD_LIMIT = 5;       // legacy email-only "lead" tier - kept for in-flight users
 
+// ── Free access mode ────────────────────────────────────────
+// Public/free release toggle (added 2026-08-12). When FREE_ACCESS_MODE=true
+// is set in the environment, /api/workspace/usage stops enforcing per-tier
+// upload caps (see usage/route.ts) so nobody hits a paywall. This flag does
+// NOT touch Stripe checkout/webhook/portal code, PLANS, or pricing/upgrade
+// UI copy - it only short-circuits the enforcement check. To restore normal
+// billing enforcement later, unset FREE_ACCESS_MODE (or set it to "false")
+// in Vercel env vars and redeploy. No code changes needed to revert.
+export const FREE_ACCESS_MODE = process.env.FREE_ACCESS_MODE === "true";
+export const UNLIMITED_UPLOADS = 999999;
+
 export const PLANS: Record<string, PlanConfig> = {
   anonymous: {
     id: "anonymous",
