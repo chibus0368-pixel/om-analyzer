@@ -82,7 +82,6 @@ function WorkspaceLoginPageInner() {
   const { signIn, user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const upgradePlan = searchParams.get("upgrade") || "";
   const redirectPath = searchParams.get("redirect") || "";
   // Honor ?mode=register (or ?mode=signup for back-compat) so footer/nav
   // "Sign Up" links land directly on the registration form instead of login.
@@ -120,44 +119,16 @@ function WorkspaceLoginPageInner() {
   // its Try Me claim step) has finished, and the new DealBoard shows empty.
   const handlingSubmitRef = useRef(false);
 
-  /* ── Build post-auth redirect URL (preserves upgrade param) ── */
+  /* ── Build post-auth redirect URL ──
+     DealSignals is free right now - no Stripe checkout hop, no ?upgrade=
+     param handling. Old shared links with ?upgrade=... just land in the
+     workspace like any other redirect. */
   function getPostAuthUrl(): string {
-    if (upgradePlan) {
-      const base = redirectPath || "/workspace";
-      return `${base}?upgrade=${encodeURIComponent(upgradePlan)}`;
-    }
     return redirectPath || "/workspace";
   }
 
-  /* ── Post-auth handler: if upgrade param set, go straight to Stripe; else workspace ──
-     Anonymous Firebase users get caught by the server's 403 guard on
-     /api/stripe/checkout. We don't auto-redirect them through this path
-     because the parent useEffect already skips it for isAnonymous=true. */
-  async function handlePostAuth(firebaseUser: any) {
-    if (firebaseUser?.isAnonymous) {
-      // Should never reach here for an anon user (the auto-redirect effect
-      // skips them) but if it does, push to register instead of Stripe.
-      router.push(`/workspace/login?mode=register&upgrade=${upgradePlan || ""}`);
-      return;
-    }
-    if (upgradePlan && (upgradePlan === "pro" || upgradePlan === "pro_plus")) {
-      try {
-        const token = await firebaseUser.getIdToken();
-        const res = await fetch("/api/stripe/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ plan: upgradePlan }),
-        });
-        const data = await res.json();
-        if (data?.url) {
-          window.location.href = data.url;
-          return;
-        }
-        console.error("[login] checkout returned no URL", data);
-      } catch (err) {
-        console.error("[login] checkout call failed", err);
-      }
-    }
+  /* ── Post-auth handler: always go to the workspace ── */
+  async function handlePostAuth(_firebaseUser: any) {
     router.push(redirectPath || "/workspace");
   }
 
@@ -360,14 +331,10 @@ function WorkspaceLoginPageInner() {
             </span>
           </div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0B1120", margin: 0, fontFamily: "'Inter', sans-serif" }}>
-            {upgradePlan
-              ? (mode === "login" ? "Sign in to continue" : "Create your account")
-              : (mode === "login" ? "Sign In" : "Create Your Account")}
+            {mode === "login" ? "Sign In" : "Create Your Account"}
           </h1>
           <p style={{ fontSize: 14, color: "#5A7091", marginTop: 6, fontFamily: "'Inter', sans-serif" }}>
-            {upgradePlan
-              ? `Sign ${mode === "login" ? "in" : "up"} to complete your upgrade to ${upgradePlan === "pro_plus" ? "Pro+" : "Pro"}`
-              : (mode === "login" ? "Sign in to your workspace" : "Get started with Deal Signals Pro")}
+            {mode === "login" ? "Sign in to your workspace" : "Get started with DealSignals"}
           </p>
         </div>
 

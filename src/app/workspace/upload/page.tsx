@@ -14,7 +14,6 @@ import type { Property, DocCategory, AnalysisType } from "@/lib/workspace/types"
 import { ANALYSIS_TYPE_LABELS, ANALYSIS_TYPE_COLORS } from "@/lib/workspace/types";
 import { AnalysisTypeIcon } from "@/lib/workspace/AnalysisTypeIcon";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
-import UpgradeModal from "@/components/billing/UpgradeModal";
 import Link from "next/link";
 
 const ACCEPTED_EXT = ".pdf,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.webp";
@@ -99,7 +98,6 @@ export default function UploadPage() {
   // ref blocks any concurrent call until the previous one finishes.
   const uploadInFlightRef = useRef(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [processingPct, setProcessingPct] = useState(0);
   const [processingMsgIdx, setProcessingMsgIdx] = useState(0);
 
@@ -232,9 +230,13 @@ export default function UploadPage() {
       });
 
       if (usageRes.ok) {
+        // DealSignals is free right now (FREE_ACCESS_MODE), so the API
+        // always reports an effectively unlimited uploadLimit and this
+        // never blocks. Left as a safety net in case the flag is ever
+        // turned off without redeploying the UI.
         const usageData = await usageRes.json();
         if (usageData.uploadsUsed >= usageData.uploadLimit) {
-          setShowUpgradeModal(true);
+          setStatusMsg("You've reached your analysis limit for this period.");
           uploadInFlightRef.current = false;
           return;
         }
@@ -1487,12 +1489,6 @@ export default function UploadPage() {
           </div>
         </div>
       )}
-      {/* Upgrade Modal */}
-      <UpgradeModal
-        open={showUpgradeModal}
-        onClose={() => setShowUpgradeModal(false)}
-        reason="limit_reached"
-      />
     </div>
   );
 }

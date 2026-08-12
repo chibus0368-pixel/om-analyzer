@@ -1,11 +1,12 @@
-import Stripe from "stripe";
-
-// ── Stripe server-side client ───────────────────────────────
-export function getStripe(): Stripe {
-  const key = process.env.STRIPE_SECRET_KEY;
-  if (!key) throw new Error("STRIPE_SECRET_KEY is not set");
-  return new Stripe(key, { apiVersion: "2025-03-31.basil" });
-}
+// NOTE: DealSignals is currently in a free public-access period. The Stripe
+// checkout/webhook/portal/sync API routes and the getStripe() client they
+// used have been removed from the live app (moved to _to_delete/ pending
+// permanent deletion) so there are no dangling payment screens or hooks.
+// The pre-removal implementation is preserved at git tag
+// pre-free-release-2026-08-12 if billing is reintroduced later.
+// PLANS below still defines tier/upload-limit metadata used by
+// /api/workspace/usage (gated by FREE_ACCESS_MODE) - that part is unrelated
+// to Stripe and stays live.
 
 // ── Plan definitions ────────────────────────────────────────
 export interface PlanConfig {

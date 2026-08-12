@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, updatePassword, updateProfile, EmailAuthProvider, reauthenticateWithCredential, type User } from "firebase/auth";
 import { requestPasswordReset } from "@/lib/auth/providers";
-import { PLANS } from "@/lib/stripe/config";
 
 /* ── Design tokens ── */
 const PRIMARY = "#4D7C0F";
@@ -122,7 +121,6 @@ export default function ProfilePage() {
 
   // Subscription management
   const [usageData, setUsageData] = useState<{ uploadsUsed: number; uploadLimit: number; tier: string; stripeSubscriptionId?: string } | null>(null);
-  const [billingLoading, setBillingLoading] = useState<string | null>(null);
 
   // Editable fields
   const [firstName, setFirstName] = useState("");
@@ -234,86 +232,6 @@ export default function ProfilePage() {
   useEffect(() => {
     fetchUsage();
   }, [fetchUsage]);
-
-  // Handle Stripe checkout for upgrade
-  const handleUpgradeCheckout = async (plan: string) => {
-    if (!firebaseUser) return;
-    if ((firebaseUser as any).isAnonymous) {
-      // Anon users must register first - Stripe needs an email.
-      window.location.href = `/workspace/login?mode=register&redirect=${encodeURIComponent("/workspace/profile?tab=account")}&upgrade=${plan}`;
-      return;
-    }
-    setBillingLoading(plan);
-    try {
-      const token = await firebaseUser.getIdToken();
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ plan }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert(data.error || "Failed to start checkout");
-      }
-    } catch (err) {
-      console.error("Checkout error:", err);
-      alert("Something went wrong. Please try again.");
-    } finally {
-      setBillingLoading(null);
-    }
-  };
-
-  // Open Stripe Customer Portal for managing subscription
-  const handleManageBilling = async () => {
-    if (!firebaseUser) return;
-    setBillingLoading("portal");
-    try {
-      const token = await firebaseUser.getIdToken();
-      const res = await fetch("/api/stripe/portal", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert(data.error || "Unable to open billing portal");
-      }
-    } catch (err) {
-      console.error("Portal error:", err);
-      alert("Something went wrong. Please try again.");
-    } finally {
-      setBillingLoading(null);
-    }
-  };
-
-  const handleCancelSubscription = async () => {
-    if (!firebaseUser) return;
-    if (!confirm("Are you sure you want to cancel your subscription? You'll keep access until the end of your current billing period.")) return;
-    setBillingLoading("cancel");
-    try {
-      const token = await firebaseUser.getIdToken();
-      const res = await fetch("/api/stripe/cancel", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.success) {
-        const endDate = data.currentPeriodEnd ? new Date(data.currentPeriodEnd * 1000).toLocaleDateString() : "your billing period ends";
-        alert(`Subscription cancelled. You'll have access until ${endDate}.`);
-        window.dispatchEvent(new Event("usage-updated"));
-      } else {
-        alert(data.error || "Unable to cancel subscription. Please try Manage Billing instead.");
-      }
-    } catch (err) {
-      console.error("Cancel error:", err);
-      alert("Something went wrong. Please try again.");
-    } finally {
-      setBillingLoading(null);
-    }
-  };
 
   // Save profile
   const handleSave = async () => {
@@ -917,179 +835,46 @@ export default function ProfilePage() {
       {/* ===== ACCOUNT SECTION ===== */}
       {activeSection === "account" && (
         <>
-          {/* Current Plan */}
+          {/* Plan & Billing - DealSignals is free right now. No checkout,
+              portal, or cancel flows; see git tag pre-free-release-2026-08-12
+              for the prior paid implementation if billing is reintroduced. */}
           <div style={cardStyle}>
             <h2 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 4px", color: SURFACE }}>Plan &amp; Billing</h2>
-            <p style={{ fontSize: 12, color: MUTED, margin: "0 0 16px" }}>Your current plan, usage, and subscription details.</p>
+            <p style={{ fontSize: 12, color: MUTED, margin: "0 0 16px" }}>Your current plan and usage.</p>
 
-            {/* Current plan badge */}
             <div style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
+              display: "flex", alignItems: "center", gap: 12,
               padding: "16px 20px", borderRadius: 6, border: `1px solid ${BORDER}`,
-              background: "#f9fafb", marginBottom: 16,
+              background: "#f9fafb", marginBottom: usageData ? 16 : 0,
             }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{
-                  width: 40, height: 40, borderRadius: 8,
-                  background: (usageData?.tier || profile?.tier || "free") !== "free"
-                    ? "rgba(132, 204, 22, 0.08)" : "rgba(148, 163, 184, 0.1)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                    stroke={(usageData?.tier || profile?.tier || "free") !== "free" ? PRIMARY : MUTED}
-                    strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: SURFACE }}>
-                    {(usageData?.tier || profile?.tier) === "pro_plus" ? "Pro+ Plan"
-                      : (usageData?.tier || profile?.tier) === "pro" ? "Pro Plan"
-                      : "Free Plan"}
-                  </div>
-                  <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>
-                    {(usageData?.tier || profile?.tier || "free") === "free"
-                      ? "Basic access - 5 deal analyses"
-                      : (usageData?.tier || profile?.tier) === "pro"
-                      ? "$40/month - up to 100 deals"
-                      : "$100/month - up to 500 deals"}
-                  </div>
+              <div style={{
+                width: 40, height: 40, borderRadius: 8,
+                background: "rgba(132, 204, 22, 0.08)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke={PRIMARY}
+                  strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: SURFACE }}>Free Access</div>
+                <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>
+                  DealSignals is free to use right now - no plan or payment required.
                 </div>
               </div>
-              {usageData?.stripeSubscriptionId && (
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <button
-                    onClick={handleManageBilling}
-                    disabled={billingLoading === "portal"}
-                    style={{
-                      ...btnOutline, fontSize: 12,
-                      opacity: billingLoading === "portal" ? 0.7 : 1,
-                    }}
-                  >
-                    {billingLoading === "portal" ? "Opening..." : "Manage Billing"}
-                  </button>
-                  <button
-                    onClick={handleCancelSubscription}
-                    disabled={!!billingLoading}
-                    style={{
-                      ...btnDanger, fontSize: 12,
-                      opacity: billingLoading === "cancel" ? 0.7 : 1,
-                    }}
-                  >
-                    {billingLoading === "cancel" ? "Cancelling..." : "Cancel Plan"}
-                  </button>
-                </div>
-              )}
             </div>
 
-            {/* Usage bar */}
             {usageData && (
               <div style={{
                 padding: "14px 20px", borderRadius: 6, border: `1px solid ${BORDER}`,
-                background: "#fff", marginBottom: 16,
+                background: "#fff",
               }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: SURFACE }}>Usage This Period</span>
-                  <span style={{ fontSize: 13, color: MUTED }}>
-                    {usageData.uploadsUsed} / {usageData.uploadLimit} deals
-                  </span>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: SURFACE }}>Deals Analyzed</span>
+                  <span style={{ fontSize: 13, color: MUTED }}>{usageData.uploadsUsed}</span>
                 </div>
-                <div style={{
-                  height: 6, background: "rgba(148, 163, 184, 0.15)", borderRadius: 3, overflow: "hidden",
-                }}>
-                  <div style={{
-                    height: "100%",
-                    width: `${Math.min(100, Math.round((usageData.uploadsUsed / usageData.uploadLimit) * 100))}%`,
-                    background: usageData.uploadsUsed >= usageData.uploadLimit ? "#DC2626"
-                      : usageData.uploadsUsed >= usageData.uploadLimit * 0.8 ? "#eab308" : "#10b981",
-                    borderRadius: 3, transition: "width 0.3s ease",
-                  }} />
-                </div>
-              </div>
-            )}
-
-            {/* Upgrade options - only show for non-pro_plus users */}
-            {(usageData?.tier || profile?.tier || "free") !== "pro_plus" && (
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: SURFACE, marginBottom: 12 }}>
-                  {(usageData?.tier || profile?.tier || "free") === "free" ? "Upgrade Your Plan" : "Switch Plan"}
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: (usageData?.tier || profile?.tier || "free") === "pro" ? "1fr" : "1fr 1fr", gap: 12 }}>
-                  {/* Show Pro card only for free users */}
-                  {(usageData?.tier || profile?.tier || "free") === "free" && (
-                    <div style={{
-                      padding: "20px", borderRadius: 8,
-                      border: `1.5px solid ${BORDER}`,
-                    }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.05em" }}>Pro</div>
-                      <div style={{ fontSize: 28, fontWeight: 700, color: SURFACE, margin: "6px 0 4px" }}>
-                        $40<span style={{ fontSize: 13, fontWeight: 400, color: MUTED }}>/mo</span>
-                      </div>
-                      <ul style={{ listStyle: "none", padding: 0, margin: "10px 0 16px" }}>
-                        {PLANS.pro.features.slice(0, 3).map((f: string) => (
-                          <li key={f} style={{ fontSize: 12, color: "#475569", padding: "2px 0", display: "flex", alignItems: "center", gap: 6 }}>
-                            <span style={{ color: "#10b981" }}>✓</span> {f}
-                          </li>
-                        ))}
-                      </ul>
-                      <div style={{ display: "flex", justifyContent: "center" }}>
-                        <button
-                          onClick={() => handleUpgradeCheckout("pro")}
-                          disabled={!!billingLoading}
-                          style={{
-                            maxWidth: 200, padding: "9px 24px", border: `2px solid ${SURFACE}`,
-                            borderRadius: 6, background: "#fff", color: SURFACE,
-                            fontSize: 13, fontWeight: 600, cursor: billingLoading ? "not-allowed" : "pointer",
-                            fontFamily: "'Inter', sans-serif",
-                          }}
-                        >
-                          {billingLoading === "pro" ? "Loading..." : "Start Pro"}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Pro+ card - show for free and pro users */}
-                  <div style={{
-                    padding: "20px", borderRadius: 8,
-                    border: `1.5px solid ${PRIMARY}`, position: "relative",
-                  }}>
-                    <div style={{
-                      position: "absolute", top: -9, right: 14,
-                      background: PRIMARY, color: "#fff", fontSize: 9, fontWeight: 700,
-                      padding: "2px 8px", borderRadius: 8, textTransform: "uppercase", letterSpacing: "0.05em",
-                    }}>Best Value</div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: PRIMARY, textTransform: "uppercase", letterSpacing: "0.05em" }}>Pro+</div>
-                    <div style={{ fontSize: 28, fontWeight: 700, color: SURFACE, margin: "6px 0 4px" }}>
-                      $100<span style={{ fontSize: 13, fontWeight: 400, color: MUTED }}>/mo</span>
-                    </div>
-                    <ul style={{ listStyle: "none", padding: 0, margin: "10px 0 16px" }}>
-                      {PLANS.pro_plus.features.slice(0, 3).map((f: string) => (
-                        <li key={f} style={{ fontSize: 12, color: "#475569", padding: "2px 0", display: "flex", alignItems: "center", gap: 6 }}>
-                          <span style={{ color: "#10b981" }}>✓</span> {f}
-                        </li>
-                      ))}
-                    </ul>
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                      <button
-                        onClick={() => handleUpgradeCheckout("pro_plus")}
-                        disabled={!!billingLoading}
-                        style={{
-                          maxWidth: 200, padding: "9px 24px", border: "none",
-                          borderRadius: 6, background: PRIMARY, color: "#fff",
-                          fontSize: 13, fontWeight: 600, cursor: billingLoading ? "not-allowed" : "pointer",
-                          fontFamily: "'Inter', sans-serif",
-                        }}
-                      >
-                        {billingLoading === "pro_plus" ? "Loading..."
-                          : (usageData?.tier || profile?.tier) === "pro" ? "Upgrade to Pro+" : "Start Pro+"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <p style={{ fontSize: 11, color: MUTED, marginTop: 10, textAlign: "center" }}>
-                  Cancel anytime. No long-term commitment required.
-                </p>
               </div>
             )}
           </div>

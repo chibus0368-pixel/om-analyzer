@@ -10,9 +10,7 @@ import { AnalysisTypeIcon } from "@/lib/workspace/AnalysisTypeIcon";
 import { cleanDisplayName } from "@/lib/workspace/propertyNameUtils";
 import Link from "next/link";
 
-import TrialStatusBar from "@/components/billing/TrialStatusBar";
 
-import UpgradeModal from "@/components/billing/UpgradeModal";
 import { ensureAnonymousUser } from "@/lib/firebase";
 import { setPendingUploadFiles } from "@/lib/workspace/upload-handoff";
 
@@ -387,139 +385,6 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
  * Hide-on-leave uses a short delay so the cursor can travel from pill
  * to popover without flicker. The popover anchors below the trigger.
  */
-function PlanPillWithUsagePopover({
-  userTier,
-  userUsage,
-  children,
-}: {
-  userTier: string;
-  userUsage: { used: number; limit: number } | null;
-  children: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(false);
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const cancelClose = () => {
-    if (closeTimer.current) {
-      clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
-  };
-  const scheduleClose = () => {
-    cancelClose();
-    // Generous delay so the cursor can travel from pill → popover
-    // without the popover snapping shut mid-traverse. The DOM bridge
-    // below also keeps the wrapper continuously under the cursor, but
-    // the timer is the second line of defense for slower trackpads.
-    closeTimer.current = setTimeout(() => setOpen(false), 280);
-  };
-
-  // Tier-aware copy. Anonymous + free see usage with a CTA to upgrade;
-  // pro / pro_plus see their plan label and a "Manage plan" link.
-  const used = userUsage?.used ?? 0;
-  const limit = userUsage?.limit ?? (userTier === "anonymous" ? 2 : 7);
-  const pct = Math.min(100, Math.round((used / Math.max(1, limit)) * 100));
-  const label =
-    userTier === "anonymous"
-      ? "Trial Credits"
-      : userTier === "free"
-      ? "Monthly Deal Credits"
-      : userTier === "pro_plus"
-      ? "Pro+ Plan Usage"
-      : "Pro Plan Usage";
-  const ctaHref =
-    userTier === "anonymous"
-      ? "/workspace/login?mode=register"
-      : userTier === "free"
-      ? "/workspace/upgrade"
-      : "/workspace/profile?tab=account";
-  const ctaLabel =
-    userTier === "anonymous"
-      ? "Sign Up Free"
-      : userTier === "free"
-      ? "Upgrade to Pro"
-      : "Manage Plan";
-
-  return (
-    <div
-      style={{ position: "relative", display: "inline-flex", alignItems: "center" }}
-      onMouseEnter={() => { cancelClose(); setOpen(true); }}
-      onMouseLeave={scheduleClose}
-      onFocus={() => { cancelClose(); setOpen(true); }}
-      onBlur={scheduleClose}
-    >
-      {/* The Pro/Free pill itself is the trigger - no separate icon. */}
-      {children}
-
-      {open && (
-        <div
-          role="dialog"
-          // Bridge the gap between the pill and the popover so the
-          // hover region is continuous. paddingTop:10 keeps the visual
-          // breathing room but the wrapper is still under the cursor
-          // while traversing - no more "popover snaps shut as soon as
-          // I move down". The card's actual chrome (background, border,
-          // shadow) lives on the inner div below.
-          style={{
-            position: "absolute", top: "100%", right: 0,
-            paddingTop: 10,
-            zIndex: 1200,
-            fontFamily: "'Inter', system-ui, sans-serif",
-          }}
-        >
-        <div style={{
-          width: 280, padding: 18,
-          background: "#0F172A",
-          border: "1px solid rgba(255,255,255,0.08)",
-          borderRadius: 16,
-          boxShadow: "0 16px 40px rgba(0,0,0,0.45)",
-          position: "relative",
-        }}>
-          {/* Tiny tail/arrow */}
-          <div style={{
-            position: "absolute", top: -6, right: 12,
-            width: 12, height: 12, background: "#0F172A",
-            borderTop: "1px solid rgba(255,255,255,0.08)",
-            borderLeft: "1px solid rgba(255,255,255,0.08)",
-            transform: "rotate(45deg)",
-          }} />
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.65)" }}>
-              {label}
-            </span>
-          </div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.01em" }}>
-            {used}/{limit}
-          </div>
-          <div style={{
-            marginTop: 10, height: 6, borderRadius: 999,
-            background: "rgba(255,255,255,0.08)", overflow: "hidden",
-          }}>
-            <div style={{
-              width: `${pct}%`, height: "100%",
-              background: "linear-gradient(90deg, #84CC16, #a8d600)",
-              transition: "width 0.3s ease",
-            }} />
-          </div>
-          <a
-            href={ctaHref}
-            style={{
-              display: "block", textAlign: "center", marginTop: 16,
-              padding: "10px 14px", borderRadius: 999,
-              background: "#84CC16", color: "#FFFFFF",
-              textDecoration: "none", fontWeight: 700, fontSize: 13,
-              letterSpacing: 0.2,
-            }}
-          >
-            {ctaLabel}
-          </a>
-        </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 /** Workspace dropdown - used in sidebar (dark theme) */
 function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean; onAddNew: () => void }) {
   const { workspaces, activeWorkspace, switchWorkspace } = useWorkspace();
@@ -783,7 +648,6 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   const [showWsDropdown, setShowWsDropdown] = useState(false);
   const [newWsName, setNewWsName] = useState("");
   const [newWsType, setNewWsType] = useState<AnalysisType>("retail");
-  const [showUpgrade, setShowUpgrade] = useState(false);
   const [userTier, setUserTier] = useState<string>("free");
   // Bump on displayName sync so the header refreshes after a profile save
   // without waiting for the next onAuthStateChanged tick.
@@ -813,7 +677,6 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [globalDrag, setGlobalDrag] = useState(false);
   const globalDragCounter = useRef(0);
-  const upgradeHandledRef = useRef(false);
   const wsDropdownRef = useRef<HTMLDivElement>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
@@ -918,9 +781,8 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
   // ── Auth gate ──
   // ALL workspace routes auto-anon-sign-in for unauth'd visitors so the
-  // workspace shell never dead-ends on a spinner. Anonymous users get the
-  // empty dashboard, the upgrade pill, the trial usage banner, and can
-  // browse to /workspace/upgrade or /workspace/login to convert. Only
+  // workspace shell never dead-ends on a spinner. DealSignals is free right
+  // now, so anonymous users just get the empty dashboard directly. Only
   // /workspace/login itself is exempt (otherwise we'd never get a chance
   // to show the register form to a visitor with no Firebase session).
   const isLoginPage = pathname === "/workspace/login";
@@ -937,70 +799,6 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
       router.replace("/workspace/login");
     });
   }, [user, router, isLoginPage]);
-
-  // ── Auto-open upgrade modal if ?upgrade= param is present (after login redirect) ──
-  useEffect(() => {
-    if (upgradeHandledRef.current) return;
-    const upgradePlan = searchParams.get("upgrade");
-    if (upgradePlan && user) {
-      upgradeHandledRef.current = true;
-      setShowUpgrade(true);
-      // Clean the URL param
-      const url = new URL(window.location.href);
-      url.searchParams.delete("upgrade");
-      url.searchParams.delete("redirect");
-      window.history.replaceState({}, "", url.pathname + url.search);
-    }
-  }, [searchParams, user]);
-
-  // ── Handle return from Stripe checkout (?upgraded=true&session_id=...) ──
-  // Webhook may not have processed yet, so we (1) call sync-session to pull
-  // the subscription straight from Stripe and persist the new tier, then
-  // (2) retry fetchTier a few times as a safety net in case sync is slow.
-  const [showUpgradeSuccess, setShowUpgradeSuccess] = useState(false);
-  useEffect(() => {
-    const upgraded = searchParams.get("upgraded");
-    const sessionId = searchParams.get("session_id");
-    if (upgraded !== "true" || !user) return;
-
-    setShowUpgradeSuccess(true);
-
-    (async () => {
-      // 1. Synchronously pull the subscription from Stripe and write the tier
-      if (sessionId) {
-        try {
-          const token = await user.getIdToken();
-          await fetch("/api/stripe/sync-session", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ sessionId }),
-          });
-        } catch (e) {
-          console.warn("[workspace] sync-session failed", e);
-        }
-      }
-
-      // 2. Kick the tier refresh loop a few times in case sync was slow
-      const trigger = () => window.dispatchEvent(new Event("usage-updated"));
-      trigger();
-      for (const delay of [500, 1500, 3000, 6000]) {
-        setTimeout(trigger, delay);
-      }
-    })();
-
-    // Clean the URL params
-    const url = new URL(window.location.href);
-    url.searchParams.delete("upgraded");
-    url.searchParams.delete("session_id");
-    window.history.replaceState({}, "", url.pathname + url.search);
-
-    // Auto-dismiss after 6 seconds
-    const t = setTimeout(() => setShowUpgradeSuccess(false), 6000);
-    return () => clearTimeout(t);
-  }, [searchParams, user]);
 
   // Fetch user tier for header display
   useEffect(() => {
@@ -1022,24 +820,6 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             limit: typeof data.uploadLimit === "number" ? data.uploadLimit : 0,
           });
 
-          // Self-healing: if Firestore says "free" but a Stripe subscription
-          // exists, the webhook likely mis-matched (e.g. missing env var).
-          // Call sync-subscription to read the real plan from Stripe.
-          if (tier === "free" && data.stripeSubscriptionId) {
-            try {
-              const syncRes = await fetch("/api/stripe/sync-subscription", {
-                method: "POST",
-                headers: { Authorization: `Bearer ${token}` },
-              });
-              if (syncRes.ok && !cancelled) {
-                const syncData = await syncRes.json();
-                if (syncData.tier && syncData.tier !== "free") {
-                  setUserTier(syncData.tier);
-                  console.log(`[layout] Self-healed tier: free → ${syncData.tier}`);
-                }
-              }
-            } catch { /* non-blocking */ }
-          }
         }
       } catch { /* non-blocking */ }
     }
@@ -1237,68 +1017,23 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
           </div>
         </div>
 
-        {/* Right: Pro Plan pill + user info + settings.
-            The pill itself is now the hover-trigger for the usage popover
-            (no separate lightning-bolt button anymore). */}
+        {/* Right: static "free access" badge + user info + settings.
+            DealSignals is free right now - no upgrade CTA, no pricing copy,
+            no popover. See git tag pre-free-release-2026-08-12 for the prior
+            tier-aware pill if billing is reintroduced. */}
         <div className="ws-header-right" style={{ display: "flex", alignItems: "center", gap: 24, marginLeft: "auto" }}>
-          <PlanPillWithUsagePopover userTier={userTier} userUsage={userUsage}>
-          {userTier === "anonymous" ? (
-            <Link
-              href="/workspace/upgrade"
-              prefetch={false}
-              className="ws-plan-pill"
-              title="Sign up free for 5 more analyses, or upgrade to Pro at $40/mo for 100 analyses"
-              style={{
-                padding: "6px 14px", background: "linear-gradient(135deg, #84CC16, #a8d600)", color: "#FFFFFF",
-                border: "1px solid rgba(132,204,22,0.5)", borderRadius: 9999,
-                textDecoration: "none", fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
-                display: "inline-flex", alignItems: "center", gap: 8,
-              }}
-              onMouseEnter={e => { e.currentTarget.style.opacity = "0.9"; }}
-              onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
-            >
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.2, textTransform: "none" }}>
-                Sign up now to get 5 more deals
-              </span>
-            </Link>
-          ) : userTier === "free" ? (
-            <Link
-              href="/workspace/upgrade"
-              prefetch={false}
-              className="ws-plan-pill"
-              title={userUsage ? `${userUsage.used} of ${userUsage.limit} free analyses used this month. Pro is $40/mo for 100 analyses.` : "Pro is $40/mo for 100 analyses per month"}
-              style={{
-                padding: "6px 14px", background: "rgba(132,204,22,0.2)", color: "#84CC16",
-                border: "1px solid rgba(132,204,22,0.3)", borderRadius: 9999,
-                textDecoration: "none", fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
-                display: "inline-flex", alignItems: "center", gap: 8,
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.3)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(132,204,22,0.2)"; }}
-            >
-              {userUsage && (
-                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: "#84CC16" }}>
-                  {userUsage.used}/{userUsage.limit} deals
-                </span>
-              )}
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.2, textTransform: "none" }}>
-                Upgrade to Pro
-              </span>
-            </Link>
-          ) : (
-            <Link href="/workspace/profile?tab=account" prefetch={false} className="ws-plan-pill" style={{
-              padding: "6px 16px", background: "rgba(132,204,22,0.2)", color: "#84CC16",
+          <span
+            className="ws-plan-pill"
+            title="DealSignals is free to use right now"
+            style={{
+              padding: "6px 14px", background: "rgba(132,204,22,0.2)", color: "#84CC16",
               border: "1px solid rgba(132,204,22,0.3)", borderRadius: 9999,
               fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-              textDecoration: "none", fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
+              fontFamily: "'Inter', sans-serif",
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(132,204,22,0.3)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(132,204,22,0.2)"; }}
-            >
-              {userTier === "pro" ? "Pro Plan" : userTier === "pro_plus" ? "Pro+" : "My Plan"}
-            </Link>
-          )}
-          </PlanPillWithUsagePopover>
+          >
+            Free Access
+          </span>
 
           {/* User section - border-left divider */}
           {user && (
@@ -1533,32 +1268,19 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
             {/* Plan + User info + Logout */}
             <div style={{ padding: "12px 16px", marginTop: "auto", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-              {/* Plan pill - visible in mobile drawer */}
+              {/* Plan pill - visible in mobile drawer. DealSignals is free
+                  right now - static badge, no upgrade CTA. */}
               <div style={{ marginBottom: 12 }}>
-                {userTier === "free" ? (
-                  <button
-                    onClick={() => { setShowMobileMenu(false); setShowUpgrade(true); }}
-                    style={{
-                      width: "100%", padding: "10px 0", background: "#0F172A", color: "#ffffff",
-                      border: "1px solid #0F172A", borderRadius: 8,
-                      fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
-                      cursor: "pointer", fontFamily: "inherit",
-                    }}
-                  >
-                    Upgrade to Pro
-                  </button>
-                ) : (
-                  <div style={{
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                    padding: "8px 0", background: "rgba(132,204,22,0.1)", borderRadius: 8,
-                    border: "1px solid rgba(132,204,22,0.2)",
-                  }}>
-                    <div style={{ width: 6, height: 6, borderRadius: 3, background: "#84CC16" }} />
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-                      {userTier === "pro" ? "Pro Plan" : userTier === "pro_plus" ? "Pro+ Plan" : "Active Plan"}
-                    </span>
-                  </div>
-                )}
+                <div style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  padding: "8px 0", background: "rgba(132,204,22,0.1)", borderRadius: 8,
+                  border: "1px solid rgba(132,204,22,0.2)",
+                }}>
+                  <div style={{ width: 6, height: 6, borderRadius: 3, background: "#84CC16" }} />
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                    Free Access
+                  </span>
+                </div>
               </div>
               {user && (
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
@@ -1751,19 +1473,6 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               ws-anon-banner CSS rule are kept harmless above so older
               cached bundles don't crash referencing them. */}
 
-          {showUpgradeSuccess && (
-            <div style={{
-              display: "flex", alignItems: "center", gap: 10,
-              padding: "12px 18px", marginBottom: 16, borderRadius: 8,
-              background: "linear-gradient(135deg, #059669, #10B981)",
-              color: "#fff", fontSize: 13, fontWeight: 600,
-              animation: "fadeIn 0.3s ease",
-            }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              <span>Upgrade complete! Your Pro plan is now active.</span>
-              <button onClick={() => setShowUpgradeSuccess(false)} style={{ marginLeft: "auto", background: "none", border: "none", color: "#fff", cursor: "pointer", fontSize: 16, lineHeight: 1 }}>&times;</button>
-            </div>
-          )}
           <div style={{ flex: 1 }}>{children}</div>
           <footer className="ws-footer" style={{
             padding: "32px 0 24px", marginTop: 40,
@@ -1797,8 +1506,6 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
       </main>
 
       {/* Upgrade Modal */}
-      <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} reason="upgrade" />
-
       {/* New Workspace Modal */}
       {showNewWs && (
         <div
