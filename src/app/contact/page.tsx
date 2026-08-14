@@ -363,7 +363,7 @@ export default function ContactPage() {
           </Link>
           {" · "}
           <Link href="/#pricing" style={{ color: "#cbd2e0" }}>
-            Pricing
+            Free Access
           </Link>
         </div>
       </main>

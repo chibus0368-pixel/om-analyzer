@@ -1488,7 +1488,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               </div>
               <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
                 <a href="/" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Home</a>
-                <a href="/#pricing" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Pricing</a>
+                <a href="/#pricing" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Free Access</a>
                 <a href="/contact" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Contact</a>
                 <a href="/terms" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Terms</a>
                 <a href="/privacy" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Privacy</a>

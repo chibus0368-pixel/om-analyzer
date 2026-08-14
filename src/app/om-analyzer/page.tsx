@@ -2346,7 +2346,12 @@ export default function OmAnalyzerPage() {
         </div>
       )}
 
-      {/* ===== UPGRADE PROMPT OVERLAY ===== */}
+      {/* ===== SIGN-UP PROMPT OVERLAY =====
+          DealSignals is free right now (FREE_ACCESS_MODE), so uploads never
+          actually hit a limit and showUpgradePrompt should never flip true in
+          practice. Content kept Pro/pricing-free as a safety net in case it
+          ever does fire. Prior paywall-framed copy is preserved at git tag
+          pre-free-release-2026-08-12. */}
       {showUpgradePrompt && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 9999,
@@ -2366,34 +2371,19 @@ export default function OmAnalyzerPage() {
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
             </div>
-            {(() => {
-              const used = usageData?.uploadsUsed ?? 0;
-              const limit = usageData?.uploadLimit ?? 2;
-              const isAnonGate = !usageData?.tier || usageData.tier === "anonymous" || (usageData.tier === "free" && limit <= 2);
-              const headline = isAnonGate
-                ? `You've used your ${used} free ${used === 1 ? "deal" : "deals"}. Keep going?`
-                : `You've used all ${limit} free deals. Ready to move faster?`;
-              const sub = isAnonGate
-                ? "Sign up free for 5 total deals + save to your workspace. Or start a 7-day Pro trial for 100 deals/mo."
-                : "Start a 7-day free Pro trial. 100 deals/month for $40. Card required, cancel anytime.";
-              return (
-                <>
-                  <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#ffffff", margin: "0 0 8px", letterSpacing: -0.3 }}>
-                    {headline}
-                  </h3>
-                  <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.6, margin: "0 0 24px" }}>
-                    {sub}
-                  </p>
-                </>
-              );
-            })()}
+            <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#ffffff", margin: "0 0 8px", letterSpacing: -0.3 }}>
+              DealSignals is free to use
+            </h3>
+            <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.6, margin: "0 0 24px" }}>
+              Sign up to save deals to your workspace, no card required.
+            </p>
             <a
-              href="/workspace/login?mode=register&upgrade=pro"
+              href="/workspace/login?mode=register"
               onClick={(e) => {
                 e.preventDefault();
-                try { trackProCTAClick("lite_result_upgrade_prompt"); } catch {}
+                try { trackProCTAClick("lite_result_signup_prompt"); } catch {}
                 setShowUpgradePrompt(false);
-                window.location.href = "/workspace/login?mode=register&upgrade=pro";
+                window.location.href = "/workspace/login?mode=register";
               }}
               style={{
                 display: "inline-block", padding: "14px 36px",
@@ -2402,39 +2392,7 @@ export default function OmAnalyzerPage() {
                 marginBottom: 8, cursor: "pointer",
               }}
             >
-              Start 7-Day Free Trial
-            </a>
-            {(!usageData?.tier || usageData.tier === "anonymous") && (
-              <a
-                href="/register"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setShowUpgradePrompt(false);
-                  window.location.href = "/register";
-                }}
-                style={{
-                  display: "block", padding: "10px 20px",
-                  color: "#84CC16", fontSize: 13, fontWeight: 600, textDecoration: "none",
-                  cursor: "pointer",
-                }}
-              >
-                Or sign up free (5 deals total)
-              </a>
-            )}
-            <a
-              href="/om-analyzer#pricing"
-              onClick={(e) => {
-                e.preventDefault();
-                setShowUpgradePrompt(false);
-                window.location.href = "/om-analyzer#pricing";
-              }}
-              style={{
-                display: "block", padding: "10px 20px",
-                color: "#9ca3af", fontSize: 13, fontWeight: 500, textDecoration: "none",
-                cursor: "pointer",
-              }}
-            >
-              Compare all plans
+              Create Free Account
             </a>
             <button onClick={() => setShowUpgradePrompt(false)} style={{
               display: "block", width: "100%", marginTop: 12, padding: "10px",
@@ -2447,7 +2405,7 @@ export default function OmAnalyzerPage() {
         </div>
       )}
 
-      <DealSignalNav />
+
 
       {/* ===== HERO + LANDING PAGE ===== */}
       {view === "upload" && (
@@ -3083,8 +3041,8 @@ export default function OmAnalyzerPage() {
                     headline: "Focus your time where it counts",
                     subline: "Filter. Compare. Decide.",
                     body: "Stop spending hours on deals that don't pencil. Upload your pipeline, score everything, and put your energy into the deals that actually matter.",
-                    stat: "100+",
-                    statLabel: "deals / month on Pro",
+                    stat: "∞",
+                    statLabel: "deals, free to analyze",
                   },
                 ].map((card, i) => (
                   <ScrollReveal key={card.headline} delay={0.1 + i * 0.15}>
@@ -3722,7 +3680,7 @@ export default function OmAnalyzerPage() {
                 <div className="ds-secondary-features" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24 }}>
                   {[
                     { icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12", label: "Bulk Portfolio Uploads" },
-                    { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", label: "Up to 100 Deals / Month with Pro" },
+                    { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", label: "Unlimited Deal Analyses" },
                     { icon: "M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01", label: "White-Label Sharing (hide DealSignals brand)" },
                     { icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z", label: "Deal History Tracking" },
                   ].map(f => (
@@ -3739,8 +3697,12 @@ export default function OmAnalyzerPage() {
             </div>
           </div>
 
-          {/* ── 8. PRICING ── */}
-          <div id="pricing" className="ds-section-pad" style={{ maxWidth: 1000, margin: "0 auto", padding: "102px 32px 68px", position: "relative", overflow: "visible" }}>
+          {/* ── 8. FREE ACCESS ──
+              DealSignals is free to use right now - no paid tiers, no
+              checkout. Previous 3-tier pricing grid (Free/Pro/Pro+) is
+              preserved at git tag pre-free-release-2026-08-12 if billing
+              is reintroduced later. */}
+          <div id="pricing" className="ds-section-pad" style={{ maxWidth: 700, margin: "0 auto", padding: "102px 32px 68px", position: "relative", overflow: "visible" }}>
             {/* Section divider */}
             <div className="ds-section-divider" style={{
               height: 1,
@@ -3748,189 +3710,28 @@ export default function OmAnalyzerPage() {
               maxWidth: 600,
               margin: "-100px auto 60px",
             }} />
-            {/* Gradient orb for pricing */}
+            {/* Gradient orb */}
             <div style={{ position: "absolute", top: -200, right: -100, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.1)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
-            <div style={{ textAlign: "center", marginBottom: 56, position: "relative", zIndex: 1 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 800, color: "#ffffff", marginBottom: 10 }}>
-                Start free. Scale as your deal flow grows.
+            <div style={{ textAlign: "center", position: "relative", zIndex: 1 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", padding: "6px 16px", borderRadius: 50, background: "rgba(132,204,22,0.06)", color: "#84CC16", fontSize: 12, fontWeight: 700, marginBottom: 20, gap: 6, letterSpacing: 0.5, textTransform: "uppercase" as const }}>
+                Free to use
+              </div>
+              <h2 style={{ fontSize: 34, fontWeight: 800, color: "#ffffff", marginBottom: 14 }}>
+                DealSignals is free right now.
               </h2>
-              <p style={{ fontSize: 14, color: "#5A7091", lineHeight: 1.7, maxWidth: 500, margin: "0 auto" }}>
+              <p style={{ fontSize: 15, color: "#9ca3af", lineHeight: 1.7, maxWidth: 520, margin: "0 auto 32px" }}>
+                Upload as many deals as you want, no card, no limits, no plans to compare.
                 DealSignals turns deals and OMs into actionable investment insight, powering faster pre-diligence decisions.
               </p>
+              <Link href="/workspace/login?mode=register&source=pricing" style={{
+                display: "inline-block", padding: "14px 32px", textAlign: "center",
+                background: "#84CC16", color: "#0d0d14",
+                borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: "none", fontFamily: "inherit",
+                boxSizing: "border-box", transition: "all 0.2s ease",
+              }}>
+                Get Started Free
+              </Link>
             </div>
-
-            {/* 3-tier pricing grid */}
-            <div className="ds-pricing-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 60 }}>
-              {[
-                {
-                  key: "free" as const,
-                  name: "Free",
-                  price: "0",
-                  period: "",
-                  desc: "Try DealSignals on real deals.",
-                  features: [
-                    { text: "5 deal analyses (total)", included: true },
-                    { text: "Save deals to workspace", included: true },
-                    { text: "Deal Signals scoring", included: true },
-                    { text: "Downloadable XLS worksheets of analysis", included: true },
-                    { text: "First-pass brief download", included: true },
-                    { text: "Interactive property map", included: false },
-                    { text: "Deal comparison scoreboard", included: false },
-                    { text: "Location Intelligence", included: false },
-                  ],
-                  cta: "Sign Up Free",
-                  ctaLink: "/workspace/login?mode=register&source=pricing",
-                  highlight: false,
-                },
-                {
-                  key: "pro" as const,
-                  name: "Pro",
-                  price: "40",
-                  period: "/mo",
-                  desc: "For active investors moving fast on deals.",
-                  valueCallout: "7-day free trial · Less than 50¢ per deal",
-                  features: [
-                    { text: "100 deal analyses/month", included: true },
-                    { text: "Bulk portfolio uploads", included: true },
-                    { text: "Save deals to workspace", included: true },
-                    { text: "Deal Signals scoring", included: true },
-                    { text: "Downloadable XLS worksheets of analysis", included: true },
-                    { text: "First-pass brief download", included: true },
-                    { text: "Pro DealBoard with history", included: true },
-                    { text: "Interactive property map", included: true },
-                    { text: "Deal comparison scoreboard", included: true },
-                    { text: "Location Intelligence", included: true },
-                    { text: "White-label shareable links", included: true },
-                  ],
-                  cta: "Start 7-Day Free Trial",
-                  ctaLink: "/workspace/login?mode=register&upgrade=pro",
-                  highlight: true,
-                },
-                {
-                  key: "pro_plus" as const,
-                  name: "Pro+",
-                  price: "100",
-                  period: "/mo",
-                  desc: "For high-volume deal flow and serious operators.",
-                  valueCallout: "7-day free trial · 20¢ per deal",
-                  features: [
-                    { text: "500 deal analyses/month", included: true },
-                    { text: "Everything in Pro", included: true },
-                    { text: "Chrome extension: add deals right from Crexi, CoStar, and LoopNet", included: true },
-                    { text: "Priority processing queue", included: true },
-                    { text: "Priority support", included: true },
-                    { text: "Custom branding", included: true },
-                  ],
-                  cta: "Start 7-Day Free Trial",
-                  ctaLink: "/workspace/login?mode=register&upgrade=pro_plus",
-                  highlight: false,
-                  bestValue: true,
-                },
-              ].map(tier => {
-                // Is the logged-in user on this exact plan?
-                const userTier = authUser && !usageData?.isAnonymous ? usageData?.tier : undefined;
-                const isCurrent = !!userTier && userTier === tier.key;
-                // Ranking lets us tell upgrade from downgrade for CTA copy.
-                const rank: Record<string, number> = { free: 0, pro: 1, pro_plus: 2 };
-                const userRank = userTier ? rank[userTier] ?? -1 : -1;
-                const tierRank = rank[tier.key];
-                const isUpgradeTarget = userRank >= 0 && tierRank > userRank;
-                const isDowngradeTarget = userRank >= 0 && tierRank < userRank;
-
-                // Override CTA text + link when the user is signed in so the
-                // section stops shouting "Sign Up Free" at an active customer.
-                let ctaLabel = tier.cta;
-                let ctaLink = tier.ctaLink;
-                if (isCurrent) {
-                  ctaLabel = "Manage plan";
-                  ctaLink = "/workspace/profile";
-                } else if (isUpgradeTarget) {
-                  ctaLabel = `Upgrade to ${tier.name}`;
-                  ctaLink = `/workspace/profile?upgrade=${tier.key}`;
-                } else if (isDowngradeTarget) {
-                  ctaLabel = "Switch plan";
-                  ctaLink = "/workspace/profile";
-                }
-
-                return (
-                <div key={tier.name} style={{
-                  background: isCurrent ? "rgba(132,204,22,0.08)" : "rgba(22,22,31,0.6)", backdropFilter: "blur(10px)",
-                  borderRadius: 16, border: isCurrent
-                    ? "1px solid rgba(132,204,22,0.6)"
-                    : tier.highlight ? "1px solid rgba(132,204,22,0.4)" : "1px solid rgba(255,255,255,0.06)",
-                  padding: "36px 28px", position: "relative", overflow: "hidden",
-                  transition: "all 0.25s ease",
-                  boxShadow: isCurrent
-                    ? "0 0 40px rgba(132,204,22,0.18)"
-                    : tier.highlight ? "0 0 40px rgba(132,204,22,0.1)" : "none",
-                }}>
-                  {/* "Your current plan" badge wins over Most Popular / Best Value
-                      when the logged-in user is on this tier, so the signal is
-                      unambiguous. */}
-                  {isCurrent && (
-                    <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#FFFFFF", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
-                      Your current plan
-                    </div>
-                  )}
-                  {!isCurrent && tier.highlight && (
-                    <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#FFFFFF", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
-                      Most Popular
-                    </div>
-                  )}
-                  {!isCurrent && (tier as any).bestValue && (
-                    <div style={{ position: "absolute", top: 0, right: 0, background: "#84CC16", color: "#FFFFFF", fontSize: 10, fontWeight: 700, padding: "4px 14px", borderBottomLeftRadius: 8, textTransform: "uppercase", letterSpacing: 1 }}>
-                      Best Value
-                    </div>
-                  )}
-                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: tier.highlight || isCurrent ? "#84CC16" : "#9ca3af", marginBottom: 10 }}>
-                    {tier.name}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 4 }}>
-                    <span style={{ fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>$</span>
-                    <span style={{ fontSize: 40, fontWeight: 800, color: "#ffffff", letterSpacing: -1 }}>{tier.price}</span>
-                    {tier.period && <span style={{ fontSize: 14, color: "rgba(255,255,255,0.5)" }}>{tier.period}</span>}
-                  </div>
-                  <p style={{ fontSize: 13, color: "#9ca3af", marginBottom: (tier as any).valueCallout ? 10 : 28, lineHeight: 1.5 }}>{tier.desc}</p>
-                  {(tier as any).valueCallout && !isCurrent && (
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#84CC16", marginBottom: 20, letterSpacing: 0.3 }}>
-                      {(tier as any).valueCallout}
-                    </div>
-                  )}
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
-                    {tier.features.map(f => (
-                      <div key={f.text} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: f.included ? "#e2e8f0" : "rgba(255,255,255,0.3)" }}>
-                        {f.included ? (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5"><path d="M5 13l4 4L19 7" /></svg>
-                        ) : (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
-                        )}
-                        <span>{f.text}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Link href={ctaLink} style={{
-                    display: "block", width: "100%", padding: "12px", textAlign: "center",
-                    background: isCurrent
-                      ? "rgba(132,204,22,0.18)"
-                      : tier.highlight ? "#84CC16" : "rgba(132,204,22,0.12)",
-                    color: isCurrent
-                      ? "#84CC16"
-                      : tier.highlight ? "#0d0d14" : "#84CC16",
-                    border: isCurrent
-                      ? "1px solid rgba(132,204,22,0.5)"
-                      : tier.highlight ? "none" : "1px solid rgba(132,204,22,0.3)",
-                    borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: "none", fontFamily: "inherit",
-                    boxSizing: "border-box", transition: "all 0.2s ease",
-                  }}>
-                    {ctaLabel}
-                  </Link>
-                </div>
-                );
-              })}
-            </div>
-
           </div>
 
           {/* ── 9. FAQ ── */}
@@ -3969,7 +3770,7 @@ export default function OmAnalyzerPage() {
                   { q: "Who is this built for?", a: "Active CRE investors, acquisition analysts, and brokers who evaluate multiple deals per week. If you spend time reading OMs and building spreadsheets before deciding whether to pursue a deal, DealSignals gives you that answer faster." },
                   { q: "What file types can I upload?", a: "PDF (recommended for best accuracy), Word (.docx), Excel (.xlsx/.xls), CSV, and plain text files. Maximum file size is 50MB. Multi-page OMs, single-page flyers, and rent rolls all work." },
                   { q: "How accurate is the extraction?", a: "90%+ accuracy on standard CRE metrics like price, cap rate, NOI, tenant name, lease terms, and building size. DealSignals is designed for pre-diligence speed. Always verify against the source document before making final investment decisions." },
-                  { q: "Do I need to create an account?", a: "No. Your first 2 deal analyses are completely free with no signup required. We use an anonymous session to track your usage. You only need an account if you upgrade to Pro to save deals and access your DealBoard." },
+                  { q: "Do I need to create an account?", a: "No. You can analyze deals with no signup required. Create a free account if you want to save deals to your workspace and access your DealBoard." },
                 ].map((item, i) => {
                   const faqIdx = i;
                   return (
@@ -4004,12 +3805,12 @@ export default function OmAnalyzerPage() {
                 })}
 
                 {/* Category: Pricing */}
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "16px 0 8px", marginBottom: 4 }}>Pricing &amp; Plans</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "16px 0 8px", marginBottom: 4 }}>Free Access</div>
 
                 {[
-                  { q: "Is it really free?", a: "Yes. Try 2 deals without signing up. Create a free account for 5 total analyses with scoring, risk signals, and Excel export. Same output Pro users get." },
-                  { q: "What does Pro include?", a: "Pro ($40/month) starts with a 7-day free trial. Everything in Free, plus 100 deal analyses/month, Pro DealBoard with history, deal comparison scoreboard, interactive property map, Location Intelligence, and white-label shareable links." },
-                  { q: "What about Pro+?", a: "Pro+ ($100/month) also starts with a 7-day free trial. Everything in Pro, plus 500 deal analyses/month, priority processing, priority support, and custom branding. Bulk portfolio uploads are included on both Pro and Pro+." },
+                  { q: "Is it really free?", a: "Yes. DealSignals is free to use right now, no card required and no cap on how many deals you analyze." },
+                  { q: "Do I need a credit card to sign up?", a: "No. Creating a DealSignals account is free and never asks for payment information." },
+                  { q: "Will DealSignals stay free?", a: "DealSignals is free during this period. If paid plans are reintroduced in the future, existing users will be notified in advance." },
                 ].map((item, i) => {
                   const faqIdx = 5 + i;
                   return (
@@ -4053,7 +3854,7 @@ export default function OmAnalyzerPage() {
                   { q: "How is this different from just reading the OM?", a: "Reading an OM takes 20–45 minutes and you still have to build a spreadsheet. DealSignals gives you the same data extraction, a structured financial summary, and a scored recommendation in under 60 seconds. It's the difference between reading every deal and filtering to the ones worth your time." },
                   { q: "What does the Deal Score actually measure?", a: "The Deal Score (0–100) evaluates six investment dimensions: pricing relative to market, cashflow strength, tenant credit quality, rollover and lease risk, location fundamentals, and upside potential. Each dimension is scored independently so you can see exactly where a deal is strong or weak." },
                   { q: "What's in the Excel export?", a: "Downloadable XLS worksheets of analysis covering deal summary inputs, rent roll, operating statement, debt and returns analysis, breakeven scenarios, and cap rate sensitivity tables. Every sheet is formatted and ready for your own underwriting adjustments." },
-                  { q: "Can I share analysis with clients?", a: "Yes. Pro users can generate a unique shareable link for any deal. Your client sees the full analysis (score, metrics, financial summary) without needing a DealSignals account. Pro+ users get white-label branded links." },
+                  { q: "Can I share analysis with clients?", a: "Yes. Any user can generate a unique shareable link for any deal. Your client sees the full analysis (score, metrics, financial summary) without needing a DealSignals account." },
                   { q: "What property types does it support?", a: "DealSignals works across all major CRE asset classes: retail NNN, multifamily, industrial, office, medical, self-storage, and mixed-use. The scoring models adapt to the specific asset type and deal structure." },
                 ].map((item, i) => {
                   const faqIdx = 8 + i;

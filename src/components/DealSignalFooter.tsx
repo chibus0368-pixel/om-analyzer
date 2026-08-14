@@ -124,7 +124,7 @@ export default function DealSignalFooter() {
             FAQ
           </Link>
           <Link href="/#pricing" style={linkStyle}>
-            Pricing
+            Free Access
           </Link>
           <Link href="/om-analyzer" style={linkStyle}>
             Try it free
