@@ -2405,7 +2405,7 @@ export default function OmAnalyzerPage() {
         </div>
       )}
 
-
+      <DealSignalNav />
 
       {/* ===== HERO + LANDING PAGE ===== */}
       {view === "upload" && (
