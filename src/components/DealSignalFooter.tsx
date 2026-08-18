@@ -111,22 +111,22 @@ export default function DealSignalFooter() {
         {/* ── Product column ── */}
         <div>
           <div style={colHeader}>Product</div>
-          <Link href="/om-analyzer#examples" style={linkStyle}>
+          <Link prefetch={false} href="/om-analyzer#examples" style={linkStyle}>
             Examples
           </Link>
-          <Link href="/om-analyzer#how-it-works" style={linkStyle}>
+          <Link prefetch={false} href="/om-analyzer#how-it-works" style={linkStyle}>
             How it works
           </Link>
-          <Link href="/om-analyzer#features" style={linkStyle}>
+          <Link prefetch={false} href="/om-analyzer#features" style={linkStyle}>
             Features
           </Link>
-          <Link href="/om-analyzer#faq" style={linkStyle}>
+          <Link prefetch={false} href="/om-analyzer#faq" style={linkStyle}>
             FAQ
           </Link>
-          <Link href="/#pricing" style={linkStyle}>
+          <Link prefetch={false} href="/#pricing" style={linkStyle}>
             Free Access
           </Link>
-          <Link href="/om-analyzer" style={linkStyle}>
+          <Link prefetch={false} href="/om-analyzer" style={linkStyle}>
             Try it free
           </Link>
         </div>
@@ -134,13 +134,13 @@ export default function DealSignalFooter() {
         {/* ── Company column ── */}
         <div>
           <div style={colHeader}>Company</div>
-          <Link href="/contact" style={linkStyle}>
+          <Link prefetch={false} href="/contact" style={linkStyle}>
             Contact
           </Link>
-          <Link href="/workspace/login" style={linkStyle}>
+          <Link prefetch={false} href="/workspace/login" style={linkStyle}>
             Log In
           </Link>
-          <Link href="/workspace/login?mode=register" style={linkStyle}>
+          <Link prefetch={false} href="/workspace/login?mode=register" style={linkStyle}>
             Sign Up
           </Link>
         </div>
@@ -148,10 +148,10 @@ export default function DealSignalFooter() {
         {/* ── Legal column ── */}
         <div>
           <div style={colHeader}>Legal</div>
-          <Link href="/terms" style={linkStyle}>
+          <Link prefetch={false} href="/terms" style={linkStyle}>
             Terms of Use
           </Link>
-          <Link href="/privacy" style={linkStyle}>
+          <Link prefetch={false} href="/privacy" style={linkStyle}>
             Privacy Policy
           </Link>
         </div>

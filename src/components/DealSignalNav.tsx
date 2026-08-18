@@ -103,7 +103,7 @@ export default function DealSignalNav() {
         fontFamily: "'Plus Jakarta Sans', sans-serif",
       }}>
         {/* Logo */}
-        <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+        <Link prefetch={false} href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
           <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 40 }} />
         </Link>
 
@@ -128,7 +128,7 @@ export default function DealSignalNav() {
           {NAV_LINKS.map(({ href, label, sectionId }) => {
             const isActive = isOnLanding && activeSection === sectionId;
             return (
-              <Link
+              <Link prefetch={false}
                 key={sectionId}
                 href={href}
                 className="ds-nav-link"
@@ -195,7 +195,7 @@ export default function DealSignalNav() {
           {authedUser ? (
             <>
               {/* Identity chip - shows who's signed in. Click goes to profile. */}
-              <Link
+              <Link prefetch={false}
                 href="/workspace/profile"
                 title="Account & profile"
                 className="ds-nav-identity"
@@ -240,7 +240,7 @@ export default function DealSignalNav() {
                   {authedUser.displayName || (authedUser.email ? authedUser.email.split("@")[0] : "Account")}
                 </span>
               </Link>
-              <Link href="/workspace" style={{
+              <Link prefetch={false} href="/workspace" style={{
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
                 fontSize: 14, fontWeight: 600, color: "#0d0d14", textDecoration: "none",
                 padding: "0 14px", borderRadius: 8, background: "#84CC16",
@@ -257,7 +257,7 @@ export default function DealSignalNav() {
             </>
           ) : (
             <>
-              <Link href="/workspace/login" style={{
+              <Link prefetch={false} href="/workspace/login" style={{
                 fontSize: 14, fontWeight: 600, color: "#e0e0e6", textDecoration: "none",
                 transition: "color 0.15s",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -266,7 +266,7 @@ export default function DealSignalNav() {
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#e0e0e6"; }}
               >Sign in</Link>
               {!resultShowing && (
-                <Link href="/workspace/login?mode=register" style={{
+                <Link prefetch={false} href="/workspace/login?mode=register" style={{
                   display: "inline-flex", alignItems: "center", justifyContent: "center",
                   fontSize: 14, fontWeight: 600, color: "#FFFFFF", textDecoration: "none",
                   padding: "0 14px", borderRadius: 8, background: "#84CC16",
@@ -334,7 +334,7 @@ export default function DealSignalNav() {
             </button>
           )}
           {NAV_LINKS.map(({ href, label, sectionId }) => (
-            <Link
+            <Link prefetch={false}
               key={sectionId}
               href={href}
               onClick={(e) => {
@@ -359,7 +359,7 @@ export default function DealSignalNav() {
             </Link>
           ))}
           {authedUser && (
-            <Link
+            <Link prefetch={false}
               href="/workspace/profile"
               onClick={() => setMobileMenuOpen(false)}
               style={{
@@ -395,7 +395,7 @@ export default function DealSignalNav() {
           )}
           <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
             {authedUser ? (
-              <Link href="/workspace" onClick={() => setMobileMenuOpen(false)} style={{
+              <Link prefetch={false} href="/workspace" onClick={() => setMobileMenuOpen(false)} style={{
                 flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                 padding: "10px 0", background: "#84CC16", color: "#FFFFFF",
                 borderRadius: 8, fontSize: 14, fontWeight: 700, textDecoration: "none",
@@ -406,7 +406,7 @@ export default function DealSignalNav() {
               </Link>
             ) : (
               <>
-                <Link href="/workspace/login" onClick={() => setMobileMenuOpen(false)} style={{
+                <Link prefetch={false} href="/workspace/login" onClick={() => setMobileMenuOpen(false)} style={{
                   flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
                   padding: "10px 0", border: "1px solid rgba(255,255,255,0.12)", color: "#e0e0e6",
                   borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: "none",
@@ -414,7 +414,7 @@ export default function DealSignalNav() {
                 }}>
                   Sign in
                 </Link>
-                <Link href="/workspace/login?mode=register" onClick={() => setMobileMenuOpen(false)} style={{
+                <Link prefetch={false} href="/workspace/login?mode=register" onClick={() => setMobileMenuOpen(false)} style={{
                   flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
                   padding: "10px 0", background: "#84CC16", color: "#FFFFFF",
                   borderRadius: 8, fontSize: 14, fontWeight: 700, textDecoration: "none",
