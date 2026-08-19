@@ -55,7 +55,7 @@ function ClearAllButton({ onClear, workspaceId, workspaceName }: { onClear: () =
 }
 
 /* ========== Property Card ========== */
-function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { property: Property; docCount: number; workspaces: Workspace[]; activeWorkspaceId: string }) {
+function PropertyCard({ property, docCount, workspaces, activeWorkspaceId, priority }: { property: Property; docCount: number; workspaces: Workspace[]; activeWorkspaceId: string; priority?: boolean }) {
   const router = useRouter();
   const [showDupMenu, setShowDupMenu] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
@@ -209,6 +209,7 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId }: { p
           location={location}
           propertyName={displayName}
           persistPropertyId={property.id}
+          priority={priority}
           style={{ objectPosition: "center" }}
         />
 
@@ -871,8 +872,8 @@ export default function WorkspaceDashboard() {
           gap: 24,
           marginBottom: 24,
         }}>
-          {properties.map(p => (
-            <PropertyCard key={p.id} property={p} docCount={docCounts[p.id] || 0} workspaces={workspaces} activeWorkspaceId={activeWorkspace?.id || ""} />
+          {properties.map((p, idx) => (
+            <PropertyCard key={p.id} property={p} docCount={docCounts[p.id] || 0} workspaces={workspaces} activeWorkspaceId={activeWorkspace?.id || ""} priority={idx < 4} />
           ))}
         </div>
       )}

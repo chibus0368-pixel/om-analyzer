@@ -3723,7 +3723,7 @@ export default function OmAnalyzerPage() {
                 Upload as many deals as you want, no card, no limits, no plans to compare.
                 DealSignals turns deals and OMs into actionable investment insight, powering faster pre-diligence decisions.
               </p>
-              <Link href="/workspace/login?mode=register&source=pricing" style={{
+              <Link prefetch={false} href="/workspace/login?mode=register&source=pricing" style={{
                 display: "inline-block", padding: "14px 32px", textAlign: "center",
                 background: "#84CC16", color: "#0d0d14",
                 borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: "none", fontFamily: "inherit",
@@ -4213,23 +4213,23 @@ export default function OmAnalyzerPage() {
 
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#ffffff", marginBottom: 18, textTransform: "uppercase", letterSpacing: 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Company</div>
-            <Link href="/contact" style={{
+            <Link prefetch={false} href="/contact" style={{
               display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
             }}>Contact</Link>
-            <Link href="/workspace/login" style={{
+            <Link prefetch={false} href="/workspace/login" style={{
               display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
             }}>Log In</Link>
-            <Link href="/workspace/login?mode=register" style={{
+            <Link prefetch={false} href="/workspace/login?mode=register" style={{
               display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
             }}>Sign Up</Link>
           </div>
 
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#ffffff", marginBottom: 18, textTransform: "uppercase", letterSpacing: 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Legal</div>
-            <Link href="/terms" style={{
+            <Link prefetch={false} href="/terms" style={{
               display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
             }}>Terms of Use</Link>
-            <Link href="/privacy" style={{
+            <Link prefetch={false} href="/privacy" style={{
               display: "block", fontSize: 13, color: "#cbd2e0", textDecoration: "none", marginBottom: 12, fontFamily: "'Inter', sans-serif",
             }}>Privacy Policy</Link>
           </div>

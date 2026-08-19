@@ -20,6 +20,7 @@
  * the next render skips the round-trip. Opt in via `persistPropertyId`.
  */
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 interface Props {
   heroImageUrl?: string;
@@ -31,6 +32,29 @@ interface Props {
   /** If provided, successful Places lookups get saved to this property. */
   persistPropertyId?: string;
   className?: string;
+  /**
+   * Above-the-fold cards (first row) should load eagerly; everything else
+   * should lazy-load. Grids of 10-20+ cards pulling full-resolution
+   * originals from Firebase Storage all at once is what makes the
+   * DealBoard grid slow to paint on mobile connections.
+   */
+  priority?: boolean;
+}
+
+// Firebase Storage hero uploads go through Next's image optimizer (resized +
+// re-encoded + lazy-loaded) so the grid doesn't pull full-resolution
+// originals for a 160px-tall thumbnail. Other hosts (Places photos, Street
+// View, satellite) aren't in next.config's remotePatterns, so they stay as
+// plain <img> but still get native lazy loading.
+const NEXT_IMAGE_HOSTS = ["firebasestorage.googleapis.com"];
+function canUseNextImage(url?: string): boolean {
+  if (!url) return false;
+  try {
+    const { hostname } = new URL(url);
+    return NEXT_IMAGE_HOSTS.some(h => hostname.includes(h));
+  } catch {
+    return false;
+  }
 }
 
 export default function PropertyHeroImage({
@@ -42,6 +66,7 @@ export default function PropertyHeroImage({
   placeholderEmoji = "📍",
   persistPropertyId,
   className,
+  priority = false,
 }: Props) {
   const [heroError, setHeroError] = useState(false);
   const [placesUrl, setPlacesUrl] = useState<string | null>(null);
@@ -98,11 +123,28 @@ export default function PropertyHeroImage({
 
   // 1. Stored hero
   if (heroImageUrl && !heroError) {
+    if (canUseNextImage(heroImageUrl)) {
+      return (
+        <Image
+          src={heroImageUrl}
+          alt={propertyName}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
+          quality={70}
+          priority={priority}
+          {...(!priority ? { loading: "lazy" as const } : {})}
+          className={className}
+          style={{ objectFit: "cover", ...style }}
+          onError={() => setHeroError(true)}
+        />
+      );
+    }
     return (
       <img
         src={heroImageUrl}
         alt={propertyName}
         className={className}
+        loading={priority ? "eager" : "lazy"}
         style={{ ...baseStyle, ...style }}
         onError={() => setHeroError(true)}
       />
@@ -116,6 +158,7 @@ export default function PropertyHeroImage({
         src={placesUrl}
         alt={propertyName}
         className={className}
+        loading={priority ? "eager" : "lazy"}
         style={{ ...baseStyle, ...style }}
         onError={() => setPlacesUrl(null)}
       />
@@ -129,6 +172,7 @@ export default function PropertyHeroImage({
         <img
           src={`https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${encodedAddress}&key=${apiKey}`}
           alt={`Street view of ${propertyName}`}
+          loading={priority ? "eager" : "lazy"}
           style={{ ...baseStyle, ...style }}
           onError={() => setStreetViewError(true)}
         />
@@ -143,6 +187,7 @@ export default function PropertyHeroImage({
         <img
           src={`https://maps.googleapis.com/maps/api/staticmap?center=${encodedAddress}&zoom=18&size=600x400&maptype=satellite&key=${apiKey}`}
           alt={`Satellite view of ${propertyName}`}
+          loading={priority ? "eager" : "lazy"}
           style={{ ...baseStyle, ...style }}
           onError={() => setSatelliteError(true)}
         />

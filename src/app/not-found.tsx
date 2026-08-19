@@ -20,7 +20,7 @@ export default function NotFound() {
           </p>
 
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <Link href="/" style={{
+            <Link prefetch={false} href="/" style={{
               display: "inline-flex", alignItems: "center", gap: 8,
               padding: "14px 28px",
               background: "#4D7C0F", color: "#fff",
@@ -29,7 +29,7 @@ export default function NotFound() {
             }}>
               Deal Signals
             </Link>
-            <Link href="/workspace" style={{
+            <Link prefetch={false} href="/workspace" style={{
               display: "inline-flex", alignItems: "center", gap: 8,
               padding: "14px 28px",
               background: "rgba(255,255,255,0.1)", color: "#fff",
