@@ -246,8 +246,14 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
 
   return (
     <WorkspaceProvider userId={user?.uid || ""}>
+      {/* <link> instead of @import inside <style> - the browser's preload
+          scanner can fetch this straight from the HTML stream instead of
+          waiting for the workspace shell to hydrate first. */}
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600;1,700&display=swap"
+      />
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600;1,700&display=swap');
         /* Sidebar nav hover */
         .ws-nav:hover { background: #f8fafc !important; color: #0F172A !important; }
         .ws-header-nav:hover { color: #84CC16 !important; }

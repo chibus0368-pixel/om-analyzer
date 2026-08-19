@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
 
 
 const NAV_LINKS = [
@@ -14,28 +15,15 @@ const NAV_LINKS = [
 
 export default function DealSignalNav() {
   const pathname = usePathname();
-  const [authedUser, setAuthedUser] = useState<{ displayName: string | null; email: string | null } | null>(null);
+  // Reuse the app-wide AuthProvider (root layout) instead of standing up a
+  // second, independent getAuth()/onAuthStateChanged listener here - this
+  // page previously initialized Firebase Auth twice on every load (once in
+  // the root Providers, once in this nav), doubling the persistence-check
+  // work that's already the slowest part of first load on Safari/mobile.
+  const { user: authedUser } = useAuth();
   const [activeSection, setActiveSection] = useState<string>("");
   const [resultShowing, setResultShowing] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    let unsubscribe: (() => void) | undefined;
-    (async () => {
-      try {
-        const { getAuth, onAuthStateChanged } = await import("firebase/auth");
-        const auth = getAuth();
-        unsubscribe = onAuthStateChanged(auth, (user) => {
-          if (user) {
-            setAuthedUser({ displayName: user.displayName, email: user.email });
-          } else {
-            setAuthedUser(null);
-          }
-        });
-      } catch { /* Firebase not available */ }
-    })();
-    return () => { if (unsubscribe) unsubscribe(); };
-  }, []);
 
   // Detect when lite result is showing (to hide "Get Started Free")
   useEffect(() => {

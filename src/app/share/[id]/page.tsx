@@ -386,7 +386,8 @@ export default function SharedViewPage() {
       style={{ minHeight: "100vh", height: "100vh", overflow: "hidden", background: "#f7f8fc", fontFamily: "'Inter', system-ui, sans-serif" }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        /* Inter is already loaded by the root layout (300-900) - no need
+           for a second, redundant fetch of an overlapping weight subset. */
         @keyframes spin { to { transform: rotate(360deg); } }
         .share-card { transition: all 0.15s ease; }
         .share-card:hover { box-shadow: 0 8px 24px rgba(21,27,43,0.1) !important; transform: translateY(-1px); }

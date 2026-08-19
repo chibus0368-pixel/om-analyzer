@@ -2095,8 +2095,17 @@ export default function OmAnalyzerPage() {
           </div>
         </div>
       )}
+      {/* Rendered as a <link> (not a @import inside <style>) so the browser's
+          preload scanner can fetch it straight from the HTML stream instead
+          of waiting for this component to hydrate - @import buried in a
+          runtime-injected <style> tag was delaying this page's primary font
+          until after the whole JS bundle parsed and rendered, which is
+          exactly the kind of thing that reads as "slow" on mobile. */}
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      />
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
         html { scroll-behavior: smooth; }
         body, input, button, select, textarea { font-family: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
         @keyframes spin { to { transform: rotate(360deg) } }

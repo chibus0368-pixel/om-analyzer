@@ -73,6 +73,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://identitytoolkit.googleapis.com" />
         <link rel="preconnect" href="https://securetoken.googleapis.com" />
         <link rel="preconnect" href="https://www.googleapis.com" />
+        {/* Preconnect to Google Fonts so the render-blocking CSS + woff2
+            fetches below (and any additional per-page font <link>s) don't
+            each pay a fresh DNS/TCP/TLS round trip - this hurts most on
+            high-latency mobile connections. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500&display=swap"
           rel="stylesheet"
