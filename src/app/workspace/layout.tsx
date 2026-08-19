@@ -1046,7 +1046,6 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             <Link
               href="/workspace/profile"
               prefetch={false}
-              onClick={() => router.push("/workspace/profile")}
               title="Account & Profile"
               className="ws-user-link"
               style={{

@@ -167,7 +167,18 @@ export default function ProfilePage() {
       }
       if ((user as any).isAnonymous === true) {
         // Preserve where they came from so signup -> profile redirect lands here
-        router.replace("/workspace/login?mode=register&redirect=/workspace/profile");
+        const target = "/workspace/login?mode=register&redirect=/workspace/profile";
+        router.replace(target);
+        // Fallback: router.replace() is a client-side transition and can
+        // silently stall (seen hanging indefinitely on mobile Safari,
+        // leaving the user stuck on the "Taking you to sign up..." spinner
+        // below with no way out). If we're still on this page shortly
+        // after asking to leave it, force a real navigation instead.
+        setTimeout(() => {
+          if (window.location.pathname === "/workspace/profile") {
+            window.location.href = target;
+          }
+        }, 2500);
       }
     });
     return () => unsub();
