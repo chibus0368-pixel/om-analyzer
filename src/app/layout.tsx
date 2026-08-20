@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "@/styles/globals.css";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import GoogleFontsLoader from "@/components/GoogleFontsLoader";
 import Providers from "./Providers";
 
 export const viewport: Viewport = {
@@ -73,22 +74,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://identitytoolkit.googleapis.com" />
         <link rel="preconnect" href="https://securetoken.googleapis.com" />
         <link rel="preconnect" href="https://www.googleapis.com" />
-        {/* Preconnect to Google Fonts so the render-blocking CSS + woff2
-            fetches below (and any additional per-page font <link>s) don't
-            each pay a fresh DNS/TCP/TLS round trip - this hurts most on
-            high-latency mobile connections. */}
+        {/* Preconnect to Google Fonts so the CSS + woff2 fetches (loaded
+            asynchronously below via GoogleFontsLoader, plus any additional
+            per-page font <link>s) don't each pay a fresh DNS/TCP/TLS round
+            trip - this hurts most on high-latency mobile connections. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
-          rel="stylesheet"
-        />
       </head>
       <body style={{ fontFamily: "'Inter', sans-serif", margin: 0 }}>
+        {/* Loads the Google Fonts stylesheets post-hydration instead of as
+            a render-blocking <link rel="stylesheet"> in <head>, so a slow
+            or failed fonts.googleapis.com request can never hold up first
+            paint (see GoogleFontsLoader.tsx for the full rationale). */}
+        <GoogleFontsLoader />
         <GoogleAnalytics />
         <Providers>{children}</Providers>
       </body>
