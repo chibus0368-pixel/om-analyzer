@@ -11,6 +11,7 @@ import {
   type UnitType,
 } from "@/lib/analysis/quick-screen";
 import { useUnderwritingDefaults } from "@/lib/workspace/use-underwriting-defaults";
+import { InputsNeededCard, type DealInputsHandlers } from "@/components/workspace/DealInputs";
 
 /* ── Design tokens (mirror PropertyDetailClient's C object) ─── */
 const C = {
@@ -99,7 +100,7 @@ function MetricRow({ label, value, emphasis = false }: { label: string; value: s
 }
 
 /* ── Props ────────────────────────────────────────────── */
-export interface DealQuickScreenProps {
+export interface DealQuickScreenProps extends DealInputsHandlers {
   property: Property;
   fields: ExtractedField[];
   /** Optional manual overrides to apply on top of parsed fields. */
@@ -234,7 +235,10 @@ function readOmDebtTerms(fields: ExtractedField[]): {
 /* ══════════════════════════════════════════════════════════ */
 /*  MAIN COMPONENT                                            */
 /* ══════════════════════════════════════════════════════════ */
-export default function DealQuickScreen({ property, fields, overrides }: DealQuickScreenProps) {
+export default function DealQuickScreen({
+  property, fields, overrides,
+  onSaveFields, onRevertField, onOpenAllInputs, onUploadDocs,
+}: DealQuickScreenProps) {
   const workspaceId = property.workspaceId || null;
   const { defaults } = useUnderwritingDefaults(workspaceId);
   const [assumptionsOpen, setAssumptionsOpen] = useState(false);
@@ -254,22 +258,39 @@ export default function DealQuickScreen({ property, fields, overrides }: DealQui
   );
   const report: QuickScreenReport | null = useMemo(() => (input ? runQuickScreen(input) : null), [input]);
 
+  // Fill-in-place rather than a dead end: the screen needs two numbers, so
+  // ask for those two numbers here and run as soon as they land.
   if (!input || !report) {
+    const isLand = ((property as any)?.analysisType || "").toLowerCase() === "land";
+    if (isLand) {
+      return (
+        <div style={{
+          background: C.surfLowest, border: `1px dashed ${C.ghost}`,
+          borderRadius: C.radius, padding: 32, textAlign: "center",
+        }}>
+          <div style={{ fontSize: 28, marginBottom: 8 }}>{"\ud83c\udfde\ufe0f"}</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, marginBottom: 6 }}>
+            Quick Screen doesn&apos;t apply to land
+          </div>
+          <div style={{ fontSize: 12, color: C.secondary, maxWidth: 420, margin: "0 auto", lineHeight: 1.5 }}>
+            Land is priced on basis and entitlement timing, not stabilized cash flow.
+            Use <strong>Offer Scenarios</strong> for $/acre math.
+          </div>
+        </div>
+      );
+    }
     return (
-      <div style={{
-        background: C.surfLowest, border: `1px dashed ${C.ghost}`,
-        borderRadius: C.radius, padding: 32, textAlign: "center",
-      }}>
-        <div style={{ fontSize: 28, marginBottom: 8 }}>📊</div>
-        <div style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, marginBottom: 6 }}>
-          Quick Screen is waiting on core inputs
-        </div>
-        <div style={{ fontSize: 12, color: C.secondary, maxWidth: 420, margin: "0 auto", lineHeight: 1.5 }}>
-          A Buy / Neutral / Pass read needs at minimum an asking price and unit count (or building SF).
-          Re-upload a more detailed OM, or click any extracted value on the Summary tab to edit it inline.
-          Land deals don&apos;t run through Quick Screen; see Offer Scenarios for $/acre math.
-        </div>
-      </div>
+      <InputsNeededCard
+        property={property}
+        fields={fields}
+        analysisName="Quick Screen"
+        icon={"\ud83d\udcca"}
+        promise="You'll get a Buy / Neutral / Pass read with bull, base, and bear returns."
+        onSaveFields={onSaveFields}
+        onRevertField={onRevertField}
+        onOpenAllInputs={onOpenAllInputs}
+        onUploadDocs={onUploadDocs}
+      />
     );
   }
 

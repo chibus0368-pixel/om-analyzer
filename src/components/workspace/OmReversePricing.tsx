@@ -30,6 +30,7 @@ import {
   type UnitType,
 } from "@/lib/analysis/om-reverse-pricing";
 import { useUnderwritingDefaults } from "@/lib/workspace/use-underwriting-defaults";
+import { InputsNeededCard, type DealInputsHandlers } from "@/components/workspace/DealInputs";
 
 /* ── Design tokens (shared with DealQuickScreen) ────── */
 const C = {
@@ -107,6 +108,19 @@ function buildInput(
     unitType = "units";
     unitsOrSf = Number(gf(fields, "multifamily_addons", "unit_count"))
       || property.suiteCount || 0;
+  } else if (assetType === "land") {
+    // Land is priced per acre, not per SF. The engine's per-SF conventions
+    // are all zeroed out for the land profile (no capex reserve, no
+    // replacement-cost anchor), so acreage can safely ride in the "sf"
+    // slot; only the display label differs. See displayUnitLabel below.
+    unitType = "sf";
+    unitsOrSf = Number(gf(fields, "property_basics", "lot_acres"))
+      || Number(gf(fields, "property_basics", "land_acres"))
+      || Number(gf(fields, "property_basics", "usable_acres"))
+      || Number(gf(fields, "land_addons", "lot_acres"))
+      || (property as any)?.landAcres
+      || (property as any)?.cardTotalAcres
+      || 0;
   } else {
     unitType = "sf";
     unitsOrSf = Number(gf(fields, "property_basics", "building_sf"))
@@ -153,7 +167,7 @@ function buildInput(
   };
 }
 
-export interface OmReversePricingProps {
+export interface OmReversePricingProps extends DealInputsHandlers {
   property: Property;
   fields: ExtractedField[];
 }
@@ -161,7 +175,10 @@ export interface OmReversePricingProps {
 /* ══════════════════════════════════════════════════════════ */
 /*  MAIN COMPONENT                                            */
 /* ══════════════════════════════════════════════════════════ */
-export default function OmReversePricing({ property, fields }: OmReversePricingProps) {
+export default function OmReversePricing({
+  property, fields,
+  onSaveFields, onRevertField, onOpenAllInputs, onUploadDocs,
+}: OmReversePricingProps) {
   const workspaceId = property.workspaceId || null;
   const { defaults } = useUnderwritingDefaults(workspaceId);
 
@@ -183,25 +200,26 @@ export default function OmReversePricing({ property, fields }: OmReversePricingP
     [input],
   );
 
+  // No dead end. When the core numbers are missing we render the same
+  // inputs the analysis needs, right here, and run the moment they're filled.
   if (!input || !report) {
     return (
-      <div style={{
-        background: C.surfLowest, border: `1px dashed ${C.ghost}`,
-        borderRadius: C.radius, padding: 32, textAlign: "center",
-      }}>
-        <div style={{ fontSize: 28, marginBottom: 8 }}>🧮</div>
-        <div style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, marginBottom: 6 }}>
-          OM Reverse Pricing needs core inputs
-        </div>
-        <div style={{ fontSize: 12, color: C.secondary, maxWidth: 440, margin: "0 auto", lineHeight: 1.5 }}>
-          To reverse-engineer a bid, we need at minimum an asking price and property size (units or SF for buildings; acres for land).
-          Re-upload a more detailed OM, or click any extracted value on the Summary tab to edit it inline.
-        </div>
-      </div>
+      <InputsNeededCard
+        property={property}
+        fields={fields}
+        analysisName="Offer Scenarios"
+        icon={"\ud83e\uddee"}
+        promise="You'll get a price ladder at asking +/- 15% with the levered IRR at each rung, plus an exit-cap x rent-growth sensitivity grid."
+        onSaveFields={onSaveFields}
+        onRevertField={onRevertField}
+        onOpenAllInputs={onOpenAllInputs}
+        onUploadDocs={onUploadDocs}
+      />
     );
   }
 
-  const unitLabel = input.unitType === "units" ? "Unit" : "SF";
+  const isLand = input.assetType === "land";
+  const unitLabel = isLand ? "Acre" : input.unitType === "units" ? "Unit" : "SF";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>

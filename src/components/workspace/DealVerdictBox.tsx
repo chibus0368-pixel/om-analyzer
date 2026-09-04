@@ -187,6 +187,8 @@ function buildQuickScreenInput(
 }
 
 export interface DealVerdictBoxProps {
+  /** Opens the Deal Inputs drawer so a blocked verdict is one click from fixable. */
+  onOpenAllInputs?: () => void;
   property: Property;
   fields: ExtractedField[];
   variant?: "main" | "slim";
@@ -224,7 +226,7 @@ function parseBrief(raw?: string | null): ParsedBrief | null {
   return { overview: trimmed };
 }
 
-export default function DealVerdictBox({ property, fields, variant = "main", brief, scoreTotal, scoreBand }: DealVerdictBoxProps) {
+export default function DealVerdictBox({ property, fields, variant = "main", brief, scoreTotal, scoreBand, onOpenAllInputs }: DealVerdictBoxProps) {
   const workspaceId = property.workspaceId || null;
   const { defaults, loaded: baselineLoaded } = useUnderwritingDefaults(workspaceId);
 
@@ -279,8 +281,23 @@ export default function DealVerdictBox({ property, fields, variant = "main", bri
           <>
             <strong style={{ color: C.onSurface }}>Verdict pending.</strong>{" "}
             The screen needs at least an asking price and unit count (or building SF).
-            Re-upload a more detailed OM, or click the property name / address /
-            metric values above to edit them inline.
+            {onOpenAllInputs ? (
+              <>
+                {" "}
+                <button
+                  type="button"
+                  onClick={onOpenAllInputs}
+                  style={{
+                    background: "none", border: "none", padding: 0, cursor: "pointer",
+                    fontFamily: "inherit", fontSize: 13, fontWeight: 700,
+                    color: "#4D7C0F", textDecoration: "underline",
+                  }}
+                >Add them now</button>{" "}
+                and the verdict scores immediately, or add a fuller OM and we&apos;ll pull them for you.
+              </>
+            ) : (
+              <> Add a fuller OM, or open Deal Inputs to type them in.</>
+            )}
           </>
         )}
       </div>

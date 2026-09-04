@@ -36,6 +36,7 @@ import DealVerdictBox from "@/components/workspace/DealVerdictBox";
 import RentRollDetailAnalysis from "@/components/workspace/RentRollDetailAnalysis";
 import SectionHeader from "@/components/workspace/SectionHeader";
 import FinancialsSummary from "@/components/workspace/FinancialsSummary";
+import { DealInputsDrawer, DealInputsButton, readAllInputs } from "@/components/workspace/DealInputs";
 
 /* ── Design tokens ─────────────────────────────────────── */
 const C = {
@@ -800,127 +801,6 @@ function PurchasePriceControl({ priceState }: {
 
 
 /* ══════════════════════════════════════════════════════════ */
-/*  MANUAL ENTRY PANEL                                       */
-/*  Lets users type in key deal metrics that weren't in the  */
-/*  documents. Values persist to Firestore and re-trigger    */
-/*  scoring.                                                 */
-/* ══════════════════════════════════════════════════════════ */
-type ManualFieldDef = { label: string; group: string; name: string; fmt: "dollar" | "pct" | "number" | "text"; placeholder: string };
-
-function ManualEntryPanel({ blankFields, saveManualField }: {
-  blankFields: ManualFieldDef[];
-  saveManualField: (group: string, name: string, value: string) => Promise<void>;
-}) {
-  const [values, setValues] = useState<Record<string, string>>({});
-  const [saving, setSaving] = useState<Record<string, boolean>>({});
-  const [saved, setSaved] = useState<Record<string, boolean>>({});
-  const [expanded, setExpanded] = useState(false);
-
-  async function handleSave(f: ManualFieldDef) {
-    const key = `${f.group}/${f.name}`;
-    const raw = (values[key] || "").trim();
-    if (!raw) return;
-    setSaving(prev => ({ ...prev, [key]: true }));
-    await saveManualField(f.group, f.name, raw);
-    setSaving(prev => ({ ...prev, [key]: false }));
-    setSaved(prev => ({ ...prev, [key]: true }));
-    // Saved badge auto-hides after 2s
-    setTimeout(() => setSaved(prev => ({ ...prev, [key]: false })), 2000);
-  }
-
-  return (
-    <div style={{
-      background: "#FFFFFF", borderRadius: C.radius, border: `1px solid rgba(0,0,0,0.06)`,
-      padding: 20, marginBottom: 16,
-    }}>
-      <button
-        onClick={() => setExpanded(e => !e)}
-        style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          width: "100%", background: "none", border: "none", cursor: "pointer",
-          padding: 0, fontFamily: "inherit",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: C.primary, textTransform: "uppercase", letterSpacing: 0.6 }}>
-            Missing Data
-          </span>
-          <span style={{
-            fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 999,
-            background: "rgba(220,38,38,0.08)", color: "#DC2626",
-          }}>
-            {blankFields.length} field{blankFields.length !== 1 ? "s" : ""}
-          </span>
-          <span style={{ fontSize: 12, color: C.secondary, fontWeight: 400 }}>
-            Click to fill in manually
-          </span>
-        </div>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.secondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-          style={{ transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s", flexShrink: 0 }}>
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </button>
-
-      {expanded && (
-        <div style={{ marginTop: 14 }}>
-          <p style={{ fontSize: 12, color: C.secondary, margin: "0 0 12px", lineHeight: 1.5 }}>
-            These fields weren&apos;t found in your documents. Enter them below and they&apos;ll be saved and factored into scoring.
-          </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
-            {blankFields.map(f => {
-              const key = `${f.group}/${f.name}`;
-              const isSaving = saving[key];
-              const isSaved = saved[key];
-              return (
-                <div key={key} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <label style={{ fontSize: 11, fontWeight: 600, color: C.secondary }}>{f.label}</label>
-                  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                    {f.fmt === "dollar" && (
-                      <span style={{ fontSize: 13, color: C.secondary, flexShrink: 0 }}>$</span>
-                    )}
-                    <input
-                      type="text"
-                      inputMode={f.fmt === "text" ? "text" : "decimal"}
-                      value={values[key] || ""}
-                      onChange={e => setValues(prev => ({ ...prev, [key]: e.target.value }))}
-                      onBlur={() => { if (values[key]?.trim()) handleSave(f); }}
-                      onKeyDown={e => { if (e.key === "Enter") { (e.target as HTMLInputElement).blur(); } }}
-                      placeholder={f.placeholder}
-                      style={{
-                        flex: 1, fontSize: 13, padding: "7px 10px",
-                        border: `1px solid ${isSaved ? "#4D7C0F" : "rgba(0,0,0,0.12)"}`,
-                        borderRadius: 6, outline: "none", fontFamily: "inherit",
-                        background: isSaved ? "rgba(77,124,15,0.04)" : "#FAFAFA",
-                        transition: "border-color 0.15s",
-                      }}
-                    />
-                    {f.fmt === "pct" && (
-                      <span style={{ fontSize: 13, color: C.secondary, flexShrink: 0 }}>%</span>
-                    )}
-                    {isSaving && (
-                      <div style={{ width: 14, height: 14, border: "2px solid #4D7C0F", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.6s linear infinite", flexShrink: 0 }} />
-                    )}
-                    {isSaved && !isSaving && (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                        <path d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <p style={{ fontSize: 11, color: C.secondary, margin: "10px 0 0", opacity: 0.7 }}>
-            Values save on blur (or press Enter). They&apos;ll be used in calculations but won&apos;t overwrite future re-analysis.
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-
-/* ══════════════════════════════════════════════════════════ */
 /*  MAIN PAGE COMPONENT                                      */
 /* ══════════════════════════════════════════════════════════ */
 export default function PropertyDetailClient() {
@@ -951,6 +831,10 @@ export default function PropertyDetailClient() {
   const [userTier, setUserTier] = useState<string>("free");
   const [siblingProps, setSiblingProps] = useState<Property[]>([]);
   const [pageDragging, setPageDragging] = useState(false);
+  // Deal Inputs drawer. Lives at the page level so any tab, card, or empty
+  // state can open it, optionally focusing the one field it needs.
+  const [inputsOpen, setInputsOpen] = useState(false);
+  const [inputsFocusKey, setInputsFocusKey] = useState<string | null>(null);
   const pageDragCounter = useRef(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -1318,51 +1202,146 @@ export default function PropertyDetailClient() {
   }
 
   /* ── Manual field save ───────────────────────────────── */
-  // Persists a user-entered value to Firestore. If an extracted field with
-  // the same group/name already exists, it marks it as user-overridden; if
-  // not, it creates a new field record so the score engine can pick it up.
-  async function saveManualField(fieldGroup: string, fieldName: string, rawValue: string) {
-    if (!property || !user) return;
-    const trimmed = rawValue.trim();
-    const existing = fields.find(f => f.fieldGroup === fieldGroup && f.fieldName === fieldName);
+  // One code path for every manual value in the app (the Deal Inputs
+  // drawer, the fill-in-place cards on each analysis tab, and the legacy
+  // Missing Data panel). Batched on purpose: the drawer can commit half a
+  // dozen edits at once and we only want one refresh + one re-score.
+  //
+  // The optimistic merge matters for UX. Writing to Firestore, refetching,
+  // and re-scoring is a multi-second round trip; without the local merge the
+  // user hits "Run analysis" and stares at the same empty state until it
+  // lands. We paint the new values immediately, then reconcile.
+  const applyOptimisticFields = useCallback((entries: { group: string; name: string; value: string }[]) => {
+    const stamp = new Date().toISOString();
+    setFields(prev => {
+      const next = [...prev];
+      for (const e of entries) {
+        const i = next.findIndex(f => f.fieldGroup === e.group && f.fieldName === e.name);
+        if (i >= 0) {
+          next[i] = { ...next[i], isUserOverridden: true, userOverrideValue: e.value, updatedAt: stamp };
+        } else {
+          next.push({
+            id: `pending:${e.group}.${e.name}`,
+            projectId: (property?.projectId as string) || "",
+            propertyId,
+            documentId: "manual",
+            fieldGroup: e.group,
+            fieldName: e.name,
+            rawValue: e.value,
+            normalizedValue: e.value,
+            isUserConfirmed: true,
+            isUserOverridden: true,
+            userOverrideValue: e.value,
+            createdAt: stamp,
+            updatedAt: stamp,
+          } as ExtractedField);
+        }
+      }
+      return next;
+    });
+  }, [property, propertyId]);
+
+  // Pull fields (and the property doc, for the refreshed score badge)
+  // without flipping the page-level loading flag - a save should never
+  // blow the whole detail view back to a spinner.
+  const refreshAfterSave = useCallback(async () => {
     try {
-      if (existing?.id) {
+      const [refreshed, p] = await Promise.all([
+        getPropertyExtractedFields(propertyId),
+        getProperty(propertyId),
+      ]);
+      setFields(refreshed);
+      if (p) setProperty(p);
+    } catch (err) { console.error("[manual-field] Refresh failed:", err); }
+  }, [propertyId]);
+
+  const saveManualFields = useCallback(async (entries: { group: string; name: string; value: string }[]) => {
+    if (!property || !user || !entries.length) return;
+    const cleaned = entries
+      .map(e => ({ ...e, value: String(e.value ?? "").trim() }))
+      .filter(e => e.value !== "");
+    if (!cleaned.length) return;
+
+    applyOptimisticFields(cleaned);
+
+    const stamp = new Date().toISOString();
+    const creates: Omit<ExtractedField, "id">[] = [];
+    for (const e of cleaned) {
+      const existing = fields.find(f => f.fieldGroup === e.group && f.fieldName === e.name);
+      if (existing?.id && !existing.id.startsWith("pending:")) {
         await updateExtractedField(existing.id, {
           isUserOverridden: true,
-          userOverrideValue: trimmed,
-          updatedAt: new Date().toISOString(),
+          userOverrideValue: e.value,
+          updatedAt: stamp,
         });
       } else {
-        await saveExtractedFields([{
-          id: "",
+        creates.push({
           projectId: property.projectId,
           propertyId,
           documentId: "manual",
-          fieldGroup,
-          fieldName,
-          rawValue: trimmed,
-          normalizedValue: trimmed,
+          fieldGroup: e.group,
+          fieldName: e.name,
+          rawValue: e.value,
+          normalizedValue: e.value,
           isUserConfirmed: true,
           isUserOverridden: true,
-          userOverrideValue: trimmed,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }]);
+          userOverrideValue: e.value,
+          createdAt: stamp,
+          updatedAt: stamp,
+        } as Omit<ExtractedField, "id">);
       }
-      // Refresh fields + re-score so the new value flows through immediately
-      const refreshed = await getPropertyExtractedFields(propertyId);
-      setFields(refreshed);
-      try {
+    }
+    if (creates.length) await saveExtractedFields(creates);
+
+    await refreshAfterSave();
+
+    // Re-score so the Signal band, dashboard card, and every downstream
+    // surface agree with what the user just typed.
+    try {
+      const analysisType = (property as any)?.analysisType || activeWorkspace?.analysisType || "retail";
+      await fetch("/api/workspace/score", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ propertyId, userId: user.uid, analysisType }),
+      });
+      await refreshAfterSave();
+    } catch { /* score failure is non-blocking - the values are already saved */ }
+
+    if (typeof window !== "undefined") window.dispatchEvent(new Event("workspace-properties-changed"));
+  }, [property, user, fields, propertyId, activeWorkspace, applyOptimisticFields, refreshAfterSave]);
+
+  // Single-field convenience wrapper kept for existing call sites.
+  const saveManualField = useCallback(
+    (fieldGroup: string, fieldName: string, rawValue: string) =>
+      saveManualFields([{ group: fieldGroup, name: fieldName, value: rawValue }]),
+    [saveManualFields],
+  );
+
+  // Drop a user override so the value extracted from the documents takes
+  // over again. Only offered when there is something underneath to fall
+  // back to, so this can never blank a field out.
+  const revertManualField = useCallback(async (fieldGroup: string, fieldName: string) => {
+    const existing = fields.find(f => f.fieldGroup === fieldGroup && f.fieldName === fieldName);
+    if (!existing?.id || existing.id.startsWith("pending:")) return;
+    setFields(prev => prev.map(f => (f.id === existing.id ? { ...f, isUserOverridden: false } : f)));
+    try {
+      await updateExtractedField(existing.id, { isUserOverridden: false, updatedAt: new Date().toISOString() });
+      await refreshAfterSave();
+      if (user) {
         const analysisType = (property as any)?.analysisType || activeWorkspace?.analysisType || "retail";
         await fetch("/api/workspace/score", {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ propertyId, userId: user.uid, analysisType }),
         });
-        const rescored = await getPropertyExtractedFields(propertyId);
-        setFields(rescored);
-      } catch { /* score failure is non-blocking */ }
-    } catch (err) { console.error("[manual-field] Save failed:", err); }
-  }
+        await refreshAfterSave();
+      }
+    } catch (err) { console.error("[manual-field] Revert failed:", err); }
+    if (typeof window !== "undefined") window.dispatchEvent(new Event("workspace-properties-changed"));
+  }, [fields, property, user, propertyId, activeWorkspace, refreshAfterSave]);
+
+  const openDealInputs = useCallback((focusKey?: string | null) => {
+    setInputsFocusKey(focusKey || null);
+    setInputsOpen(true);
+  }, []);
 
   /* ── Loading / not found states ─────────────────────── */
   if (loading) return (
@@ -1473,6 +1452,9 @@ export default function PropertyDetailClient() {
           fileRef={fileRef} g={g}
           user={user}
           saveManualField={saveManualField}
+          saveManualFields={saveManualFields}
+          revertManualField={revertManualField}
+          openDealInputs={openDealInputs}
           deepResearchLoading={deepResearchLoading} setDeepResearchLoading={setDeepResearchLoading}
           deepResearch={deepResearch} setDeepResearch={setDeepResearch}
           feedbackSent={feedbackSent} setFeedbackSent={setFeedbackSent}
@@ -1624,6 +1606,22 @@ export default function PropertyDetailClient() {
         </div>
       )}
       </div>
+
+      {/* ── Deal Inputs drawer ─────────────────────────────
+         The one place every manual value can be added or corrected.
+         Rendered at the page level (portalled to <body>) so the tab
+         strip, the fill-in-place cards, and the summary card can all
+         open the same editor.                                        */}
+      <DealInputsDrawer
+        open={inputsOpen}
+        onClose={() => setInputsOpen(false)}
+        property={property}
+        fields={fields}
+        focusKey={inputsFocusKey}
+        onSaveFields={saveManualFields}
+        onRevertField={revertManualField}
+        onUploadDocs={() => { setInputsOpen(false); fileRef.current?.click(); }}
+      />
     </div>
   );
 }
@@ -1639,7 +1637,7 @@ function PropertyDetailInner({
   uploading, fileRef, g, user,
   deepResearchLoading, setDeepResearchLoading, deepResearch, setDeepResearch,
   feedbackSent, setFeedbackSent, reviewExpanded, setReviewExpanded,
-  userTier, saveManualField,
+  userTier, saveManualField, saveManualFields, revertManualField, openDealInputs,
 }: any) {
 
   // Quick Screen report used by the Brief download buttons inside this
@@ -2371,6 +2369,7 @@ function PropertyDetailInner({
         brief={brief}
         scoreTotal={scoreTotal}
         scoreBand={scoreBand || null}
+        onOpenAllInputs={() => openDealInputs?.()}
       />
 
       {/* ═══════════════════════════════════════════════════ */}
@@ -2487,17 +2486,43 @@ function PropertyDetailInner({
               </button>
             );
           })}
+
+          {/* Deal Inputs entry point. Sits in the tab strip so the numbers
+             behind every tab are always one click away - amber with a
+             count when something required is missing, quiet otherwise. */}
+          <div style={{ flex: 1, minWidth: 8 }} />
+          <div className="pd-pro-inputs-btn" style={{ paddingBottom: 8, alignSelf: "center" }}>
+            <DealInputsButton
+              property={property}
+              fields={fields}
+              onClick={() => openDealInputs?.()}
+            />
+          </div>
         </div>
 
         {/* Content panel - same white surface as the active tab so the two
            read as one continuous card. */}
         <div className="pd-pro-panel" style={{ padding: "20px 20px 22px" }}>
           {activeProTab === "quick-screen" && (
-            <DealQuickScreen property={property} fields={fields} />
+            <DealQuickScreen
+              property={property}
+              fields={fields}
+              onSaveFields={saveManualFields}
+              onRevertField={revertManualField}
+              onOpenAllInputs={() => openDealInputs?.()}
+              onUploadDocs={() => fileRef.current?.click()}
+            />
           )}
 
           {activeProTab === "om-reverse-pricing" && (
-            <OmReversePricing property={property} fields={fields} />
+            <OmReversePricing
+              property={property}
+              fields={fields}
+              onSaveFields={saveManualFields}
+              onRevertField={revertManualField}
+              onOpenAllInputs={() => openDealInputs?.()}
+              onUploadDocs={() => fileRef.current?.click()}
+            />
           )}
 
           {activeProTab === "rent-roll" && wsType !== "land" && (
@@ -3121,31 +3146,67 @@ function PropertyDetailInner({
       {/* ═══════════════════════════════════════════════════ */}
       {/*  9. MANUAL DATA ENTRY                               */}
       {/* ═══════════════════════════════════════════════════ */}
-      {saveManualField && (() => {
-        // Key fields users commonly need to fill in manually.
-        // Grouped: pricing first (most often missing), then property basics, then income.
-        const MANUAL_FIELDS: ManualFieldDef[] = [
-          { label: "Asking Price", group: "pricing_deal_terms", name: "asking_price", fmt: "dollar", placeholder: "e.g. 14,500,000" },
-          { label: "Cap Rate (Stated)", group: "pricing_deal_terms", name: "cap_rate_om", fmt: "pct", placeholder: "e.g. 6.5" },
-          { label: "NOI (Stated)", group: "expenses", name: "noi_om", fmt: "dollar", placeholder: "e.g. 940,000" },
-          { label: "Building SF", group: "property_basics", name: "building_sf", fmt: "number", placeholder: "e.g. 24,500" },
-          { label: "Year Built", group: "property_basics", name: "year_built", fmt: "number", placeholder: "e.g. 1998" },
-          { label: "Occupancy", group: "property_basics", name: "occupancy_pct", fmt: "pct", placeholder: "e.g. 95" },
-          { label: "Gross Rent", group: "expenses", name: "gross_rent", fmt: "dollar", placeholder: "e.g. 1,100,000" },
-        ];
-
-        // Show only fields that are currently blank so the panel stays focused.
-        const blankFields = MANUAL_FIELDS.filter(f => {
-          const val = g(f.group, f.name);
-          return !val || val === "--" || val === "0" || val === 0;
-        });
-        if (blankFields.length === 0) return null;
-
+      {openDealInputs && (() => {
+        // Summary of the numbers this deal is analyzed on. Replaces the old
+        // collapsed "Missing Data" panel: one canonical editor (the drawer)
+        // instead of two places to type the same value, and the missing
+        // fields are named right here so the user knows what to fix.
+        const st = readAllInputs(fields, property, wsType);
+        const blanks = st.defs.filter((d: any) => !st.values[d.key].value);
+        const needed = st.missingRequired;
         return (
-          <ManualEntryPanel
-            blankFields={blankFields}
-            saveManualField={saveManualField}
-          />
+          <div style={{
+            background: "#FFFFFF", borderRadius: C.radius,
+            border: `1px solid ${needed.length > 0 ? "rgba(217,119,6,0.30)" : "rgba(0,0,0,0.06)"}`,
+            padding: 20, marginBottom: 16,
+          }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+              <div style={{ minWidth: 220, flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: C.primary, textTransform: "uppercase", letterSpacing: 0.6 }}>
+                    Deal Inputs
+                  </span>
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 999,
+                    background: needed.length > 0 ? "rgba(217,119,6,0.10)" : "rgba(77,124,15,0.10)",
+                    color: needed.length > 0 ? "#92400E" : "#3F6212",
+                  }}>
+                    {st.filledCount} of {st.totalCount} filled
+                  </span>
+                </div>
+                <p style={{ fontSize: 12, color: C.secondary, margin: 0, lineHeight: 1.5 }}>
+                  {needed.length > 0
+                    ? <>Analysis is waiting on {needed.map((n: any) => n.label.toLowerCase()).join(" and ")}. Add {needed.length === 1 ? "it" : "them"} and every tab recalculates.</>
+                    : <>Every number below feeds scoring and the analysis tabs. Click any of them to correct what the scan got wrong.</>}
+                </p>
+                {blanks.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
+                    {blanks.slice(0, 8).map((d: any) => (
+                      <button
+                        key={d.key}
+                        onClick={() => openDealInputs(d.key)}
+                        title={`Add ${d.label}`}
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: 5,
+                          padding: "4px 10px", borderRadius: 999, cursor: "pointer", fontFamily: "inherit",
+                          fontSize: 11, fontWeight: 600,
+                          background: d.required ? "rgba(217,119,6,0.07)" : "rgba(0,0,0,0.03)",
+                          border: `1px dashed ${d.required ? "rgba(217,119,6,0.40)" : "rgba(0,0,0,0.14)"}`,
+                          color: d.required ? "#92400E" : C.secondary,
+                        }}
+                      >
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <DealInputsButton property={property} fields={fields} onClick={() => openDealInputs()} />
+            </div>
+          </div>
         );
       })()}
 
