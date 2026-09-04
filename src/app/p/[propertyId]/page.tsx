@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { scoreBandLabel } from "@/lib/workspace/score-band-labels";
+import PublicDealAnalysis, { type PublicDocument } from "./PublicDealAnalysis";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -24,10 +25,19 @@ export const runtime = "nodejs";
  *   - Tenant snapshot (single-row table, no full rent roll)
  *   - "Powered by DealSignals" footer + homepage CTA
  *
- * What's NOT exposed:
- *   - Source documents (no PDF download links)
- *   - Underwriting workbook generator
- *   - Anything that would require a session
+ * Also exposed (added so an emailed recipient gets the whole read,
+ * not a teaser):
+ *   - The full "<Asset> Model / Deal Analysis" tab block - Deal Quick
+ *     Screen, Offer Scenarios, Rent Roll, Financials - rendered from the
+ *     same components the logged-in workspace uses. See
+ *     ./PublicDealAnalysis.tsx.
+ *   - Downloads: the underwriting workbook (XLSX) and deal brief (DOC),
+ *     both generated in the recipient's browser, plus the source documents
+ *     streamed through /api/p/[propertyId]/download.
+ *
+ * What's still NOT exposed:
+ *   - Field editing, Deal Inputs, re-upload, or anything else that would
+ *     require a session
  */
 
 interface Props {
@@ -107,6 +117,31 @@ function parseBrief(brief?: string): {
   return out;
 }
 
+/**
+ * Firestore rows carry Timestamp objects and undefined values, neither of
+ * which survives the server -> client component boundary. Flatten both:
+ * Timestamps become ISO strings, undefined keys are dropped.
+ */
+function toPlain(v: any): any {
+  if (v === null || v === undefined) return null;
+  if (typeof v?.toDate === "function") {
+    try { return v.toDate().toISOString(); } catch { return null; }
+  }
+  if (Array.isArray(v)) return v.map(toPlain);
+  if (typeof v === "object") {
+    if (typeof v._seconds === "number") {
+      return new Date(v._seconds * 1000).toISOString();
+    }
+    const out: Record<string, any> = {};
+    for (const [k, val] of Object.entries(v)) {
+      if (val === undefined) continue;
+      out[k] = toPlain(val);
+    }
+    return out;
+  }
+  return v;
+}
+
 const C = {
   ink: "#0F172A",
   surface: "#FFFFFF",
@@ -142,12 +177,37 @@ export default async function PublicPropertyPage({ params }: Props) {
     .where("propertyId", "==", propertyId)
     .get();
   const fields: Record<string, any> = {};
+  // Raw rows too - the analysis tabs need the full ExtractedField shape
+  // (confidence, override flags, source locators), not just resolved values.
+  const fieldRows: any[] = [];
   fieldsSnap.docs.forEach((d) => {
     const data = d.data() as any;
     fields[`${data.fieldGroup}.${data.fieldName}`] = data.isUserOverridden
       ? data.userOverrideValue
       : (data.normalizedValue ?? data.rawValue);
+    fieldRows.push(toPlain({ id: d.id, ...data }));
   });
+
+  // Source documents. `hasFile` gates the download link so we never render
+  // an anchor that would 404 - older rows can exist without a storagePath.
+  let documents: PublicDocument[] = [];
+  try {
+    const docsSnap = await db
+      .collection("workspace_documents")
+      .where("propertyId", "==", propertyId)
+      .get();
+    documents = docsSnap.docs.map((d) => {
+      const data = d.data() as any;
+      return {
+        id: d.id,
+        originalFilename: String(data.originalFilename || "document"),
+        docCategory: data.docCategory ? String(data.docCategory) : undefined,
+        fileExt: data.fileExt ? String(data.fileExt) : undefined,
+        fileSizeBytes: Number(data.fileSizeBytes) || 0,
+        hasFile: !!data.storagePath,
+      };
+    });
+  } catch { /* non-fatal - page still renders without downloads */ }
 
   // Brief (the parsed investment thesis) - look it up from notes.
   let briefBody = "";
@@ -272,7 +332,7 @@ export default async function PublicPropertyPage({ params }: Props) {
         </a>
       </header>
 
-      <main style={{ maxWidth: 760, margin: "0 auto", padding: "32px 20px 80px" }}>
+      <main style={{ maxWidth: 1040, margin: "0 auto", padding: "32px 20px 80px" }}>
         {/* Hero image */}
         {prop.heroImageUrl && (
           <div style={{
@@ -486,6 +546,19 @@ export default async function PublicPropertyPage({ params }: Props) {
             </div>
           </section>
         )}
+
+        {/* Full Deal Analysis - the same tabbed block (Quick Screen /
+            Offer Scenarios / Rent Roll / Financials) the sender sees inside
+            the workspace, plus the workbook, brief and source-document
+            downloads. Client component because those panels are interactive
+            and the two generated downloads are built in the browser. */}
+        <PublicDealAnalysis
+          propertyId={propertyId}
+          property={toPlain(prop)}
+          fields={fieldRows}
+          brief={briefBody}
+          documents={documents}
+        />
 
         {/* CTA section - the whole point of this page */}
         <section style={{
