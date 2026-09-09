@@ -15,6 +15,7 @@ import { DEALSIGNALS_LOGO_B64 } from "@/lib/workspace/logo-b64";
 import { useWorkspaceAuth } from "@/lib/workspace/auth";
 
 import DealSignalNav from "@/components/DealSignalNav";
+import ProductDemo from "@/components/marketing/ProductDemo";
 import { trackLiteUpload, trackLiteResult, trackLeadCapture, trackProCTAClick, trackDownload } from "@/lib/analytics";
 
 /* ===========================================================================
@@ -2721,6 +2722,9 @@ export default function OmAnalyzerPage() {
               ))}
             </div>
           </div>
+
+          {/* ── PRODUCT DEMO (video) ── */}
+          <ProductDemo />
 
           {/* ── Hero showcase (native HTML/CSS mockup) ── */}
           <div id="examples" style={{ scrollMarginTop: 80 }}>
