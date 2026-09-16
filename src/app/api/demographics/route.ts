@@ -3,6 +3,8 @@ import { fetchTractsInBBox, extractCountyPairs } from "@/lib/demographics/tiger"
 import { fetchTractsForCounties } from "@/lib/demographics/census";
 import { buildTractIndex, aggregateAt, type RingAggregate } from "@/lib/demographics/aggregate";
 
+export const maxDuration = 30; // Census + TIGERweb APIs can be slow
+
 /**
  * GET /api/demographics?lat=&lng=&radii=1,3,5
  *

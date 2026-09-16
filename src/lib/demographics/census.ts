@@ -170,11 +170,15 @@ export async function fetchTractsForCounties(
   pairs: Array<{ state: string; county: string }>,
   year?: string,
 ): Promise<Map<string, TractMetrics>> {
-  const unique = new Set(pairs.map((p) => `${p.state}:${p.county}`));
+  const unique = Array.from(new Set(pairs.map((p) => `${p.state}:${p.county}`)));
+  const results = await Promise.all(
+    unique.map((key) => {
+      const [state, county] = key.split(":");
+      return fetchTractsForCounty(state, county, year);
+    }),
+  );
   const combined = new Map<string, TractMetrics>();
-  for (const key of unique) {
-    const [state, county] = key.split(":");
-    const rows = await fetchTractsForCounty(state, county, year);
+  for (const rows of results) {
     for (const [geoid, rec] of rows) combined.set(geoid, rec);
   }
   return combined;

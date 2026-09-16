@@ -56,10 +56,10 @@ function fmtNum(v: any): string {
 // older callers, mapped to the equivalent band color.
 function gradeColor(grade: string): string {
   switch ((grade || "").toLowerCase()) {
-    case "strong_buy":     case "a": return "#059669"; // green
-    case "buy":            case "b": return "#2563EB"; // blue
+    case "strong_buy":     case "a": return "#4D7C0F"; // brand lime (matches site)
+    case "buy":            case "b": return "#4D7C0F"; // brand lime (matches site)
     case "hold": case "neutral": case "c": return "#D97706"; // amber
-    case "pass":           case "d": return "#EA580C"; // orange
+    case "pass":           case "d": return "#DC2626"; // red
     case "strong_reject": case "reject": case "f": return "#DC2626"; // red
     default: return "#6B7280"; // gray (no score)
   }
