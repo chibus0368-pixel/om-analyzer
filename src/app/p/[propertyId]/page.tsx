@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { scoreBandLabel } from "@/lib/workspace/score-band-labels";
@@ -5,6 +6,71 @@ import PublicDealAnalysis, { type PublicDocument } from "./PublicDealAnalysis";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app";
+
+/**
+ * Dynamic OG metadata so link previews in iMessage, Slack, LinkedIn, etc.
+ * show the property name, address, score, and hero image instead of a
+ * generic "DealSignals" card.
+ */
+export async function generateMetadata(
+  { params }: { params: Promise<{ propertyId: string }> },
+): Promise<Metadata> {
+  try {
+    const { propertyId } = await params;
+    if (!propertyId) return {};
+
+    const db = getAdminDb();
+    const snap = await db.collection("workspace_properties").doc(propertyId).get();
+    if (!snap.exists) return {};
+
+    const prop = snap.data() as any;
+    const name = prop.propertyName || "Property";
+    const addr = [prop.address1, prop.city, prop.state, prop.zip].filter(Boolean).join(", ");
+    const band = scoreBandLabel(prop.scoreBand);
+    const score = Number(prop.scoreTotal) || null;
+    const assetType = prop.analysisType
+      ? String(prop.analysisType).charAt(0).toUpperCase() + String(prop.analysisType).slice(1)
+      : null;
+
+    const title = band && score
+      ? `${name} - ${band} ${score}/100`
+      : name;
+
+    const descParts: string[] = [];
+    if (addr) descParts.push(addr);
+    if (assetType) descParts.push(assetType);
+    descParts.push("Analyzed by DealSignals");
+    const description = descParts.join(" · ");
+
+    const ogImages = prop.heroImageUrl
+      ? [{ url: prop.heroImageUrl, width: 1200, height: 630, alt: name }]
+      : undefined;
+
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        url: `${BASE_URL}/p/${propertyId}`,
+        siteName: "DealSignals",
+        type: "website",
+        ...(ogImages ? { images: ogImages } : {}),
+      },
+      twitter: {
+        card: ogImages ? "summary_large_image" : "summary",
+        title,
+        description,
+        ...(ogImages ? { images: ogImages.map(i => i.url) } : {}),
+      },
+    };
+  } catch (err) {
+    console.error("[p/propertyId] generateMetadata failed:", err);
+    return {};
+  }
+}
 
 /**
  * Public single-deal page.
