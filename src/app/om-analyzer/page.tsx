@@ -761,7 +761,7 @@ function HeroShowcase() {
                       background: "#F59E0B", color: "#0d0d14",
                       padding: "4px 8px", borderRadius: 4,
                       boxShadow: "0 0 0 1.5px rgba(245,158,11,0.45), 0 4px 10px rgba(0,0,0,0.3)",
-                    }}>Example</span>
+                    }}>Click Me</span>
                     {/* Score ring */}
                     <div style={{
                       position: "absolute", top: 8, right: 8,
