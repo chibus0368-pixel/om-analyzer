@@ -53,6 +53,14 @@ export interface AssetProfile {
   capexFloorPerSfOld: number;
   capexRationale: string;
 
+  /* Cost to put a NEW tenant in previously vacant space. Separate from the
+   * capex reserve above, which only covers structural/component upkeep on
+   * space that is already leased. Used by the value-add lens to charge a
+   * deal for the lease-up it still has to fund. Per-SF for SF-based assets;
+   * per-unit turn cost for multifamily. */
+  tiLcPerSfNewLease?: number;
+  turnCostPerUnit?: number;
+
   /* Rent-growth benchmarks used in scenario generation and critique. */
   rentGrowthBull: number;
   rentGrowthBase: number;
@@ -94,6 +102,7 @@ const MULTIFAMILY: AssetProfile = {
   capexFloorPerSf: 0.25,
   capexFloorPerSfOld: 0.4,
   capexRationale: "$300/unit/yr new vintage, $500+/unit/yr past 20 years (plumbing, roof, HVAC, unit turns)",
+  turnCostPerUnit: 2_500,
   rentGrowthBull: 3.5,
   rentGrowthBase: 2.5,
   rentGrowthBear: 0.0,
@@ -129,6 +138,7 @@ const RETAIL: AssetProfile = {
   capexFloorPerSf: 0.2,
   capexFloorPerSfOld: 0.35,
   capexRationale: "$0.20-$0.35/SF/yr structural reserve; TI/LC for rollover is separate and runs $15-$40/SF per new lease",
+  tiLcPerSfNewLease: 25,
   rentGrowthBull: 3.0,
   rentGrowthBase: 2.0,
   rentGrowthBear: 0.5,
@@ -166,6 +176,7 @@ const INDUSTRIAL: AssetProfile = {
   capexFloorPerSf: 0.15,
   capexFloorPerSfOld: 0.30,
   capexRationale: "$0.15-$0.30/SF/yr for roof, dock seals, sprinkler; clear-height or power upgrades are separate capital events",
+  tiLcPerSfNewLease: 8,
   rentGrowthBull: 4.5,
   rentGrowthBase: 3.0,
   rentGrowthBear: 1.0,
@@ -203,6 +214,7 @@ const OFFICE: AssetProfile = {
   capexFloorPerSf: 0.75,
   capexFloorPerSfOld: 1.25,
   capexRationale: "$0.75-$1.25/SF/yr structural + common area; TI/LC on every rollover runs $60-$150/SF for class-A",
+  tiLcPerSfNewLease: 90,
   rentGrowthBull: 2.0,
   rentGrowthBase: 1.0,
   rentGrowthBear: -1.0,
@@ -240,6 +252,7 @@ const MEDICAL_OFFICE: AssetProfile = {
   capexFloorPerSf: 0.75,
   capexFloorPerSfOld: 1.50,
   capexRationale: "$0.75-$1.50/SF/yr structural; practice-specific TI on rollover runs $75-$200/SF (spec cabinetry, plumbing, imaging)",
+  tiLcPerSfNewLease: 120,
   rentGrowthBull: 3.0,
   rentGrowthBase: 2.5,
   rentGrowthBear: 1.0,
@@ -277,6 +290,7 @@ const MIXED_USE: AssetProfile = {
   capexFloorPerSf: 0.45,
   capexFloorPerSfOld: 0.75,
   capexRationale: "Blended structural + component-specific capex; ground-floor retail TI carved separately",
+  tiLcPerSfNewLease: 30,
   rentGrowthBull: 3.0,
   rentGrowthBase: 2.0,
   rentGrowthBear: 0.5,
@@ -311,6 +325,7 @@ const LAND: AssetProfile = {
   capexFloorPerSf: 0,
   capexFloorPerSfOld: 0,
   capexRationale: "Land: no ongoing capex; entitlement + horizontal improvements treated as capital project not reserve",
+  tiLcPerSfNewLease: 0,
   rentGrowthBull: 0,
   rentGrowthBase: 0,
   rentGrowthBear: 0,
@@ -343,6 +358,7 @@ const OTHER: AssetProfile = {
   capexFloorPerSf: 0.25,
   capexFloorPerSfOld: 0.4,
   capexRationale: "Generic reserve floor; refine once asset class is confirmed",
+  tiLcPerSfNewLease: 25,
   rentGrowthBull: 3.0,
   rentGrowthBase: 2.5,
   rentGrowthBear: 0.5,
@@ -399,4 +415,25 @@ export function replacementCostFor(
   if (unitType === "sf") return p.replacementCostPerSf ?? 0;
   if (dealScale === "small-operator") return p.replacementCostPerUnitSmall ?? 0;
   return p.replacementCostPerUnitInst ?? p.replacementCostPerUnitSmall ?? 0;
+}
+
+/**
+ * Cost to lease up one unit of currently-vacant space: TI + leasing
+ * commissions for a new tenant (per SF), or a full turn (per unit) on
+ * multifamily. This is NOT the capex reserve — that covers upkeep on space
+ * already leased. The value-add lens charges a deal for this so a discount
+ * to stabilized value isn't credited as free money.
+ */
+export function leaseUpCostPerUnitFor(
+  assetType: AssetType | undefined | null,
+  unitType: UnitType,
+): number {
+  const p = getAssetProfile(assetType);
+  if (unitType === "units") return p.turnCostPerUnit ?? 2_500;
+  return p.tiLcPerSfNewLease ?? 25;
+}
+
+/** Occupancy this asset class is considered stabilized at. */
+export function stabilizedOccupancyPctFor(assetType: AssetType | undefined | null): number {
+  return 100 - getAssetProfile(assetType).vacancyFloorPct;
 }

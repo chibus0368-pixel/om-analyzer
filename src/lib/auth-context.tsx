@@ -1,15 +1,20 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut as firebaseSignOut,
-  type User,
-} from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { getAuthInstance } from "./firebase";
-import { getDb } from "./firebase";
+
+/* ── Lazy Firebase imports ──────────────────────────────────────────────
+   Firebase SDK modules (auth ~90KB, firestore ~250KB) were imported
+   statically, which meant they shipped in the initial JS bundle for
+   EVERY page - including the marketing homepage. On mobile connections
+   this added 10-15 seconds of download + parse time before first paint.
+
+   Switching to dynamic import() keeps Firebase out of the initial chunk.
+   Next.js automatically code-splits these into a separate async chunk
+   that loads in the background after the shell renders.
+   ──────────────────────────────────────────────────────────────────── */
+
+// Re-export the User type so consumers don't need to import firebase/auth
+type User = import("firebase/auth").User;
 
 interface AuthState {
   user: User | null;
@@ -33,35 +38,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const auth = getAuthInstance();
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-      if (firebaseUser) {
-        // Check admin role in Firestore
-        try {
-          const db = getDb();
-          const adminDoc = await getDoc(doc(db, "admins", firebaseUser.uid));
-          setIsAdmin(adminDoc.exists() && adminDoc.data()?.role === "admin");
-        } catch {
-          setIsAdmin(false);
+    let unsubscribe: (() => void) | undefined;
+    let cancelled = false;
+
+    Promise.all([
+      import("./firebase"),
+      import("firebase/auth"),
+      import("firebase/firestore"),
+    ]).then(([fb, fbAuth, fbFirestore]) => {
+      if (cancelled) return;
+      const auth = fb.getAuthInstance();
+      unsubscribe = fbAuth.onAuthStateChanged(auth, async (firebaseUser) => {
+        if (cancelled) return;
+        setUser(firebaseUser);
+        if (firebaseUser) {
+          try {
+            const db = fb.getDb();
+            const adminDoc = await fbFirestore.getDoc(
+              fbFirestore.doc(db, "admins", firebaseUser.uid),
+            );
+            if (!cancelled) {
+              setIsAdmin(adminDoc.exists() && adminDoc.data()?.role === "admin");
+            }
+          } catch {
+            if (!cancelled) setIsAdmin(false);
+          }
+        } else {
+          if (!cancelled) setIsAdmin(false);
         }
-      } else {
-        setIsAdmin(false);
-      }
-      setLoading(false);
+        if (!cancelled) setLoading(false);
+      });
+    }).catch(() => {
+      if (!cancelled) setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
   }, []);
 
   async function signIn(email: string, password: string) {
-    const auth = getAuthInstance();
-    await signInWithEmailAndPassword(auth, email, password);
+    const [fb, fbAuth] = await Promise.all([
+      import("./firebase"),
+      import("firebase/auth"),
+    ]);
+    const auth = fb.getAuthInstance();
+    await fbAuth.signInWithEmailAndPassword(auth, email, password);
   }
 
   async function signOut() {
-    const auth = getAuthInstance();
-    await firebaseSignOut(auth);
+    const [fb, fbAuth] = await Promise.all([
+      import("./firebase"),
+      import("firebase/auth"),
+    ]);
+    const auth = fb.getAuthInstance();
+    await fbAuth.signOut(auth);
     setIsAdmin(false);
   }
 

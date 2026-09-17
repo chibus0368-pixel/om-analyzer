@@ -1,5 +1,13 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { scoreByType, type ScoringResult } from "@/lib/workspace/scoring-models";
+import {
+  lensFromFieldMap,
+  applyLensToCategories,
+  reweightForLens,
+  INCOME_QUALITY_CATEGORIES,
+  type ValueAddLens,
+  type NoiBasis,
+} from "@/lib/analysis/value-add-lens";
 
 // Default scoring weights (out of 100 total)
 const WEIGHTS = {
@@ -14,6 +22,28 @@ const WEIGHTS = {
   redevelopment: 5,
   confidence: 7,
 };
+
+/**
+ * Flatten the value-add lens into the score document so the UI can explain
+ * why a deal scored the way it did without recomputing anything. Firestore
+ * rejects undefined, so every field is explicitly nulled.
+ */
+function valueAddLensRecord(lens: ValueAddLens, noi: NoiBasis) {
+  return {
+    valueAddLensActive: lens.active,
+    valueAddLensReason: lens.reason,
+    basisScore: lens.basisScore ?? null,
+    stabilizedValue: lens.stabilizedValue ?? null,
+    stabilizedCapPct: lens.stabilizedCapPct ?? null,
+    leaseUpCost: lens.leaseUpCost ?? null,
+    basisMarginPct: lens.marginPct ?? null,
+    valueAddLensNotes: lens.notes,
+    noiBasisKind: noi.kind,
+    noiBasisReason: noi.reason,
+    inPlaceNoi: noi.inPlaceNoi ?? null,
+    stabilizedNoi: noi.stabilizedNoi ?? null,
+  };
+}
 
 function getScoreBand(score: number): string {
   if (score >= 85) return "strong_buy";
@@ -209,6 +239,21 @@ export async function runScoreEngine(params: {
 
       const result: ScoringResult = scoreByType(analysisType as any, flatFields);
 
+      // Value-add lens. A materially vacant building priced for that vacancy
+      // is not a broken stabilized building, and grading it on in-place income
+      // quality is how a well-bought value-add deal ends up scoring in the
+      // 30s. When the lens engages it moves weight out of the income-quality
+      // categories and into a basis score: the discount to stabilized value
+      // net of lease-up, price vs replacement cost, price vs the class band.
+      const { noi: noiBasis, lens } = lensFromFieldMap(flatFields, analysisType);
+      const lensed = applyLensToCategories(result.categories, lens);
+      if (lens.active && lensed.totalScore !== result.totalScore) {
+        result.categories = lensed.categories;
+        result.totalScore = lensed.totalScore;
+        result.scoreBand = getScoreBand(lensed.totalScore);
+        result.recommendation = getRecommendation(result.scoreBand, lensed.totalScore, flatFields);
+      }
+
       // Mark old scores as not current
       const oldScores = await db.collection("workspace_scores")
         .where("projectId", "==", projectId)
@@ -249,6 +294,7 @@ export async function runScoreEngine(params: {
         accessScore: categoryScores["Access / Frontage"] || 0,
         categoryScores,
         categoryWeights,
+        ...valueAddLensRecord(lens, noiBasis),
         createdAt: now,
         isCurrent: true,
       });
@@ -513,18 +559,31 @@ export async function runScoreEngine(params: {
       confidenceScore = Math.max(40, Math.min(100, Math.round(ratio * 100)));
     }
 
+    // ── VALUE-ADD LENS ──
+    // Same reasoning as the non-retail branch above: a half-empty strip center
+    // bought below stabilized value is not a failing stabilized asset. When the
+    // lens engages, weight moves out of cashflow / tenant / rollover / vacancy
+    // (all of which grade income the buyer is deliberately not paying for) and
+    // into a basis score. Total weight is preserved, so the bands don't move.
+    const { noi: noiBasis, lens: valueAddLens } = lensFromFieldMap(fields, "retail");
+    const lensApplies = valueAddLens.active && valueAddLens.basisScore != null;
+    const { weights: W, basisWeight } = lensApplies
+      ? reweightForLens(WEIGHTS, INCOME_QUALITY_CATEGORIES)
+      : { weights: WEIGHTS, basisWeight: 0 };
+
     // ── CALCULATE WEIGHTED TOTAL ──
     const totalScore = Math.round(
-      (pricingScore * WEIGHTS.pricing +
-       cashflowScore * WEIGHTS.cashflow +
-       upsideScore * WEIGHTS.upside +
-       tenantScore * WEIGHTS.tenant +
-       rolloverScore * WEIGHTS.rollover +
-       vacancyScore * WEIGHTS.vacancy +
-       locationScore * WEIGHTS.location +
-       physicalScore * WEIGHTS.physical +
-       redevelopmentScore * WEIGHTS.redevelopment +
-       confidenceScore * WEIGHTS.confidence) / 100
+      (pricingScore * W.pricing +
+       cashflowScore * W.cashflow +
+       upsideScore * W.upside +
+       tenantScore * W.tenant +
+       rolloverScore * W.rollover +
+       vacancyScore * W.vacancy +
+       locationScore * W.location +
+       physicalScore * W.physical +
+       redevelopmentScore * W.redevelopment +
+       confidenceScore * W.confidence +
+       (valueAddLens.basisScore ?? 0) * basisWeight) / 100
     );
 
     const scoreBand = getScoreBand(totalScore);
@@ -558,6 +617,8 @@ export async function runScoreEngine(params: {
       physicalConditionScore: physicalScore,
       redevelopmentScore,
       confidenceScore,
+      ...valueAddLensRecord(valueAddLens, noiBasis),
+      basisWeight,
       createdAt: now,
       isCurrent: true,
     });

@@ -6,17 +6,37 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
 import { extractTextFromFile } from "@/lib/workspace/file-reader";
-// Use Pro's brief/XLSX generators so Try Me downloads match Pro exactly.
-import { generateUnderwritingXLSX, generateBriefDownload } from "@/lib/workspace/generate-files";
-import { ensureAnonymousUser, storage } from "@/lib/firebase";
-import { ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { createProperty, createDocument, updateProperty } from "@/lib/workspace/firestore";
 import { DEALSIGNALS_LOGO_B64 } from "@/lib/workspace/logo-b64";
-import { useWorkspaceAuth } from "@/lib/workspace/auth";
-
 import DealSignalNav from "@/components/DealSignalNav";
-import ProductDemo from "@/components/marketing/ProductDemo";
 import { trackLiteUpload, trackLiteResult, trackLeadCapture, trackProCTAClick, trackDownload } from "@/lib/analytics";
+
+/* ── Lazy Firebase helpers ──────────────────────────────────────────────
+   Firebase SDK modules (auth, firestore, storage) are ~300KB+ combined.
+   Importing them at the top level blocks the initial paint on mobile by
+   10-15 seconds. Instead we dynamically import them only when needed:
+   - Auth: lazy hook that loads after first paint
+   - Storage / Firestore CRUD: loaded inside the upload handler
+   ──────────────────────────────────────────────────────────────────── */
+function useLazyWorkspaceAuth() {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+    let cancelled = false;
+    // Defer Firebase Auth import so it doesn't block first paint
+    import("@/lib/firebase").then(({ auth: authInstance }) =>
+      import("firebase/auth").then(({ onAuthStateChanged }) => {
+        if (cancelled) return;
+        unsubscribe = onAuthStateChanged(authInstance, (u) => {
+          setUser(u);
+          setLoading(false);
+        });
+      }),
+    ).catch(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; unsubscribe?.(); };
+  }, []);
+  return { user, loading };
+}
 
 /* ===========================================================================
    INTERSECTION OBSERVER HOOK - SCROLL TRIGGER
@@ -1697,7 +1717,7 @@ export default function OmAnalyzerPage() {
   // Auth state: when a user is logged in and lands on the public pricing
   // section we want to call /api/workspace/usage with their token so we
   // can show their current plan on the tier cards.
-  const { user: authUser, loading: authLoading } = useWorkspaceAuth();
+  const { user: authUser, loading: authLoading } = useLazyWorkspaceAuth();
 
   const fetchUsage = useCallback(async () => {
     try {
@@ -1887,13 +1907,20 @@ export default function OmAnalyzerPage() {
     trackLiteUpload(selectedFile.name, selectedFile.name.split(".").pop()?.toLowerCase() || "unknown");
 
     try {
+      // Dynamically import Firebase modules (keeps them out of initial bundle)
+      const [fb, fbStorage, fsOps] = await Promise.all([
+        import("@/lib/firebase"),
+        import("firebase/storage"),
+        import("@/lib/workspace/firestore"),
+      ]);
+
       // 1. Sign in anonymously so writes are scoped to a real Firebase UID
-      const fbUser = await ensureAnonymousUser();
+      const fbUser = await fb.ensureAnonymousUser();
 
       // 2. Create the property doc (user lands on this id at the end)
       setStatusMsg("Creating your property...");
       const autoName = selectedFile.name.replace(/\.[^.]+$/, "") || "Property";
-      const propertyId = await createProperty("workspace-default", {
+      const propertyId = await fsOps.createProperty("workspace-default", {
         propertyName: autoName,
         userId: fbUser.uid,
         workspaceId: "default",
@@ -1904,9 +1931,9 @@ export default function OmAnalyzerPage() {
       const ext = selectedFile.name.split(".").pop()?.toLowerCase() || "";
       const storedName = `${Date.now()}_${selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
       const storagePath = `workspace/${fbUser.uid}/${propertyId}/inputs/${storedName}`;
-      const fileRefHandle = storageRef(storage, storagePath);
-      await uploadBytesResumable(fileRefHandle, selectedFile);
-      await createDocument({
+      const fileRefHandle = fbStorage.ref(fb.storage, storagePath);
+      await fbStorage.uploadBytesResumable(fileRefHandle, selectedFile);
+      await fsOps.createDocument({
         projectId: "workspace-default",
         userId: fbUser.uid,
         propertyId,
@@ -1930,10 +1957,10 @@ export default function OmAnalyzerPage() {
         try {
           const heroBlob = await extractHeroImageFromPDF(selectedFile);
           if (heroBlob && heroBlob.size > 5000) {
-            const imgRef = storageRef(storage, `workspace/${fbUser.uid}/${propertyId}/hero.jpg`);
-            await uploadBytesResumable(imgRef, heroBlob);
-            const imgUrl = await getDownloadURL(imgRef);
-            await updateProperty(propertyId, { heroImageUrl: imgUrl } as any);
+            const imgRef = fbStorage.ref(fb.storage, `workspace/${fbUser.uid}/${propertyId}/hero.jpg`);
+            await fbStorage.uploadBytesResumable(imgRef, heroBlob);
+            const imgUrl = await fbStorage.getDownloadURL(imgRef);
+            await fsOps.updateProperty(propertyId, { heroImageUrl: imgUrl } as any);
           }
         } catch (heroErr) {
           console.warn("[om-analyzer] Hero extraction failed:", heroErr);
@@ -2722,9 +2749,6 @@ export default function OmAnalyzerPage() {
               ))}
             </div>
           </div>
-
-          {/* ── PRODUCT DEMO (video) ── */}
-          <ProductDemo />
 
           {/* ── Hero showcase (native HTML/CSS mockup) ── */}
           <div id="examples" style={{ scrollMarginTop: 80 }}>

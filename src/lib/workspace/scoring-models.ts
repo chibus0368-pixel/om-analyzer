@@ -1,3 +1,5 @@
+import { lensFromFieldMap, applyLensToCategories } from "@/lib/analysis/value-add-lens";
+
 /**
  * Scoring models for Industrial, Office, and Land CRE analysis types
  * Retail scoring remains in /api/workspace/score/route.ts (untouched)
@@ -2099,14 +2101,7 @@ export function scoreRetailPure(fields: Record<string, any>): ScoringResult {
       confidenceScore * RETAIL_WEIGHTS.confidence) / 100,
   );
 
-  const scoreBand = retailScoreBand(totalScore);
-  const recommendation = retailRecommendation(scoreBand, totalScore, fields);
-
-  return {
-    totalScore,
-    scoreBand,
-    recommendation,
-    categories: [
+  const baseCategories: ScoringCategory[] = [
       { name: "pricing", weight: RETAIL_WEIGHTS.pricing, score: pricingScore, explanation: capRate ? `Cap rate ${capRate.toFixed(1)}%${priceSf ? `, $${Math.round(priceSf)}/SF` : ""}` : "Limited pricing data" },
       { name: "cashflow", weight: RETAIL_WEIGHTS.cashflow, score: cashflowScore, explanation: dscr !== undefined ? `DSCR ${dscr.toFixed(2)}x` : (noi ? `NOI $${Math.round(noi).toLocaleString()}` : "Limited cashflow data") },
       { name: "upside", weight: RETAIL_WEIGHTS.upside, score: upsideScore, explanation: vaScore !== undefined ? `Value-add score ${vaScore}` : "Market rent growth potential assessed" },
@@ -2117,8 +2112,23 @@ export function scoreRetailPure(fields: Record<string, any>): ScoringResult {
       { name: "physical", weight: RETAIL_WEIGHTS.physical, score: physicalScore, explanation: yearBuilt ? `Built ${yearBuilt}` : "Building age unknown" },
       { name: "redevelopment", weight: RETAIL_WEIGHTS.redevelopment, score: redevelopmentScore, explanation: "Redevelopment potential assessed" },
       { name: "confidence", weight: RETAIL_WEIGHTS.confidence, score: confidenceScore, explanation: `${totalFields} data points extracted` },
-    ],
+  ];
+
+  // Value-add lens. Keeps Try Me's retail score in step with the Pro score
+  // engine, which applies the same lens on its own retail branch. A materially
+  // vacant building bought below stabilized value gets graded on basis instead
+  // of on in-place income quality; a stabilized deal is untouched.
+  const { lens } = lensFromFieldMap(fields, "retail");
+  const lensed = applyLensToCategories(baseCategories, lens);
+  const finalScore = lens.active ? lensed.totalScore : totalScore;
+  const finalBand = retailScoreBand(finalScore);
+
+  return {
+    totalScore: finalScore,
+    scoreBand: finalBand,
+    recommendation: retailRecommendation(finalBand, finalScore, fields),
+    categories: lensed.categories,
     analysisType: "retail" as AnalysisType,
-    modelVersion: "1.1",
+    modelVersion: "1.2",
   };
 }

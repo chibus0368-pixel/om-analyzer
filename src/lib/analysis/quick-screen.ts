@@ -42,7 +42,19 @@ export interface QuickScreenInput {
   state?: string;
 
   // Operating
+  /**
+   * Year 1 NOI: what the building earns TODAY. On a value-add deal this must
+   * be in-place income, not the OM's stabilized pro forma. `resolveNoiBasis`
+   * in value-add-lens.ts separates the two; buildInput passes the in-place
+   * number here and the stabilized one below.
+   */
   noi?: number | null;
+  /** What it earns once leased up. Reported as upside, never underwritten. */
+  stabilizedNoi?: number | null;
+  /** Human-readable account of how in-place and stabilized were separated. */
+  noiBasisNote?: string | null;
+  /** True when the in-place figure is an assumption the user should confirm. */
+  noiBasisIsAssumed?: boolean;
   occupancyPct?: number | null;
   marketRentPerUnit?: number | null;
   inPlaceRentPerUnit?: number | null;
@@ -119,6 +131,23 @@ export interface QuickScreenReport {
     unleveredIrrRange: [number, number] | null;
     leveredIrrRange: [number, number] | null;
   };
+
+  /**
+   * Present only on a deal with a real stabilization gap. Everything above
+   * this line is underwritten on IN-PLACE income; this block is the upside
+   * case, priced with what it costs to get there rather than assumed free.
+   */
+  stabilization: {
+    inPlaceNoi: number;
+    stabilizedNoi: number;
+    /** Going-in cap on in-place income. The honest one. */
+    inPlaceCapPct: number | null;
+    /** What the OM's own NOI implies against the ask. Often fiction. */
+    statedCapPct: number | null;
+    leaseUpCost: number | null;
+    note: string;
+    isAssumption: boolean;
+  } | null;
 
   // Inputs and estimates
   assumptions: AssumptionEntry[];
@@ -547,7 +576,8 @@ export function runQuickScreen(raw: QuickScreenInput): QuickScreenReport {
     assumptions.push({
       variable: "Year 1 NOI",
       value: `$${Math.round(year1NOI || 0).toLocaleString()}`,
-      source: raw.noi != null ? "user" : "estimated",
+      source: raw.noiBasisIsAssumed ? "estimated" : raw.noi != null ? "user" : "estimated",
+      note: raw.noiBasisNote || undefined,
     });
   }
 
@@ -780,6 +810,21 @@ export function runQuickScreen(raw: QuickScreenInput): QuickScreenReport {
       unleveredIrrRange,
       leveredIrrRange,
     },
+    stabilization:
+      raw.stabilizedNoi != null && raw.stabilizedNoi > year1NOI && year1NOI > 0
+        ? {
+            inPlaceNoi: year1NOI,
+            stabilizedNoi: raw.stabilizedNoi,
+            inPlaceCapPct: goingInCapPct,
+            statedCapPct:
+              resolved.purchasePrice > 0
+                ? (raw.stabilizedNoi / resolved.purchasePrice) * 100
+                : null,
+            leaseUpCost: null,
+            note: raw.noiBasisNote || "",
+            isAssumption: !!raw.noiBasisIsAssumed,
+          }
+        : null,
     assumptions,
     scenarios,
     waysItWorks: narrative.worksBullets.slice(0, 3),

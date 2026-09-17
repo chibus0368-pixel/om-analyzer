@@ -11,7 +11,7 @@ exists, the band falls back to the poster still, so nothing looks broken.
 
 ## Before you hit record
 
-- Browser at **1440 x 900**, zoom 100%, no bookmarks bar, no extensions visible.
+- Browser at **1920 x 1080** (16:9 — the frame on the page is 16:9), zoom 100%, no bookmarks bar, no extensions visible.
 - Use a **real OM you have rights to show**. Greenfield Shopping Center or Hales
   Corners Plaza are already public on the site, so either is safe.
 - Log in first. Nobody wants to watch a login.
@@ -65,7 +65,7 @@ Two options, easiest first:
 
 ## Export
 
-Export from Premiere as H.264, 1440x900 (or 1920x1200), no audio track.
+Export from Premiere as H.264, 1920x1080, no audio track.
 Save it anywhere, then compress with the command below.
 
 Compress to a web-safe file (target under 6 MB — this autoplays on every
@@ -73,7 +73,7 @@ homepage visit, so size is a real cost):
 
 ```bash
 ffmpeg -i "/Users/brody/Desktop/dealsignals-demo-raw.mp4" \
-  -vf "scale=1440:-2" \
+  -vf "scale=1600:-2" \
   -c:v libx264 -profile:v high -crf 26 -preset slow \
   -movflags +faststart -pix_fmt yuv420p -an \
   "/Users/brody/Library/CloudStorage/Dropbox/newbro (1)/hacktheprompt new/dealsignals/public/videos/dealsignals-demo.mp4"

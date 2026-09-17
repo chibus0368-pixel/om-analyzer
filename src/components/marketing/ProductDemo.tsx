@@ -204,7 +204,7 @@ export default function ProductDemo() {
             background: "#07070b",
             boxShadow:
               "0 6px 16px rgba(0,0,0,0.4), 0 30px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(132,204,22,0.06)",
-            aspectRatio: "16 / 10",
+            aspectRatio: "16 / 9",
           }}
         >
           {showVideo ? (

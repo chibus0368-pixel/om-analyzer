@@ -11,6 +11,7 @@ import {
   type UnitType,
 } from "@/lib/analysis/quick-screen";
 import { useUnderwritingDefaults } from "@/lib/workspace/use-underwriting-defaults";
+import { resolveNoiBasis, assetTypeFromAnalysisType } from "@/lib/analysis/value-add-lens";
 import { InputsNeededCard, type DealInputsHandlers } from "@/components/workspace/DealInputs";
 
 /* ── Design tokens (mirror PropertyDetailClient's C object) ─── */
@@ -162,7 +163,7 @@ export function buildInput(
 
   if (!askingPrice || !unitsOrSf) return null;
 
-  const noi = Number(gf(fields, "expenses", "noi_om"))
+  const statedNoi = Number(gf(fields, "expenses", "noi_om"))
     || Number(gf(fields, "expenses", "noi_adjusted"))
     || (property as any)?.cardNoi
     || null;
@@ -178,6 +179,48 @@ export function buildInput(
   const yearBuilt = Number(gf(fields, "property_basics", "year_built"))
     || property.yearBuilt
     || null;
+
+  // Separate in-place income from the OM's stabilized pro forma before any of
+  // it reaches the calculator.
+  //
+  // This is the fix for the bug where a half-empty building printed a 20%+
+  // BEAR case. `expenses.noi_om` on a value-add listing is usually the
+  // stabilized number, but the ask is the vacant price. Dividing one by the
+  // other gave a fictitious going-in cap, and because the exit cap is anchored
+  // to the going-in cap the fiction propagated straight through to the IRR
+  // without ever being contradicted.
+  //
+  // Year 1 is now underwritten on in-place income. The stabilized case rides
+  // along as upside so the value-add story isn't lost, it's just no longer
+  // free. See resolveNoiBasis for how the two are told apart, and what happens
+  // when they can't be.
+  const rentRollBaseRent = (() => {
+    const rents = fields
+      .filter(f => f.fieldGroup === "rent_roll" && /^tenant_\d+_rent$/.test(f.fieldName))
+      .map(f => Number(f.isUserOverridden ? f.userOverrideValue : (f.normalizedValue ?? f.rawValue)))
+      .filter(n => Number.isFinite(n) && n > 0);
+    if (rents.length) return rents.reduce((a, b) => a + b, 0);
+    const total = Number(gf(fields, "income", "base_rent")) || Number(gf(fields, "rent_roll", "total_rent"));
+    return Number.isFinite(total) && total > 0 ? total : null;
+  })();
+
+  const rawUserBasis = String(gf(fields, "underwriting", "noi_basis") || "").toLowerCase();
+  const noiBasis = resolveNoiBasis({
+    statedNoi,
+    purchasePrice: askingPrice,
+    occupancyPct: occupancy,
+    assetType: assetTypeFromAnalysisType(analysisType),
+    rentRollBaseRent,
+    userBasis:
+      rawUserBasis === "in_place" || rawUserBasis === "in-place" ? "in_place" :
+      rawUserBasis === "stabilized" || rawUserBasis === "pro_forma" ? "stabilized" :
+      null,
+  });
+  const noi = noiBasis.inPlaceNoi;
+  const hasStabilizationGap =
+    noiBasis.stabilizedNoi != null &&
+    noi != null &&
+    noiBasis.stabilizedNoi > noi * 1.02;
 
   // Debt and target-return assumptions ALWAYS come from the workspace
   // standardized baseline, never from the OM. This is what makes scoring
@@ -197,6 +240,10 @@ export function buildInput(
     city: property.city,
     state: property.state,
     noi,
+    stabilizedNoi: hasStabilizationGap ? noiBasis.stabilizedNoi : null,
+    noiBasisNote: noiBasis.reason,
+    noiBasisIsAssumed: noiBasis.kind === "assumed_stabilized",
+    businessPlan: hasStabilizationGap ? "value-add" : undefined,
     occupancyPct: occupancy,
     marketRentPerUnit: marketRent,
     inPlaceRentPerUnit: marketRent, // conservatively assume same unless data says otherwise
@@ -296,8 +343,61 @@ export default function DealQuickScreen({
 
   const s = report.snapshot;
 
+  const stab = report.stabilization;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      {/* ── Income basis ────────────────────────────────
+          Sits above the returns on purpose. On a value-add deal every number
+          below this card is computed on IN-PLACE income, and the reader needs
+          to know that before they read a cap rate or an IRR. Without it the
+          old behaviour was a half-empty building printing a 20%+ bear case
+          off the OM's stabilized pro forma. */}
+      {stab && (
+        <SectionCard
+          title={stab.isAssumption ? "Income Basis · Assumed" : "Income Basis"}
+          subtitle="Returns below are underwritten on in-place income. Stabilized is upside, not a given."
+          accent={stab.isAssumption ? "#D97706" : "#2563EB"}
+        >
+          <div className="qs-scenario-grid" style={{
+            display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12, marginBottom: 12,
+          }}>
+            <div style={{ background: C.surfLow, borderRadius: 8, padding: "12px 14px" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: C.secondary, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                In-place NOI · underwritten
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: C.onSurface, fontVariantNumeric: "tabular-nums", marginTop: 4 }}>
+                ${Math.round(stab.inPlaceNoi).toLocaleString()}
+              </div>
+              <div style={{ fontSize: 11, color: C.secondary, marginTop: 2 }}>
+                {stab.inPlaceCapPct != null ? `${stab.inPlaceCapPct.toFixed(2)}% going-in cap` : "Cap not computable"}
+              </div>
+            </div>
+            <div style={{ background: C.surfLow, borderRadius: 8, padding: "12px 14px", opacity: 0.85 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: C.secondary, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                Stabilized NOI · upside
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: C.onSurface, fontVariantNumeric: "tabular-nums", marginTop: 4 }}>
+                ${Math.round(stab.stabilizedNoi).toLocaleString()}
+              </div>
+              <div style={{ fontSize: 11, color: C.secondary, marginTop: 2 }}>
+                {stab.statedCapPct != null ? `${stab.statedCapPct.toFixed(2)}% against the ask if you got there for free` : ""}
+              </div>
+            </div>
+          </div>
+          {stab.note && (
+            <div style={{
+              fontSize: 12, lineHeight: 1.6, color: C.onSurface,
+              background: stab.isAssumption ? "#FEF3C7" : C.surfLow,
+              border: stab.isAssumption ? "1px solid #FCD34D" : `1px solid ${C.ghostBorder}`,
+              borderRadius: 8, padding: "10px 12px",
+            }}>
+              {stab.note}
+            </div>
+          )}
+        </SectionCard>
+      )}
+
       {/* ── Back-of-napkin returns (3 scenarios) ───────── */}
       <SectionCard title="Back-of-Napkin Returns" subtitle="Ranges, not point estimates. Meant for triage, not underwriting." accent="#7C3AED">
         <div className="qs-scenario-grid" style={{

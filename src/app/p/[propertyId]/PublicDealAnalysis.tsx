@@ -142,7 +142,10 @@ export default function PublicDealAnalysis({
     const defs: { id: ProTab; label: string; short: string; visible: boolean }[] = [
       { id: "quick-screen", label: "Deal Quick Screen", short: "Screen", visible: hasPricing },
       { id: "om-reverse-pricing", label: "Offer Scenarios", short: "Offer", visible: hasPricing },
-      { id: "rent-roll", label: "Rent Roll", short: "Rent", visible: wsType !== "land" && tenantRows.length > 0 },
+      // RentRollDetailAnalysis returns null below 2 tenants, so gating on
+      // "has any tenant" would leave an empty panel on every STNL deal. The
+      // Tenancy card above the tabs already covers the single-tenant case.
+      { id: "rent-roll", label: "Rent Roll", short: "Rent", visible: wsType !== "land" && tenantRows.length >= 2 },
       { id: "financials", label: "Financials", short: "Financials", visible: true },
     ];
     return defs.filter(d => d.visible);
