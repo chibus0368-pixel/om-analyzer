@@ -31,6 +31,7 @@
 import { useMemo } from "react";
 import type { Property, ExtractedField } from "@/lib/workspace/types";
 import { useUnderwritingDefaults } from "@/lib/workspace/use-underwriting-defaults";
+import { InputsNeededCard, type DealInputsHandlers } from "@/components/workspace/DealInputs";
 
 /* Design tokens (match other Pro Analysis tabs) */
 const C = {
@@ -178,7 +179,7 @@ function ProFormaRow({ label, value, bold, total, indent, hint, isNegative, esti
 }
 
 /* MAIN COMPONENT */
-export interface FinancialsSummaryProps {
+export interface FinancialsSummaryProps extends DealInputsHandlers {
   property: Property;
   fields: ExtractedField[];
   wsType: string;
@@ -189,6 +190,7 @@ type NoiSource = "breakdown" | "om_stated" | "om_adjusted" | "derived_from_cap";
 
 export default function FinancialsSummary({
   property, fields, wsType, omPurchasePrice,
+  onSaveFields, onRevertField, onOpenAllInputs, onUploadDocs,
 }: FinancialsSummaryProps) {
   const workspaceId = property.workspaceId || null;
   const { defaults } = useUnderwritingDefaults(workspaceId);
@@ -449,22 +451,22 @@ export default function FinancialsSummary({
     || inputs.noiAdj > 0
     || (inputs.askingPrice > 0 && inputs.capRateOm > 0);
 
+  // No dead end: render the shared inputs card. On unpriced ("subject to
+  // offer") deals it also recommends a price from the Target Cap Rate.
   if (!inputs.askingPrice || !hasAnyNoiSignal) {
     return (
-      <div style={{
-        background: C.surfLowest, border: `1px dashed ${C.ghost}`,
-        borderRadius: C.radius, padding: 32, textAlign: "center",
-      }}>
-        <div style={{ fontSize: 28, marginBottom: 8 }}>📊</div>
-        <div style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, marginBottom: 6 }}>
-          Financials need core inputs
-        </div>
-        <div style={{ fontSize: 12, color: C.secondary, maxWidth: 440, margin: "0 auto", lineHeight: 1.5 }}>
-          To build the pro forma we need at minimum a purchase price and one of: stated NOI,
-          a cap rate, or base rent. Click any extracted value on the Summary tab to edit it
-          inline, or re-upload a more detailed OM.
-        </div>
-      </div>
+      <InputsNeededCard
+        property={property}
+        fields={fields}
+        analysisName="Financials"
+        icon={"\ud83d\udcca"}
+        promise="You'll get a Year-1 income statement, debt service, cash-on-cash, and a hold-period cash flow built on your workspace assumptions."
+        extraKeys={["expenses.noi_om", "pricing_deal_terms.cap_rate_om", "property_basics.occupancy_pct"]}
+        onSaveFields={onSaveFields}
+        onRevertField={onRevertField}
+        onOpenAllInputs={onOpenAllInputs}
+        onUploadDocs={onUploadDocs}
+      />
     );
   }
 

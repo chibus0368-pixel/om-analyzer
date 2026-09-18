@@ -96,7 +96,14 @@ export async function getUnderwritingDefaults(
     const ws = await getWorkspaceDoc(workspaceId);
     if (ws?.underwritingDefaults) {
       // Merge to pick up any fields that older saved docs don't have yet.
-      return { ...DEFAULT_UNDERWRITING, ...ws.underwritingDefaults };
+      const saved = ws.underwritingDefaults as Partial<UnderwritingDefaults>;
+      const merged = { ...DEFAULT_UNDERWRITING, ...saved };
+      // targetCap was added later. For workspaces saved before it existed,
+      // seed it from their exit cap so a customized baseline carries over.
+      if (saved.targetCap === undefined && typeof saved.exitCap === "number" && saved.exitCap > 0) {
+        merged.targetCap = saved.exitCap;
+      }
+      return merged;
     }
   } catch {
     // Fall through to defaults on any error.

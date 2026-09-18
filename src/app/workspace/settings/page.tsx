@@ -118,7 +118,7 @@ export default function SettingsPage() {
       <div style={{ ...cardStyle, marginBottom: 20 }}>
         <h2 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 16px" }}>Default Underwriting Assumptions</h2>
         <p style={{ fontSize: 13, color: "#5A7091", marginBottom: 16 }}>
-          These values are the standardized baseline for every deal in this workspace. Deal Quick Screen and OM Reverse Pricing use them so scoring is comparable across properties. They override any debt or return assumptions in an OM.
+          These values are the standardized baseline for every deal in this workspace. Deal Quick Screen and OM Reverse Pricing use them so scoring is comparable across properties. They override any debt or return assumptions in an OM. Target Cap Rate is the going-in cap used to recommend a price when an OM is unpriced or &quot;subject to offer.&quot;
         </p>
         {!hydrated && (
           <p style={{ fontSize: 12, color: "#4D7C0F", marginBottom: 12 }}>Loading saved values...</p>
@@ -134,6 +134,7 @@ export default function SettingsPage() {
             { key: "rentGrowth", label: "Rent Growth (%)" },
             { key: "expenseGrowth", label: "Expense Growth (%)" },
             { key: "targetLeveredIrr", label: "Target Levered IRR (%)" },
+            { key: "targetCap", label: "Target Cap Rate (%)" },
           ].map(f => (
             <div key={f.key}>
               <label style={{ fontSize: 11, fontWeight: 600, color: "#5A7091", display: "block", marginBottom: 4 }}>{f.label}</label>

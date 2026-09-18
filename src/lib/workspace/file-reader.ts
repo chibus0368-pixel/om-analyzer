@@ -32,7 +32,15 @@ async function loadPdfJS(): Promise<any> {
   });
 }
 
-async function extractPdfTextInner(file: File): Promise<string> {
+// Page cap per PDF. Was 12, which silently dropped everything after page 12
+// (e.g. a 61-page lease abstract package only yielded its first ~5 tenants).
+// pdf.js text extraction is fast (~20-50ms/page), so 150 pages is safe.
+const MAX_PDF_TEXT_PAGES = 150;
+
+async function extractPdfTextInner(
+  file: File,
+  progress: { text: string } = { text: "" }
+): Promise<string> {
   const pdfjs = await loadPdfJS();
   const buffer = await file.arrayBuffer();
 
@@ -40,11 +48,14 @@ async function extractPdfTextInner(file: File): Promise<string> {
 
   const pdf = await pdfjs.getDocument({ data: buffer }).promise;
   const totalPages = pdf.numPages;
-  const maxPages = Math.min(totalPages, 12); // Limit to first 12 pages for speed
+  const maxPages = Math.min(totalPages, MAX_PDF_TEXT_PAGES);
 
-  console.log(`[pdf-reader] PDF has ${totalPages} pages, extracting ${maxPages}`);
+  if (totalPages > maxPages) {
+    console.warn(`[pdf-reader] ${file.name} has ${totalPages} pages, only extracting first ${maxPages}`);
+  } else {
+    console.log(`[pdf-reader] PDF has ${totalPages} pages, extracting all`);
+  }
 
-  let allText = "";
   for (let i = 1; i <= maxPages; i++) {
     try {
       const page = await pdf.getPage(i);
@@ -55,25 +66,27 @@ async function extractPdfTextInner(file: File): Promise<string> {
         .replace(/\s+/g, " ")
         .trim();
       if (pageText) {
-        allText += `\n--- Page ${i} ---\n${pageText}\n`;
+        progress.text += `\n--- Page ${i} ---\n${pageText}\n`;
       }
     } catch (pageErr) {
       console.warn(`[pdf-reader] Failed to extract page ${i}:`, pageErr);
     }
   }
 
-  console.log(`[pdf-reader] Extracted ${allText.length} chars from ${file.name}`);
-  return allText;
+  console.log(`[pdf-reader] Extracted ${progress.text.length} chars from ${file.name}`);
+  return progress.text;
 }
 
-// Wrapper with 45-second timeout
+// Wrapper with 45-second timeout. On timeout, return whatever pages were
+// already extracted instead of throwing it all away.
 async function extractPdfText(file: File): Promise<string> {
+  const progress = { text: "" };
   return Promise.race([
-    extractPdfTextInner(file),
+    extractPdfTextInner(file, progress),
     new Promise<string>((resolve) => {
       setTimeout(() => {
-        console.warn(`[pdf-reader] TIMEOUT after 45s for ${file.name}`);
-        resolve("");
+        console.warn(`[pdf-reader] TIMEOUT after 45s for ${file.name}, returning ${progress.text.length} chars extracted so far`);
+        resolve(progress.text);
       }, 45000);
     }),
   ]);

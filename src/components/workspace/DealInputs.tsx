@@ -30,6 +30,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Property, ExtractedField } from "@/lib/workspace/types";
+import { useUnderwritingDefaults } from "@/lib/workspace/use-underwriting-defaults";
+import { suggestAskingPrice, type SuggestedPrice } from "@/lib/analysis/suggested-price";
 
 /* ── Design tokens (shared with the analysis tabs) ─────── */
 const C = {
@@ -502,6 +504,53 @@ function deriveTriangle(
   return null;
 }
 
+/* Unpriced deals ("subject to offer"): recommend a price by capitalizing
+ * NOI at the workspace Target Cap Rate from Settings. Only offered when the
+ * price is blank and the price/cap/NOI triangle can't already derive it
+ * from a broker-stated cap. */
+function useSuggestedPrice(
+  property: Property | null | undefined,
+  get: (key: string) => string,
+  triangleKey: string | null,
+): SuggestedPrice | null {
+  const { defaults } = useUnderwritingDefaults((property as any)?.workspaceId || null);
+  const priceBlank = !parseLooseNumber(get(PRICE_KEY));
+  if (!priceBlank || triangleKey === PRICE_KEY) return null;
+  return suggestAskingPrice(
+    {
+      noi_om: parseLooseNumber(get("expenses.noi_om")),
+      noi_t12: parseLooseNumber(get("expenses.noi_t12")),
+    },
+    defaults.targetCap,
+  );
+}
+
+const PRICE_KEY = "pricing_deal_terms.asking_price";
+
+function SuggestedPriceNudge({ s, onApply }: { s: SuggestedPrice; onApply: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onApply}
+      style={{
+        display: "flex", alignItems: "flex-start", gap: 8, marginTop: 14, width: "100%",
+        padding: "10px 12px", borderRadius: 8, cursor: "pointer", textAlign: "left",
+        background: C.amberBg, border: "1px solid rgba(217,119,6,0.22)", fontFamily: "inherit",
+      }}
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.amber} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
+        <line x1="7" y1="7" x2="7.01" y2="7" />
+      </svg>
+      <span style={{ fontSize: 12, color: "#92400E", lineHeight: 1.45 }}>
+        <strong>Unpriced deal. Suggested asking price: {formatForFmt(s.price, "dollar")}</strong>
+        {" "}({formatForFmt(s.noi, "dollar")} {s.noiLabel} at your {s.capRatePct.toFixed(2)}% target cap rate from Settings).
+        {" "}Click to use it, or type your own number.
+      </span>
+    </button>
+  );
+}
+
 /* ══════════════════════════════════════════════════════════ */
 /*  1. INPUTS NEEDED CARD                                     */
 /*     Renders where an analysis would otherwise dead-end.    */
@@ -552,6 +601,7 @@ export function InputsNeededCard({
   const stillMissing = required.filter(d => !parseLooseNumber(getEffective(d.key)) && !getEffective(d.key).trim());
   const readyToRun = stillMissing.length === 0;
   const triangle = deriveTriangle(getEffective);
+  const suggested = useSuggestedPrice(property, getEffective, triangle?.key ?? null);
 
   const dirtyEntries = useMemo(() => {
     const out: { group: string; name: string; value: string }[] = [];
@@ -705,6 +755,16 @@ export function InputsNeededCard({
           </button>
         )}
 
+        {suggested && (
+          <SuggestedPriceNudge
+            s={suggested}
+            onApply={() => {
+              const d = status.defs.find(x => x.key === PRICE_KEY);
+              if (d) setDrafts(p => ({ ...p, [PRICE_KEY]: inputDisplay(String(suggested.price), d) }));
+            }}
+          />
+        )}
+
         {/* Optional inputs that sharpen the read */}
         {extras.length > 0 && (
           <div style={{ marginTop: 16 }}>
@@ -848,6 +908,13 @@ export function DealInputsDrawer({
     }
     return out;
   }, [drafts, status.defs, status.values]);
+
+  const getEffective = useCallback((key: string) => {
+    if (drafts[key] !== undefined) return drafts[key];
+    return status.values[key]?.value || "";
+  }, [drafts, status.values]);
+  const drawerTriangle = deriveTriangle(getEffective);
+  const suggested = useSuggestedPrice(property, getEffective, drawerTriangle?.key ?? null);
 
   const close = useCallback(() => {
     setDrafts({});
@@ -999,6 +1066,15 @@ export function DealInputsDrawer({
                     />
                   ))}
                 </div>
+                {sec === "pricing" && suggested && (
+                  <SuggestedPriceNudge
+                    s={suggested}
+                    onApply={() => {
+                      const d = status.defs.find(x => x.key === PRICE_KEY);
+                      if (d) setDrafts(p => ({ ...p, [PRICE_KEY]: inputDisplay(String(suggested.price), d) }));
+                    }}
+                  />
+                )}
               </div>
             );
           })}

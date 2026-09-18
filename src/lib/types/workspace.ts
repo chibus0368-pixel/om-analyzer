@@ -21,6 +21,7 @@ export interface UnderwritingDefaults {
   rentGrowth: number;       // 0-100 (percent)
   expenseGrowth: number;    // 0-100 (percent)
   targetLeveredIrr: number; // 0-100 (percent) -- used by OM Reverse Pricing
+  targetCap: number;        // 0-100 (percent) -- going-in cap used to suggest a price on unpriced deals
 }
 
 export const DEFAULT_UNDERWRITING: UnderwritingDefaults = {
@@ -33,6 +34,7 @@ export const DEFAULT_UNDERWRITING: UnderwritingDefaults = {
   rentGrowth: 2.5,
   expenseGrowth: 3.0,
   targetLeveredIrr: 15,
+  targetCap: 7.0,
 };
 
 export interface WorkspaceDoc {

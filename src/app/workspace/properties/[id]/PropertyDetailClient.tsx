@@ -2619,6 +2619,10 @@ function PropertyDetailInner({
               fields={fields}
               wsType={wsType}
               omPurchasePrice={omPurchasePrice}
+              onSaveFields={saveManualFields}
+              onRevertField={revertManualField}
+              onOpenAllInputs={() => openDealInputs?.()}
+              onUploadDocs={() => fileRef.current?.click()}
             />
           )}
 </div>

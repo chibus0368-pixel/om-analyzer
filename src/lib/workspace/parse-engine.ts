@@ -27,6 +27,11 @@ async function callOpenAI(
   return data.choices?.[0]?.message?.content || "";
 }
 
+// Max chars of document text sent to Stage 1. Was 40,000, which cut off
+// multi-file uploads (OM + lease abstracts). gpt-4o has a 128k-token window;
+// 200k chars is ~50k tokens, leaving ample room for prompt + 12k output.
+const STAGE1_MAX_CHARS = 200_000;
+
 // ===== STAGE 1: Extract raw facts (Retail / Industrial / Office) =====
 const STAGE1_PROMPT = `You are a CRE document parser. Extract ALL facts from this property document. Return JSON only.
 
@@ -362,14 +367,15 @@ export async function runParseEngine(params: {
 IMPORTANT:
 - "name" = the PROPERTY name, site name, or street address - NOT the broker/agent/firm name.
 - "broker" = the listing agent or brokerage company - separate field.
-Return JSON only.\n\n${documentText.substring(0, 40000)}`
+Return JSON only.\n\n${documentText.substring(0, STAGE1_MAX_CHARS)}`
       : `Extract ALL facts from this CRE property document.
 IMPORTANT:
 - "name" = the PROPERTY name or street address, NOT the broker/agent/firm name.
 - "broker" = the listing agent or brokerage company - separate field.
 - "land_acres" = total site/lot acreage - look for "acres", "site size", "lot size", even on improved buildings.
 - Include EVERY tenant.
-Return JSON only.\n\n${documentText.substring(0, 40000)}`;
+- The text may contain MULTIPLE files (OM, rent roll, lease abstracts), each starting with a "--- filename ---" header. Merge tenant data across ALL files: one entry per tenant/suite. Use lease abstracts / rent roll for rent, dates and options; use the OM site plan for any tenant not abstracted. Do not stop after the first file.
+Return JSON only.\n\n${documentText.substring(0, STAGE1_MAX_CHARS)}`;
 
     const stage1Response = await callOpenAI(
       [
