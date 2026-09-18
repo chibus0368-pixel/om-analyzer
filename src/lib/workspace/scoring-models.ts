@@ -182,11 +182,13 @@ export function scoreIndustrial(fields: Record<string, any>): ScoringResult {
   const hasDataMap: Record<string, boolean> = {};
 
   // Extract relevant fields
-  const capRate = getField(fields, "pricing_deal_terms.cap_rate_actual") ||
+  const statedCap = getField(fields, "pricing_deal_terms.cap_rate_actual") ||
     getField(fields, "pricing_deal_terms.cap_rate_asking");
-  const pricePerSf = getField(fields, "pricing_deal_terms.price_per_sf");
+  const statedPriceSf = getField(fields, "pricing_deal_terms.price_per_sf");
   const rentPerSf = getField(fields, "rent_roll.avg_rent_psf");
-  const noi = getField(fields, "expenses.noi");
+  const noi = getField(fields, "expenses.noi") || getField(fields, "expenses.noi_om");
+  const askingPrice = getField(fields, "pricing_deal_terms.asking_price") ||
+    getField(fields, "pricing_deal_terms.purchase_price");
   const buildingSf = getField(fields, "property_basics.building_sf");
   const ceilingHeight = getField(fields, "property_basics.ceiling_height");
   const yearBuilt = getField(fields, "property_basics.year_built");
@@ -197,6 +199,15 @@ export function scoreIndustrial(fields: Record<string, any>): ScoringResult {
   const outsideStorage = getField(fields, "property_basics.outside_storage_area");
   const location = getField(fields, "property_basics.location_profile");
   const totalFields = Object.keys(fields).length;
+
+  // Derive cap rate and price/SF from current price so overrides flow
+  // into the score. Prefer calculated when NOI + price are available.
+  const calcCap = (noi && askingPrice && Number(noi) > 0 && Number(askingPrice) > 0)
+    ? (Number(noi) / Number(askingPrice)) * 100 : null;
+  const capRate = calcCap ?? statedCap;
+  const calcPriceSf = (askingPrice && buildingSf && Number(askingPrice) > 0 && Number(buildingSf) > 0)
+    ? Number(askingPrice) / Number(buildingSf) : null;
+  const pricePerSf = calcPriceSf ?? statedPriceSf;
 
   // ===== PRICING (15% weight) =====
   // Higher when price/SF and cap rate attractive for industrial
@@ -585,11 +596,13 @@ export function scoreOffice(fields: Record<string, any>): ScoringResult {
   const explanations: Record<string, string> = {};
   const hasDataMap: Record<string, boolean> = {};
 
-  const capRate = getField(fields, "pricing_deal_terms.cap_rate_actual") ||
+  const statedCap = getField(fields, "pricing_deal_terms.cap_rate_actual") ||
     getField(fields, "pricing_deal_terms.cap_rate_asking");
-  const pricePerSf = getField(fields, "pricing_deal_terms.price_per_sf");
+  const statedPriceSf = getField(fields, "pricing_deal_terms.price_per_sf");
   const occupancy = getField(fields, "property_basics.occupancy_pct");
-  const noi = getField(fields, "expenses.noi");
+  const noi = getField(fields, "expenses.noi") || getField(fields, "expenses.noi_om");
+  const askingPrice = getField(fields, "pricing_deal_terms.asking_price") ||
+    getField(fields, "pricing_deal_terms.purchase_price");
   const rentPerSf = getField(fields, "rent_roll.avg_rent_psf");
   const tenantCount = getField(fields, "property_basics.number_of_tenants");
   const leaseTerms = getField(fields, "rent_roll.weighted_avg_lease_term");
@@ -599,6 +612,14 @@ export function scoreOffice(fields: Record<string, any>): ScoringResult {
   const yearBuilt = getField(fields, "property_basics.year_built");
   const location = getField(fields, "property_basics.location_profile");
   const totalFields = Object.keys(fields).length;
+
+  // Derive cap rate and price/SF from current price so overrides flow into the score
+  const calcCap = (noi && askingPrice && Number(noi) > 0 && Number(askingPrice) > 0)
+    ? (Number(noi) / Number(askingPrice)) * 100 : null;
+  const capRate = calcCap ?? statedCap;
+  const calcPriceSf = (askingPrice && buildingSf && Number(askingPrice) > 0 && Number(buildingSf) > 0)
+    ? Number(askingPrice) / Number(buildingSf) : null;
+  const pricePerSf = calcPriceSf ?? statedPriceSf;
 
   // ===== PRICING (15% weight) =====
   // Reasonable price/SF and cap rate for occupancy and mix
@@ -981,35 +1002,27 @@ export function scoreLand(fields: Record<string, any>): ScoringResult {
   let pricingConditions = 0;
   let pricingPoints = 0;
 
-  if (pricePerAcre !== null && pricePerAcre !== undefined) {
+  // Derive price/acre from current asking price when possible (responds to price overrides)
+  const calculatedPerAcre = (askingPrice && acres && acres > 0) ? askingPrice / acres : undefined;
+  const effectivePerAcre = calculatedPerAcre ?? pricePerAcre;
+
+  if (effectivePerAcre !== null && effectivePerAcre !== undefined) {
     pricingConditions++;
+    const label = calculatedPerAcre ? "Price/acre" : "Stated price/acre";
     // Land pricing highly variable; $50k-500k/acre typical
     // For dev land, look for $100k-300k/acre reasonable
-    if (pricePerAcre >= 50000 && pricePerAcre <= 300000) {
+    if (effectivePerAcre >= 50000 && effectivePerAcre <= 300000) {
       pricingPoints += 40;
-      pricingData.explanation += `Price/acre $${Math.round(pricePerAcre / 1000)}k (market). `;
-    } else if (pricePerAcre < 50000) {
+      pricingData.explanation += `${label} $${Math.round(effectivePerAcre / 1000)}k (market). `;
+    } else if (effectivePerAcre < 50000) {
       pricingPoints += 35;
-      pricingData.explanation += `Price/acre $${Math.round(pricePerAcre / 1000)}k (value). `;
-    } else if (pricePerAcre <= 500000) {
+      pricingData.explanation += `${label} $${Math.round(effectivePerAcre / 1000)}k (value). `;
+    } else if (effectivePerAcre <= 500000) {
       pricingPoints += 20;
-      pricingData.explanation += `Price/acre $${Math.round(pricePerAcre / 1000)}k (premium). `;
+      pricingData.explanation += `${label} $${Math.round(effectivePerAcre / 1000)}k (premium). `;
     } else {
       pricingPoints += 5;
-      pricingData.explanation += `Price/acre $${Math.round(pricePerAcre / 1000)}k (very high). `;
-    }
-  } else if (askingPrice && acres && acres > 0) {
-    pricingConditions++;
-    const calcPerAcre = askingPrice / acres;
-    if (calcPerAcre >= 50000 && calcPerAcre <= 300000) {
-      pricingPoints += 40;
-      pricingData.explanation += `Implied price/acre $${Math.round(calcPerAcre / 1000)}k. `;
-    } else if (calcPerAcre < 50000) {
-      pricingPoints += 35;
-      pricingData.explanation += `Implied price/acre $${Math.round(calcPerAcre / 1000)}k (value). `;
-    } else {
-      pricingPoints += 15;
-      pricingData.explanation += `Implied price/acre $${Math.round(calcPerAcre / 1000)}k (premium). `;
+      pricingData.explanation += `${label} $${Math.round(effectivePerAcre / 1000)}k (very high). `;
     }
   }
 
@@ -1337,16 +1350,22 @@ export function scoreMultifamily(fields: Record<string, any>): ScoringResult {
   let pricingConditions = 0;
   let pricingPoints = 0;
 
-  const capRate = getField(fields, "pricing_deal_terms.cap_rate_actual") ||
+  const statedCap = getField(fields, "pricing_deal_terms.cap_rate_actual") ||
     getField(fields, "pricing_deal_terms.cap_rate_asking") ||
     getField(fields, "pricing_deal_terms.cap_rate_om") ||
     getField(fields, "pricing_deal_terms.entry_cap_rate");
   const askingPrice = getField(fields, "pricing_deal_terms.asking_price") ||
     getField(fields, "pricing_deal_terms.purchase_price");
+  const mfNoi = getField(fields, "expenses.noi") || getField(fields, "expenses.noi_om");
   const unitCount = getField(fields, "multifamily.unit_count") ||
     getField(fields, "property_basics.unit_count") ||
     getField(fields, "property_basics.suite_count");
   const pricePerUnit = getField(fields, "pricing_deal_terms.price_per_unit");
+
+  // Derive cap rate from current price so overrides flow into the score
+  const calcCap = (mfNoi && askingPrice && Number(mfNoi) > 0 && Number(askingPrice) > 0)
+    ? (Number(mfNoi) / Number(askingPrice)) * 100 : null;
+  const capRate = calcCap ?? statedCap;
 
   if (capRate !== null && capRate !== undefined) {
     pricingConditions++;
@@ -1872,12 +1891,16 @@ function retailRecommendation(band: string, score: number, fields: Record<string
     }
     return undefined;
   };
-  const capRate = first("pricing_deal_terms.cap_rate_actual", "pricing_deal_terms.cap_rate_asking", "pricing_deal_terms.cap_rate_om", "pricing_deal_terms.entry_cap_rate");
+  const statedCap = first("pricing_deal_terms.cap_rate_actual", "pricing_deal_terms.cap_rate_asking", "pricing_deal_terms.cap_rate_om", "pricing_deal_terms.entry_cap_rate");
   const occupancy = first("property_basics.occupancy_pct", "property_basics.occupancy");
   const dscr = first("debt_assumptions.dscr", "debt_assumptions.dscr_om", "debt_assumptions.dscr_adjusted");
   const noi = first("expenses.noi", "expenses.noi_om", "expenses.noi_adjusted", "expenses.net_operating_income");
   const wale = first("rent_roll.weighted_avg_lease_term", "property_basics.wale_years", "rent_roll.wale", "lease_data.wale_years");
   const price = first("pricing_deal_terms.asking_price", "pricing_deal_terms.purchase_price", "pricing_deal_terms.list_price");
+
+  // Prefer calculated cap rate so an overridden asking price shows in the recommendation text
+  const calcCap = (noi && price && noi > 0 && price > 0) ? (noi / price) * 100 : undefined;
+  const capRate = calcCap ?? statedCap;
 
   const strengths: string[] = [];
   const concerns: string[] = [];
@@ -1948,7 +1971,7 @@ export function scoreRetailPure(fields: Record<string, any>): ScoringResult {
     return maxPoints > 0 ? Math.round((earned / maxPoints) * 100) : 50;
   }
 
-  const capRate = getFirst(
+  const statedCapRate = getFirst(
     "pricing_deal_terms.cap_rate_actual",
     "pricing_deal_terms.cap_rate_asking",
     "pricing_deal_terms.cap_rate_om",
@@ -1957,13 +1980,23 @@ export function scoreRetailPure(fields: Record<string, any>): ScoringResult {
   const occupancy = getFirst("property_basics.occupancy_pct", "property_basics.occupancy");
   const noi = getFirst("expenses.noi", "expenses.noi_om", "expenses.noi_adjusted", "expenses.net_operating_income");
   const price = getFirst("pricing_deal_terms.asking_price", "pricing_deal_terms.purchase_price", "pricing_deal_terms.list_price");
-  const priceSf = getFirst("pricing_deal_terms.price_per_sf", "pricing_deal_terms.price_psf");
+  const statedPriceSf = getFirst("pricing_deal_terms.price_per_sf", "pricing_deal_terms.price_psf");
   const leaseTerms = getFirst("rent_roll.weighted_avg_lease_term", "property_basics.wale_years", "rent_roll.wale", "lease_data.wale_years");
   const dscr = getFirst("debt_assumptions.dscr", "debt_assumptions.dscr_om", "debt_assumptions.dscr_adjusted");
   const tenantCredit = getVal("tenant_info.tenant_credit_rating");
   const buildingSf = getFirst("property_basics.building_sf", "property_basics.gla", "property_basics.gla_sf");
   const yearBuilt = getFirst("property_basics.year_built");
   const baseRent = getFirst("income.base_rent", "income.total_rent", "rent_roll.total_rent");
+
+  // Derive cap rate and price/SF from current price so an overridden
+  // asking price flows into the score. Prefer calculated when available.
+  const calculatedCapRate = (noi && price && noi > 0 && price > 0)
+    ? (noi / price) * 100 : undefined;
+  const capRate = calculatedCapRate ?? statedCapRate;
+
+  const calculatedPriceSf = (price && buildingSf && price > 0 && buildingSf > 0)
+    ? price / buildingSf : undefined;
+  const priceSf = calculatedPriceSf ?? statedPriceSf;
 
   let debtYield: number | undefined;
   if (noi && price && noi > 0 && price > 0) {

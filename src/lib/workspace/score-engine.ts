@@ -59,13 +59,19 @@ function getRecommendation(band: string, score: number, fields: Record<string, a
     for (const k of keys) { if (fields[k]?.value !== undefined && fields[k]?.value !== null) return fields[k].value; }
     return undefined;
   };
-  const capRate = first("pricing_deal_terms.cap_rate_actual", "pricing_deal_terms.cap_rate_asking", "pricing_deal_terms.cap_rate_om", "pricing_deal_terms.entry_cap_rate");
+  const statedCap = first("pricing_deal_terms.cap_rate_actual", "pricing_deal_terms.cap_rate_asking", "pricing_deal_terms.cap_rate_om", "pricing_deal_terms.entry_cap_rate");
   const occupancy = first("property_basics.occupancy_pct", "property_basics.occupancy");
   const dscr = first("debt_assumptions.dscr", "debt_assumptions.dscr_om", "debt_assumptions.dscr_adjusted");
   const noi = first("expenses.noi", "expenses.noi_om", "expenses.noi_adjusted", "expenses.net_operating_income");
   const wale = first("rent_roll.weighted_avg_lease_term", "property_basics.wale_years", "rent_roll.wale", "lease_data.wale_years");
   const price = first("pricing_deal_terms.asking_price", "pricing_deal_terms.purchase_price", "pricing_deal_terms.list_price");
   const priceSf = first("pricing_deal_terms.price_per_sf", "pricing_deal_terms.price_psf");
+
+  // Prefer calculated cap rate so the recommendation text reflects the
+  // actual purchase basis when the user overrides the asking price.
+  const calcCap = (noi && price && Number(noi) > 0 && Number(price) > 0)
+    ? (Number(noi) / Number(price)) * 100 : undefined;
+  const capRate = calcCap ?? statedCap;
 
   // Build specific strengths and concerns
   const strengths: string[] = [];
@@ -377,7 +383,7 @@ export async function runScoreEngine(params: {
     }
 
     // ── Extract core metrics with _om fallbacks ──
-    const capRate = getFirst(
+    const statedCapRate = getFirst(
       "pricing_deal_terms.cap_rate_actual",
       "pricing_deal_terms.cap_rate_asking",
       "pricing_deal_terms.cap_rate_om",
@@ -398,7 +404,7 @@ export async function runScoreEngine(params: {
       "pricing_deal_terms.purchase_price",
       "pricing_deal_terms.list_price",
     );
-    const priceSf = getFirst(
+    const statedPriceSf = getFirst(
       "pricing_deal_terms.price_per_sf",
       "pricing_deal_terms.price_psf",
     );
@@ -417,6 +423,19 @@ export async function runScoreEngine(params: {
     const buildingSf = getFirst("property_basics.building_sf", "property_basics.gla");
     const yearBuilt = getFirst("property_basics.year_built");
     const baseRent = getFirst("income.base_rent", "income.total_rent", "rent_roll.total_rent");
+
+    // Derive cap rate and price/SF from current price + NOI/SF so a
+    // user-overridden asking price immediately flows into the score.
+    // Prefer calculated values when both NOI and price are available,
+    // since they reflect the actual purchase basis; fall back to the
+    // OM-stated values when we can't compute.
+    const calculatedCapRate = (noi && price && noi > 0 && price > 0)
+      ? (noi / price) * 100 : undefined;
+    const capRate = calculatedCapRate ?? statedCapRate;
+
+    const calculatedPriceSf = (price && buildingSf && price > 0 && buildingSf > 0)
+      ? price / buildingSf : undefined;
+    const priceSf = calculatedPriceSf ?? statedPriceSf;
 
     // Compute debt yield if we have NOI and price
     let debtYield: number | undefined;
