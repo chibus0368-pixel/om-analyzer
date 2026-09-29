@@ -116,6 +116,14 @@ const nextConfig: NextConfig = {
   // Redirects configuration - WordPress migration redirects
   async redirects() {
     return [
+      // Old domain: send every dealsignals.app URL to the same path on www.scoreom.com
+      // (backup for the Vercel domain-level redirect; keeps old share / deal links working)
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: '(www\\.)?dealsignals\\.app' }],
+        destination: 'https://www.scoreom.com/:path*',
+        permanent: true,
+      },
       // Redirect /om-analyzer to root (homepage now lives at /)
       {
         source: '/om-analyzer',

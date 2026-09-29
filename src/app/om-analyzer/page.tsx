@@ -2158,6 +2158,7 @@ export default function OmAnalyzerPage() {
 
         .ds-om-outputs > div:hover { cursor: default; }
         /* Reusable curved green underline callout */
+        @media (max-width: 760px) { .so-hide-mobile { display: none !important; } }
         .ds-callout {
           color: #84CC16;
           position: relative;
@@ -2682,8 +2683,8 @@ export default function OmAnalyzerPage() {
                 <input ref={fileRef} type="file" style={{ display: "none" }} accept={ACCEPTED_EXT}
                   onChange={(e) => { if (e.target.files?.length) handleFile(e.target.files[0]); }} />
 
-                {/* Usage counter */}
-                {usageData && (
+                {/* Usage counter (hidden in free access mode, where the API reports a huge sentinel limit) */}
+                {usageData && usageData.uploadLimit < 1000 && (
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 14 }}>
                     <div style={{ height: 4, width: 56, background: "rgba(255,255,255,0.1)", borderRadius: 2, overflow: "hidden" }}>
                       <div style={{ height: "100%", borderRadius: 2, transition: "width 0.3s ease",
@@ -2705,17 +2706,17 @@ export default function OmAnalyzerPage() {
           <StackedFeatures />
 
           {/* ── WHY NOT CHATGPT: repeatable criteria + models ── */}
-          <CompareChatGPT />
+          <div className="so-hide-mobile"><CompareChatGPT /></div>
 
 
 
           {/* ── Hero showcase (native HTML/CSS mockup) ── */}
-          <div id="examples" style={{ scrollMarginTop: 80, paddingTop: 110 }}>
+          <div id="examples" className="so-hide-mobile" style={{ scrollMarginTop: 80, paddingTop: 110 }}>
             <HeroShowcase />
           </div>
 
           {/* ── WHO IT'S FOR (role tabs) ── */}
-          <RoleTabs />
+          <div className="so-hide-mobile"><RoleTabs /></div>
 
 
           {/* ── SHARE A DEALBOARD (silent explainer video) ── */}
@@ -2931,7 +2932,11 @@ export default function OmAnalyzerPage() {
                 :global(.ds-asset-grid) { grid-template-columns: repeat(3, 1fr) !important; }
               }
               @media (max-width: 700px) {
-                :global(.ds-asset-grid) { grid-template-columns: 1fr !important; gap: 12px !important; }
+                :global(.ds-asset-grid) { grid-template-columns: 1fr !important; gap: 10px !important; }
+                /* Phones: drop the line drawing + tags so each model is a short row */
+                :global(.ds-asset-tile) > div:nth-child(2), :global(.ds-asset-tile) > div:last-child { display: none !important; }
+                :global(.ds-asset-tile) { padding: 16px 18px !important; gap: 6px !important; }
+                :global(.ds-asset-tile) > div:nth-child(4) { min-height: 0 !important; }
               }
               @media (max-width: 420px) {
                 :global(.ds-asset-grid) { grid-template-columns: 1fr !important; }

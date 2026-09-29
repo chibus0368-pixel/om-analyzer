@@ -7,9 +7,9 @@ import { useAuth } from "@/lib/auth-context";
 
 
 // Keep the marketing nav simple: four anchors + Sign in / Get Started.
-const NAV_LINKS = [
+const NAV_LINKS: { href: string; label: string; sectionId: string; desktopOnly?: boolean }[] = [
   { href: "/#features", label: "Features", sectionId: "features" },
-  { href: "/#why", label: "Why ScoreOM?", sectionId: "why" },
+  { href: "/#why", label: "Why ScoreOM?", sectionId: "why", desktopOnly: true },
   { href: "/#intro-video", label: "Video", sectionId: "intro-video" },
   { href: "/#faq", label: "FAQ", sectionId: "faq" },
 ];
@@ -305,7 +305,7 @@ export default function ScoreOMNav() {
               Try It
             </button>
           )}
-          {NAV_LINKS.map(({ href, label, sectionId }) => (
+          {NAV_LINKS.filter(l => !l.desktopOnly).map(({ href, label, sectionId }) => (
             <Link prefetch={false}
               key={sectionId}
               href={href}

@@ -321,14 +321,7 @@ function WorkspaceLoginPageInner() {
         {/* ── Header ── */}
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
-            <span style={{
-              fontSize: 34, fontWeight: 800,
-              fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-              letterSpacing: -0.5, lineHeight: 1,
-            }} aria-label="ScoreOM">
-              <span style={{ color: "#0B1120" }}>Deal</span>
-              <span style={{ color: "#4D7C0F" }}>Signals</span>
-            </span>
+            <img src="/images/scoreom-logo-light.svg" alt="ScoreOM" style={{ height: 36, width: "auto", display: "block" }} />
           </div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0B1120", margin: 0, fontFamily: "'Inter', sans-serif" }}>
             {mode === "login" ? "Sign In" : "Create Your Account"}

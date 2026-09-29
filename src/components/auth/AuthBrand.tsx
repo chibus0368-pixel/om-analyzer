@@ -26,19 +26,11 @@ export function AuthBrand({
         gap: 6,
       }}
     >
-      <span
-        style={{
-          fontSize: size,
-          fontWeight: 800,
-          fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-          letterSpacing: -0.5,
-          lineHeight: 1,
-        }}
-        aria-label="ScoreOM"
-      >
-        <span style={{ color: "#0B1120" }}>Deal</span>
-        <span style={{ color: "#4D7C0F" }}>Signals</span>
-      </span>
+      <img
+        src="/images/scoreom-logo-light.svg"
+        alt="ScoreOM"
+        style={{ height: size, width: "auto", display: "block" }}
+      />
       {tagline ? (
         <p
           style={{

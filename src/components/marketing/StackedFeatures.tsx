@@ -629,6 +629,11 @@ export function StackStyles() {
         .so-chip-text strong { font-size:12px; }
         .so-chip-text span:not(.so-chip-label) { display:none; }
       }
+      @media (max-width: 760px) {
+        /* Phones: keep headline + one paragraph per card, drop the bullet list */
+        .so-stack-copy ul { display:none; }
+        .so-stack-copy p { font-size:15.5px; margin-bottom:0; }
+      }
 
       /* Compare */
       .so-compare-section { padding: 60px 32px 110px; }

@@ -28,7 +28,7 @@ export function IntroVideo() {
     <section id="intro-video" className="so-intro" style={{ scrollMarginTop: 90 }}>
       <div className="so-intro-head">
         <div className="so-pill-eyebrow"><span className="so-pill-dot" />Watch the walkthrough</div>
-        <h2>ScoreOM in <span className="ds-callout">80 seconds</span>.</h2>
+        <h2>ScoreOM in <span style={{ whiteSpace: "nowrap" }}><span className="ds-callout">80 seconds</span>.</span></h2>
         <p>Who it is for, what it does with the OMs you receive, and how the scores, DealBoards and sharing fit together.</p>
       </div>
       <div className="so-intro-frame">
