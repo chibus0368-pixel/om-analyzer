@@ -447,13 +447,21 @@ export default function AdminPage() {
       )}
 
       {/* Header */}
-      <div style={{ marginBottom: 28 }}>
+      <div style={{ marginBottom: 28, display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 12, flexWrap: "wrap" }}>
+        <div>
         <h1 style={{ fontSize: 28, fontWeight: 700, margin: "0 0 4px", color: "#111827", letterSpacing: -0.5 }}>
           Admin Console
         </h1>
         <p style={{ fontSize: 14, color: "#9CA3AF", margin: 0 }}>
           Manage users, dealboards, and billing for ScoreOM.
         </p>
+        </div>
+        <Link href="/workspace/admin/marketing" prefetch={false} style={{
+          display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 8,
+          background: "#0f172a", color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none",
+        }}>
+          <span style={{ color: "#84CC16" }}>&#9993;</span> Marketing: email + social
+        </Link>
       </div>
 
       {/* Beta Access Panel */}

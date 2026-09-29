@@ -4,6 +4,10 @@
     {
       "path": "/api/cron/tryme-sweep",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/marketing",
+      "schedule": "30 13 * * *"
     }
   ]
 }

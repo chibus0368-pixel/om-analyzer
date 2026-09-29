@@ -1,0 +1,23 @@
+name: Marketing scheduler
+
+# Calls the ScoreOM marketing scheduler every 15 minutes so scheduled
+# broadcasts, drip emails and social posts go out on time. Needs the repo
+# secret CRON_SECRET (same value as the CRON_SECRET env var in Vercel).
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Run scheduler
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then echo "CRON_SECRET secret is not set"; exit 1; fi
+          curl -sS --fail-with-body --max-time 320 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            https://www.scoreom.com/api/cron/marketing
