@@ -243,7 +243,7 @@ export default function ProductDemo() {
             <>
               <img
                 src={POSTER_SRC}
-                alt="ScoreOM deal page showing a 73/100 Buy score"
+                alt="ScoreOM deal page showing a 73/100 Strong fit score"
                 loading="lazy"
                 decoding="async"
                 style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}

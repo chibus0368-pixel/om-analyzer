@@ -19,7 +19,7 @@ export function IntroVideo() {
 
   const start = () => {
     const wide = typeof window !== "undefined" && window.innerWidth >= 900 && (window.devicePixelRatio || 1) * window.innerWidth >= 1200;
-    setSrc(wide ? "/videos/scoreom-intro-v4-1080.mp4" : "/videos/scoreom-intro-v4-720.mp4");
+    setSrc(wide ? "/videos/scoreom-intro-v5-1080.mp4" : "/videos/scoreom-intro-v5-720.mp4");
     setPlaying(true);
     requestAnimationFrame(() => { ref.current?.play().catch(() => {}); });
   };
@@ -36,7 +36,7 @@ export function IntroVideo() {
           <video
             ref={ref}
             src={src}
-            poster="/videos/scoreom-intro-v4-poster.webp"
+            poster="/videos/scoreom-intro-v5-poster.webp"
             controls
             autoPlay
             playsInline
@@ -45,7 +45,7 @@ export function IntroVideo() {
           />
         ) : (
           <button type="button" className="so-intro-poster" onClick={start} aria-label="Play the ScoreOM intro video with sound">
-            <img src="/videos/scoreom-intro-v4-poster.webp" alt="" loading="lazy" decoding="async" width={1600} height={900} />
+            <img src="/videos/scoreom-intro-v5-poster.webp" alt="" loading="lazy" decoding="async" width={1600} height={900} />
             <span className="so-intro-shade" aria-hidden />
             <span className="so-intro-play" aria-hidden>
               <svg viewBox="0 0 24 24" width="34" height="34"><path d="M8 5.5v13l11-6.5z" fill="#0d0d14" /></svg>

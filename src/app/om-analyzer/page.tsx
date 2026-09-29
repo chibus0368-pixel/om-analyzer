@@ -7,7 +7,7 @@ import Link from "next/link";
 import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
 import { extractTextFromFile } from "@/lib/workspace/file-reader";
 import ScoreOMNav from "@/components/ScoreOMNav";
-import { HeroStats, ShareBand, RoleTabs, HomeSectionStyles } from "@/components/marketing/HomeSections";
+import { HeroStats, HomeSectionStyles } from "@/components/marketing/HomeSections";
 import { IntroVideo } from "@/components/marketing/IntroVideo";
 import { HeroStars, PillEyebrow, StackedFeatures, CompareChatGPT, StackStyles } from "@/components/marketing/StackedFeatures";
 import { trackLiteUpload, trackLiteResult, trackLeadCapture, trackProCTAClick, trackDownload } from "@/lib/analytics";
@@ -412,7 +412,7 @@ function HeroShowcase() {
     },
     {
       name: "Harwood Retail Center", city: "Wauwatosa, WI", type: "Neighborhood Center",
-      score: 69, verdict: "BUY",
+      score: 69, verdict: "NEUTRAL",
       price: "$7.0M", cap: "8.39%", noi: "$587K", sf: "48.1K SF",
       photoUrl: "/pics/harwood.jpg",
       hero: "linear-gradient(135deg, #1f3a3a 0%, #2d5555 40%, #84CC16 180%)",
@@ -608,6 +608,8 @@ function HeroShowcase() {
     },
   ];
 
+  // Display labels: criteria-fit language, not buy/sell advice.
+  // 70+ Strong fit, 55-69 Worth review, under 55 Below criteria.
   const verdictColor: Record<string, { bg: string; fg: string; ring: string }> = {
     BUY:     { bg: "rgba(132,204,22,0.15)", fg: "#84CC16", ring: "#84CC16" },
     NEUTRAL: { bg: "rgba(217,119,6,0.15)",  fg: "#F59E0B", ring: "#F59E0B" },
@@ -759,7 +761,6 @@ function HeroShowcase() {
                       background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)",
                     }}>
                       <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{c.score}</div>
-                      <div style={{ fontSize: 6.5, fontWeight: 700, color: vc.fg, letterSpacing: 0.3, marginTop: 1 }}>{c.verdict}</div>
                     </div>
                     {/* Asset type badge in corner */}
                     <div style={{
@@ -909,6 +910,8 @@ function HeroShowcase() {
 
 /* Property quick-view modal - WHITE THEME, mirrors real PropertyDetailClient
    Auto-scroll cinematic reveal + price sensitivity table */
+const VERDICT_LABEL: Record<string, string> = { BUY: "Strong fit", NEUTRAL: "Worth review", PASS: "Below criteria" };
+
 function HeroCardModal({ card: c, displayPhoto, verdictColor, onClose }: {
   card: HeroCard;
   displayPhoto: string;
@@ -1093,15 +1096,14 @@ function HeroCardModal({ card: c, displayPhoto, verdictColor, onClose }: {
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
             }}>
               <div style={{ fontSize: 26, fontWeight: 800, color: LT.text, lineHeight: 1 }}>{c.score}</div>
-              <div style={{ fontSize: 8, fontWeight: 800, color: vcL.fg, letterSpacing: 0.6, marginTop: 3 }}>{c.verdict}</div>
             </div>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 10, color: LT.mutedSoft, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Deal Score</div>
+            <div style={{ fontSize: 10, color: LT.mutedSoft, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Deal Score &middot; <span style={{ color: vcL.fg }}>{VERDICT_LABEL[c.verdict]}</span></div>
             <div style={{ fontSize: 15, color: LT.text, fontWeight: 600, lineHeight: 1.4, marginTop: 4 }}>
-              {c.verdict === "BUY" && "Worth pursuing. Clean fundamentals, manageable risks."}
-              {c.verdict === "NEUTRAL" && "Not a clear winner. Proceed only if thesis fits."}
-              {c.verdict === "PASS" && "Skip. Risk profile doesn't justify the price."}
+              {c.verdict === "BUY" && "Clears the criteria on pricing, cash flow and tenancy. Worth a closer look."}
+              {c.verdict === "NEUTRAL" && "Meets some criteria, misses others. Worth a review if it fits your thesis."}
+              {c.verdict === "PASS" && "Falls short of the criteria at this price."}
             </div>
           </div>
         </div>
@@ -2591,13 +2593,13 @@ export default function OmAnalyzerPage() {
             <div style={{ position: "absolute", top: -100, left: -200, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.12)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
             <div style={{ position: "absolute", bottom: -100, right: -150, width: 400, height: 400, borderRadius: "50%", background: "rgba(132,204,22,0.06)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
             <div className="so-hero-center" style={{ animation: "fadeInUp 0.5s ease-out" }}>
-              <PillEyebrow>For commercial real estate investors</PillEyebrow>
+              <PillEyebrow>For CRE investors, brokers, lenders and owner-operators</PillEyebrow>
               <h1 className="so-hero-h1">
-                Every OM you receive.
-                <span className="accent">Broken down <span className="ds-callout">in a minute</span>.</span>
+                Turn your CRE deal&nbsp;flow
+                <span className="accent">into a <span className="ds-callout">ranked pipeline</span>.</span>
               </h1>
               <p className="so-hero-sub">
-                Upload the retail, industrial, office and multifamily OMs that hit your inbox. ScoreOM pulls the numbers, rebuilds the NOI and scores every deal on the same criteria, so your whole CRE pipeline sits in one view you can rank and share.
+                Drop in every OM you receive. ScoreOM extracts the numbers, normalizes the deal, gives you a first-pass score, and keeps everything organized in one place.
               </p>
 
               <div className="so-upload-label"><span className="so-pill-dot" />Try it now. Drop in an OM, no signup needed.</div>
@@ -2708,42 +2710,14 @@ export default function OmAnalyzerPage() {
           {/* ── WHY NOT CHATGPT: repeatable criteria + models ── */}
           <div className="so-hide-mobile"><CompareChatGPT /></div>
 
-          {/* ── ASSET-SPECIFIC MODELS (highlight only, no backend detail) ── */}
-          <div id="asset-models" className="ds-section-pad" style={{
-            padding: "85px 32px 68px", background: "#0d0d14",
-            position: "relative", overflow: "hidden",
-            borderTop: "1px solid rgba(255,255,255,0.04)",
-          }}>
-            {/* Soft backdrop glow */}
-            <div style={{
-              position: "absolute", top: "15%", left: "50%", transform: "translateX(-50%)",
-              width: 900, height: 500, borderRadius: "50%",
-              background: "rgba(132,204,22,0.04)", filter: "blur(160px)",
-              pointerEvents: "none",
-            }} />
-
-            <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
-              {/* Section header */}
-              <div style={{ textAlign: "center", marginBottom: 48 }}>
-                <div className="so-pill-eyebrow" style={{ marginBottom: 18 }}><span className="so-pill-dot" />Asset-specific models</div>
-                <h2 style={{
-                  fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15,
-                  marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif",
-                }}>
-                  A dedicated model for the <span className="ds-callout">top three asset classes</span>.
-                </h2>
-                <p style={{ fontSize: 17, color: "#9ca3af", lineHeight: 1.7, maxWidth: 640, margin: "0 auto" }}>
-                  A grocery-anchored center doesn&apos;t score the same way as a warehouse or a suburban office building.
-                  Each asset type gets its own purpose-built model - so the signal you get is the signal that matters.
-                </p>
-              </div>
-
-              {/* Asset tile grid - retail, industrial and office models with line drawings */}
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: 16,
-              }} className="ds-asset-grid">
+          {/* ── ASSET-SPECIFIC MODELS (compact strip) ── */}
+          <div id="asset-models" className="so-assets" style={{ padding: "56px 24px 64px", position: "relative", zIndex: 2 }}>
+            <div style={{ maxWidth: 1000, margin: "0 auto", textAlign: "center" }}>
+              <div className="so-pill-eyebrow" style={{ marginBottom: 12 }}><span className="so-pill-dot" />Asset-specific models</div>
+              <h2 style={{ fontSize: 26, fontWeight: 800, color: "#fff", lineHeight: 1.25, margin: "0 0 24px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                Each OM is scored with a model built for its asset class.
+              </h2>
+              <div className="so-assets-grid">
                 {[
                   {
                     label: "Retail",
@@ -2809,143 +2783,26 @@ export default function OmAnalyzerPage() {
                       </>
                     ),
                   },
-                ].map((a, i) => (
-                  <div
-                    key={a.label}
-                    className="ds-asset-tile"
-                    style={{
-                      position: "relative",
-                      display: "flex", flexDirection: "column", gap: 12,
-                      padding: "22px 18px 20px",
-                      background: "linear-gradient(180deg, rgba(22,26,35,0.65) 0%, rgba(14,14,22,0.8) 100%)",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      borderRadius: 16,
-                      textAlign: "left",
-                      transition: "all 0.25s ease",
-                      cursor: "default",
-                      animationDelay: `${i * 60}ms`,
-                      overflow: "hidden",
-                    }}
-                  >
-                    {/* Corner glow */}
-                    <div style={{
-                      position: "absolute", top: -30, right: -30, width: 110, height: 110,
-                      background: "radial-gradient(circle, rgba(132,204,22,0.10) 0%, rgba(132,204,22,0) 70%)",
-                      pointerEvents: "none",
-                    }} />
-
-                    {/* Line drawing illustration */}
-                    <div style={{
-                      position: "relative",
-                      height: 96, borderRadius: 10,
-                      background: "linear-gradient(180deg, rgba(132,204,22,0.05) 0%, rgba(132,204,22,0.00) 100%)",
-                      border: "1px solid rgba(132,204,22,0.12)",
-                      display: "flex", alignItems: "flex-end", justifyContent: "center",
-                      padding: "10px 0 6px",
-                    }}>
-                      {/* Subtle grid lines */}
-                      <div style={{
-                        position: "absolute", inset: 0, borderRadius: 10,
-                        backgroundImage: "linear-gradient(rgba(132,204,22,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(132,204,22,0.04) 1px, transparent 1px)",
-                        backgroundSize: "10px 10px",
-                        pointerEvents: "none",
-                      }} />
-                      <svg
-                        viewBox="0 0 50 42"
-                        width="100%"
-                        height="100%"
-                        fill="none"
-                        stroke="#84CC16"
-                        strokeWidth="1.2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        style={{ position: "relative", maxWidth: 150 }}
-                      >
-                        {a.draw}
-                      </svg>
-                    </div>
-
-                    {/* Label + tag */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                      <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", letterSpacing: -0.2 }}>{a.label}</div>
-                      <div style={{
-                        fontSize: 9, fontWeight: 800, letterSpacing: 0.6, textTransform: "uppercase",
-                        color: "#84CC16",
-                        background: "rgba(132,204,22,0.10)",
-                        padding: "3px 8px", borderRadius: 4,
-                        border: "1px solid rgba(132,204,22,0.22)",
-                      }}>Model</div>
-                    </div>
-
-                    {/* Blurb */}
-                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.60)", lineHeight: 1.55, minHeight: 54 }}>
-                      {a.blurb}
-                    </div>
-
-                    {/* Weights */}
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: "auto" }}>
-                      {a.weights.map(w => (
-                        <span key={w} style={{
-                          fontSize: 9.5, fontWeight: 700,
-                          color: "rgba(255,255,255,0.75)",
-                          background: "rgba(255,255,255,0.05)",
-                          border: "1px solid rgba(255,255,255,0.08)",
-                          padding: "3px 7px", borderRadius: 20,
-                        }}>{w}</span>
-                      ))}
+                ].map((a) => (
+                  <div key={a.label} className="so-asset">
+                    <svg viewBox="4 6 44 34" width="52" height="40" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden style={{ flexShrink: 0 }}>{a.draw}</svg>
+                    <div style={{ textAlign: "left", minWidth: 0 }}>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>{a.label}</div>
+                      <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)", lineHeight: 1.45 }}>{a.blurb}</div>
                     </div>
                   </div>
                 ))}
               </div>
-
-              {/* Footer note */}
-              <div style={{
-                marginTop: 36, textAlign: "center",
-                fontSize: 13, color: "rgba(255,255,255,0.45)",
-              }}>
-                We auto-detect the asset type from your OM and route it to the right model.
-                <span style={{ color: "#84CC16", fontWeight: 600 }}> No extra clicks.</span>
-              </div>
+              <div style={{ marginTop: 16, fontSize: 13, color: "rgba(255,255,255,0.45)" }}>The asset type is detected from the OM automatically.</div>
             </div>
-
             <style jsx>{`
-              :global(.ds-asset-tile):hover {
-                transform: translateY(-3px);
-                border-color: rgba(132,204,22,0.32) !important;
-                box-shadow: 0 12px 32px rgba(0,0,0,0.45), 0 0 40px rgba(132,204,22,0.08);
-              }
-              @media (max-width: 1000px) {
-                :global(.ds-asset-grid) { grid-template-columns: repeat(3, 1fr) !important; }
-              }
-              @media (max-width: 700px) {
-                :global(.ds-asset-grid) { grid-template-columns: 1fr !important; gap: 10px !important; }
-                /* Phones: drop the line drawing + tags so each model is a short row */
-                :global(.ds-asset-tile) > div:nth-child(2), :global(.ds-asset-tile) > div:last-child { display: none !important; }
-                :global(.ds-asset-tile) { padding: 16px 18px !important; gap: 6px !important; }
-                :global(.ds-asset-tile) > div:nth-child(4) { min-height: 0 !important; }
-              }
-              @media (max-width: 420px) {
-                :global(.ds-asset-grid) { grid-template-columns: 1fr !important; }
-              }
+              :global(.so-assets-grid) { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+              :global(.so-asset) { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 14px;
+                background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); }
+              @media (max-width: 760px) { :global(.so-assets-grid) { grid-template-columns: 1fr; gap: 8px; } }
             `}</style>
           </div>
 
-          {/* The ChatGPT comparison now lives in <CompareChatGPT /> near the top. */}
-
-
-
-
-          {/* ── Hero showcase (native HTML/CSS mockup) ── */}
-          <div id="examples" className="so-hide-mobile" style={{ scrollMarginTop: 80, paddingTop: 110 }}>
-            <HeroShowcase />
-          </div>
-
-          {/* ── WHO IT'S FOR (role tabs) ── */}
-          <div className="so-hide-mobile"><RoleTabs /></div>
-
-
-          {/* ── SHARE A DEALBOARD (silent explainer video) ── */}
-          <ShareBand />
 
           {/* ── INTRO VIDEO (click to play, streams progressively) ── */}
           <IntroVideo />
@@ -2979,7 +2836,7 @@ export default function OmAnalyzerPage() {
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "0 0 8px", marginBottom: 4 }}>Getting Started</div>
 
                 {[
-                  { q: "What exactly does ScoreOM do?", a: "ScoreOM is a pre-diligence engine for commercial real estate. Upload an OM, rent roll, or broker flyer and get a scored deal brief with extracted financials, risk signals, and a buy/hold/pass recommendation in under 60 seconds." },
+                  { q: "What exactly does ScoreOM do?", a: "ScoreOM is a pre-diligence engine for commercial real estate. Upload an OM, rent roll, or broker flyer and get a scored deal brief with extracted financials, risk signals, and a first-pass score against consistent criteria in about a minute." },
                   { q: "Who is this built for?", a: "Active CRE investors, acquisition analysts, and brokers who evaluate multiple deals per week. If you spend time reading OMs and building spreadsheets before deciding whether to pursue a deal, ScoreOM gives you that answer faster." },
                   { q: "What file types can I upload?", a: "PDF (recommended for best accuracy), Word (.docx), Excel (.xlsx/.xls), CSV, and plain text files. Maximum file size is 50MB. Multi-page OMs, single-page flyers, and rent rolls all work." },
                   { q: "How accurate is the extraction?", a: "90%+ accuracy on standard CRE metrics like price, cap rate, NOI, tenant name, lease terms, and building size. ScoreOM is designed for pre-diligence speed. Always verify against the source document before making final investment decisions." },
@@ -3360,10 +3217,10 @@ export default function OmAnalyzerPage() {
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#ffffff", marginBottom: 18, textTransform: "uppercase", letterSpacing: 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Product</div>
             {[
-              { label: "Examples", hash: "examples" },
-              { label: "How it works", hash: "demo" },
               { label: "Features", hash: "features" },
-              { label: "Who it's for", hash: "who" },
+              { label: "Why ScoreOM", hash: "why" },
+              { label: "Asset models", hash: "asset-models" },
+              { label: "Video", hash: "intro-video" },
               { label: "FAQ", hash: "faq" },
             ].map(link => (
               <a

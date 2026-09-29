@@ -145,6 +145,7 @@ type StackCard = {
   id: string;
   eyebrow: string;
   title: string;
+  hl?: string; // phrase in the title shown in brand lime
   body: string;
   points: string[];
   frags: Frag[];
@@ -160,10 +161,11 @@ const CARDS: StackCard[] = [
     id: "score",
     eyebrow: "Deal Score",
     title: "See under the hood in a minute",
+    hl: "under the hood",
     body: "Drop in the OM and get the numbers you check first, a plain-English brief and a 100-point score built on your criteria.",
-    points: ["Going-in cap, DSCR, price vs. replacement, base IRR", "Strengths and concerns pulled from the OM"],
+    points: ["Going-in cap, DSCR, price vs. replacement, base IRR", "Strengths and concerns pulled from the OM", "Add the rent roll or T-12 later to sharpen the analysis"],
     frags: [
-      { panel: "score", alt: "Deal Score panel for West Bend Plaza: 73 of 100, Buy", x: 0, y: 8, w: 76, z: 2 },
+      { panel: "score", alt: "Deal Score panel for West Bend Plaza: 73 of 100, Strong fit", x: 0, y: 8, w: 76, z: 2 },
       { chip: { ins: true, tone: "green", icon: "check", label: "Key strength", title: "Fully leased", body: "100% occupancy across 12 units.", tag: "From the OM" }, x: 70, y: 2, w: 0, z: 5 },
       { chip: { ins: true, tone: "lime", icon: "trend", label: "Opportunity", title: "Below-market rents", body: "Average rent per SF sits under market. Room to push on renewal.", tag: "Upside" }, x: 72, y: 30, w: 0, z: 6 },
       { chip: { ins: true, tone: "red", icon: "alert", label: "Concern", title: "Tenant concentration", body: "Hobby Knights holds 21% of GLA. A few tenants carry the rent.", tag: "Verify leases" }, x: 69, y: 60, w: 0, z: 7 },
@@ -173,6 +175,7 @@ const CARDS: StackCard[] = [
     id: "noi",
     eyebrow: "Financials + Rent Roll",
     title: "Find the real NOI",
+    hl: "real NOI",
     body: "The operating statement is rebuilt with vacancy and reserves applied, next to a tenant-level rent roll with every expiration.",
     points: ["OM-stated vs. adjusted NOI, side by side", "Near-term rollover and concentration flagged"],
     flip: true,
@@ -187,6 +190,7 @@ const CARDS: StackCard[] = [
     id: "offer",
     eyebrow: "Offer Scenarios",
     title: "Know your number before you call the broker",
+    hl: "your number",
     body: "Returns at the ask and from 15% under to 5% over, plus bull, base and bear cases with the assumptions spelled out.",
     points: ["Green clears your target IRR", "Same assumptions on every deal, so they compare cleanly"],
     frags: [
@@ -200,6 +204,7 @@ const CARDS: StackCard[] = [
     id: "rank",
     eyebrow: "DealBoards",
     title: "Line up every deal you are looking at",
+    hl: "every deal",
     body: "Every OM you receive lands on a DealBoard, broken down the same way and ranked by score, price, cap rate, NOI and occupancy.",
     points: ["One normalized view of your whole pipeline", "Boards by market, asset class, client or strategy"],
     flip: true,
@@ -212,10 +217,11 @@ const CARDS: StackCard[] = [
   },
   {
     id: "share",
-    eyebrow: "Share",
+    eyebrow: "Share + export",
     title: "Share a DealBoard with one link",
+    hl: "one link",
     body: "Send partners, lenders or clients a live board of deals on a map. They click the link and see the numbers. No login needed.",
-    points: ["Map view of every deal on the board", "Read-only deal pages with photos and key metrics"],
+    points: ["Map view of every deal on the board", "Email any deal with an Excel workbook and Word brief attached"],
     frags: [
       { src: "/videos/usage/usage-share-board-live-poster.webp", video: "/videos/usage/usage-share-board-live.mp4", alt: "Screen recording of a shared DealBoard with a map and property list", x: 14, y: 0, w: 86, z: 2 },
       { panel: "share", alt: "Share DealBoard panel with a copied link, public viewing on, 17 deals and 50 views", x: 0, y: 44, w: 50, z: 3 },
@@ -223,33 +229,8 @@ const CARDS: StackCard[] = [
       { chip: { ins: true, tone: "green", icon: "check", label: "Live map", title: "Every deal pinned", body: "Click a pin for photos, score and key metrics." }, x: 3, y: 0, w: 0, z: 5 },
     ],
   },
-  {
-    id: "email",
-    eyebrow: "Email + Files",
-    title: "Send the breakdown, files included",
-    body: "The moment you upload an OM, ScoreOM builds an Excel workbook and a Word brief. Email the whole deal breakdown in two clicks with both attached.",
-    points: ["Excel workbook and Word brief generated on upload", "Formatted deal page emailed to anyone"],
-    flip: true,
-    frags: [
-      { src: "/videos/usage/usage-email-poster.webp", video: "/videos/usage/usage-email.mp4", alt: "Screen recording emailing a deal with the workbook and brief attached", x: 0, y: 0, w: 86, z: 2 },
-      { panel: "email", alt: "Email panel with recipient, subject, Excel workbook and Word brief attached", x: 50, y: 40, w: 50, z: 3 },
-      { chip: { ins: true, tone: "green", icon: "doc", label: "Built on upload", title: "Workbook + brief, automatic", body: "An Excel workbook and a Word summary for every OM.", tag: "No extra steps" }, x: 1, y: 58, w: 0, z: 5 },
-      { chip: { ins: true, tone: "blue", icon: "link", label: "Two clicks", title: "Email the full breakdown", body: "Formatted deal page plus both files, to anyone." }, x: 60, y: 0, w: 0, z: 5 },
-    ],
-  },
-  {
-    id: "docs",
-    eyebrow: "Multiple documents",
-    title: "Feed it more, get a sharper read",
-    body: "Add the OM, rent roll, T-12, lease abstracts or a flyer to the same deal. A light OM with no rent roll or financials says little. The more you give it, the better the breakdown.",
-    points: ["Several files per deal, re-analyze anytime", "Tells you which documents would improve the analysis"],
-    frags: [
-      { panel: "docs", alt: "Source documents panel: OM, rent roll and T-12 attached, lease abstracts suggested, read quality Sharp", x: 0, y: 8, w: 76, z: 2 },
-      { chip: { ins: true, tone: "green", icon: "check", label: "Rent roll added", title: "12 units reconciled", body: "Tenant rents checked against what the OM claims.", tag: "Verified" }, x: 70, y: 2, w: 0, z: 5 },
-      { chip: { ins: true, tone: "lime", icon: "trend", label: "T-12 added", title: "NOI from actuals", body: "Rebuilt from the operating statement, not the pro forma.", tag: "Sharper" }, x: 72, y: 30, w: 0, z: 6 },
-      { chip: { ins: true, tone: "amber", icon: "alert", label: "Might improve analysis", title: "Add lease abstracts", body: "Confirms options, escalations and expirations.", tag: "Suggested" }, x: 69, y: 60, w: 0, z: 7 },
-    ],
-  },
+
+
 ];
 
 const TONE: Record<Chip["tone"], [string, string]> = {
@@ -379,7 +360,9 @@ export function StackedFeatures() {
           <article key={c.id} className={`so-stack-card${c.flip ? " flip" : ""}`} style={{ ["--i" as string]: i, zIndex: i + 1 }}>
             <div className="so-stack-copy">
               <div className="so-stack-eyebrow"><span />{c.eyebrow}</div>
-              <h3>{c.title}</h3>
+              <h3>{c.hl && c.title.includes(c.hl)
+                ? <>{c.title.split(c.hl)[0]}<span className="so-hl">{c.hl}</span>{c.title.split(c.hl).slice(1).join(c.hl)}</>
+                : c.title}</h3>
               <p>{c.body}</p>
               <ul>
                 {c.points.map((p) => (
@@ -439,11 +422,11 @@ const COMPARE: { label: string; us: string; them: string }[] = [
 /* Scores that pop onto the five normalized cards in the lens illustration.
    Positions are the ring centres in the 1400x791 artwork, as % of its size. */
 const SCORED = [
-  { x: 55.9, y: 46.7, v: 73, verdict: "Buy", tone: "g", top: true },
-  { x: 64.3, y: 46.7, v: 66, verdict: "Neutral", tone: "a" },
-  { x: 72.6, y: 46.7, v: 58, verdict: "Neutral", tone: "a" },
-  { x: 81.0, y: 46.7, v: 81, verdict: "Strong buy", tone: "g", top: true },
-  { x: 89.4, y: 46.7, v: 45, verdict: "Pass", tone: "r" },
+  { x: 55.9, y: 46.7, v: 73, verdict: "Strong fit", tone: "g", top: true },
+  { x: 64.3, y: 46.7, v: 66, verdict: "Worth review", tone: "a" },
+  { x: 72.6, y: 46.7, v: 58, verdict: "Worth review", tone: "a" },
+  { x: 81.0, y: 46.7, v: 81, verdict: "Strong fit", tone: "g", top: true },
+  { x: 89.4, y: 46.7, v: 45, verdict: "Below criteria", tone: "r" },
 ];
 
 export function CompareChatGPT() {
@@ -564,6 +547,8 @@ export function StackStyles() {
         letter-spacing:-0.03em; line-height:1.08; color:#fff; margin: 22px 0 14px; }
       .so-stack-head p { color:#9ca3af; font-size:17px; line-height:1.65; margin:0; }
       .so-stack { max-width: 1220px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+      /* Desktop: extra scroll between sticky cards so each one holds a beat before the next covers it */
+      @media (min-width: 901px) { .so-stack { gap: 180px; } }
       .so-stack-card {
         --stack: 0;
         position: sticky; top: calc(100px + var(--i) * 14px);
@@ -585,6 +570,7 @@ export function StackStyles() {
       .so-stack-eyebrow { display:inline-flex; align-items:center; gap:9px; font-size:13px; font-weight:700; color:#d1d5db;
         letter-spacing:0.04em; text-transform:uppercase; }
       .so-stack-eyebrow span { width:8px; height:8px; border-radius:50%; background:${LIME}; box-shadow:0 0 12px ${LIME}; }
+      .so-stack-copy h3 .so-hl { color: #84CC16; }
       .so-stack-copy h3 { font-family:'Plus Jakarta Sans',sans-serif; font-size: clamp(30px, 3.3vw, 44px); font-weight:800;
         letter-spacing:-0.03em; line-height:1.08; color:#fff; margin: 18px 0 16px; }
       .so-stack-copy p { color:#9ca3af; font-size:17px; line-height:1.65; margin:0 0 22px; }

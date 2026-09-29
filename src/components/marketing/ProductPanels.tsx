@@ -60,7 +60,7 @@ function ScorePanel() {
       <div className="pp-hero">
         <Ring value={73} label="/100" />
         <div className="pp-hero-copy">
-          <div className="pp-hero-title">Buy <small>73 of 100</small></div>
+          <div className="pp-hero-title">Strong fit <small>73 of 100</small></div>
           <div className="pp-pills">
             <span className="pp-pill green"><i />Fully leased</span>
             <span className="pp-pill lime"><i />8.75% going-in cap</span>

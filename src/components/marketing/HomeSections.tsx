@@ -307,7 +307,7 @@ const FEATURES: Feature[] = [
       "Going-in cap, DSCR, price vs. replacement and base IRR up top",
     ],
     img: "/images/product/score.webp",
-    alt: "ScoreOM deal page for West Bend Plaza showing a 73 out of 100 Buy score, key strengths and primary concerns",
+    alt: "ScoreOM deal page for West Bend Plaza showing a 73 out of 100 Strong fit score, key strengths and primary concerns",
     url: "scoreom / deal / west-bend-plaza",
   },
   {
