@@ -2591,13 +2591,13 @@ export default function OmAnalyzerPage() {
             <div style={{ position: "absolute", top: -100, left: -200, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.12)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
             <div style={{ position: "absolute", bottom: -100, right: -150, width: 400, height: 400, borderRadius: "50%", background: "rgba(132,204,22,0.06)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
             <div className="so-hero-center" style={{ animation: "fadeInUp 0.5s ease-out" }}>
-              <PillEyebrow>For investors who receive a lot of OMs</PillEyebrow>
+              <PillEyebrow>For commercial real estate investors</PillEyebrow>
               <h1 className="so-hero-h1">
                 Every OM you receive.
                 <span className="accent">Broken down <span className="ds-callout">in a minute</span>.</span>
               </h1>
               <p className="so-hero-sub">
-                Upload the OMs that hit your inbox. ScoreOM pulls the numbers, rebuilds the NOI and scores each deal with the same criteria and models, so your whole pipeline sits in one normalized view you can rank and share.
+                Upload the retail, industrial, office and multifamily OMs that hit your inbox. ScoreOM pulls the numbers, rebuilds the NOI and scores every deal on the same criteria, so your whole CRE pipeline sits in one view you can rank and share.
               </p>
 
               <div className="so-upload-label"><span className="so-pill-dot" />Try it now. Drop in an OM, no signup needed.</div>

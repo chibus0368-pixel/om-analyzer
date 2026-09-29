@@ -206,7 +206,44 @@ function RankPanel() {
   );
 }
 
-export type PanelKind = "score" | "noi" | "offer" | "share" | "email" | "rank";
+/* ---------------- Source documents ---------------- */
+function DocsPanel() {
+  const docs: [string, string, string, string][] = [
+    ["PDF", "#dc2626", "Offering Memorandum.pdf", "38 pages"],
+    ["X", "#16a34a", "Rent Roll.xlsx", "12 units matched"],
+    ["PDF", "#dc2626", "T-12 Operating Statement.pdf", "NOI rebuilt"],
+  ];
+  const levels = ["Light", "Fair", "Solid", "Sharp"];
+  return (
+    <div className="pp pp-docs">
+      <Head title="Source documents" sub="West Bend Plaza · 3 files · re-analyzed" />
+      <div className="pp-doc-rows">
+        {docs.map(([ic, c, name, note]) => (
+          <div key={name}>
+            <span className="pp-file-ic" style={{ background: c }} aria-hidden>{ic}</span>
+            <b>{name}</b>
+            <small>{note}</small>
+            <em aria-hidden>{"\u2713"}</em>
+          </div>
+        ))}
+        <div className="add">
+          <span className="pp-file-ic" aria-hidden>+</span>
+          <b>Lease abstracts</b>
+          <small>Suggested</small>
+        </div>
+      </div>
+      <div className="pp-read">
+        <div className="pp-read-top"><span>Read quality</span><b>Sharp</b></div>
+        <div className="pp-read-bar">
+          {levels.map((l, i) => <div key={l} className={i < 4 ? "on" : ""} style={{ animationDelay: `${i * 0.18}s` }}><small>{l}</small></div>)}
+        </div>
+        <div className="pp-read-note">OM only was a Light read. The rent roll and T-12 took it to Sharp.</div>
+      </div>
+    </div>
+  );
+}
+
+export type PanelKind = "score" | "noi" | "offer" | "share" | "email" | "rank" | "docs";
 
 export function ProductPanel({ kind }: { kind: PanelKind }) {
   if (kind === "score") return <ScorePanel />;
@@ -214,6 +251,7 @@ export function ProductPanel({ kind }: { kind: PanelKind }) {
   if (kind === "share") return <SharePanel />;
   if (kind === "email") return <EmailPanel />;
   if (kind === "rank") return <RankPanel />;
+  if (kind === "docs") return <DocsPanel />;
   return <OfferPanel />;
 }
 
@@ -323,6 +361,30 @@ export function PanelStyles() {
       .pp-rank-rows em { font-style:normal; font-weight:800; text-align:center; border-radius:99em; padding:.2em 0; }
       .pp-rank-rows em.g { background:rgba(132,204,22,0.18); color:#3f6212; }
       .pp-rank-rows em.a { background:rgba(245,158,11,0.16); color:#b45309; }
+      .pp.pp-docs { padding-right: 5.2em; }
+      .pp-doc-rows { display:grid; gap:.5em; margin-bottom:1.1em; }
+      .pp-doc-rows > div { display:flex; align-items:center; gap:.8em; padding:.65em .85em; border-radius:.8em; border:1px solid #e2e8f0; animation: ppIn .5s ease both; }
+      .pp-doc-rows > div:nth-child(2) { animation-delay:.12s } .pp-doc-rows > div:nth-child(3) { animation-delay:.24s } .pp-doc-rows > div:nth-child(4) { animation-delay:.36s }
+      .pp-doc-rows .pp-file-ic { font-size:.72em; width:2.4em; height:2.7em; }
+      .pp-doc-rows b { flex:1; font-size:1em; font-weight:700; color:#0f172a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .pp-doc-rows small { font-size:.8em; color:#64748b; font-weight:600; white-space:nowrap; }
+      .pp-doc-rows em { font-style:normal; width:1.5em; height:1.5em; border-radius:50%; background:${LIME}; color:#0f172a; font-weight:800; font-size:.85em; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+      .pp-doc-rows .add { border:.12em dashed #f59e0b; background:rgba(245,158,11,0.06); }
+      .pp-doc-rows .add .pp-file-ic { background:#fff; color:#b45309; border:.12em dashed #f59e0b; font-size:1em; width:1.7em; height:1.9em; }
+      .pp-doc-rows .add b { color:#92400e; }
+      .pp-doc-rows .add small { color:#b45309; font-weight:800; background:rgba(245,158,11,0.16); padding:.25em .7em; border-radius:99em; }
+      .pp-read { padding:1em 1.1em; border-radius:1em; background:#0f172a; }
+      .pp-read-top { display:flex; justify-content:flex-start; gap:.7em; align-items:baseline; margin-bottom:.6em; }
+      .pp-read-top span { font-size:.75em; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#94a3b8; }
+      .pp-read-top b { font-size:1.35em; font-weight:800; color:${LIME}; letter-spacing:-0.02em; }
+      .pp-read-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:.35em; }
+      .pp-read-bar > div { height:1.9em; border-radius:.4em; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; }
+      .pp-read-bar > div.on { background:linear-gradient(90deg,#65a30d,${LIME}); animation: ppFill .5s ease both; }
+      .pp-read-bar > div:nth-child(1).on { background:#f59e0b; } .pp-read-bar > div:nth-child(2).on { background:#eab308; } .pp-read-bar > div:nth-child(3).on { background:#a3e635; }
+      .pp-read-bar small { font-size:.72em; font-weight:800; color:#0f172a; }
+      .pp-read-note { font-size:.82em; color:#cbd5e1; margin-top:.6em; line-height:1.4; }
+      @keyframes ppIn { from { opacity:0; transform:translateY(.5em); } to { opacity:1; transform:none; } }
+      @keyframes ppFill { from { opacity:.15; } to { opacity:1; } }
       /* Insight cards (dealstack-style callouts) */
       .so-chip.ins { font-size: 1.78cqw; display:block; white-space:normal; width: 15.5em; padding: 1em 1.1em 1.05em; border-radius: 1em; }
       .so-chip.ins .ins-head { display:flex; align-items:center; gap:.5em; font-size: 1.05em; font-weight: 800; margin-bottom: .35em; }

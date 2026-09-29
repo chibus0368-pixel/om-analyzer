@@ -244,8 +244,10 @@ const CARDS: StackCard[] = [
     body: "Add the OM, rent roll, T-12, lease abstracts or a flyer to the same deal. A light OM with no rent roll or financials says little. The more you give it, the better the breakdown.",
     points: ["Several files per deal, re-analyze anytime", "Tells you which documents would improve the analysis"],
     frags: [
-      { src: "/videos/usage/usage-multi-docs-poster.webp", video: "/videos/usage/usage-multi-docs.mp4", alt: "Screen recording of a deal with three source documents and suggested rent roll and T-12 uploads", x: 0, y: 8, w: 100, z: 2 },
-      { chip: { tone: "amber", icon: "alert", title: "Might improve analysis", body: "Add the rent roll and T-12" }, x: 50, y: 76, w: 0, z: 5 },
+      { panel: "docs", alt: "Source documents panel: OM, rent roll and T-12 attached, lease abstracts suggested, read quality Sharp", x: 0, y: 8, w: 76, z: 2 },
+      { chip: { ins: true, tone: "green", icon: "check", label: "Rent roll added", title: "12 units reconciled", body: "Tenant rents checked against what the OM claims.", tag: "Verified" }, x: 70, y: 2, w: 0, z: 5 },
+      { chip: { ins: true, tone: "lime", icon: "trend", label: "T-12 added", title: "NOI from actuals", body: "Rebuilt from the operating statement, not the pro forma.", tag: "Sharper" }, x: 72, y: 30, w: 0, z: 6 },
+      { chip: { ins: true, tone: "amber", icon: "alert", label: "Might improve analysis", title: "Add lease abstracts", body: "Confirms options, escalations and expirations.", tag: "Suggested" }, x: 69, y: 60, w: 0, z: 7 },
     ],
   },
 ];

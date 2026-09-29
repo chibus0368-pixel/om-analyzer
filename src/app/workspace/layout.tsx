@@ -517,6 +517,22 @@ function SidebarWorkspaceSwitcher({ collapsed, onAddNew }: { collapsed: boolean;
               <span style={{ fontSize: 14, lineHeight: 1 }}>+</span>
               <span>Add New DealBoard</span>
             </button>
+            <button
+              onClick={() => { setOpen(false); router.push("/workspace/manage"); }}
+              className="ws-nav"
+              style={{
+                display: "flex", alignItems: "center", gap: 10, width: "100%",
+                padding: "12px 14px", background: "transparent",
+                border: "none", cursor: "pointer", fontSize: 14,
+                color: "#64748b", fontWeight: 600, fontFamily: "inherit",
+                textAlign: "left", transition: "color 0.15s", borderRadius: 8,
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = "#84CC16")}
+              onMouseLeave={e => (e.currentTarget.style.color = "#64748b")}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+              <span>Edit DealBoards</span>
+            </button>
           </div>
         </div>
       )}
@@ -633,6 +649,22 @@ function HeaderWorkspaceSwitcher({ onAddNew }: { onAddNew: () => void }) {
             >
               <span style={{ fontSize: 14, lineHeight: 1 }}>+</span>
               <span>Add New DealBoard</span>
+            </button>
+            <button
+              onClick={() => { setOpen(false); router.push("/workspace/manage"); }}
+              className="ws-nav"
+              style={{
+                display: "flex", alignItems: "center", gap: 10, width: "100%",
+                padding: "10px 14px", background: "transparent",
+                border: "none", cursor: "pointer", fontSize: 13,
+                color: "#64748b", fontWeight: 600, fontFamily: "inherit",
+                textAlign: "left", transition: "color 0.15s", borderRadius: 8,
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = "#84CC16")}
+              onMouseLeave={e => (e.currentTarget.style.color = "#64748b")}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+              <span>Edit DealBoards</span>
             </button>
           </div>
         </div>
