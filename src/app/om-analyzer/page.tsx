@@ -2708,20 +2708,6 @@ export default function OmAnalyzerPage() {
           {/* ── WHY NOT CHATGPT: repeatable criteria + models ── */}
           <div className="so-hide-mobile"><CompareChatGPT /></div>
 
-
-
-          {/* ── Hero showcase (native HTML/CSS mockup) ── */}
-          <div id="examples" className="so-hide-mobile" style={{ scrollMarginTop: 80, paddingTop: 110 }}>
-            <HeroShowcase />
-          </div>
-
-          {/* ── WHO IT'S FOR (role tabs) ── */}
-          <div className="so-hide-mobile"><RoleTabs /></div>
-
-
-          {/* ── SHARE A DEALBOARD (silent explainer video) ── */}
-          <ShareBand />
-
           {/* ── ASSET-SPECIFIC MODELS (highlight only, no backend detail) ── */}
           <div id="asset-models" className="ds-section-pad" style={{
             padding: "85px 32px 68px", background: "#0d0d14",
@@ -2945,6 +2931,21 @@ export default function OmAnalyzerPage() {
           </div>
 
           {/* The ChatGPT comparison now lives in <CompareChatGPT /> near the top. */}
+
+
+
+
+          {/* ── Hero showcase (native HTML/CSS mockup) ── */}
+          <div id="examples" className="so-hide-mobile" style={{ scrollMarginTop: 80, paddingTop: 110 }}>
+            <HeroShowcase />
+          </div>
+
+          {/* ── WHO IT'S FOR (role tabs) ── */}
+          <div className="so-hide-mobile"><RoleTabs /></div>
+
+
+          {/* ── SHARE A DEALBOARD (silent explainer video) ── */}
+          <ShareBand />
 
           {/* ── INTRO VIDEO (click to play, streams progressively) ── */}
           <IntroVideo />
