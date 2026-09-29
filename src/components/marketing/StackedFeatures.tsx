@@ -426,12 +426,14 @@ export function StackedFeatures() {
 /* ------------------------------------------------------------------ */
 
 const COMPARE: { label: string; us: string; them: string }[] = [
-  { label: "Criteria", us: "Your criteria, applied the same way to every OM", them: "Depends on how you word the prompt that day" },
-  { label: "Models", us: "Standard CRE models: NOI rebuild, DSCR, IRR ranges, offer grid", them: "Math improvised per chat, hard to check" },
-  { label: "Output", us: "The same 40+ fields and layout on every deal", them: "A different paragraph every time" },
-  { label: "Scoring", us: "100-point score you can sort, rank and compare", them: "Opinions, no consistent score" },
-  { label: "Repeatable", us: "Run it again and get the same answer", them: "Ask twice, get two answers" },
-  { label: "Your pipeline", us: "DealBoards, map view and one-link sharing", them: "Lost in a chat history" },
+  { label: "Consistency", us: "Same criteria and CRE models on every OM, built in", them: "Only as consistent as your prompt and setup" },
+  { label: "Your deals", us: "Every OM you've scored in one place, ranked and on a map", them: "Scattered across chat threads" },
+  { label: "Corrections", us: "Fix a rent or expense once and the deal re-scores", them: "Fix it in one chat, gone in the next" },
+  { label: "New documents", us: "Add the rent roll or T-12 later and re-analyze the same deal", them: "Re-upload and re-explain every time" },
+  { label: "Ready to send", us: "Formatted email with Excel workbook and Word brief, or a share link", them: "Copy and paste a chat reply" },
+  { label: "Partners", us: "Partners and lenders open a link, no AI account needed", them: "They see whatever you paste them" },
+  { label: "Location", us: "Demographics around the property on the map", them: "Whatever the model knows or guesses" },
+  { label: "Speed", us: "Drop the PDF, about a minute", them: "Prompt, paste, follow up, reformat" },
 ];
 
 /* Scores that pop onto the five normalized cards in the lens illustration.
@@ -449,8 +451,8 @@ export function CompareChatGPT() {
     <section id="why" className="so-compare-section" style={{ scrollMarginTop: 90 }}>
       <div className="so-stack-head">
         <PillEyebrow>Why not just use ChatGPT or Claude?</PillEyebrow>
-        <h2>Same criteria. Same models.<br /><span className="ds-callout">Every OM</span>.</h2>
-        <p>A general AI chat like ChatGPT or Claude gives you a new take every time you ask. ScoreOM is repeatable: every OM runs through the same criteria and CRE models, so your view of the market is normalized and the scores actually compare.</p>
+        <h2>A chat gives you an answer.<br />ScoreOM gives you a <span className="ds-callout">deal desk</span>.</h2>
+        <p>You can set up ChatGPT or Claude with your criteria and get a decent read on an OM. What you don't get is the system around it: every deal scored the same way, kept in one place, updated when you correct a number, and ready to rank, email or share whenever you need it.</p>
       </div>
       <div className="so-compare-card">
         <div className="so-compare-hero">
@@ -556,6 +558,8 @@ export function StackStyles() {
       /* Stacked cards */
       .so-stack-section { padding: 40px 32px 120px; position: relative; }
       .so-stack-head { text-align:center; max-width: 760px; margin: 0 auto 56px; }
+      .so-compare-section .so-stack-head { max-width: 940px; }
+      .so-compare-section .so-stack-head p { max-width: 760px; margin-left:auto; margin-right:auto; }
       .so-stack-head h2 { font-family:'Plus Jakarta Sans',sans-serif; font-size: clamp(32px, 4.4vw, 54px); font-weight:800;
         letter-spacing:-0.03em; line-height:1.08; color:#fff; margin: 22px 0 14px; }
       .so-stack-head p { color:#9ca3af; font-size:17px; line-height:1.65; margin:0; }
