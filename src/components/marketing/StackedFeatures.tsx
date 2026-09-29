@@ -548,10 +548,10 @@ export function StackStyles() {
       .so-stack-head p { color:#9ca3af; font-size:17px; line-height:1.65; margin:0; }
       .so-stack { max-width: 1220px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
       /* Desktop: extra scroll between sticky cards so each one holds a beat before the next covers it */
-      @media (min-width: 901px) { .so-stack { gap: 180px; } }
+      @media (min-width: 901px) { .so-stack { gap: 320px; } }
       .so-stack-card {
         --stack: 0;
-        position: sticky; top: calc(100px + var(--i) * 14px);
+        position: sticky; top: calc(80px + var(--i) * 14px);
         display: grid; grid-template-columns: 0.72fr 1.28fr; gap: 44px; align-items: center;
         min-height: 580px; padding: 48px; border-radius: 32px;
         background: linear-gradient(180deg, #15151f 0%, #101018 100%);

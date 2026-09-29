@@ -35,6 +35,8 @@ export interface SocialPost {
   text: string;
   textByChannel?: Partial<Record<Platform, string>>;
   mediaUrl?: string | null;
+  /** Several images: an Instagram carousel (up to 10) or up to 4 images on X. */
+  mediaUrls?: string[] | null;
   mediaType?: "image" | "video" | null;
   channels: Platform[];
   tiktokPrivacy?: string | null;
@@ -194,7 +196,12 @@ async function xUploadMedia(token: string, url: string, kind: "image" | "video")
 async function publishX(post: SocialPost, acc: SocialAccount): Promise<ChannelResult> {
   const text = (post.textByChannel?.x || post.text || "").trim();
   const body: any = { text };
-  if (post.mediaUrl && post.mediaType) body.media = { media_ids: [await xUploadMedia(acc.accessToken, post.mediaUrl, post.mediaType)] };
+  const many = (post.mediaUrls || []).filter(Boolean);
+  if (many.length > 1) {
+    const ids: string[] = [];
+    for (const u of many.slice(0, 4)) ids.push(await xUploadMedia(acc.accessToken, u, "image"));
+    body.media = { media_ids: ids };
+  } else if (post.mediaUrl && post.mediaType) body.media = { media_ids: [await xUploadMedia(acc.accessToken, post.mediaUrl, post.mediaType)] };
   const r = await jsonOrThrow(await fetch("https://api.x.com/2/tweets", {
     method: "POST", headers: { Authorization: `Bearer ${acc.accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify(body),
   }), "X post");
@@ -219,7 +226,31 @@ async function igFinish(acc: SocialAccount, containerId: string): Promise<Channe
   return { status: "published", id: pub.id, url };
 }
 
+async function publishInstagramCarousel(post: SocialPost, acc: SocialAccount, urls: string[]): Promise<ChannelResult> {
+  const base = `https://graph.instagram.com/${IG_VERSION}`;
+  const children: string[] = [];
+  for (const u of urls) {
+    const c = await jsonOrThrow(await fetch(`${base}/${acc.userId}/media`, {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ image_url: u, is_carousel_item: "true", access_token: acc.accessToken }),
+    }), "Instagram carousel item");
+    children.push(c.id);
+  }
+  const parent = await jsonOrThrow(await fetch(`${base}/${acc.userId}/media`, {
+    method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ media_type: "CAROUSEL", children: children.join(","), caption: (post.textByChannel?.instagram || post.text || "").trim(), access_token: acc.accessToken }),
+  }), "Instagram carousel");
+  for (let i = 0; i < 6; i++) {
+    const r = await igFinish(acc, parent.id);
+    if (r.status !== "processing") return r;
+    await sleep(4000);
+  }
+  return { status: "processing", pending: { containerId: parent.id } };
+}
+
 async function publishInstagram(post: SocialPost, acc: SocialAccount): Promise<ChannelResult> {
+  const slides = (post.mediaUrls || []).filter(Boolean);
+  if (slides.length > 1) return publishInstagramCarousel(post, acc, slides.slice(0, 10));
   if (!post.mediaUrl || !post.mediaType) return { status: "failed", error: "Instagram needs an image or video" };
   const base = `https://graph.instagram.com/${IG_VERSION}`;
   const params = new URLSearchParams({ caption: (post.textByChannel?.instagram || post.text || "").trim(), access_token: acc.accessToken });

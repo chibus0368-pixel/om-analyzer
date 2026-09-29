@@ -163,7 +163,7 @@ export async function POST(req: NextRequest) {
         const p = body.post as SocialPost;
         if (!p.channels?.length) return bad("Pick at least one channel");
         const data: any = {
-          text: p.text || "", textByChannel: p.textByChannel || {}, mediaUrl: p.mediaUrl || null, mediaType: p.mediaUrl ? (p.mediaType || "image") : null,
+          text: p.text || "", textByChannel: p.textByChannel || {}, mediaUrl: p.mediaUrl || (p.mediaUrls?.[0] ?? null), mediaUrls: (p.mediaUrls || []).filter(Boolean).length > 1 ? (p.mediaUrls || []).filter(Boolean) : null, mediaType: (p.mediaUrl || p.mediaUrls?.length) ? (p.mediaType || "image") : null,
           channels: p.channels, tiktokPrivacy: p.tiktokPrivacy || null,
           status: p.status === "scheduled" ? "scheduled" : "draft", scheduledAt: p.scheduledAt || null, updatedAt: now(),
         };
@@ -173,6 +173,15 @@ export async function POST(req: NextRequest) {
         }
         const ref = await db.collection(COLL.social).add({ ...data, results: {}, createdAt: now() });
         return NextResponse.json({ id: ref.id });
+      }
+      case "loadLaunchSet": {
+        const { LAUNCH_SET } = await import("@/lib/marketing/launch-set");
+        const batch = db.batch();
+        for (const post of LAUNCH_SET) {
+          batch.set(db.collection(COLL.social).doc(), { ...post, status: "draft", results: {}, createdAt: now(), updatedAt: now() });
+        }
+        await batch.commit();
+        return NextResponse.json({ added: LAUNCH_SET.length });
       }
       case "publishPost": {
         const post = await publishPost(body.id);

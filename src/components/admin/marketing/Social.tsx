@@ -11,7 +11,7 @@ const NAMES: Record<P, string> = { x: "X", instagram: "Instagram", tiktok: "TikT
 const ALL: P[] = ["x", "instagram", "tiktok"];
 
 interface Post {
-  id?: string; text: string; textByChannel?: Partial<Record<P, string>>; mediaUrl?: string | null; mediaType?: "image" | "video" | null;
+  id?: string; text: string; textByChannel?: Partial<Record<P, string>>; mediaUrl?: string | null; mediaUrls?: string[] | null; mediaType?: "image" | "video" | null;
   channels: P[]; tiktokPrivacy?: string | null; status: string; scheduledAt?: string | null; createdAt?: string;
   results?: Partial<Record<P, { status: string; url?: string | null; error?: string | null }>>;
 }
@@ -71,7 +71,13 @@ export default function Social({ flash }: { flash?: { tone: "ok" | "error"; text
         </div>
       </Card>
 
-      <Card title="Post queue" right={<Btn kind="primary" onClick={() => setEdit(blank())}>+ New post</Btn>}>
+      <Card title="Post queue" right={<div style={{ display: "flex", gap: 8 }}>
+        <Btn onClick={async () => {
+          if (!window.confirm("Add the 6 launch posts (Instagram + X, Mon/Wed/Fri) to the queue as drafts? Nothing posts until you open each one and hit Schedule.")) return;
+          try { await api({ body: { action: "loadLaunchSet" } }); load(); } catch (e: any) { setErr(e.message); }
+        }}>+ Load launch set</Btn>
+        <Btn kind="primary" onClick={() => setEdit(blank())}>+ New post</Btn>
+      </div>}>
         {loading ? <Empty>Loading...</Empty> : posts.length === 0 ? <Empty>No posts yet.</Empty> : (
           <div style={{ display: "grid", gap: 8 }}>
             {posts.map(p => (
@@ -81,7 +87,8 @@ export default function Social({ flash }: { flash?: { tone: "ok" | "error"; text
                   <div style={{ fontSize: 13, color: C.ink, whiteSpace: "pre-wrap", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{p.text || p.textByChannel?.x || "(no text)"}</div>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6, alignItems: "center", fontSize: 12, color: C.sub }}>
                     <Pill s={p.status} />
-                    <span>{p.status === "scheduled" ? `for ${when(p.scheduledAt)}` : when(p.createdAt)}</span>
+                    <span>{p.status === "scheduled" ? `for ${when(p.scheduledAt)}` : p.scheduledAt ? `draft, set for ${when(p.scheduledAt)}` : when(p.createdAt)}</span>
+                    {(p.mediaUrls?.length || 0) > 1 && <span>{p.mediaUrls!.length}-image carousel</span>}
                     {p.channels.map(c => {
                       const r = p.results?.[c];
                       return (
@@ -140,7 +147,7 @@ function Composer({ initial, accounts, onClose }: { initial: Post; accounts: Par
     task.on("state_changed",
       s => setProgress(Math.round((s.bytesTransferred / s.totalBytes) * 100)),
       e => { setProgress(null); setMsg({ tone: "error", text: `Upload failed: ${e.message}. Make sure the storage rules update is deployed (see Setup).` }); },
-      async () => { const url = await getDownloadURL(task.snapshot.ref); setP(x => ({ ...x, mediaUrl: url, mediaType: kind })); setProgress(null); });
+      async () => { const url = await getDownloadURL(task.snapshot.ref); setP(x => ({ ...x, mediaUrls: null, mediaUrl: url, mediaType: kind })); setProgress(null); });
   };
 
   const save = async (status: "draft" | "scheduled"): Promise<string | null> => {
@@ -210,7 +217,7 @@ function Composer({ initial, accounts, onClose }: { initial: Post; accounts: Par
             <div style={{ display: "flex", gap: 8 }}>
               <input style={inputStyle} value={p.mediaUrl || ""} disabled={locked} placeholder="https://..." onChange={e => {
                 const v = e.target.value.trim();
-                setP({ ...p, mediaUrl: v, mediaType: v ? (/\.(mp4|mov|m4v|webm)(\?|$)/i.test(v) ? "video" : p.mediaType || "image") : null });
+                setP({ ...p, mediaUrls: null, mediaUrl: v, mediaType: v ? (/\.(mp4|mov|m4v|webm)(\?|$)/i.test(v) ? "video" : p.mediaType || "image") : null });
               }} />
               <input ref={file} type="file" accept="image/*,video/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
               <Btn onClick={() => file.current?.click()} disabled={locked || progress !== null}>{progress !== null ? `${progress}%` : "Upload"}</Btn>
@@ -220,10 +227,25 @@ function Composer({ initial, accounts, onClose }: { initial: Post; accounts: Par
                 <select style={{ ...inputStyle, width: 110 }} value={p.mediaType || "image"} disabled={locked} onChange={e => setP({ ...p, mediaType: e.target.value as any })}>
                   <option value="image">Image</option><option value="video">Video</option>
                 </select>
-                {!locked && <Btn kind="danger" onClick={() => setP({ ...p, mediaUrl: "", mediaType: null })}>Remove</Btn>}
+                {!locked && <Btn kind="danger" onClick={() => setP({ ...p, mediaUrl: "", mediaUrls: null, mediaType: null })}>Remove</Btn>}
               </div>
             )}
           </Field>
+
+          {(p.mediaUrls?.length || 0) > 1 && (
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 12, color: C.sub, marginBottom: 6 }}>Carousel, {p.mediaUrls!.length} images (Instagram posts all of them; X takes the first 4)</div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {p.mediaUrls!.map((u, i) => (
+                  <div key={u} style={{ position: "relative" }}>
+                    <img src={u} alt="" style={{ width: 64, height: 80, objectFit: "cover", borderRadius: 6, border: `1px solid ${C.line}` }} />
+                    {!locked && <button type="button" onClick={() => { const next = p.mediaUrls!.filter((_, j) => j !== i); setP({ ...p, mediaUrls: next.length > 1 ? next : null, mediaUrl: next[0] || "" }); }}
+                      style={{ position: "absolute", top: -6, right: -6, width: 20, height: 20, borderRadius: 99, border: 0, background: C.red, color: "#fff", fontSize: 12, cursor: "pointer", lineHeight: "20px", padding: 0 }}>&times;</button>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {p.channels.includes("tiktok") && (
             <Field label="TikTok visibility" hint="Until TikTok audits the app, only private (Only me) posts are allowed. After the audit, pick Everyone.">
