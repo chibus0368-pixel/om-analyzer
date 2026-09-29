@@ -1,4 +1,4 @@
-// ===== DealSignals Deal Analyzer - Core Types =====
+// ===== ScoreOM Deal Analyzer - Core Types =====
 
 // --- Enums ---
 export type AnalysisType = "retail" | "industrial" | "office" | "land" | "multifamily";

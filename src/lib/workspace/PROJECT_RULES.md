@@ -1,4 +1,4 @@
-# DealSignals Deal Analyzer — Project Rules
+# ScoreOM Deal Analyzer — Project Rules
 
 ## Project Concept
 - A project is a **group** for organizing deals — not a single property

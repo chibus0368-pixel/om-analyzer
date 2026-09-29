@@ -279,7 +279,7 @@ Use visual indicators in the brief so the deal can be scanned fast.
 
 Use these indicators consistently:
 
-## Overall Deal Signals
+## Overall ScoreOM
 - 🟢 Attractive first look
 - 🟡 Mixed / needs work
 - 🔴 Weak first look

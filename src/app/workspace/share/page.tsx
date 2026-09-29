@@ -70,7 +70,7 @@ const C = {
   radius: 6,
 };
 
-const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://www.dealsignals.app";
+const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://www.scoreom.com";
 
 export default function ShareLinksPage() {
   const { user } = useAuth();
@@ -462,7 +462,7 @@ export default function ShareLinksPage() {
               />
               <div>
                 <div style={{ fontWeight: 600 }}>White Label</div>
-                <div style={{ fontSize: 11, color: C.secondary }}>Hide Deal Signals branding from the shared page</div>
+                <div style={{ fontSize: 11, color: C.secondary }}>Hide ScoreOM branding from the shared page</div>
               </div>
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 13, color: C.onSurface }}>
@@ -650,7 +650,7 @@ export default function ShareLinksPage() {
                         />
                         <div>
                           <div style={{ fontWeight: 600 }}>White Label</div>
-                          <div style={{ fontSize: 11, color: C.secondary }}>Hide Deal Signals branding from the shared page</div>
+                          <div style={{ fontSize: 11, color: C.secondary }}>Hide ScoreOM branding from the shared page</div>
                         </div>
                       </label>
                       <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 13, color: C.onSurface }}>

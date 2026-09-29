@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
         const baseUrl =
           process.env.NEXT_PUBLIC_APP_URL ||
           process.env.NEXT_PUBLIC_SITE_URL ||
-          "https://www.dealsignals.app";
+          "https://www.scoreom.com";
         // Don't await - the response we return below shouldn't block
         // on Google Places + Census round-trips.
         void fetch(`${baseUrl}/api/workspace/research/${propertyId}`, {

@@ -1,8 +1,8 @@
-# DealSignals Technical Architecture
+# ScoreOM Technical Architecture
 
 ## Overview
 
-DealSignals is a Next.js App Router application deployed on Vercel that parses commercial real estate (CRE) documents (OMs, flyers, rent rolls), extracts structured data using GPT-4o, scores the deal, and presents interactive analysis tools. The stack is Next.js + Firebase (Auth + Firestore) + OpenAI + Google Cloud Storage.
+ScoreOM is a Next.js App Router application deployed on Vercel that parses commercial real estate (CRE) documents (OMs, flyers, rent rolls), extracts structured data using GPT-4o, scores the deal, and presents interactive analysis tools. The stack is Next.js + Firebase (Auth + Firestore) + OpenAI + Google Cloud Storage.
 
 ---
 

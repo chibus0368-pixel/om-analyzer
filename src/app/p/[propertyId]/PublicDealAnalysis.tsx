@@ -263,7 +263,7 @@ export default function PublicDealAnalysis({
       <SectionHeader
         eyebrow={`${assetLabel(wsType)} Model`}
         title="Deal Analysis"
-        subtitle="The same underwriting the sender sees inside DealSignals."
+        subtitle="The same underwriting the sender sees inside ScoreOM."
         topGap={16}
         bottomGap={14}
       />

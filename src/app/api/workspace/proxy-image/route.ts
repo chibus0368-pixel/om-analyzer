@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
   try {
     const upstream = await fetch(parsed.toString(), {
       signal: AbortSignal.timeout(10000),
-      headers: { "User-Agent": "DealSignals-ImageProxy/1.0" },
+      headers: { "User-Agent": "ScoreOM-ImageProxy/1.0" },
       redirect: "follow",
     });
     if (!upstream.ok) {

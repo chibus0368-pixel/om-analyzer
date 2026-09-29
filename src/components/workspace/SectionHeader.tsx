@@ -5,7 +5,7 @@ import React from "react";
 /**
  * SectionHeader
  *
- * The canonical section header used across DealSignals. Lifted from the
+ * The canonical section header used across ScoreOM. Lifted from the
  * Detail Analysis block in RentRollDetailAnalysis.tsx because it reads well
  * and makes dense pages easier to scan: a small uppercase lime eyebrow,
  * a large navy headline, an optional muted subtitle, and a thin dark-lime

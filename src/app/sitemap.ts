@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://dealsignals.app";
+  const baseUrl = "https://www.scoreom.com";
   const now = new Date();
 
   return [

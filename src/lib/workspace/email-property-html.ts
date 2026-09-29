@@ -436,7 +436,7 @@ export function renderPropertyEmailHTML(args: RenderArgs): string {
     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 18px 0 4px;">
       <tr>
         <td align="center">
-          <a href="${esc(propertyUrl)}" style="display: inline-block; padding: 12px 26px; background: #0F172A; color: #FFFFFF; text-decoration: none; border-radius: 999px; font-size: 13px; font-weight: 700; font-family: Arial, sans-serif; letter-spacing: 0.02em;">Open in Deal Signals &rarr;</a>
+          <a href="${esc(propertyUrl)}" style="display: inline-block; padding: 12px 26px; background: #0F172A; color: #FFFFFF; text-decoration: none; border-radius: 999px; font-size: 13px; font-weight: 700; font-family: Arial, sans-serif; letter-spacing: 0.02em;">Open in ScoreOM &rarr;</a>
         </td>
       </tr>
     </table>
@@ -466,7 +466,7 @@ export function renderPropertyEmailHTML(args: RenderArgs): string {
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="left" valign="middle">
-                    <img src="https://dealsignals.app/images/dealsignals-full-logo4.png" alt="DealSignals" height="28" style="height: 28px; display: block; border: 0; outline: none; text-decoration: none;" />
+                    <img src="https://www.scoreom.com/images/scoreom-logo.png" alt="ScoreOM" height="28" style="height: 28px; display: block; border: 0; outline: none; text-decoration: none;" />
                   </td>
                   <td align="right" valign="middle">
                     <span style="font-size: 10px; color: #9CA3AF; letter-spacing: 0.1em; text-transform: uppercase;">CRE Deal Analysis</span>
@@ -523,10 +523,10 @@ export function renderPropertyEmailHTML(args: RenderArgs): string {
             <td style="padding: 8px 24px 24px;">
               ${senderLine}
               <p style="font-size: 11px; color: #9CA3AF; font-family: Arial, sans-serif; margin: 14px 0 0; line-height: 1.55; border-top: 1px solid #F1F5F9; padding-top: 12px;">
-                DealSignals is a commercial real estate deal analysis tool. Visit <a href="https://dealsignals.app" style="color: #2563EB; text-decoration: none;">dealsignals.app</a> to learn more.
+                ScoreOM is a commercial real estate deal analysis tool. Visit <a href="https://www.scoreom.com" style="color: #2563EB; text-decoration: none;">scoreom.com</a> to learn more.
               </p>
               <p style="font-size: 10.5px; color: #9CA3AF; font-family: Arial, sans-serif; font-style: italic; margin: 10px 0 0; line-height: 1.55;">
-                DealSignals output is automated general guidance, not investment, legal, tax, or financial advice. Every deal demands your own full due diligence and independent professional review before you commit capital. Figures are derived from uploaded documents and public data sources that may be incomplete or inaccurate. Verify all material facts directly.
+                ScoreOM output is automated general guidance, not investment, legal, tax, or financial advice. Every deal demands your own full due diligence and independent professional review before you commit capital. Figures are derived from uploaded documents and public data sources that may be incomplete or inaccurate. Verify all material facts directly.
               </p>
             </td>
           </tr>

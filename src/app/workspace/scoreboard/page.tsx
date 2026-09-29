@@ -506,7 +506,7 @@ async function exportToXlsx(propertyData: PropertyData[], workspaceName: string)
     const fileSaverMod = await import("file-saver");
     const saveAs = fileSaverMod.saveAs || fileSaverMod.default?.saveAs;
     const wb = new ExcelJS.Workbook();
-    wb.creator = "Deal Signals";
+    wb.creator = "ScoreOM";
     const ws = wb.addWorksheet("Deal Scorecard", { views: [{ state: "frozen", xSplit: 1, ySplit: 2 }] });
     const propCount = propertyData.length;
 

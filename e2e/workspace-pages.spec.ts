@@ -8,7 +8,7 @@ import { test, expect } from "@playwright/test";
  */
 
 const ROUTES = [
-  { path: "/om-analyzer",       expectText: /deal\s*signals|dealsignals|analyze/i },
+  { path: "/om-analyzer",       expectText: /score\s*om|scoreom|analyze/i },
   { path: "/pricing",           expectText: /free|pro|plan/i },
   { path: "/workspace",         expectText: /deal\s*board|dealboard|properties|workspace|upload/i },
   { path: "/workspace/upgrade", expectText: /pro|free|plan/i },

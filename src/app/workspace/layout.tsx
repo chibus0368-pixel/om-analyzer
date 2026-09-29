@@ -14,7 +14,7 @@ import Link from "next/link";
 import { ensureAnonymousUser } from "@/lib/firebase";
 import { setPendingUploadFiles } from "@/lib/workspace/upload-handoff";
 
-/* Sidebar nav - matches Deal Signals design - NO "DealBoard" link */
+/* Sidebar nav - matches ScoreOM design - NO "DealBoard" link */
 const SIDEBAR_NAV = [
   { href: "/workspace/scoreboard", label: "Deal Scorecard", icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
   { href: "/workspace/upload", label: "Upload Deal", icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" },
@@ -787,7 +787,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
   // ── Auth gate ──
   // ALL workspace routes auto-anon-sign-in for unauth'd visitors so the
-  // workspace shell never dead-ends on a spinner. DealSignals is free right
+  // workspace shell never dead-ends on a spinner. ScoreOM is free right
   // now, so anonymous users just get the empty dashboard directly. Only
   // /workspace/login itself is exempt (otherwise we'd never get a chance
   // to show the register form to a visitor with no Firebase session).
@@ -898,7 +898,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", background: "#F7F8FA" }}>
-      {/* ===== TOP HEADER BAR - Deal Signals ===== */}
+      {/* ===== TOP HEADER BAR - ScoreOM ===== */}
       <header className="ws-header" style={{
         display: "flex", alignItems: "center",
         height: 64, minHeight: 64,
@@ -909,7 +909,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         {/* Left: Logo + DealBoard selector */}
         <div className="ws-header-inner" style={{ display: "flex", alignItems: "center", gap: 48 }}>
           <Link href="/workspace" prefetch={false} className="ws-header-logo" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
-            <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 36 }} />
+            <img src="/images/scoreom-logo.png" alt="ScoreOM" style={{ height: 36 }} />
           </Link>
 
           {/* DealBoard selector - separated by border */}
@@ -1024,13 +1024,13 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
         </div>
 
         {/* Right: static "free access" badge + user info + settings.
-            DealSignals is free right now - no upgrade CTA, no pricing copy,
+            ScoreOM is free right now - no upgrade CTA, no pricing copy,
             no popover. See git tag pre-free-release-2026-08-12 for the prior
             tier-aware pill if billing is reintroduced. */}
         <div className="ws-header-right" style={{ display: "flex", alignItems: "center", gap: 24, marginLeft: "auto" }}>
           <span
             className="ws-plan-pill"
-            title="DealSignals is free to use right now"
+            title="ScoreOM is free to use right now"
             style={{
               padding: "6px 14px", background: "rgba(132,204,22,0.2)", color: "#84CC16",
               border: "1px solid rgba(132,204,22,0.3)", borderRadius: 9999,
@@ -1273,7 +1273,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
 
             {/* Plan + User info + Logout */}
             <div style={{ padding: "12px 16px", marginTop: "auto", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-              {/* Plan pill - visible in mobile drawer. DealSignals is free
+              {/* Plan pill - visible in mobile drawer. ScoreOM is free
                   right now - static badge, no upgrade CTA. */}
               <div style={{ marginBottom: 12 }}>
                 <div style={{
@@ -1488,12 +1488,12 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               flexWrap: "wrap", gap: 16,
             }}>
               <div>
-                <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 14, color: "#151b2b", display: "block", marginBottom: 6 }}>DealSignals</span>
-                <span style={{ color: "#585e70", fontSize: 10 }}>&copy; {new Date().getFullYear()} DealSignals, Inc. All rights reserved.</span>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 14, color: "#151b2b", display: "block", marginBottom: 6 }}>ScoreOM</span>
+                <span style={{ color: "#585e70", fontSize: 10 }}>&copy; {new Date().getFullYear()} ScoreOM, Inc. All rights reserved.</span>
               </div>
               <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
                 <a href="/" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Home</a>
-                <a href="/#pricing" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Free Access</a>
+                <a href="/#faq" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Free Access</a>
                 <a href="/contact" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Contact</a>
                 <a href="/terms" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Terms</a>
                 <a href="/privacy" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Privacy</a>
@@ -1504,7 +1504,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
               lineHeight: 1.55, fontFamily: "'Inter', sans-serif",
               fontStyle: "italic",
             }}>
-              DealSignals output is automated general guidance, not investment, legal, tax, or financial advice. Every deal demands your own full due diligence and independent professional review before you commit capital. Figures are derived from uploaded documents and public data sources that may be incomplete or inaccurate. Verify all material facts directly.
+              ScoreOM output is automated general guidance, not investment, legal, tax, or financial advice. Every deal demands your own full due diligence and independent professional review before you commit capital. Figures are derived from uploaded documents and public data sources that may be incomplete or inaccurate. Verify all material facts directly.
             </p>
           </footer>
         </div>

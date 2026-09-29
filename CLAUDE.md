@@ -1,4 +1,4 @@
-# DealSignals -- Project Rules
+# ScoreOM -- Project Rules
 
 ## Performance Rules
 

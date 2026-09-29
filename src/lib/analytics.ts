@@ -120,7 +120,7 @@ export function trackShareClick(platform: string, articleSlug: string): void {
   });
 }
 
-// ─── DEALSIGNALS CONVERSION FUNNEL EVENTS ────────────────────────────
+// ─── SCOREOM CONVERSION FUNNEL EVENTS ────────────────────────────
 
 /** Lite analyzer: user uploads a file */
 export function trackLiteUpload(fileName: string, fileType: string): void {
@@ -184,7 +184,7 @@ export function trackPurchase(tier: string, value: number): void {
     event_label: tier,
     currency: 'USD',
     value,
-    items: [{ item_name: `DealSignals ${tier}`, item_category: 'subscription', price: value }],
+    items: [{ item_name: `ScoreOM ${tier}`, item_category: 'subscription', price: value }],
   });
 }
 

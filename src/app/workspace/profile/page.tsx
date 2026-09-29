@@ -846,7 +846,7 @@ export default function ProfilePage() {
       {/* ===== ACCOUNT SECTION ===== */}
       {activeSection === "account" && (
         <>
-          {/* Plan & Billing - DealSignals is free right now. No checkout,
+          {/* Plan & Billing - ScoreOM is free right now. No checkout,
               portal, or cancel flows; see git tag pre-free-release-2026-08-12
               for the prior paid implementation if billing is reintroduced. */}
           <div style={cardStyle}>
@@ -872,7 +872,7 @@ export default function ProfilePage() {
               <div>
                 <div style={{ fontSize: 16, fontWeight: 700, color: SURFACE }}>Free Access</div>
                 <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>
-                  DealSignals is free to use right now - no plan or payment required.
+                  ScoreOM is free to use right now - no plan or payment required.
                 </div>
               </div>
             </div>

@@ -640,8 +640,8 @@ export default function SharedViewPage() {
           {showBranding && (
             <div style={{ display: "flex", alignItems: "center" }}>
               <img
-                src="/images/dealsignals-full-logo4.png"
-                alt="DealSignals"
+                src="/images/scoreom-logo.png"
+                alt="ScoreOM"
                 style={{ height: 32, width: "auto", display: "block" }}
               />
             </div>
@@ -879,7 +879,7 @@ export default function SharedViewPage() {
                       <path d="M3 12h3l3-9 6 18 3-9h3" />
                     </svg>
                   </div>
-                  Deal Signals · CRE Intelligence
+                  ScoreOM · CRE Intelligence
                 </div>
               )}
             </>
@@ -902,7 +902,7 @@ export default function SharedViewPage() {
           fontStyle: "italic",
         }}
       >
-        Shared for informational purposes only. Deal Signals output is automated general guidance, not investment, legal, tax, or financial advice. Figures are derived from uploaded documents and public data sources that may be incomplete or inaccurate. Verify all material facts independently before committing capital.
+        Shared for informational purposes only. ScoreOM output is automated general guidance, not investment, legal, tax, or financial advice. Figures are derived from uploaded documents and public data sources that may be incomplete or inaccurate. Verify all material facts independently before committing capital.
       </div>
     </div>
   );

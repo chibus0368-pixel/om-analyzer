@@ -1,9 +1,9 @@
 /**
- * DealSignals Crexi extension — background service worker.
+ * ScoreOM Crexi extension — background service worker.
  *
  * Responsibilities:
  *  - Provide a single message channel ("ds:upload") the content script uses
- *    to ship a PDF into DealSignals. The upload is a THREE-STEP flow because
+ *    to ship a PDF into ScoreOM. The upload is a THREE-STEP flow because
  *    Vercel serverless has a hard 4.5 MB request body cap and real OMs are
  *    routinely 5–20 MB:
  *
@@ -28,7 +28,7 @@ async function getSettings() {
   });
 }
 
-async function uploadToDealSignals(payload) {
+async function uploadToScoreOM(payload) {
   const settings = await getSettings();
   if (!settings.apiKey) {
     return { ok: false, error: "Missing API key. Open the extension popup and set it." };
@@ -178,7 +178,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   }
 
   if (msg.type === "ds:upload") {
-    uploadToDealSignals(msg.payload || {}).then(sendResponse);
+    uploadToScoreOM(msg.payload || {}).then(sendResponse);
     return true; // async
   }
 

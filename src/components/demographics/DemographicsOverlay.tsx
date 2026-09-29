@@ -9,13 +9,13 @@
  *   1. Fetches Census ACS 5-Year metrics + tract polygons via /api/demographics.
  *   2. Renders a tract-level choropleth and dashed 1/3/5 mile radius rings
  *      directly onto the parent map (imperative Leaflet, matching how the rest
- *      of the DealSignals codebase manages markers).
+ *      of the ScoreOM codebase manages markers).
  *   3. Floats a compact metrics panel anchored to the map. The panel reuses
- *      DealSignals tokens (Inter, navy 950, cream/gold accents, 12px radius).
+ *      ScoreOM tokens (Inter, navy 950, cream/gold accents, 12px radius).
  *
  * Toggle the whole overlay via the `enabled` prop. When disabled the layers
  * are removed cleanly and the API isn't called. The component is portable:
- * it knows nothing about DealSignals routing or Firestore.
+ * it knows nothing about ScoreOM routing or Firestore.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { rampColor, robustRange } from "@/lib/demographics/colors";

@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import DealSignalNav from "@/components/DealSignalNav";
-import DealSignalFooter from "@/components/DealSignalFooter";
+import ScoreOMNav from "@/components/ScoreOMNav";
+import ScoreOMFooter from "@/components/ScoreOMFooter";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Deal Signals",
-  description: "Deal Signals privacy policy - how we collect, use, and protect your information.",
+  title: "Privacy Policy | ScoreOM",
+  description: "ScoreOM privacy policy - how we collect, use, and protect your information.",
   openGraph: {
     title: "Privacy Policy",
     description:
-      "Deal Signals privacy policy - how we collect, use, and protect your information.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Deal Signals" }],
+      "ScoreOM privacy policy - how we collect, use, and protect your information.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "ScoreOM" }],
   },
   twitter: {
     title: "Privacy Policy",
     description:
-      "Deal Signals privacy policy - how we collect, use, and protect your information.",
+      "ScoreOM privacy policy - how we collect, use, and protect your information.",
     images: ["/og-image.png"],
   },
 };
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <>
-      <DealSignalNav />
+      <ScoreOMNav />
       <section style={{
         background: "linear-gradient(135deg, #0B1120 0%, #151b2b 100%)",
         color: "#fff",
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
       }}>
         <div className="container" style={{ maxWidth: 720 }}>
           <div style={{ marginBottom: 16 }}>
-            <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 30 }} />
+            <img src="/images/scoreom-logo.png" alt="ScoreOM" style={{ height: 30 }} />
           </div>
           <h1 style={{ fontFamily: "'Inter', sans-serif", fontSize: 36, fontWeight: 900, marginBottom: 8, letterSpacing: -0.5 }}>Privacy Policy</h1>
           <p style={{ fontSize: 14, opacity: 0.7 }}>Last updated: February 2026</p>
@@ -42,7 +42,7 @@ export default function PrivacyPage() {
           {[
             {
               title: "Information We Collect",
-              content: "When you subscribe to Deal Signals, we collect your email address, subscription preferences, and basic usage data. We use Google Analytics to understand how visitors interact with our site. We do not collect financial account information, social security numbers, or other sensitive personal data."
+              content: "When you subscribe to ScoreOM, we collect your email address, subscription preferences, and basic usage data. We use Google Analytics to understand how visitors interact with our site. We do not collect financial account information, social security numbers, or other sensitive personal data."
             },
             {
               title: "How We Use Your Information",
@@ -84,7 +84,7 @@ export default function PrivacyPage() {
           ))}
         </div>
       </section>
-      <DealSignalFooter />
+      <ScoreOMFooter />
     </>
   );
 }

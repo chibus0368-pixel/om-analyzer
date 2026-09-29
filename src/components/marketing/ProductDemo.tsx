@@ -1,30 +1,33 @@
 "use client";
 
 /**
- * ProductDemo — full-bleed "see the tool run" band.
+ * ProductDemo: full-bleed "see the tool run" band (#demo).
  *
  * Structure borrowed from trutec.ai (mono uppercase eyebrows, faint grid
  * texture, one big rounded product frame, numbered chapter markers) but
- * rendered in the DealSignals black + lime palette so it reads as ours.
+ * rendered in the ScoreOM black + lime palette so it reads as ours.
  *
- * Ships safely with no video file present: <video> onError falls back to the
- * poster still, so this section looks finished before the recording exists.
+ * The clip (public/videos/scoreom-tour.mp4, ~3.4MB, 34.6s) is cut from real
+ * screens of the live app. It is NOT mounted until the band is near the
+ * viewport, so it never competes with the hero / Firebase Auth on first load.
+ * Phones only load it after a tap. <video> onError still falls back to the
+ * poster still.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const LIME = "#84CC16";
 
-const VIDEO_SRC = "/videos/dealsignals-demo.mp4";
-const POSTER_SRC = "/videos/demo-poster.jpg";
+const VIDEO_SRC = "/videos/scoreom-tour.mp4";
+const POSTER_SRC = "/videos/scoreom-tour-poster.jpg";
 
 /** Chapter markers. `at` = seconds into the recording. Retime these once the
  *  real cut is in place; they are the only thing tied to the edit. */
 const CHAPTERS = [
-  { n: "01", label: "Drop the OM", at: 0 },
-  { n: "02", label: "AI extraction", at: 8 },
-  { n: "03", label: "Score & verdict", at: 22 },
-  { n: "04", label: "Rent roll + share", at: 38 },
+  { n: "01", label: "Upload", desc: "Drop an OM, flyer or rent roll. PDF, Word, Excel or CSV.", at: 0 },
+  { n: "02", label: "Score", desc: "A 100-point score and a plain-English first-pass brief.", at: 3.4 },
+  { n: "03", label: "Under the hood", desc: "Rent roll, rebuilt NOI and quick return ranges.", at: 10.2 },
+  { n: "04", label: "Share & compare", desc: "Send a link, ask the deal questions, rank your pipeline.", at: 20.4 },
 ];
 
 const MONO = 'ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace';
@@ -56,6 +59,19 @@ export default function ProductDemo() {
   // 100KB, the recording is not. Desktop autoplays muted like TruTec does.
   const [activated, setActivated] = useState(false);
   const [active, setActive] = useState(0);
+  // Don't mount the <video> at all until the band is close to the viewport.
+  const [nearView, setNearView] = useState(false);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || nearView) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setNearView(true); obs.disconnect(); } },
+      { rootMargin: "300px 0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [nearView]);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 720px)");
@@ -81,7 +97,7 @@ export default function ProductDemo() {
     );
     obs.observe(el);
     return () => obs.disconnect();
-  }, [activated, isSmall]);
+  }, [activated, isSmall, nearView]);
 
   // Highlight the chapter the playhead is currently inside.
   const onTimeUpdate = useCallback(() => {
@@ -100,7 +116,7 @@ export default function ProductDemo() {
     void v.play().catch(() => {});
   }, []);
 
-  const showVideo = !failed && (!isSmall || activated);
+  const showVideo = !failed && nearView && (!isSmall || activated);
 
   return (
     <section
@@ -161,13 +177,14 @@ export default function ProductDemo() {
             marginBottom: 28,
           }}
         >
-          <Eyebrow>See it run</Eyebrow>
-          <Eyebrow dim>Real OM · Unedited</Eyebrow>
+          <Eyebrow>How it works</Eyebrow>
+          <Eyebrow dim>Real screens from the live app</Eyebrow>
         </div>
 
         <div style={{ maxWidth: 720, marginBottom: 34 }}>
           <h2
             style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
               fontSize: 42,
               fontWeight: 800,
               color: "#fff",
@@ -177,7 +194,7 @@ export default function ProductDemo() {
             }}
             className="ds-demo-h2"
           >
-            Watch an OM become a <span style={{ color: LIME }}>verdict</span>.
+            Watch an OM <span style={{ color: LIME }}>open up</span>.
           </h2>
           <p
             style={{
@@ -189,8 +206,8 @@ export default function ProductDemo() {
             }}
           >
             No setup, no template, no model to build. Drop in the broker&apos;s PDF and
-            watch DealSignals pull the financials, score the deal, and hand back a
-            shareable page before you have finished reading page one.
+            ScoreOM pulls the numbers, scores the deal, and gives you a page you
+            can share before you have finished reading page one.
           </p>
         </div>
 
@@ -217,6 +234,7 @@ export default function ProductDemo() {
               loop
               playsInline
               preload={isSmall ? "auto" : "metadata"}
+              aria-label="ScoreOM product tour: upload, score, look under the hood, share"
               onError={() => setFailed(true)}
               onTimeUpdate={onTimeUpdate}
               style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
@@ -225,7 +243,7 @@ export default function ProductDemo() {
             <>
               <img
                 src={POSTER_SRC}
-                alt="DealSignals analyzing an offering memorandum"
+                alt="ScoreOM deal page showing a 73/100 Buy score"
                 loading="lazy"
                 decoding="async"
                 style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
@@ -236,7 +254,7 @@ export default function ProductDemo() {
                 <button
                   type="button"
                   onClick={() => setActivated(true)}
-                  aria-label="Play the DealSignals demo"
+                  aria-label="Play the ScoreOM demo"
                   style={{
                     position: "absolute",
                     inset: 0,
@@ -315,13 +333,24 @@ export default function ProductDemo() {
                 </span>
                 <span
                   style={{
-                    fontSize: 13.5,
-                    fontWeight: 600,
-                    color: on ? "#fff" : "rgba(255,255,255,0.62)",
+                    fontSize: 14.5,
+                    fontWeight: 700,
+                    color: on ? "#fff" : "rgba(255,255,255,0.72)",
                   }}
                 >
                   {c.label}
                 </span>
+                <span
+                  className="ds-demo-chapter-desc"
+                  style={{
+                    fontSize: 12.5,
+                    lineHeight: 1.5,
+                    color: on ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.42)",
+                  }}
+                >
+                  {c.desc}
+                </span>
+                <span aria-hidden style={{ height: 2, borderRadius: 2, background: on ? LIME : "rgba(255,255,255,0.08)", marginTop: 4, transition: "background 0.3s ease" }} />
               </button>
             );
           })}
@@ -363,7 +392,7 @@ export default function ProductDemo() {
             </svg>
           </a>
           <a
-            href="#examples"
+            href="#features"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -377,7 +406,7 @@ export default function ProductDemo() {
               textDecoration: "none",
             }}
           >
-            See example outputs
+            Explore the features
           </a>
         </div>
       </div>
@@ -389,6 +418,9 @@ export default function ProductDemo() {
           }
           :global(.ds-demo-chapters) {
             grid-template-columns: repeat(2, 1fr) !important;
+          }
+          :global(.ds-demo-chapter-desc) {
+            display: none;
           }
         }
       `}</style>

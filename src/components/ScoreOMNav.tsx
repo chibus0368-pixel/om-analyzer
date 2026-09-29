@@ -6,15 +6,15 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
 
+// Keep the marketing nav simple: four anchors + Sign in / Get Started.
 const NAV_LINKS = [
-  { href: "/#demo", label: "Demo", sectionId: "demo" },
-  { href: "/#examples", label: "Examples", sectionId: "examples" },
-  { href: "/#how-it-works", label: "How it works", sectionId: "how-it-works" },
-  { href: "/#pricing", label: "Free Access", sectionId: "pricing" },
+  { href: "/#features", label: "Features", sectionId: "features" },
+  { href: "/#why", label: "Why ScoreOM?", sectionId: "why" },
+  { href: "/#intro-video", label: "Video", sectionId: "intro-video" },
   { href: "/#faq", label: "FAQ", sectionId: "faq" },
 ];
 
-export default function DealSignalNav() {
+export default function ScoreOMNav() {
   const pathname = usePathname();
   // Reuse the app-wide AuthProvider (root layout) instead of standing up a
   // second, independent getAuth()/onAuthStateChanged listener here - this
@@ -71,49 +71,32 @@ export default function DealSignalNav() {
   const isOnLanding = pathname === "/" || pathname === "/om-analyzer";
 
   return (
-    <header style={{
+    <header className="so-nav-header" style={{
       position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
-      height: 64,
+      height: 76, padding: "12px 16px 0", pointerEvents: "none",
     }}>
-      {/* Translucent background overlay with blur */}
-      <div style={{
-        position: "absolute", inset: 0,
-        background: "rgba(13,13,20,0.8)",
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
-        borderBottom: "1px solid rgba(255,255,255,0.05)",
-      }} />
-
-      {/* Nav content */}
-      <div style={{ position: "relative", padding: "0 32px", height: 64 }}>
+      {/* Floating pill container */}
+      <div className="so-nav-pill" style={{
+        position: "relative", maxWidth: 1040, margin: "0 auto", height: 56,
+        padding: "0 10px 0 22px", borderRadius: 999, pointerEvents: "auto",
+        background: "rgba(16,16,24,0.72)",
+        backdropFilter: "blur(20px) saturate(140%)",
+        WebkitBackdropFilter: "blur(20px) saturate(140%)",
+        border: "1px solid rgba(255,255,255,0.09)",
+        boxShadow: "0 10px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)",
+      }}>
       <nav style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        maxWidth: 1100, margin: "0 auto", height: 64,
+        height: 56, position: "relative",
         fontFamily: "'Plus Jakarta Sans', sans-serif",
       }}>
         {/* Logo */}
         <Link prefetch={false} href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 40 }} />
+          <img src="/images/scoreom-logo.png" alt="ScoreOM" style={{ height: 30 }} />
         </Link>
 
         {/* Center nav links */}
-        <div className="ds-nav-links" style={{ display: "flex", alignItems: "center", gap: 32, height: 64 }}>
-          {/* "Try It" link - always visible on landing page */}
-          {isOnLanding && (
-            <button
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              style={{
-                fontSize: 12, fontWeight: 700, color: "#0d0d14",
-                background: "#84CC16", border: "none", cursor: "pointer",
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                height: 28, display: "inline-flex", alignItems: "center",
-                padding: "0 14px", borderRadius: 6,
-                letterSpacing: 0.3,
-              }}
-            >
-              Try It
-            </button>
-          )}
+        <div className="ds-nav-links" style={{ display: "flex", alignItems: "center", gap: 32, height: 56, position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
           {NAV_LINKS.map(({ href, label, sectionId }) => {
             const isActive = isOnLanding && activeSection === sectionId;
             return (
@@ -144,7 +127,7 @@ export default function DealSignalNav() {
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                   color: isActive ? "#84CC16" : "#e0e0e6",
                   position: "relative",
-                  height: 64, display: "inline-flex", alignItems: "center",
+                  height: 56, display: "inline-flex", alignItems: "center",
                   transition: "color 0.2s",
                 }}
                 onMouseEnter={e => {
@@ -166,7 +149,7 @@ export default function DealSignalNav() {
                 <span
                   className="nav-underline"
                   style={{
-                    position: "absolute", bottom: 0, left: 0, right: 0, height: 2,
+                    position: "absolute", bottom: 12, left: 0, right: 0, height: 2,
                     background: "#84CC16", borderRadius: 1,
                     transform: isActive ? "scaleX(1)" : "scaleX(0)",
                     opacity: isActive ? 1 : 0,
@@ -180,7 +163,7 @@ export default function DealSignalNav() {
         </div>
 
         {/* Right side CTA - desktop */}
-        <div className="ds-nav-cta" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div className="ds-nav-cta" style={{ display: "flex", alignItems: "center", gap: 18 }}>
           {authedUser ? (
             <>
               {/* Identity chip - shows who's signed in. Click goes to profile. */}
@@ -232,8 +215,8 @@ export default function DealSignalNav() {
               <Link prefetch={false} href="/workspace" style={{
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
                 fontSize: 14, fontWeight: 600, color: "#0d0d14", textDecoration: "none",
-                padding: "0 14px", borderRadius: 8, background: "#84CC16",
-                height: 32, transition: "all 0.2s",
+                padding: "0 18px", borderRadius: 999, background: "#84CC16",
+                height: 38, transition: "all 0.2s",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
                 boxShadow: "0 0 20px rgba(132,204,22,0.3), 0 0 40px rgba(132,204,22,0.1)",
               }}
@@ -257,9 +240,9 @@ export default function DealSignalNav() {
               {!resultShowing && (
                 <Link prefetch={false} href="/workspace/login?mode=register" style={{
                   display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 14, fontWeight: 600, color: "#FFFFFF", textDecoration: "none",
-                  padding: "0 14px", borderRadius: 8, background: "#84CC16",
-                  height: 32, transition: "all 0.2s",
+                  fontSize: 14, fontWeight: 700, color: "#0d0d14", textDecoration: "none",
+                  padding: "0 18px", borderRadius: 999, background: "#84CC16",
+                  height: 38, transition: "all 0.2s",
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                   boxShadow: "0 0 20px rgba(132,204,22,0.3), 0 0 40px rgba(132,204,22,0.1)",
                 }}
@@ -302,9 +285,9 @@ export default function DealSignalNav() {
       {/* Mobile slide-down menu */}
       {mobileMenuOpen && (
         <div className="ds-mobile-menu" style={{
-          position: "absolute", top: 64, left: 0, right: 0,
-          background: "rgba(13,13,20,0.97)", backdropFilter: "blur(24px)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          position: "absolute", top: 76, left: 16, right: 16, pointerEvents: "auto",
+          background: "rgba(16,16,24,0.97)", backdropFilter: "blur(24px)",
+          border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20,
           padding: "16px 24px 20px",
           display: "flex", flexDirection: "column", gap: 4,
           animation: "dsMobileSlide 0.2s ease-out",
@@ -421,6 +404,10 @@ export default function DealSignalNav() {
         @keyframes dsMobileSlide {
           from { opacity: 0; transform: translateY(-8px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 640px) {
+          .so-nav-header { padding: 10px 10px 0 !important; }
+          .so-nav-pill { padding: 0 8px 0 16px !important; }
         }
         @media (max-width: 900px) {
           .ds-nav-links { display: none !important; }

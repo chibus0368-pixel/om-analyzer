@@ -313,7 +313,7 @@ function EmailPropertyButton({
   useEffect(() => {
     if (open) {
       const name = property?.propertyName || "Property";
-      setSubject(`${name} - Deal Signals`);
+      setSubject(`${name} - ScoreOM`);
       setError(null);
       setSuccess(false);
     }
@@ -356,7 +356,7 @@ function EmailPropertyButton({
       // so non-logged-in recipients see a clean marketing-style page
       // with the deal info + a CTA to the homepage, not an auto-anon
       // workspace shell with a signup wall.
-      const origin = (typeof window !== "undefined" && window.location?.origin) || "https://dealsignals.app";
+      const origin = (typeof window !== "undefined" && window.location?.origin) || "https://www.scoreom.com";
       const propertyUrl = property?.id ? `${origin}/p/${property.id}` : undefined;
       const html = renderPropertyEmailHTML({
         propertyName: property.propertyName,
@@ -498,7 +498,7 @@ function EmailPropertyButton({
 
               {senderEmail && (
                 <div style={{ fontSize: 11, color: "#6B7280" }}>
-                  Sent from <strong>Deal Signals</strong>. Replies will go to <strong>{senderEmail}</strong>.
+                  Sent from <strong>ScoreOM</strong>. Replies will go to <strong>{senderEmail}</strong>.
                 </div>
               )}
 
@@ -609,8 +609,8 @@ function PurchasePriceInline({ priceState }: { priceState: ReturnType<typeof use
   );
 }
 
-/* ── Score badge (Deal Signals) ─────────────────────────── */
-function DealSignalBadge({ score, band }: { score: number | null; band: string }) {
+/* ── Score badge (ScoreOM) ─────────────────────────── */
+function ScoreOMBadge({ score, band }: { score: number | null; band: string }) {
   if (!score) return null;
   const b = band.toLowerCase().replace(/_/g, " ");
   const isGreen = b === "strong buy" || b === "buy" || b === "strong_buy";
@@ -1185,7 +1185,7 @@ export default function PropertyDetailClient() {
       if (parseData.success && parseData.fieldsExtracted > 0) {
         setReparseStatus("Generating output files...");
         try { await fetch("/api/workspace/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ propertyId, userId: user.uid, parsedData: parseData.fields }) }); } catch { /* non-blocking */ }
-        setReparseStatus("Calculating Deal Signals...");
+        setReparseStatus("Calculating ScoreOM...");
         try { await fetch("/api/workspace/score", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ propertyId, userId: user.uid, analysisType }) }); } catch { /* non-blocking */ }
         setReparseStatus(`Complete - ${parseData.fieldsExtracted} fields extracted.`);
       } else {
@@ -1880,7 +1880,7 @@ function PropertyDetailInner({
         }}>
           <strong>Heads up:</strong> This looks like an LP/GP syndication offering
           {(property as any)?.dealStructureReason ? ` (matched: ${(property as any).dealStructureReason})` : ""}.
-          DealSignals is built for direct-asset underwriting, so the standard CRE analysis
+          ScoreOM is built for direct-asset underwriting, so the standard CRE analysis
           below may not fully apply. Full syndication (LP/GP) support is on our roadmap.
         </div>
       )}
@@ -1926,7 +1926,7 @@ function PropertyDetailInner({
           .pd-desktop-hero { display: none !important; }
 
           /* Collapse the redundant upper score card on mobile — the
-             DealSignal Score strip below it carries the same info. */
+             Deal Score strip below it carries the same info. */
           .pd-mobile-score-card { display: none !important; }
 
           /* Hide the full-width "Scored with … Model (auto-detected)"

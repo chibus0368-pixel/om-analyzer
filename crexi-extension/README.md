@@ -1,6 +1,6 @@
-# DealSignals · Save from Crexi (Chrome extension MVP)
+# ScoreOM · Save from Crexi (Chrome extension MVP)
 
-A tiny Chrome extension that adds a **"Save to DealSignals"** button to
+A tiny Chrome extension that adds a **"Save to ScoreOM"** button to
 Crexi property pages. Drop a Crexi flyer/OM PDF into the overlay and it
 ships straight into a DealBoard, where it gets parsed and scored by the
 regular pipeline.
@@ -39,7 +39,7 @@ requires two env vars:
 
 ## 3. Configure the extension
 
-Click the DealSignals icon in the toolbar and fill in:
+Click the ScoreOM icon in the toolbar and fill in:
 
 - **Base URL** — `https://www.dealsignals.app` for prod, or
   `http://localhost:3000` when running `next dev`.
@@ -62,14 +62,14 @@ There are two ways to save a deal, depending on what's on your screen.
    `https://www.crexi.com/properties/2285672/wisconsin-walgreens---franklin-wi`.
 2. Click the property's **Offering Memorandum / Flyer** thumbnail on
    Crexi — it opens the PDF in Crexi's built-in viewer overlay.
-3. The floating **Save to DealSignals** pill in the bottom-right corner
+3. The floating **Save to ScoreOM** pill in the bottom-right corner
    turns **green and pulsing** with the label **"Save this PDF to
-   DealSignals"** once it detects the open PDF.
+   ScoreOM"** once it detects the open PDF.
 4. Click the pill. The overlay opens with the captured PDF already
    attached, plus any address/price/NOI we could scrape.
 5. Confirm the target DealBoard + analysis type and click
    **Save to DealBoard**. The server fetches, parses, and scores it.
-6. The button becomes **"Open in DealSignals →"** — click to jump to the
+6. The button becomes **"Open in ScoreOM →"** — click to jump to the
    new property page on your board.
 
 ### B) Manual drop (fallback)
@@ -78,7 +78,7 @@ If the auto-detection misses the PDF (rare — usually means Crexi shoved
 it into an iframe we can't read), you can still:
 
 1. Download the flyer/OM from Crexi the usual way.
-2. Click the **Save to DealSignals** pill on the property page.
+2. Click the **Save to ScoreOM** pill on the property page.
 3. Drag-and-drop the downloaded PDF into the overlay, or click
    "browse your files".
 4. Continue from step 5 above.

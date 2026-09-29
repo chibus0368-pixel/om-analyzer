@@ -66,6 +66,51 @@ function derivePropertyName(filename: string): string {
     .trim() || "New Property";
 }
 
+/**
+ * Multi-deal detection: check if dropped files likely belong to
+ * different properties by comparing their derived property names.
+ * Returns an array of distinct deal groups if 2+ are detected.
+ */
+function detectMultipleDeals(files: { file: File }[]): { name: string; files: string[] }[] | null {
+  if (files.length < 2) return null;
+
+  // Normalize names aggressively for grouping: lowercase, strip numbers
+  // that look like dates/versions, collapse whitespace.
+  function normalizeForGrouping(filename: string): string {
+    return derivePropertyName(filename)
+      .toLowerCase()
+      .replace(/\b\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}\b/g, "") // dates
+      .replace(/\b(20\d{2}|19\d{2})\b/g, "") // years
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  // Group files by their normalized property name
+  const groups = new Map<string, { name: string; files: string[] }>();
+  for (const f of files) {
+    const derived = derivePropertyName(f.file.name);
+    const key = normalizeForGrouping(f.file.name);
+    // Skip image/misc files from grouping - they often have generic names
+    // and shouldn't trigger a multi-deal warning on their own.
+    const ext = f.file.name.split(".").pop()?.toLowerCase() || "";
+    if (/^(png|jpg|jpeg|webp)$/.test(ext)) continue;
+    if (!key || key === "new property") continue;
+
+    const existing = groups.get(key);
+    if (existing) {
+      existing.files.push(f.file.name);
+    } else {
+      groups.set(key, { name: derived, files: [f.file.name] });
+    }
+  }
+
+  // If we found 2+ distinct groups, the user probably dropped files
+  // for different deals.
+  const distinct = Array.from(groups.values());
+  if (distinct.length >= 2) return distinct;
+  return null;
+}
+
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "9px 12px", border: `1px solid ${C.ghost}`,
   borderRadius: C.radius, fontSize: 13, outline: "none", boxSizing: "border-box",
@@ -93,6 +138,10 @@ export default function UploadPage() {
   const [showMismatchModal, setShowMismatchModal] = useState(false);
   const [mismatchInfo, setMismatchInfo] = useState<{ detected: string; workspace: string; propertyId: string; extractedText?: string } | null>(null);
   const skipMismatchRef = useRef(false);
+  // Multi-deal detection: warn user when dropped files look like different deals
+  const [showMultiDealWarning, setShowMultiDealWarning] = useState(false);
+  const [detectedDealGroups, setDetectedDealGroups] = useState<{ name: string; files: string[] }[] | null>(null);
+  const skipMultiDealCheckRef = useRef(false);
   // Guard against double-fire: the auto-trigger effect and the Upload button
   // can both call handleUpload if state updates race. Once a run starts, this
   // ref blocks any concurrent call until the previous one finishes.
@@ -158,8 +207,19 @@ export default function UploadPage() {
       status: "pending" as const,
       docCategory: guessCategory(file.name),
     }));
-    setFiles(prev => [...prev, ...items]);
-  }, []);
+    setFiles(prev => {
+      const merged = [...prev, ...items];
+      // Check if the combined file set looks like multiple deals
+      if (!skipMultiDealCheckRef.current && !selectedExistingId && merged.length >= 2) {
+        const groups = detectMultipleDeals(merged);
+        if (groups) {
+          setDetectedDealGroups(groups);
+          setShowMultiDealWarning(true);
+        }
+      }
+      return merged;
+    });
+  }, [selectedExistingId]);
 
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
@@ -230,7 +290,7 @@ export default function UploadPage() {
       });
 
       if (usageRes.ok) {
-        // DealSignals is free right now (FREE_ACCESS_MODE), so the API
+        // ScoreOM is free right now (FREE_ACCESS_MODE), so the API
         // always reports an effectively unlimited uploadLimit and this
         // never blocks. Left as a safety net in case the flag is ever
         // turned off without redeploying the UI.
@@ -732,6 +792,7 @@ export default function UploadPage() {
         </div>
         <Link
           href="/workspace/upload/bulk"
+          prefetch={false}
           className="ul-bulk-header-btn"
           style={{
             display: "inline-flex", alignItems: "center", gap: 8,
@@ -915,8 +976,27 @@ export default function UploadPage() {
                   }
                 `}</style>
                 <div className="ul-filelist-header" style={{ padding: "10px 16px", borderBottom: `1px solid ${C.ghost}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: C.secondary }}>{files.length} file{files.length !== 1 ? "s" : ""} ready</span>
-                  <button onClick={() => setFiles([])} style={{ fontSize: 11, color: "#4D7C0F", background: "none", border: "none", cursor: "pointer", fontWeight: 600, minHeight: 32 }}>Clear</button>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", gap: 4,
+                      padding: "3px 8px", borderRadius: 4,
+                      background: selectedExistingId ? "rgba(10,126,90,0.08)" : "rgba(77,124,15,0.08)",
+                      color: selectedExistingId ? "#0A7E5A" : "#4D7C0F",
+                      fontSize: 11, fontWeight: 700,
+                    }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4" />
+                      </svg>
+                      {selectedExistingId ? "ADDING TO EXISTING DEAL" : "ONE DEAL"}
+                    </span>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: C.secondary }}>
+                      {files.length} file{files.length !== 1 ? "s" : ""}
+                      {files.length > 1 && !selectedExistingId && (
+                        <span style={{ color: C.secondary, fontWeight: 400 }}> {"→"} merged into one property</span>
+                      )}
+                    </span>
+                  </div>
+                  <button onClick={() => { setFiles([]); skipMultiDealCheckRef.current = false; }} style={{ fontSize: 11, color: "#4D7C0F", background: "none", border: "none", cursor: "pointer", fontWeight: 600, minHeight: 32 }}>Clear</button>
                 </div>
                 {files.map(f => (
                   <div key={f.id} className="ul-file-row" style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 16px", borderBottom: `1px solid ${C.ghost}`, fontSize: 12 }}>
@@ -928,6 +1008,25 @@ export default function UploadPage() {
                   </div>
                 ))}
               </div>
+
+              {/* Property name preview */}
+              {!selectedExistingId && files.length > 0 && (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "8px 14px", marginBottom: 12,
+                  background: "rgba(77,124,15,0.04)", borderRadius: C.radius,
+                  border: "1px solid rgba(77,124,15,0.12)",
+                  fontSize: 12, color: C.secondary,
+                }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4D7C0F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                  <span>
+                    Will create deal: <strong style={{ color: C.onSurface }}>{derivePropertyName(files[0].file.name)}</strong>
+                    {files.length > 1 && <span style={{ fontStyle: "italic" }}> (you can rename on the property page)</span>}
+                  </span>
+                </div>
+              )}
 
               <div className="ul-upload-btn-container" style={{ display: "flex", justifyContent: "center" }}>
                 <style>{`
@@ -1454,6 +1553,132 @@ export default function UploadPage() {
             }}>
               Upload Another
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Multi-Deal Warning Modal */}
+      {showMultiDealWarning && detectedDealGroups && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex",
+          alignItems: "center", justifyContent: "center", zIndex: 200, padding: 20,
+        }} onClick={() => setShowMultiDealWarning(false)}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: C.surfLowest, borderRadius: 14, padding: "28px 32px", width: 500, maxWidth: "100%",
+            boxShadow: C.shadowDeep, maxHeight: "85vh", overflowY: "auto",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 8, background: "rgba(234,179,8,0.12)",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+              </div>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: C.onSurface }}>
+                Multiple deals detected
+              </h3>
+            </div>
+
+            <p style={{ margin: "0 0 16px", fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
+              These files look like they belong to <strong style={{ color: C.onSurface }}>{detectedDealGroups.length} different properties</strong>. Right now, all files will be merged into a single deal. Is that what you want?
+            </p>
+
+            {/* Show detected groups */}
+            <div style={{ marginBottom: 20 }}>
+              {detectedDealGroups.map((group, i) => (
+                <div key={i} style={{
+                  padding: "8px 12px", marginBottom: 6,
+                  background: C.surfLow, borderRadius: 6,
+                  border: `1px solid ${C.ghost}`,
+                }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: C.onSurface, marginBottom: 2 }}>
+                    {group.name}
+                  </div>
+                  {group.files.map((fn, j) => (
+                    <div key={j} style={{ fontSize: 11, color: C.secondary, paddingLeft: 8 }}>
+                      {fn}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {/* Option 1: Keep as one deal */}
+              <button
+                onClick={() => {
+                  skipMultiDealCheckRef.current = true;
+                  setShowMultiDealWarning(false);
+                  setDetectedDealGroups(null);
+                }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10, width: "100%",
+                  padding: "10px 14px", background: C.surfLow, border: `1px solid ${C.ghost}`,
+                  borderRadius: 8, fontSize: 13, cursor: "pointer", color: C.onSurface,
+                  fontFamily: "'Inter', sans-serif", fontWeight: 500, textAlign: "left",
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                <div>
+                  <div style={{ fontWeight: 600 }}>Keep as one deal</div>
+                  <div style={{ fontSize: 11, color: C.secondary, fontWeight: 400 }}>All {files.length} files will be merged into a single property</div>
+                </div>
+              </button>
+
+              {/* Option 2: Use bulk upload */}
+              <button
+                onClick={() => {
+                  setShowMultiDealWarning(false);
+                  setDetectedDealGroups(null);
+                  setFiles([]);
+                  router.push("/workspace/upload/bulk");
+                }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10, width: "100%",
+                  padding: "10px 14px", background: "rgba(77,124,15,0.06)", border: "1.5px solid rgba(77,124,15,0.25)",
+                  borderRadius: 8, fontSize: 13, cursor: "pointer", color: C.onSurface,
+                  fontFamily: "'Inter', sans-serif", fontWeight: 500, textAlign: "left",
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <path d="M16 16l-4-4-4 4M12 12v9" />
+                  <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3" />
+                </svg>
+                <div>
+                  <div style={{ fontWeight: 600, color: "#4D7C0F" }}>Use Bulk Upload instead</div>
+                  <div style={{ fontSize: 11, color: C.secondary, fontWeight: 400 }}>Each file becomes its own separate deal on your board</div>
+                </div>
+              </button>
+
+              {/* Option 3: Remove extra files */}
+              <button
+                onClick={() => {
+                  // Keep only the first file
+                  setFiles(prev => prev.length > 0 ? [prev[0]] : []);
+                  setShowMultiDealWarning(false);
+                  setDetectedDealGroups(null);
+                }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10, width: "100%",
+                  padding: "10px 14px", background: C.surfLowest, border: `1px solid ${C.ghost}`,
+                  borderRadius: 8, fontSize: 13, cursor: "pointer", color: C.secondary,
+                  fontFamily: "'Inter', sans-serif", fontWeight: 500, textAlign: "left",
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                </svg>
+                <div>
+                  <div>Keep only the first file</div>
+                  <div style={{ fontSize: 11, color: C.secondary, fontWeight: 400 }}>Remove extra files and upload one deal at a time</div>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       )}

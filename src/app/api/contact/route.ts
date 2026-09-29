@@ -119,7 +119,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const userConfirmationHtml = generateUserConfirmationEmail(sanitizedName);
     const userResult = await sendEmail(
       sanitizedEmail,
-      'We Received Your Message - Deal Signals',
+      'We Received Your Message - ScoreOM',
       userConfirmationHtml,
       undefined,
       undefined,
@@ -188,7 +188,7 @@ function generateAdminNotificationEmail(
   message: string,
   messageId: string
 ): string {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://dealsignals.app';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.scoreom.com';
   const dashboardUrl = `${appUrl}/admin/messages/${messageId}`;
 
   return `<!DOCTYPE html>
@@ -196,13 +196,13 @@ function generateAdminNotificationEmail(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>New Inbound - Deal Signals</title>
+  <title>New Inbound - ScoreOM</title>
 </head>
 <body style="margin: 0; padding: 24px 0; background-color: #F5F7FA; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1F2937;">
   <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
     <tr>
       <td style="background-color: #0d0d14; padding: 24px 32px; text-align: center;">
-        <img src="${appUrl}/images/dealsignals-full-logo4.png" alt="Deal Signals" width="180" style="max-width: 180px; height: auto; display: inline-block; border: 0;" />
+        <img src="${appUrl}/images/scoreom-logo.png" alt="ScoreOM" width="180" style="max-width: 180px; height: auto; display: inline-block; border: 0;" />
       </td>
     </tr>
     <tr>
@@ -244,20 +244,20 @@ function generateAdminNotificationEmail(
  * Generate user confirmation email
  */
 function generateUserConfirmationEmail(name: string): string {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://dealsignals.app';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.scoreom.com';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Message Received - Deal Signals</title>
+  <title>Message Received - ScoreOM</title>
 </head>
 <body style="margin: 0; padding: 24px 0; background-color: #F5F7FA; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1F2937;">
   <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
     <tr>
       <td style="background-color: #0d0d14; padding: 28px 32px; text-align: center;">
         <a href="${appUrl}" style="text-decoration: none; display: inline-block;">
-          <img src="${appUrl}/images/dealsignals-full-logo4.png" alt="Deal Signals" width="200" style="max-width: 200px; height: auto; display: inline-block; border: 0;" />
+          <img src="${appUrl}/images/scoreom-logo.png" alt="ScoreOM" width="200" style="max-width: 200px; height: auto; display: inline-block; border: 0;" />
         </a>
       </td>
     </tr>
@@ -270,7 +270,7 @@ function generateUserConfirmationEmail(name: string): string {
         <h2 style="margin: 0 0 20px 0; color: #0d0d14; font-size: 26px; line-height: 1.25; letter-spacing: -0.02em; font-weight: 800;">Thanks, ${name}. We've got it.</h2>
 
         <p style="margin: 0 0 15px 0; font-size: 15px; line-height: 1.65; color: #1F2937;">
-          Your message is in front of the Deal Signals team. We read every inbound and we'll get back to you inside one business day, usually much faster.
+          Your message is in front of the ScoreOM team. We read every inbound and we'll get back to you inside one business day, usually much faster.
         </p>
 
         <p style="margin: 0 0 15px 0; font-size: 15px; line-height: 1.65; color: #1F2937;">
@@ -288,14 +288,14 @@ function generateUserConfirmationEmail(name: string): string {
         </table>
 
         <p style="margin: 24px 0 0 0; font-size: 13px; color: #6B7280; line-height: 1.6;">
-          &mdash; The Deal Signals team
+          &mdash; The ScoreOM team
         </p>
       </td>
     </tr>
     <tr>
       <td style="background-color: #F2F3FB; padding: 24px 32px; font-size: 11px; color: #6B7280; text-align: center; line-height: 1.7;">
-        <p style="margin: 0 0 4px 0;"><a href="${appUrl}" style="color: #3F6212; text-decoration: none; font-weight: 600;">dealsignals.app</a></p>
-        <p style="margin: 4px 0;">&copy; ${new Date().getFullYear()} Deal Signals. All rights reserved.</p>
+        <p style="margin: 0 0 4px 0;"><a href="${appUrl}" style="color: #3F6212; text-decoration: none; font-weight: 600;">scoreom.com</a></p>
+        <p style="margin: 4px 0;">&copy; ${new Date().getFullYear()} ScoreOM. All rights reserved.</p>
         <p style="margin: 4px 0;">Mequon, Wisconsin</p>
       </td>
     </tr>

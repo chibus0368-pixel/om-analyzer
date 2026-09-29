@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = 'https://dealsignals.app';
+  const baseUrl = 'https://www.scoreom.com';
 
   return {
     rules: [

@@ -96,7 +96,7 @@ export interface ScenarioReturn {
 }
 
 /**
- * Verdict vocabulary matches the DealSignal scoring badge: Buy / Neutral / Pass.
+ * Verdict vocabulary matches the ScoreOM scoring badge: Buy / Neutral / Pass.
  * Legacy callers that referenced KEEP / KILL / KEEP_WITH_CONDITIONS should
  * migrate; the enum values here are the authoritative ones.
  */
@@ -112,7 +112,7 @@ export interface QuickScreenReport {
    * the Ways It Dies column stays the single home for risk callouts.
    */
   executiveSummary: string;
-  /** 0 to 100 composite score mirroring DealSignalBadge. */
+  /** 0 to 100 composite score mirroring ScoreOMBadge. */
   score: number;
 
   // Snapshot

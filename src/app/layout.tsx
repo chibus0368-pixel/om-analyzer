@@ -11,43 +11,46 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://dealsignals.app"),
+  metadataBase: new URL("https://www.scoreom.com"),
   title: {
-    default: "DealSignals - Commercial Real Estate Pre-Diligence",
-    template: "%s | DealSignals",
+    default: "ScoreOM - Commercial Real Estate Pre-Diligence",
+    template: "%s | ScoreOM",
   },
   description:
     "Pre-diligence engine for commercial real estate. Upload an OM and get a scored deal brief in under 60 seconds.",
   alternates: {
-    canonical: "https://dealsignals.app",
+    canonical: "https://www.scoreom.com",
+  },
+  icons: {
+    apple: "/apple-touch-icon.png",
   },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://dealsignals.app",
-    siteName: "Deal Signals",
+    url: "https://www.scoreom.com",
+    siteName: "ScoreOM",
     title: {
-      default: "Deal Signals - Instantly analyze on-market CRE deals.",
-      template: "%s | Deal Signals",
+      default: "ScoreOM - Instantly analyze on-market CRE deals.",
+      template: "%s | ScoreOM",
     },
     description:
-      "Deal Signals - Instantly analyze on-market CRE deals.",
+      "ScoreOM - Instantly analyze on-market CRE deals.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Deal Signals - Instantly analyze on-market CRE deals.",
+        alt: "ScoreOM - Instantly analyze on-market CRE deals.",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
     title: {
-      default: "Deal Signals - Instantly analyze on-market CRE deals.",
-      template: "%s | Deal Signals",
+      default: "ScoreOM - Instantly analyze on-market CRE deals.",
+      template: "%s | ScoreOM",
     },
-    description: "Deal Signals - Instantly analyze on-market CRE deals.",
+    description: "ScoreOM - Instantly analyze on-market CRE deals.",
     images: ["/og-image.png"],
   },
   robots: {

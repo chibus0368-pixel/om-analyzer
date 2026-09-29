@@ -1,4 +1,4 @@
-# DealSignals — Platform Specification & Architecture
+# ScoreOM — Platform Specification & Architecture
 
 **Last updated:** April 11, 2026
 **Commit checkpoint:** `4415bab` (main)
@@ -7,9 +7,9 @@
 
 ---
 
-## 1. What DealSignals Is
+## 1. What ScoreOM Is
 
-DealSignals is a commercial real estate (CRE) deal analysis platform that lets investors upload Offering Memorandums, flyers, rent rolls, and other deal documents, then automatically extracts financials, scores the investment opportunity, and organizes deals into DealBoards for comparison and tracking.
+ScoreOM is a commercial real estate (CRE) deal analysis platform that lets investors upload Offering Memorandums, flyers, rent rolls, and other deal documents, then automatically extracts financials, scores the investment opportunity, and organizes deals into DealBoards for comparison and tracking.
 
 The product has three entry points:
 

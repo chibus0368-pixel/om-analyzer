@@ -7,12 +7,12 @@ import PublicDealAnalysis, { type PublicDocument } from "./PublicDealAnalysis";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://www.scoreom.com";
 
 /**
  * Dynamic OG metadata so link previews in iMessage, Slack, LinkedIn, etc.
  * show the property name, address, score, and hero image instead of a
- * generic "DealSignals" card.
+ * generic "ScoreOM" card.
  */
 export async function generateMetadata(
   { params }: { params: Promise<{ propertyId: string }> },
@@ -41,7 +41,7 @@ export async function generateMetadata(
     const descParts: string[] = [];
     if (addr) descParts.push(addr);
     if (assetType) descParts.push(assetType);
-    descParts.push("Analyzed by DealSignals");
+    descParts.push("Analyzed by ScoreOM");
     const description = descParts.join(" · ");
 
     const ogImages = prop.heroImageUrl
@@ -55,7 +55,7 @@ export async function generateMetadata(
         title,
         description,
         url: `${BASE_URL}/p/${propertyId}`,
-        siteName: "DealSignals",
+        siteName: "ScoreOM",
         type: "website",
         ...(ogImages ? { images: ogImages } : {}),
       },
@@ -80,7 +80,7 @@ export async function generateMetadata(
  * Used by emailed property links so the recipient lands on a clean
  * marketing-style page with just THIS deal's info, no workspace shell,
  * no auto-anon-signin, no signup wall. Strong CTA at the bottom
- * routes to the marketing homepage so they can learn what DealSignals
+ * routes to the marketing homepage so they can learn what ScoreOM
  * does before deciding to sign up.
  *
  * What's exposed (curated):
@@ -89,7 +89,7 @@ export async function generateMetadata(
  *     price/SF, lot acres)
  *   - Investment brief parsed into Overview / Strengths / Concerns
  *   - Tenant snapshot (single-row table, no full rent roll)
- *   - "Powered by DealSignals" footer + homepage CTA
+ *   - "Powered by ScoreOM" footer + homepage CTA
  *
  * Also exposed (added so an emailed recipient gets the whole read,
  * not a teaser):
@@ -233,6 +233,13 @@ export default async function PublicPropertyPage({ params }: Props) {
   const snap = await db.collection("workspace_properties").doc(propertyId).get();
   if (!snap.exists) notFound();
   const prop = snap.data() as any;
+
+  // Block anonymous / Try Me properties from the public page. These
+  // are ephemeral records that should only be visible inside the
+  // workspace to the user who created them, never on a public URL.
+  if (prop.isAnonymousFirebase || prop.isTryMe) {
+    notFound();
+  }
 
   // Curated subset of extracted_fields. We only want the fields that
   // drive the public display, not every parsed row. The map shape
@@ -382,7 +389,7 @@ export default async function PublicPropertyPage({ params }: Props) {
         borderBottom: "1px solid rgba(255,255,255,0.08)",
       }}>
         <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 30, width: "auto" }} />
+          <img src="/images/scoreom-logo.png" alt="ScoreOM" style={{ height: 30, width: "auto" }} />
         </a>
         <a
           href="/"
@@ -394,7 +401,7 @@ export default async function PublicPropertyPage({ params }: Props) {
             textDecoration: "none", fontSize: 12, fontWeight: 700, letterSpacing: 0.2,
           }}
         >
-          What is DealSignals? →
+          What is ScoreOM? →
         </a>
       </header>
 
@@ -636,13 +643,13 @@ export default async function PublicPropertyPage({ params }: Props) {
           marginTop: 32,
         }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>
-            Powered by DealSignals
+            Powered by ScoreOM
           </div>
           <h2 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 8px", letterSpacing: "-0.01em" }}>
             See how this analysis was generated
           </h2>
           <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", margin: "0 auto 18px", maxWidth: 460, lineHeight: 1.55 }}>
-            DealSignals turns commercial real estate offering memorandums into structured underwriting in under a minute. Cap rate analysis, score, brief, downloadable workbook, all from a PDF.
+            ScoreOM turns commercial real estate offering memorandums into structured underwriting in under a minute. Cap rate analysis, score, brief, downloadable workbook, all from a PDF.
           </p>
           <a
             href="/"
@@ -658,7 +665,7 @@ export default async function PublicPropertyPage({ params }: Props) {
               boxShadow: "0 6px 18px rgba(132,204,22,0.35)",
             }}
           >
-            Visit DealSignals.app →
+            Visit ScoreOM →
           </a>
         </section>
       </main>
@@ -666,7 +673,7 @@ export default async function PublicPropertyPage({ params }: Props) {
       <footer style={{
         textAlign: "center", padding: "24px", color: C.muted, fontSize: 11, borderTop: `1px solid ${C.border}`, background: C.surface,
       }}>
-        Shared via DealSignals, analysis for informational purposes only.
+        Shared via ScoreOM, analysis for informational purposes only.
       </footer>
     </div>
   );

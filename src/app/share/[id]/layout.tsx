@@ -16,10 +16,10 @@ type Props = {
   children: React.ReactNode;
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://www.scoreom.com";
 
 const FALLBACK_META: Metadata = {
-  title: "Shared DealBoard · DealSignals",
+  title: "Shared DealBoard · ScoreOM",
   description: "View shared commercial real estate analysis.",
   robots: { index: false, follow: false },
 };
@@ -47,7 +47,7 @@ export async function generateMetadata(
       const expiry = new Date(shareData.expiresAt).getTime();
       if (Number.isFinite(expiry) && Date.now() > expiry) {
         return {
-          title: "Share link expired · DealSignals",
+          title: "Share link expired · ScoreOM",
           robots: { index: false, follow: false },
         };
       }
@@ -114,7 +114,7 @@ export async function generateMetadata(
         title,
         description,
         url: `${BASE_URL}/share/${shareId}`,
-        siteName: "DealSignals",
+        siteName: "ScoreOM",
         type: "website",
         ...(ogImages ? { images: ogImages } : {}),
       },

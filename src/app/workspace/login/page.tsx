@@ -120,7 +120,7 @@ function WorkspaceLoginPageInner() {
   const handlingSubmitRef = useRef(false);
 
   /* ── Build post-auth redirect URL ──
-     DealSignals is free right now - no Stripe checkout hop, no ?upgrade=
+     ScoreOM is free right now - no Stripe checkout hop, no ?upgrade=
      param handling. Old shared links with ?upgrade=... just land in the
      workspace like any other redirect. */
   function getPostAuthUrl(): string {
@@ -325,7 +325,7 @@ function WorkspaceLoginPageInner() {
               fontSize: 34, fontWeight: 800,
               fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
               letterSpacing: -0.5, lineHeight: 1,
-            }} aria-label="DealSignals">
+            }} aria-label="ScoreOM">
               <span style={{ color: "#0B1120" }}>Deal</span>
               <span style={{ color: "#4D7C0F" }}>Signals</span>
             </span>
@@ -334,7 +334,7 @@ function WorkspaceLoginPageInner() {
             {mode === "login" ? "Sign In" : "Create Your Account"}
           </h1>
           <p style={{ fontSize: 14, color: "#5A7091", marginTop: 6, fontFamily: "'Inter', sans-serif" }}>
-            {mode === "login" ? "Sign in to your workspace" : "Get started with DealSignals"}
+            {mode === "login" ? "Sign in to your workspace" : "Get started with ScoreOM"}
           </p>
         </div>
 
@@ -523,7 +523,7 @@ function WorkspaceLoginPageInner() {
           textAlign: "center", marginTop: 8, fontSize: 10, color: "#B4C1D1",
           fontFamily: "'Inter', sans-serif", lineHeight: 1.5,
         }}>
-          Deal Signals - CRE intelligence &amp; analytics
+          ScoreOM - CRE intelligence &amp; analytics
         </p>
       </div>
 

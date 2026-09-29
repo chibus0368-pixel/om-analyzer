@@ -1,5 +1,5 @@
 /**
- * DealSignals Crexi extension — popup settings UI.
+ * ScoreOM Crexi extension — popup settings UI.
  *
  * Reads and writes chrome.storage.local. Keys mirror background.js defaults:
  *   baseUrl, apiKey, workspaceId, analysisType

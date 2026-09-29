@@ -198,7 +198,7 @@ const HELP_TOPICS: HelpTopic[] = [
     content: (
       <div>
         <p style={{ fontSize: 14, color: C.secondary, lineHeight: 1.7 }}>
-          Deal Signals is a CRE (Commercial Real Estate) first-pass deal review tool that pulls key numbers, calculates core metrics, and flags items that need review. Here's how to get started in under 5 minutes.
+          ScoreOM is a CRE (Commercial Real Estate) first-pass deal review tool that pulls key numbers, calculates core metrics, and flags items that need review. Here's how to get started in under 5 minutes.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Quick Start Steps</h4>
@@ -410,12 +410,12 @@ const HELP_TOPICS: HelpTopic[] = [
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Score Strip and Executive Summary</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          The top of the page shows a single DealSignal Score badge, the score band label (Strong Buy / Buy / Neutral / Pass / Reject), and a one-line verdict. Directly below is the Executive Summary card with an overview paragraph plus parallel strengths and concerns lists pulled from the underwriting brief.
+          The top of the page shows a single Deal Score badge, the score band label (Strong Buy / Buy / Neutral / Pass / Reject), and a one-line verdict. Directly below is the Executive Summary card with an overview paragraph plus parallel strengths and concerns lists pulled from the underwriting brief.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Location Intel</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          Every Pro tier gets automatic location intel on every property. Once analysis completes, DealSignals pulls neighborhood grade, population and income demographics, nearby anchor tenants, traffic counts, and market signals for the property address. No extra click or upgrade required. You will see it populate on the right rail of the detail page.
+          Every Pro tier gets automatic location intel on every property. Once analysis completes, ScoreOM pulls neighborhood grade, population and income demographics, nearby anchor tenants, traffic counts, and market signals for the property address. No extra click or upgrade required. You will see it populate on the right rail of the detail page.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Rent Roll and Needs Review</h4>
@@ -553,7 +553,7 @@ const HELP_TOPICS: HelpTopic[] = [
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Email a Property</h4>
         <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-          The <strong>Email this property</strong> action sends a branded HTML email carrying the DealSignals logo header, hero photo, score, key metrics, executive summary, and a link back to the live property. The email also includes the standard disclaimer so recipients know the analysis is automated guidance, not investment advice.
+          The <strong>Email this property</strong> action sends a branded HTML email carrying the ScoreOM logo header, hero photo, score, key metrics, executive summary, and a link back to the live property. The email also includes the standard disclaimer so recipients know the analysis is automated guidance, not investment advice.
         </p>
 
         <h4 style={{ fontSize: 15, fontWeight: 700, color: C.onSurface, margin: "20px 0 8px" }}>Privacy & Control</h4>

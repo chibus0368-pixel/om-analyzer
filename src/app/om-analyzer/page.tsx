@@ -6,8 +6,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { extractHeroImageFromPDF } from "@/lib/workspace/image-extractor";
 import { extractTextFromFile } from "@/lib/workspace/file-reader";
-import { DEALSIGNALS_LOGO_B64 } from "@/lib/workspace/logo-b64";
-import DealSignalNav from "@/components/DealSignalNav";
+import ScoreOMNav from "@/components/ScoreOMNav";
+import { HeroStats, ShareBand, RoleTabs, HomeSectionStyles } from "@/components/marketing/HomeSections";
+import { IntroVideo } from "@/components/marketing/IntroVideo";
+import { HeroStars, PillEyebrow, StackedFeatures, CompareChatGPT, StackStyles } from "@/components/marketing/StackedFeatures";
 import { trackLiteUpload, trackLiteResult, trackLeadCapture, trackProCTAClick, trackDownload } from "@/lib/analytics";
 
 /* ── Lazy Firebase helpers ──────────────────────────────────────────────
@@ -124,20 +126,6 @@ function MetricTooltip({ text }: { text: string }) {
         </span>
       )}
     </span>
-  );
-}
-
-/* ===========================================================================
-   FEATURE BLOCK WRAPPER - ANIMATES ON SCROLL
-   =========================================================================== */
-function FeatureBlock({ children, idx }: { children: React.ReactNode; idx: number }) {
-  const [ref, inView] = useInView(0.15);
-  return (
-    <div ref={ref} style={{ opacity: inView ? 1 : 0, transition: 'opacity 0.3s ease' }}>
-      <div className={inView ? 'ds-feature-animate' : 'ds-feature-hidden'}>
-        {children}
-      </div>
-    </div>
   );
 }
 
@@ -651,10 +639,10 @@ function HeroShowcase() {
         <div>
           <div style={{ marginBottom: 16 }}>
             <h3 style={{ fontSize: 42, fontWeight: 800, color: "#fff", margin: 0, letterSpacing: -0.5, lineHeight: 1.05 }}>
-              Quickly <span style={{ color: "#84CC16" }}>score and rank</span> on-market deals.
+              Examples - <span className="ds-callout">rank on-market deals</span>.
             </h3>
-            <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 15, margin: "8px 0 0", fontWeight: 500 }}>
-              Upload an OM, get a verdict and a rent roll in under a minute.
+            <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 15, margin: "22px 0 0", fontWeight: 500 }}>
+              Upload an OM, see the numbers and the rent roll in under a minute.
             </p>
           </div>
 
@@ -859,7 +847,7 @@ function HeroShowcase() {
             </svg>
           </button>
           <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", lineHeight: 1.25, marginBottom: 6, paddingRight: 34 }}>
-            From OM to Decision
+            From OM to first pass
           </div>
           <div style={{ fontSize: 22, fontWeight: 800, color: "#84CC16", marginBottom: 18, lineHeight: 1 }}>
             in 60 seconds
@@ -867,7 +855,7 @@ function HeroShowcase() {
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {[
               "AI extraction",
-              "Auto underwriting",
+              "Quick return ranges",
               "Instant scoring",
               "Shareable deal view",
             ].map(f => (
@@ -1087,7 +1075,7 @@ function HeroCardModal({ card: c, displayPhoto, verdictColor, onClose }: {
           </div>
         </div>
 
-        {/* DealSignal Score + verdict strip */}
+        {/* Deal Score + verdict strip */}
         <div style={{
           display: "flex", alignItems: "center", gap: 18, padding: "20px 24px",
           borderBottom: `1px solid ${LT.borderSoft}`,
@@ -1109,7 +1097,7 @@ function HeroCardModal({ card: c, displayPhoto, verdictColor, onClose }: {
             </div>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 10, color: LT.mutedSoft, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>DealSignal Score</div>
+            <div style={{ fontSize: 10, color: LT.mutedSoft, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Deal Score</div>
             <div style={{ fontSize: 15, color: LT.text, fontWeight: 600, lineHeight: 1.4, marginTop: 4 }}>
               {c.verdict === "BUY" && "Worth pursuing. Clean fundamentals, manageable risks."}
               {c.verdict === "NEUTRAL" && "Not a clear winner. Proceed only if thesis fits."}
@@ -2068,7 +2056,7 @@ export default function OmAnalyzerPage() {
 
   // Nav links on the landing page point at #examples / #how-it-works / etc.
   // Those anchors are inside `view === "upload"` and get unmounted the moment
-  // a deal is analyzed, so a plain Link would silently no-op. DealSignalNav
+  // a deal is analyzed, so a plain Link would silently no-op. ScoreOMNav
   // fires `ds-scroll-to-section` whenever a result is visible; we flip back
   // to the upload view and scroll the target into view on the next frame.
   useEffect(() => {
@@ -2133,6 +2121,8 @@ export default function OmAnalyzerPage() {
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
       />
+      <HomeSectionStyles />
+      <StackStyles />
       <style>{`
         html { scroll-behavior: smooth; }
         body, input, button, select, textarea { font-family: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
@@ -2272,7 +2262,7 @@ export default function OmAnalyzerPage() {
           .ds-hero-grid { gap: 24px !important; }
           .ds-feature-block { gap: 24px !important; }
           .ds-section-pad { padding-left: 16px !important; padding-right: 16px !important; padding-top: 60px !important; padding-bottom: 48px !important; }
-          .ds-hero-section { padding-top: 80px !important; padding-bottom: 40px !important; }
+          .ds-hero-section { padding-top: 108px !important; padding-bottom: 40px !important; }
           .ds-hero-left h1 { font-size: 28px !important; line-height: 1.15 !important; }
           .ds-hero-left p { font-size: 16px !important; margin-bottom: 24px !important; }
           .ds-process-strip { transform: scale(0.7) !important; transform-origin: center center !important; }
@@ -2298,6 +2288,9 @@ export default function OmAnalyzerPage() {
           .tm-metrics-strip { grid-template-columns: 1fr !important; }
           .ds-hero-left h1 { font-size: 24px !important; }
           .ds-section-pad { padding-top: 40px !important; padding-bottom: 36px !important; }
+        }
+        @media (max-width: 900px) {
+          .ds-section-pad.ds-hero-section { padding-top: 108px !important; }
         }
       `}</style>
 
@@ -2384,7 +2377,7 @@ export default function OmAnalyzerPage() {
       )}
 
       {/* ===== SIGN-UP PROMPT OVERLAY =====
-          DealSignals is free right now (FREE_ACCESS_MODE), so uploads never
+          ScoreOM is free right now (FREE_ACCESS_MODE), so uploads never
           actually hit a limit and showUpgradePrompt should never flip true in
           practice. Content kept Pro/pricing-free as a safety net in case it
           ever does fire. Prior paywall-framed copy is preserved at git tag
@@ -2409,7 +2402,7 @@ export default function OmAnalyzerPage() {
               </svg>
             </div>
             <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#ffffff", margin: "0 0 8px", letterSpacing: -0.3 }}>
-              DealSignals is free to use
+              ScoreOM is free to use
             </h3>
             <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.6, margin: "0 0 24px" }}>
               Sign up to save deals to your workspace, no card required.
@@ -2442,17 +2435,18 @@ export default function OmAnalyzerPage() {
         </div>
       )}
 
-      <DealSignalNav />
+      <ScoreOMNav />
 
       {/* ===== HERO + LANDING PAGE ===== */}
       {view === "upload" && (
         <section
           onDragOver={e => { e.preventDefault(); }}
           onDrop={e => { e.preventDefault(); dropZoneCounter.current = 0; setDragging(false); if (e.dataTransfer.files?.length) handleFile(e.dataTransfer.files[0]); }}
-          style={{ background: "#0d0d14", paddingTop: 64 }}>
+          style={{ background: "#0d0d14", paddingTop: 0 }}>
 
           {/* ── 1. HERO ── */}
-          <div className="ds-section-pad ds-hero-section" style={{ padding: "85px 32px 102px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
+          <div className="ds-section-pad ds-hero-section" style={{ padding: "150px 32px 80px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
+            <HeroStars />
             {/* Subtle line-drawing cityscape background */}
             <svg
               style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0, opacity: 0.08 }}
@@ -2595,46 +2589,18 @@ export default function OmAnalyzerPage() {
             {/* Gradient orbs for hero depth */}
             <div style={{ position: "absolute", top: -100, left: -200, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.12)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
             <div style={{ position: "absolute", bottom: -100, right: -150, width: 400, height: 400, borderRadius: "50%", background: "rgba(132,204,22,0.06)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
-            <div className="ds-hero-grid" style={{
-              maxWidth: 1100, margin: "0 auto",
-              display: "grid", gridTemplateColumns: "1fr 1fr", gap: 56, alignItems: "center",
-              position: "relative", zIndex: 1,
-            }}>
-              {/* Left */}
-              <div className="ds-hero-left" style={{ animation: "fadeInUp 0.5s ease-out" }}>
+            <div className="so-hero-center" style={{ animation: "fadeInUp 0.5s ease-out" }}>
+              <PillEyebrow>For investors who receive a lot of OMs</PillEyebrow>
+              <h1 className="so-hero-h1">
+                Every OM you receive.
+                <span className="accent">Broken down <span className="ds-callout">in a minute</span>.</span>
+              </h1>
+              <p className="so-hero-sub">
+                Upload the OMs that hit your inbox. ScoreOM pulls the numbers, rebuilds the NOI and scores each deal with the same criteria and models, so your whole pipeline sits in one normalized view you can rank and share.
+              </p>
 
-                <div style={{
-                  fontSize: 13, fontWeight: 700, color: "#84CC16",
-                  textTransform: "uppercase" as const, letterSpacing: 2,
-                  marginBottom: 16,
-                }}>
-                  Commercial Real Estate
-                </div>
-
-                <h1 style={{
-                  fontSize: 56, fontWeight: 800, color: "#ffffff", lineHeight: 1.1,
-                  marginBottom: 20, letterSpacing: -1.5,
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                }}>
-                  Move Faster Than<br />the Market on<br /><span className="ds-callout">Every Deal</span>.
-                </h1>
-                <p style={{
-                  fontSize: 19, color: "#9ca3af", lineHeight: 1.7,
-                  maxWidth: 500, marginBottom: 36,
-                }}>
-                  DealSignals turns deals and OMs into actionable investment insight, powering faster pre-diligence decisions.
-                </p>
-              </div>
-
-              {/* Right - upload column */}
-              <div style={{ animation: "fadeInUp 0.5s ease-out 0.1s both", marginTop: -40 }}>
-                {/* "Try now" label */}
-                <div style={{ textAlign: "center", marginBottom: 14 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "#84CC16", letterSpacing: 0.3 }}>
-                    Instantly analyze on-market CRE deals. Try now.
-                  </span>
-                </div>
-
+              <div className="so-upload-label"><span className="so-pill-dot" />Try it now. Drop in an OM, no signup needed.</div>
+              <div className="so-hero-upload">
                 {/* Upload drop zone
                     Flicker fix: children of the drop zone get
                     pointer-events: none while dragging, so the browser
@@ -2656,7 +2622,7 @@ export default function OmAnalyzerPage() {
                   onClick={() => !selectedFile && fileRef.current?.click()}
                   className="tm-upload-zone"
                   style={{
-                    background: dragging ? "rgba(132,204,22,0.06)" : "rgba(255,255,255,0.03)",
+                    background: dragging ? "rgba(26,34,18,0.92)" : "rgba(16,16,24,0.88)", backdropFilter: "blur(6px)",
                     borderRadius: 20, padding: selectedFile ? "24px" : "48px 32px",
                     cursor: selectedFile ? "default" : "pointer",
                     border: `2px dashed ${dragging ? "#84CC16" : "rgba(132,204,22,0.25)"}`,
@@ -2707,7 +2673,7 @@ export default function OmAnalyzerPage() {
                       <button onClick={(e) => { e.stopPropagation(); startAnalysis(); }} className="ds-btn ds-btn-primary" style={{
                         display: "block", width: "100%", fontSize: 15, padding: "13px 32px", marginTop: 12,
                       }}>
-                        Get Deal Signal
+                        Score My OM
                       </button>
                     </>
                   )}
@@ -2731,29 +2697,29 @@ export default function OmAnalyzerPage() {
                   </div>
                 )}
               </div>
+              <HeroStats />
             </div>
           </div>
 
-          {/* ── TRUST BAR ── */}
-          <div style={{ padding: "20px 32px", maxWidth: 1100, margin: "0 auto" }}>
-            <div style={{ padding: "16px 32px", background: "rgba(132,204,22,0.03)", border: "1px solid rgba(132,204,22,0.06)", borderRadius: 12, display: "flex", justifyContent: "center", alignItems: "center", gap: 32, flexWrap: "wrap" }}>
-              {[
-                "Built for real-world acquisition workflows",
-                "90%+ extraction accuracy on standard CRE metrics",
-                "Pre-diligence in 1 minute, not hours",
-              ].map(t => (
-                <div key={t} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.6)" }}>{t}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* ── STACKED FEATURE CARDS (#features, real screen fragments) ── */}
+          <StackedFeatures />
+
+          {/* ── WHY NOT CHATGPT: repeatable criteria + models ── */}
+          <CompareChatGPT />
+
+
 
           {/* ── Hero showcase (native HTML/CSS mockup) ── */}
-          <div id="examples" style={{ scrollMarginTop: 80 }}>
+          <div id="examples" style={{ scrollMarginTop: 80, paddingTop: 110 }}>
             <HeroShowcase />
           </div>
+
+          {/* ── WHO IT'S FOR (role tabs) ── */}
+          <RoleTabs />
+
+
+          {/* ── SHARE A DEALBOARD (silent explainer video) ── */}
+          <ShareBand />
 
           {/* ── ASSET-SPECIFIC MODELS (highlight only, no backend detail) ── */}
           <div id="asset-models" className="ds-section-pad" style={{
@@ -2772,35 +2738,23 @@ export default function OmAnalyzerPage() {
             <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
               {/* Section header */}
               <div style={{ textAlign: "center", marginBottom: 48 }}>
-                <div style={{
-                  display: "inline-flex", alignItems: "center", padding: "6px 16px",
-                  borderRadius: 50, background: "rgba(132,204,22,0.08)", color: "#84CC16",
-                  fontSize: 12, fontWeight: 700, marginBottom: 16, gap: 6,
-                  letterSpacing: 0.5, textTransform: "uppercase" as const,
-                  border: "1px solid rgba(132,204,22,0.18)",
-                }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
-                    <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-                  </svg>
-                  Asset-Specific Models
-                </div>
+                <div className="so-pill-eyebrow" style={{ marginBottom: 18 }}><span className="so-pill-dot" />Asset-specific models</div>
                 <h2 style={{
                   fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15,
                   marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif",
                 }}>
-                  A dedicated model for <span className="ds-callout">every asset class</span>.
+                  A dedicated model for the <span className="ds-callout">top three asset classes</span>.
                 </h2>
                 <p style={{ fontSize: 17, color: "#9ca3af", lineHeight: 1.7, maxWidth: 640, margin: "0 auto" }}>
-                  A grocery-anchored center doesn&apos;t score the same way as a warehouse, an apartment building, or raw land.
+                  A grocery-anchored center doesn&apos;t score the same way as a warehouse or a suburban office building.
                   Each asset type gets its own purpose-built model - so the signal you get is the signal that matters.
                 </p>
               </div>
 
-              {/* Asset tile grid - five purpose-built models with detailed line drawings */}
+              {/* Asset tile grid - retail, industrial and office models with line drawings */}
               <div style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(5, 1fr)",
+                gridTemplateColumns: "repeat(3, 1fr)",
                 gap: 16,
               }} className="ds-asset-grid">
                 {[
@@ -2865,49 +2819,6 @@ export default function OmAnalyzerPage() {
                         <path d="M10 24 L40 24" />
                         <path d="M10 30 L40 30" />
                         <path d="M22 30 L22 38 L28 38 L28 30" />
-                      </>
-                    ),
-                  },
-                  {
-                    label: "Multifamily",
-                    blurb: "Garden-style, mid-rise, high-rise, build-to-rent.",
-                    weights: ["Rent growth", "OpEx", "Occupancy"],
-                    /* Apartment - building with balconies + pitched roof */
-                    draw: (
-                      <>
-                        <path d="M4 38 L46 38" />
-                        <path d="M8 38 L8 14 L42 14 L42 38" />
-                        <path d="M6 14 L25 6 L44 14" />
-                        <path d="M12 18 L18 18 L18 22 L12 22 Z" />
-                        <path d="M22 18 L28 18 L28 22 L22 22 Z" />
-                        <path d="M32 18 L38 18 L38 22 L32 22 Z" />
-                        <path d="M12 26 L18 26 L18 30 L12 30 Z" />
-                        <path d="M22 26 L28 26 L28 30 L22 30 Z" />
-                        <path d="M32 26 L38 26 L38 30 L32 30 Z" />
-                        <path d="M22 32 L28 32 L28 38" />
-                        <path d="M11 34 L19 34" />
-                        <path d="M31 34 L39 34" />
-                      </>
-                    ),
-                  },
-                  {
-                    label: "Land",
-                    blurb: "Raw land, entitled parcels, development sites.",
-                    weights: ["Entitlements", "Topography", "Utilities"],
-                    /* Land - rolling hills + tree + survey stake */
-                    draw: (
-                      <>
-                        <path d="M4 38 L46 38" />
-                        <path d="M4 30 Q 14 22 24 30 T 46 30" />
-                        <path d="M4 34 Q 16 28 28 34 T 46 34" />
-                        <path d="M34 30 L34 18" />
-                        <circle cx="34" cy="15" r="3.5" />
-                        <path d="M34 15 L30 13" />
-                        <path d="M34 15 L38 13" />
-                        <path d="M12 30 L12 20" />
-                        <path d="M10 22 L14 22 L10 18 L14 18 L10 14 L14 14" strokeWidth="1.2" />
-                        <path d="M42 14 L42 22 L46 22 L46 14 Z" strokeDasharray="1.5 1.5" />
-                        <path d="M44 14 L44 10" />
                       </>
                     ),
                   },
@@ -3020,7 +2931,7 @@ export default function OmAnalyzerPage() {
                 :global(.ds-asset-grid) { grid-template-columns: repeat(3, 1fr) !important; }
               }
               @media (max-width: 700px) {
-                :global(.ds-asset-grid) { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+                :global(.ds-asset-grid) { grid-template-columns: 1fr !important; gap: 12px !important; }
               }
               @media (max-width: 420px) {
                 :global(.ds-asset-grid) { grid-template-columns: 1fr !important; }
@@ -3028,748 +2939,10 @@ export default function OmAnalyzerPage() {
             `}</style>
           </div>
 
-          {/* ── 2. WHY DEALSIGNALS ── */}
-          <div id="how-it-works" className="ds-section-pad" style={{ padding: "102px 32px 85px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
-            {/* Subtle background depth */}
-            <div style={{ position: "absolute", top: -100, left: "50%", transform: "translateX(-50%)", width: 800, height: 800, borderRadius: "50%", background: "rgba(132,204,22,0.03)", filter: "blur(180px)", pointerEvents: "none" }} />
+          {/* The ChatGPT comparison now lives in <CompareChatGPT /> near the top. */}
 
-            <div style={{ maxWidth: 1000, margin: "0 auto", position: "relative", zIndex: 1 }}>
-
-              {/* Section header */}
-              <div style={{ textAlign: "center", marginBottom: 72 }}>
-                <div style={{
-                  display: "inline-flex", alignItems: "center", padding: "6px 16px",
-                  borderRadius: 50, background: "rgba(132,204,22,0.06)", color: "#84CC16",
-                  fontSize: 12, fontWeight: 700, marginBottom: 16, gap: 6,
-                  letterSpacing: 0.5, textTransform: "uppercase" as const,
-                }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                  How It Works
-                </div>
-                <h2 style={{ fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15, marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  Stop reading OMs.<br />Start <span className="ds-callout">making decisions</span>.
-                </h2>
-                <p style={{ fontSize: 17, color: "#9ca3af", lineHeight: 1.7, maxWidth: 600, margin: "0 auto" }}>
-                  You don&apos;t need another tool. You need a faster way to filter deals, get a second opinion, and focus your time on what actually pencils.
-                </p>
-              </div>
-
-              {/* Three value prop cards */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, marginBottom: 80 }} className="ds-why-grid">
-                {[
-                  {
-                    icon: "M13 10V3L4 14h7v7l9-11h-7z",
-                    headline: "Pre-diligence in 1 minute",
-                    subline: "Not hours. Not days.",
-                    body: "Every deal you touch gets scored, extracted, and summarized before you finish reading the first page of the OM. Know if it's worth pursuing in about a minute.",
-                    stat: "~1 min",
-                    statLabel: "avg. time to signal",
-                  },
-                  {
-                    icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
-                    headline: "A second opinion in minutes",
-                    subline: "Built on real CRE logic.",
-                    body: "DealSignals isn't guessing. It scores across 6 investment dimensions: pricing, cashflow, tenant quality, rollover risk, location, and upside. A standardized lens on every deal.",
-                    stat: "6",
-                    statLabel: "scoring dimensions",
-                  },
-                  {
-                    icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4",
-                    headline: "Focus your time where it counts",
-                    subline: "Filter. Compare. Decide.",
-                    body: "Stop spending hours on deals that don't pencil. Upload your pipeline, score everything, and put your energy into the deals that actually matter.",
-                    stat: "∞",
-                    statLabel: "deals, free to analyze",
-                  },
-                ].map((card, i) => (
-                  <ScrollReveal key={card.headline} delay={0.1 + i * 0.15}>
-                    <div style={{
-                      background: "rgba(22,26,35,0.6)", borderRadius: 16,
-                      border: "1px solid rgba(255,255,255,0.06)", padding: "36px 28px",
-                      position: "relative", overflow: "hidden",
-                    }}>
-                      {/* Glow accent */}
-                      <div style={{ position: "absolute", top: -40, right: -40, width: 120, height: 120, borderRadius: "50%", background: "rgba(132,204,22,0.04)", filter: "blur(40px)", pointerEvents: "none" }} />
-
-                      {/* Icon */}
-                      <div style={{
-                        width: 48, height: 48, borderRadius: 14,
-                        background: "rgba(132,204,22,0.08)", border: "1px solid rgba(132,204,22,0.15)",
-                        display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20,
-                      }}>
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={card.icon} /></svg>
-                      </div>
-
-                      {/* Stat callout */}
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 16 }}>
-                        <span style={{ fontSize: 32, fontWeight: 800, color: "#84CC16", lineHeight: 1, letterSpacing: -1 }}>{card.stat}</span>
-                        <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(132,204,22,0.6)" }}>{card.statLabel}</span>
-                      </div>
-
-                      {/* Copy */}
-                      <h3 style={{ fontSize: 18, fontWeight: 800, color: "#ffffff", marginBottom: 4, lineHeight: 1.3 }}>{card.headline}</h3>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: "#84CC16", marginBottom: 12 }}>{card.subline}</p>
-                      <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{card.body}</p>
-                    </div>
-                  </ScrollReveal>
-                ))}
-              </div>
-
-
-            </div>
-          </div>
-
-          {/* testimonials section removed */}
-
-          {/* ── 6. FEATURES - PRODUCT STORY ── */}
-          <div id="features" className="ds-section-pad" style={{ padding: "102px 32px 68px", background: "#0d0d14", position: "relative", overflow: "hidden" }}>
-            {/* Background depth */}
-            <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "rgba(132,204,22,0.05)", filter: "blur(160px)", pointerEvents: "none" }} />
-            <div style={{ position: "absolute", bottom: -150, left: -100, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.03)", filter: "blur(140px)", pointerEvents: "none" }} />
-            {/* Subtle city skyline silhouette at bottom */}
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 220, pointerEvents: "none", opacity: 0.04 }}>
-              <svg width="100%" height="100%" viewBox="0 0 1200 220" preserveAspectRatio="none" fill="#84CC16">
-                <path d="M0 220 V180 H30 V140 H50 V180 H70 V120 H80 V100 H90 V120 H110 V160 H130 V130 H140 V90 H150 V60 H160 V90 H170 V130 H190 V180 H220 V150 H240 V110 H250 V80 H260 V50 H270 V80 H280 V110 H300 V160 H330 V180 H360 V140 H370 V100 H380 V70 H390 V40 H400 V70 H410 V100 H420 V140 H450 V170 H480 V130 H500 V90 H510 V60 H520 V30 H530 V60 H540 V90 H560 V150 H590 V180 H620 V140 H640 V100 H650 V70 H660 V100 H670 V140 H700 V170 H730 V120 H750 V80 H760 V50 H770 V80 H780 V120 H810 V160 H840 V130 H860 V90 H870 V55 H880 V90 H890 V130 H920 V170 H950 V140 H970 V100 H980 V70 H990 V45 H1000 V70 H1010 V100 H1030 V150 H1060 V180 H1090 V140 H1110 V110 H1120 V80 H1130 V110 H1140 V140 H1170 V180 H1200 V220 Z" />
-              </svg>
-            </div>
-
-            <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
-
-              {/* Section header */}
-              <div style={{ textAlign: "center", marginBottom: 64 }}>
-                <div style={{ display: "inline-flex", alignItems: "center", padding: "6px 16px", borderRadius: 50, background: "rgba(132,204,22,0.06)", color: "#84CC16", fontSize: 12, fontWeight: 700, marginBottom: 16, gap: 6, letterSpacing: 0.5, textTransform: "uppercase" as const }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                  Quick Analysis
-                </div>
-                <h2 style={{ fontSize: 42, fontWeight: 800, color: "#ffffff", lineHeight: 1.15, marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  Size up a deal in <span className="ds-callout">60 seconds</span>.
-                </h2>
-                <p style={{ fontSize: 17, color: "#9ca3af", lineHeight: 1.7, maxWidth: 580, margin: "0 auto" }}>
-                  Upload an OM. Get scoring and a decision-ready view.
-                </p>
-              </div>
-
-              {/* ── Feature blocks: alternating left/right ── */}
-              {[
-                {
-                  num: "01", title: "Extract 40+ Fields", desc: "Drop an OM, flyer, rent roll, or broker package. 40+ structured fields come back: price, NOI, cap rate, tenants, lease terms, and more.",
-                  visual: (
-                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
-                      {/* Scan line animation overlay */}
-                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, transparent, #84CC16, transparent)", animation: "scanDown 2.5s ease-in-out both", zIndex: 2 }} />
-
-                      {/* File header */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6, animation: "fadeInUp 0.3s ease-out 0s both" }}>
-                        <div style={{ width: 36, height: 36, borderRadius: 8, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>Walgreens_OM_2026.pdf</div>
-                          <div style={{ fontSize: 9, color: "#6b7280" }}>2.4 MB · Processing...</div>
-                        </div>
-                        <div style={{ padding: "4px 10px", borderRadius: 50, background: "rgba(132,204,22,0.1)", border: "1px solid rgba(132,204,22,0.2)" }}>
-                          <span style={{ fontSize: 9, fontWeight: 700, color: "#84CC16", animation: "pulse 1.5s ease-in-out both" }}>EXTRACTING</span>
-                        </div>
-                      </div>
-
-                      {/* Divider with progress */}
-                      <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "12px 0 14px", position: "relative" }}>
-                        <div style={{ position: "absolute", top: 0, left: 0, height: "100%", width: "100%", background: "linear-gradient(90deg, #84CC16, rgba(132,204,22,0.3))", animation: "progressFill 2s ease-out forwards" }} />
-                      </div>
-
-                      {/* Animated fields dropping in */}
-                      {[
-                        { label: "Property Name", value: "Walgreens NNN - Cedar Park", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6", delay: "0.1s" },
-                        { label: "Purchase Price", value: "$7,050,000", icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z", delay: "0.25s" },
-                        { label: "Cap Rate", value: "5.85%", icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z", delay: "0.4s" },
-                        { label: "Net Operating Income", value: "$412,425", icon: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6", delay: "0.55s" },
-                        { label: "Tenant", value: "Walgreens Co. (Investment Grade)", icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4", delay: "0.7s" },
-                        { label: "Lease Expiry", value: "Nov 2038 (12.6 yrs remaining)", icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z", delay: "0.85s" },
-                        { label: "Building Size", value: "14,820 SF", icon: "M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4", delay: "1.0s" },
-                      ].map(f => (
-                        <div key={f.label} style={{
-                          display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", marginBottom: 4,
-                          borderRadius: 8, background: "rgba(255,255,255,0.02)",
-                          animation: `fadeInUp 0.35s ease-out ${f.delay} both`,
-                          border: "1px solid rgba(255,255,255,0.03)",
-                        }}>
-                          <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(132,204,22,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={f.icon} /></svg>
-                          </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 9, color: "#6b7280", fontWeight: 600, marginBottom: 1 }}>{f.label}</div>
-                            <div style={{ fontSize: 11, color: "#fff", fontWeight: 700 }}>{f.value}</div>
-                          </div>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5" style={{ flexShrink: 0, opacity: 0.6 }}><polyline points="20 6 9 17 4 12" /></svg>
-                        </div>
-                      ))}
-                      <div style={{ marginTop: 10, textAlign: "center", fontSize: 10, color: "#84CC16", fontWeight: 600, animation: "fadeInUp 0.3s ease-out 1.2s both" }}>40+ fields extracted in 8 seconds</div>
-                    </div>
-                  ),
-                },
-                {
-                  num: "02", title: "Get a Buy/Pass Signal", desc: "An instant verdict, not just a score - green flags, yellow flags, and red flags called out so you know exactly what's driving the call.",
-                  visual: (
-                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, padding: "28px", border: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
-                      {/* Subtle glow behind score */}
-                      <div style={{ position: "absolute", top: "20%", left: "50%", transform: "translateX(-50%)", width: 200, height: 200, borderRadius: "50%", background: "rgba(132,204,22,0.08)", filter: "blur(60px)", pointerEvents: "none" }} />
-
-                      {/* Score ring with animated pulse */}
-                      <div style={{ position: "relative", zIndex: 1, textAlign: "center", marginBottom: 20 }}>
-                        <div style={{ position: "relative", display: "inline-block" }}>
-                          <div style={{ width: 96, height: 96, borderRadius: "50%", border: "4px solid #84CC16", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 40px rgba(132,204,22,0.2), inset 0 0 20px rgba(132,204,22,0.05)", animation: "pulse 2.5s ease-in-out both" }}>
-                            <div>
-                              <span style={{ fontSize: 36, fontWeight: 800, color: "#84CC16", lineHeight: 1 }}>74</span>
-                              <div style={{ fontSize: 8, fontWeight: 700, color: "rgba(132,204,22,0.6)", letterSpacing: 1, marginTop: 2 }}>/ 100</div>
-                            </div>
-                          </div>
-                          {/* BUY badge */}
-                          <div style={{ position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%)", padding: "3px 14px", borderRadius: 50, background: "#84CC16", color: "#FFFFFF", fontSize: 10, fontWeight: 800, letterSpacing: 1, whiteSpace: "nowrap" as const }}>BUY SIGNAL</div>
-                        </div>
-                      </div>
-
-                      {/* Animated callout cards */}
-                      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 8, marginTop: 28 }}>
-                        {[
-                          { icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z", label: "Strong Location", detail: "High-traffic retail corridor", color: "#84CC16", delay: "0.2s" },
-                          { icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", label: "Investment Grade Tenant", detail: "Walgreens (S&P: BBB)", color: "#84CC16", delay: "0.4s" },
-                          { icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z", label: "Below Market Rents", detail: "12% upside at renewal", color: "#D97706", delay: "0.6s" },
-                          { icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z", label: "Rollover Risk", detail: "Lease expires in 18 months", color: "#ef4444", delay: "0.8s" },
-                          { icon: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6", label: "Moderate DSCR", detail: "1.42x - meets threshold", color: "#D97706", delay: "1.0s" },
-                        ].map(c => (
-                          <div key={c.label} style={{
-                            display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
-                            borderRadius: 10, background: "rgba(255,255,255,0.02)", border: `1px solid ${c.color}20`,
-                            animation: `fadeInUp 0.4s ease-out ${c.delay} both`,
-                          }}>
-                            <div style={{ width: 32, height: 32, borderRadius: 8, background: `${c.color}12`, border: `1px solid ${c.color}25`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={c.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={c.icon} /></svg>
-                            </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{c.label}</div>
-                              <div style={{ fontSize: 10, color: "#6b7280" }}>{c.detail}</div>
-                            </div>
-                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: c.color, flexShrink: 0, boxShadow: `0 0 8px ${c.color}40` }} />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ),
-                },
-                {
-                  num: "03", title: "Rank and Decide", desc: "One leaderboard for your whole pipeline - deals ranked 0–100 so you always know which ones deserve your next hour.",
-                  visual: (
-                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                      {/* Scoreboard header */}
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 0.8 }}>Deal Scorecard</span>
-                        <span style={{ fontSize: 9, color: "#6b7280" }}>Sorted by Score ↓</span>
-                      </div>
-                      {/* Column headers */}
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 54px 54px 54px", padding: "8px 20px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                        <span style={{ fontSize: 9, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Property</span>
-                        <span style={{ fontSize: 9, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" as const, letterSpacing: 0.5, textAlign: "center" }}>Score</span>
-                        <span style={{ fontSize: 9, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" as const, letterSpacing: 0.5, textAlign: "center" }}>Signal</span>
-                        <span style={{ fontSize: 9, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" as const, letterSpacing: 0.5, textAlign: "center" }}>Cap</span>
-                      </div>
-                      {/* Animated rows */}
-                      {[
-                        { name: "Walgreens NNN", loc: "Cedar Park, TX", score: 74, signal: "BUY", signalColor: "#84CC16", cap: "5.85%", delay: "0.15s" },
-                        { name: "CVS Pharmacy", loc: "Plano, TX", score: 71, signal: "BUY", signalColor: "#84CC16", cap: "5.40%", delay: "0.3s" },
-                        { name: "Autozone NNN", loc: "Round Rock, TX", score: 68, signal: "HOLD", signalColor: "#D97706", cap: "6.25%", delay: "0.45s" },
-                        { name: "Dollar General", loc: "Lawrenceville, GA", score: 61, signal: "HOLD", signalColor: "#eab308", cap: "6.50%", delay: "0.6s" },
-                        { name: "O'Reilly Auto NNN", loc: "Pflugerville, TX", score: 48, signal: "PASS", signalColor: "#ef4444", cap: "7.80%", delay: "0.75s" },
-                      ].map((row, i) => (
-                        <div key={row.name} style={{
-                          display: "grid", gridTemplateColumns: "1fr 54px 54px 54px", padding: "10px 20px", alignItems: "center",
-                          borderBottom: i < 4 ? "1px solid rgba(255,255,255,0.03)" : "none",
-                          animation: `fadeInUp 0.35s ease-out ${row.delay} both`,
-                          background: i === 0 ? "rgba(132,204,22,0.03)" : "transparent",
-                        }}>
-                          <div>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{row.name}</div>
-                            <div style={{ fontSize: 9, color: "#6b7280" }}>{row.loc}</div>
-                          </div>
-                          <div style={{ textAlign: "center" }}>
-                            <span style={{ fontSize: 14, fontWeight: 800, color: row.signalColor }}>{row.score}</span>
-                          </div>
-                          <div style={{ textAlign: "center" }}>
-                            <span style={{ fontSize: 9, fontWeight: 700, padding: "3px 8px", borderRadius: 50, background: `${row.signalColor}14`, color: row.signalColor, border: `1px solid ${row.signalColor}30` }}>{row.signal}</span>
-                          </div>
-                          <div style={{ textAlign: "center" }}>
-                            <span style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af" }}>{row.cap}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ),
-                },
-                {
-                  num: "04", title: "Export to Excel", desc: "A ready-to-edit underwriting model, not a static PDF - six sheets covering inputs, rent roll, operating statement, debt, breakeven, and cap scenarios.",
-                  visual: (
-                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                      {/* Excel tab bar */}
-                      <div style={{ display: "flex", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "0 8px" }}>
-                        {["Summary", "Rent Roll", "Operating", "Debt & Returns", "Breakeven", "Cap Scenarios"].map((tab, i) => (
-                          <span key={tab} style={{ fontSize: 9, fontWeight: i === 0 ? 700 : 500, padding: "8px 12px", color: i === 0 ? "#84CC16" : "#6b7280", borderBottom: i === 0 ? "2px solid #84CC16" : "2px solid transparent", background: i === 0 ? "rgba(132,204,22,0.04)" : "transparent" }}>{tab}</span>
-                        ))}
-                      </div>
-
-                      {/* Live spreadsheet area */}
-                      <div style={{ padding: "16px 20px" }}>
-                        {/* Price input with "editable" highlight */}
-                        <div style={{ marginBottom: 12, padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(132,204,22,0.25)", background: "rgba(132,204,22,0.03)", animation: "fadeInUp 0.3s ease-out 0.1s both" }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ fontSize: 10, fontWeight: 600, color: "#84CC16" }}>Purchase Price</span>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                              <span style={{ fontSize: 14, fontWeight: 800, color: "#fff", fontFamily: "monospace" }}>$7,050,000</span>
-                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Calculated fields that react */}
-                        {[
-                          { label: "Cap Rate (Going-In)", value: "5.85%", sub: "= NOI / Price", delay: "0.25s" },
-                          { label: "Net Operating Income", value: "$412,425", sub: "= Gross Revenue - OpEx", delay: "0.4s" },
-                          { label: "Cash-on-Cash Return", value: "7.92%", sub: "= Annual CF / Equity", delay: "0.55s" },
-                          { label: "DSCR", value: "1.42x", sub: "= NOI / Debt Service", delay: "0.7s" },
-                          { label: "IRR (5-Year Hold)", value: "11.4%", sub: "= Projected internal rate", delay: "0.85s" },
-                        ].map(r => (
-                          <div key={r.label} style={{
-                            display: "flex", justifyContent: "space-between", alignItems: "center",
-                            padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,0.03)",
-                            animation: `fadeInUp 0.3s ease-out ${r.delay} both`,
-                          }}>
-                            <div>
-                              <div style={{ fontSize: 10, fontWeight: 600, color: "#9ca3af" }}>{r.label}</div>
-                              <div style={{ fontSize: 8, color: "#4a5568", fontFamily: "monospace" }}>{r.sub}</div>
-                            </div>
-                            <span style={{ fontSize: 13, fontWeight: 800, color: "#fff", fontFamily: "monospace" }}>{r.value}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Download bar */}
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", borderTop: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.01)" }}>
-                        <div style={{ padding: "6px 16px", borderRadius: 8, background: "#84CC16", color: "#FFFFFF", fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-                          Download .xlsx
-                        </div>
-                        <span style={{ fontSize: 10, color: "#6b7280" }}>6 sheets · 58 rows · 14 formulas</span>
-                      </div>
-                    </div>
-                  ),
-                },
-                {
-                  num: "05", title: "Organize Your Pipeline", desc: "One home for your entire book - group by asset class, client, or strategy instead of digging through email threads and Downloads folders.",
-                  visual: (
-                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                      {/* Asset type tabs */}
-                      <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.01)" }}>
-                        {[
-                          { label: "Retail NNN", count: 4, active: true },
-                          { label: "Multifamily", count: 2, active: false },
-                          { label: "Industrial", count: 3, active: false },
-                          { label: "Office", count: 1, active: false },
-                        ].map(tab => (
-                          <div key={tab.label} style={{
-                            padding: "10px 14px", fontSize: 10, fontWeight: tab.active ? 700 : 500,
-                            color: tab.active ? "#84CC16" : "#6b7280",
-                            borderBottom: tab.active ? "2px solid #84CC16" : "2px solid transparent",
-                            background: tab.active ? "rgba(132,204,22,0.04)" : "transparent",
-                            display: "flex", alignItems: "center", gap: 5,
-                          }}>
-                            {tab.label}
-                            <span style={{ fontSize: 8, fontWeight: 700, padding: "1px 5px", borderRadius: 50, background: tab.active ? "rgba(132,204,22,0.15)" : "rgba(255,255,255,0.06)", color: tab.active ? "#84CC16" : "#6b7280" }}>{tab.count}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Retail NNN deals list */}
-                      <div style={{ padding: "12px 16px" }}>
-                        {[
-                          { name: "Walgreens NNN", loc: "Cedar Park, TX", price: "$7.05M", cap: "5.85%", score: 74, color: "#84CC16", delay: "0.15s" },
-                          { name: "CVS Pharmacy", loc: "Plano, TX", price: "$5.2M", cap: "5.40%", score: 71, color: "#84CC16", delay: "0.3s" },
-                          { name: "Dollar General", loc: "Lawrenceville, GA", price: "$2.8M", cap: "6.50%", score: 61, color: "#eab308", delay: "0.45s" },
-                          { name: "7-Eleven NNN", loc: "Frisco, TX", price: "$3.1M", cap: "5.95%", score: 58, color: "#D97706", delay: "0.6s" },
-                        ].map((d, i) => (
-                          <div key={d.name} style={{
-                            display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", marginBottom: 4,
-                            borderRadius: 8, background: i === 0 ? "rgba(132,204,22,0.03)" : "rgba(255,255,255,0.01)",
-                            border: i === 0 ? "1px solid rgba(132,204,22,0.12)" : "1px solid rgba(255,255,255,0.03)",
-                            animation: `fadeInUp 0.3s ease-out ${d.delay} both`,
-                          }}>
-                            <div style={{ width: 32, height: 32, borderRadius: "50%", border: `2px solid ${d.color}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: d.color, flexShrink: 0 }}>{d.score}</div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{d.name}</div>
-                              <div style={{ fontSize: 9, color: "#6b7280" }}>{d.loc}</div>
-                            </div>
-                            <div style={{ textAlign: "right", flexShrink: 0 }}>
-                              <div style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{d.price}</div>
-                              <div style={{ fontSize: 9, color: "#6b7280" }}>{d.cap} cap</div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Bottom stats */}
-                      <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 20px", borderTop: "1px solid rgba(255,255,255,0.04)", background: "rgba(255,255,255,0.01)" }}>
-                        <span style={{ fontSize: 9, color: "#6b7280" }}>4 deals · Avg score: 66</span>
-                        <span style={{ fontSize: 9, color: "#84CC16", fontWeight: 600 }}>+ Upload New Deal</span>
-                      </div>
-                    </div>
-                  ),
-                },
-                {
-                  num: "06", title: "Compare Side-by-Side", desc: "Two or three deals, one head-to-head table - the gaps on DSCR, NOI, and downside risk jump out in seconds.",
-                  visual: (
-                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                      {/* Header with asset type */}
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 18px", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 0.8 }}>Retail NNN Comparison</span>
-                        <span style={{ fontSize: 9, color: "#6b7280" }}>3 deals</span>
-                      </div>
-
-                      {/* ── Desktop: 4-column comparison table ── */}
-                      <div className="ds-compare-table" style={{ padding: "12px 18px" }}>
-                        <div style={{ display: "grid", gridTemplateColumns: "80px 1fr 1fr 1fr", gap: 0, fontSize: 10 }}>
-                          <div style={{ padding: "8px 0", fontWeight: 600, color: "#6b7280" }}>Metric</div>
-                          <div style={{ padding: "8px 4px", fontWeight: 700, color: "#fff", textAlign: "center" }}>Walgreens</div>
-                          <div style={{ padding: "8px 4px", fontWeight: 700, color: "#fff", textAlign: "center" }}>CVS</div>
-                          <div style={{ padding: "8px 4px", fontWeight: 700, color: "#fff", textAlign: "center" }}>Dollar Gen.</div>
-                          {[
-                            { m: "Score", v: ["74", "71", "61"], c: ["#84CC16", "#84CC16", "#eab308"] },
-                            { m: "Price", v: ["$7.05M", "$5.2M", "$2.8M"], c: ["#fff", "#fff", "#fff"] },
-                            { m: "Cap Rate", v: ["5.85%", "5.40%", "6.50%"], c: ["#fff", "#fff", "#fff"] },
-                            { m: "NOI", v: ["$412K", "$281K", "$182K"], c: ["#fff", "#fff", "#fff"] },
-                            { m: "DSCR", v: ["1.42x", "1.38x", "1.08x"], c: ["#84CC16", "#84CC16", "#ef4444"] },
-                            { m: "Signal", v: ["BUY", "BUY", "HOLD"], c: ["#84CC16", "#84CC16", "#eab308"] },
-                          ].map((row, ri) => (
-                            <React.Fragment key={row.m}>
-                              <div style={{ padding: "7px 0", fontWeight: 600, color: "#6b7280", borderTop: "1px solid rgba(255,255,255,0.04)", animation: `fadeInUp 0.25s ease-out ${0.1 + ri * 0.08}s both` }}>{row.m}</div>
-                              {row.v.map((v, i) => (
-                                <div key={i} style={{ padding: "7px 4px", fontWeight: 700, color: row.c[i], textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.04)", animation: `fadeInUp 0.25s ease-out ${0.1 + ri * 0.08}s both` }}>{v}</div>
-                              ))}
-                            </React.Fragment>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* ── Mobile: stacked deal cards ── */}
-                      <div className="ds-compare-cards" style={{ display: "none", flexDirection: "column", gap: 8, padding: "12px 14px" }}>
-                        {[
-                          { name: "Walgreens NNN", score: 74, signal: "BUY", signalColor: "#84CC16", price: "$7.05M", cap: "5.85%", noi: "$412K", dscr: "1.42x", dscrColor: "#84CC16", winner: true, delay: "0.1s" },
-                          { name: "CVS Pharmacy", score: 71, signal: "BUY", signalColor: "#84CC16", price: "$5.2M", cap: "5.40%", noi: "$281K", dscr: "1.38x", dscrColor: "#84CC16", winner: false, delay: "0.25s" },
-                          { name: "Dollar General", score: 61, signal: "HOLD", signalColor: "#eab308", price: "$2.8M", cap: "6.50%", noi: "$182K", dscr: "1.08x", dscrColor: "#ef4444", winner: false, delay: "0.4s" },
-                        ].map(deal => (
-                          <div key={deal.name} style={{
-                            background: deal.winner ? "rgba(132,204,22,0.06)" : "rgba(255,255,255,0.02)",
-                            border: deal.winner ? "1px solid rgba(132,204,22,0.25)" : "1px solid rgba(255,255,255,0.04)",
-                            borderRadius: 10, padding: "10px 12px",
-                            animation: `fadeInUp 0.3s ease-out ${deal.delay} both`,
-                          }}>
-                            {/* Deal header - name + score + signal */}
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                {deal.winner && <span style={{ fontSize: 12 }}>👑</span>}
-                                <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{deal.name}</span>
-                              </div>
-                              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                <span style={{ fontSize: 16, fontWeight: 800, color: deal.signalColor }}>{deal.score}</span>
-                                <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 50, background: `${deal.signalColor}18`, color: deal.signalColor, border: `1px solid ${deal.signalColor}30` }}>{deal.signal}</span>
-                              </div>
-                            </div>
-                            {/* Metrics row */}
-                            <div style={{ display: "flex", gap: 0, justifyContent: "space-between" }}>
-                              {[
-                                { label: "Price", value: deal.price, color: "#fff" },
-                                { label: "Cap", value: deal.cap, color: "#fff" },
-                                { label: "NOI", value: deal.noi, color: "#fff" },
-                                { label: "DSCR", value: deal.dscr, color: deal.dscrColor },
-                              ].map(m => (
-                                <div key={m.label} style={{ textAlign: "center", flex: 1 }}>
-                                  <div style={{ fontSize: 8, fontWeight: 600, color: "#6b7280", textTransform: "uppercase" as const, letterSpacing: 0.3 }}>{m.label}</div>
-                                  <div style={{ fontSize: 11, fontWeight: 700, color: m.color }}>{m.value}</div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Winner callout */}
-                      <div style={{ padding: "10px 18px", borderTop: "1px solid rgba(255,255,255,0.04)", background: "rgba(132,204,22,0.03)", display: "flex", alignItems: "center", gap: 8, animation: "fadeInUp 0.3s ease-out 0.7s both" }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: "#84CC16" }}>Walgreens NNN leads on 5 of 6 metrics</span>
-                      </div>
-                    </div>
-                  ),
-                },
-                {
-                  num: "07", title: "Map Your Deals", desc: "See your pipeline on a map - click any pin for the full scorecard and spot submarket concentration or geographic gaps at a glance.",
-                  visual: (
-                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                      {/* Map area - dark themed street map */}
-                      <div style={{ height: 220, background: "#141B2D", position: "relative", overflow: "hidden" }}>
-                        {/* SVG street map background */}
-                        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 480 220" preserveAspectRatio="xMidYMid slice">
-                          {/* City blocks */}
-                          <rect x="20" y="15" width="85" height="55" rx="3" fill="#1a2236" />
-                          <rect x="120" y="15" width="110" height="55" rx="3" fill="#1a2236" />
-                          <rect x="245" y="15" width="70" height="55" rx="3" fill="#1a2236" />
-                          <rect x="330" y="15" width="130" height="55" rx="3" fill="#1c2538" />
-                          <rect x="20" y="85" width="85" height="60" rx="3" fill="#1c2538" />
-                          <rect x="120" y="85" width="50" height="60" rx="3" fill="#1a2236" />
-                          <rect x="185" y="85" width="45" height="60" rx="3" fill="#192133" />
-                          <rect x="245" y="85" width="70" height="60" rx="3" fill="#1a2236" />
-                          <rect x="330" y="85" width="60" height="60" rx="3" fill="#1a2236" />
-                          <rect x="405" y="85" width="55" height="60" rx="3" fill="#1c2538" />
-                          <rect x="20" y="160" width="150" height="50" rx="3" fill="#1c2538" />
-                          <rect x="185" y="160" width="45" height="50" rx="3" fill="#1a2236" />
-                          <rect x="245" y="160" width="130" height="50" rx="3" fill="#192133" />
-                          <rect x="390" y="160" width="70" height="50" rx="3" fill="#1a2236" />
-                          {/* Major roads */}
-                          <line x1="0" y1="80" x2="480" y2="80" stroke="#232d42" strokeWidth="5" />
-                          <line x1="0" y1="155" x2="480" y2="155" stroke="#232d42" strokeWidth="5" />
-                          <line x1="115" y1="0" x2="115" y2="220" stroke="#232d42" strokeWidth="5" />
-                          <line x1="240" y1="0" x2="240" y2="220" stroke="#232d42" strokeWidth="4" />
-                          <line x1="325" y1="0" x2="325" y2="220" stroke="#232d42" strokeWidth="4" />
-                          {/* Minor roads */}
-                          <line x1="180" y1="80" x2="180" y2="220" stroke="#1e2840" strokeWidth="3" />
-                          <line x1="395" y1="80" x2="395" y2="220" stroke="#1e2840" strokeWidth="3" />
-                          {/* Water feature - small pond/lake */}
-                          <ellipse cx="420" cy="38" rx="35" ry="22" fill="#15253d" stroke="#1a3050" strokeWidth="1" />
-                          {/* Park/green area */}
-                          <rect x="130" y="92" width="35" height="18" rx="9" fill="#1a2e1f" opacity="0.6" />
-                          {/* Road center lines */}
-                          <line x1="0" y1="80" x2="480" y2="80" stroke="#2a3550" strokeWidth="0.5" strokeDasharray="6 4" />
-                          <line x1="0" y1="155" x2="480" y2="155" stroke="#2a3550" strokeWidth="0.5" strokeDasharray="6 4" />
-                        </svg>
-                        {/* Subtle vignette overlay */}
-                        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, transparent 50%, rgba(14,17,27,0.5) 100%)" }} />
-
-                        {/* Animated pins dropping in */}
-                        {[
-                          { left: "25%", top: "30%", score: 74, name: "Walgreens", color: "#84CC16", delay: "0.2s", active: true },
-                          { left: "52%", top: "58%", score: 71, name: "CVS", color: "#84CC16", delay: "0.5s", active: false },
-                          { left: "70%", top: "35%", score: 61, name: "Dollar Gen.", color: "#eab308", delay: "0.8s", active: false },
-                          { left: "38%", top: "72%", score: 58, name: "7-Eleven", color: "#D97706", delay: "1.1s", active: false },
-                        ].map((pin, i) => (
-                          <div key={i} style={{ position: "absolute", left: pin.left, top: pin.top, transform: "translate(-50%, -50%)", animation: `fadeInUp 0.4s ease-out ${pin.delay} both`, zIndex: pin.active ? 3 : 1 }}>
-                            {/* Pulse ring for active */}
-                            {pin.active && <div style={{ position: "absolute", inset: -8, borderRadius: "50%", border: "1px solid rgba(132,204,22,0.3)", animation: "pulse 2s ease-in-out both" }} />}
-                            <div style={{ width: pin.active ? 30 : 24, height: pin.active ? 30 : 24, borderRadius: "50%", background: pin.active ? pin.color : `${pin.color}60`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: pin.active ? "#0d0d14" : "#fff", boxShadow: `0 0 ${pin.active ? 20 : 8}px ${pin.color}40` }}>{pin.score}</div>
-
-                            {/* Hover tooltip for active pin */}
-                            {pin.active && (
-                              <div style={{ position: "absolute", top: -56, left: "50%", transform: "translateX(-50%)", padding: "8px 12px", borderRadius: 8, background: "#1a1a2e", border: "1px solid rgba(132,204,22,0.2)", whiteSpace: "nowrap" as const, animation: "fadeInUp 0.3s ease-out 0.6s both", boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>
-                                <div style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>Walgreens NNN</div>
-                                <div style={{ fontSize: 9, color: "#6b7280" }}>$7.05M · 5.85% cap · Score: 74</div>
-                                <div style={{ position: "absolute", bottom: -4, left: "50%", transform: "translateX(-50%) rotate(45deg)", width: 8, height: 8, background: "#1a1a2e", borderRight: "1px solid rgba(132,204,22,0.2)", borderBottom: "1px solid rgba(132,204,22,0.2)" }} />
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Share bar */}
-                      <div style={{ padding: "10px 18px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(255,255,255,0.01)" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
-                          <span style={{ fontSize: 10, fontWeight: 600, color: "#84CC16" }}>Share Map with Client</span>
-                        </div>
-                        <span style={{ fontSize: 9, color: "#6b7280" }}>4 pins · Retail NNN Board</span>
-                      </div>
-                    </div>
-                  ),
-                },
-                {
-                  num: "08", title: "Share with Clients", desc: "A branded, password-protected link you can send to anyone - read-only, with optional expiration and no account required on their end.",
-                  visual: (
-                    <div style={{ background: "rgba(22,26,35,0.8)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                      {/* Share link generation */}
-                      <div style={{ padding: "20px 24px", animation: "fadeInUp 0.3s ease-out 0.1s both" }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", marginBottom: 10, textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Private Share Link</div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-                          <div style={{ flex: 1, padding: "10px 14px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 8 }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></svg>
-                            <span style={{ fontSize: 11, color: "#9ca3af", fontFamily: "monospace" }}>dealsignals.app/s/NRC7wA...</span>
-                          </div>
-                          <div style={{ padding: "10px 16px", borderRadius: 8, background: "#84CC16", color: "#FFFFFF", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" as const, animation: "fadeInUp 0.3s ease-out 0.3s both" }}>Copy</div>
-                        </div>
-
-                        {/* Access control */}
-                        <div style={{ display: "flex", gap: 8, marginBottom: 16, animation: "fadeInUp 0.3s ease-out 0.4s both" }}>
-                          {[
-                            { icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z", label: "Password protected", active: true },
-                            { icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z", label: "Expires in 7 days", active: true },
-                          ].map(opt => (
-                            <div key={opt.label} style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 6, background: "rgba(132,204,22,0.06)", border: "1px solid rgba(132,204,22,0.12)" }}>
-                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={opt.icon} /></svg>
-                              <span style={{ fontSize: 9, fontWeight: 600, color: "#84CC16" }}>{opt.label}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Client preview card */}
-                      <div style={{ margin: "0 20px 20px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden", animation: "fadeInUp 0.4s ease-out 0.6s both" }}>
-                        <div style={{ padding: "4px 12px", background: "rgba(132,204,22,0.06)", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                          <span style={{ fontSize: 8, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 0.5 }}>Client Preview</span>
-                        </div>
-                        <div style={{ padding: "14px 14px 10px" }}>
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                            <div>
-                              <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>Walgreens NNN - Cedar Park, TX</div>
-                              <div style={{ fontSize: 9, color: "#6b7280" }}>Retail NNN · 14,820 SF · $7.05M</div>
-                            </div>
-                            <div style={{ width: 28, height: 28, borderRadius: "50%", border: "2px solid #84CC16", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "#84CC16" }}>74</div>
-                          </div>
-                          <div style={{ display: "flex", gap: 12 }}>
-                            {[{ l: "Cap", v: "5.85%" }, { l: "NOI", v: "$412K" }, { l: "DSCR", v: "1.42x" }].map(m => (
-                              <div key={m.l}>
-                                <div style={{ fontSize: 8, color: "#6b7280" }}>{m.l}</div>
-                                <div style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{m.v}</div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ),
-                },
-              ].map((feature, idx) => (
-                <FeatureBlock key={feature.num} idx={idx}>
-                  <div style={{
-                    padding: idx === 0 ? "0 0 96px" : "96px 0",
-                    borderTop: idx > 0 ? "1px solid rgba(255,255,255,0.04)" : "none",
-                  }}>
-                    <div className="ds-feature-block" style={{
-                      display: "flex", gap: 64, alignItems: "center",
-                      flexDirection: idx % 2 === 1 ? "row-reverse" as const : "row" as const,
-                    }}>
-                      {/* Text side */}
-                      <div style={{ flex: 1 }}>
-                        {/* Bright number circle */}
-                        <div style={{
-                          width: 44, height: 44, borderRadius: "50%",
-                          background: "#84CC16", color: "#FFFFFF",
-                          display: "inline-flex", alignItems: "center", justifyContent: "center",
-                          fontSize: 16, fontWeight: 800, marginBottom: 16,
-                          boxShadow: "0 4px 16px rgba(132,204,22,0.25)",
-                        }}>
-                          {parseInt(feature.num)}
-                        </div>
-
-                        {/* Step label */}
-                        <div style={{
-                          fontSize: 13, fontWeight: 700, color: "rgba(132,204,22,0.85)",
-                          textTransform: "uppercase" as const, letterSpacing: 0.7,
-                          marginBottom: 12,
-                        }}>
-                          Step {parseInt(feature.num)}
-                        </div>
-
-                        {/* Title */}
-                        <h3 style={{
-                          fontSize: 30, fontWeight: 800, color: "#ffffff",
-                          marginBottom: 12, lineHeight: 1.25,
-                          fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        }}>
-                          {feature.title}
-                        </h3>
-
-                        {/* Description */}
-                        <p style={{ fontSize: 16, color: "#9ca3af", lineHeight: 1.7, margin: 0, maxWidth: 460 }}>
-                          {feature.desc}
-                        </p>
-                      </div>
-
-                      {/* Visual side - wrapped in mockup frame so buttons look illustrative */}
-                      <div style={{ flex: 1, maxWidth: 480, pointerEvents: "none", userSelect: "none", cursor: "default" }}>
-                        {/* Mock browser chrome */}
-                        <div style={{
-                          display: "flex", alignItems: "center", justifyContent: "space-between",
-                          padding: "7px 14px", borderRadius: "12px 12px 0 0",
-                          background: "rgba(255,255,255,0.03)", borderTop: "1px solid rgba(255,255,255,0.06)",
-                          borderLeft: "1px solid rgba(255,255,255,0.06)", borderRight: "1px solid rgba(255,255,255,0.06)",
-                        }}>
-                          <div style={{ display: "flex", gap: 5 }}>
-                            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "rgba(255,255,255,0.10)" }} />
-                            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "rgba(255,255,255,0.10)" }} />
-                            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "rgba(255,255,255,0.10)" }} />
-                          </div>
-                          <span style={{ fontSize: 9, fontWeight: 600, color: "rgba(255,255,255,0.25)", letterSpacing: 0.5, textTransform: "uppercase" as const }}>Preview</span>
-                        </div>
-                        {/* Visual content with top-left radius removed to blend with chrome bar */}
-                        <div style={{ borderRadius: "0 0 12px 12px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)", borderTop: "none" }}>
-                          {feature.visual}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </FeatureBlock>
-              ))}
-
-              {/* ── Secondary features row ── */}
-              <div style={{ marginTop: 100, padding: "40px 0", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-                <div className="ds-secondary-features" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24 }}>
-                  {[
-                    { icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12", label: "Bulk Portfolio Uploads" },
-                    { icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", label: "Unlimited Deal Analyses" },
-                    { icon: "M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01", label: "White-Label Sharing (hide DealSignals brand)" },
-                    { icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z", label: "Deal History Tracking" },
-                  ].map(f => (
-                    <div key={f.label} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(132,204,22,0.06)", border: "1px solid rgba(132,204,22,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={f.icon} /></svg>
-                      </div>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: "#9ca3af" }}>{f.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* ── 8. FREE ACCESS ──
-              DealSignals is free to use right now - no paid tiers, no
-              checkout. Previous 3-tier pricing grid (Free/Pro/Pro+) is
-              preserved at git tag pre-free-release-2026-08-12 if billing
-              is reintroduced later. */}
-          <div id="pricing" className="ds-section-pad" style={{ maxWidth: 700, margin: "0 auto", padding: "102px 32px 68px", position: "relative", overflow: "visible" }}>
-            {/* Section divider */}
-            <div className="ds-section-divider" style={{
-              height: 1,
-              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06) 50%, transparent)",
-              maxWidth: 600,
-              margin: "-100px auto 60px",
-            }} />
-            {/* Gradient orb */}
-            <div style={{ position: "absolute", top: -200, right: -100, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.1)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
-            <div style={{ textAlign: "center", position: "relative", zIndex: 1 }}>
-              <div style={{ display: "inline-flex", alignItems: "center", padding: "6px 16px", borderRadius: 50, background: "rgba(132,204,22,0.06)", color: "#84CC16", fontSize: 12, fontWeight: 700, marginBottom: 20, gap: 6, letterSpacing: 0.5, textTransform: "uppercase" as const }}>
-                Free to use
-              </div>
-              <h2 style={{ fontSize: 34, fontWeight: 800, color: "#ffffff", marginBottom: 14 }}>
-                DealSignals is free right now.
-              </h2>
-              <p style={{ fontSize: 15, color: "#9ca3af", lineHeight: 1.7, maxWidth: 520, margin: "0 auto 32px" }}>
-                Upload as many deals as you want, no card, no limits, no plans to compare.
-                DealSignals turns deals and OMs into actionable investment insight, powering faster pre-diligence decisions.
-              </p>
-              <Link prefetch={false} href="/workspace/login?mode=register&source=pricing" style={{
-                display: "inline-block", padding: "14px 32px", textAlign: "center",
-                background: "#84CC16", color: "#0d0d14",
-                borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: "none", fontFamily: "inherit",
-                boxSizing: "border-box", transition: "all 0.2s ease",
-              }}>
-                Get Started Free
-              </Link>
-            </div>
-          </div>
+          {/* ── INTRO VIDEO (click to play, streams progressively) ── */}
+          <IntroVideo />
 
           {/* ── 9. FAQ ── */}
           <div id="faq" className="ds-section-pad" style={{ maxWidth: 1100, margin: "0 auto", padding: "102px 32px 68px", position: "relative", zIndex: 2 }}>
@@ -3783,15 +2956,12 @@ export default function OmAnalyzerPage() {
 
             {/* Header */}
             <div style={{ textAlign: "center", marginBottom: 64 }}>
-              <div style={{ display: "inline-flex", alignItems: "center", padding: "6px 16px", borderRadius: 50, background: "rgba(132,204,22,0.06)", color: "#84CC16", fontSize: 12, fontWeight: 700, marginBottom: 16, gap: 6, letterSpacing: 0.5, textTransform: "uppercase" as const }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
-                FAQ
-              </div>
+              <div className="so-pill-eyebrow" style={{ marginBottom: 18 }}><span className="so-pill-dot" />FAQ</div>
               <h2 style={{ fontSize: 36, fontWeight: 800, color: "#ffffff", marginBottom: 12, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                Questions investors actually ask
+                Questions investors <span className="ds-callout">actually ask</span>
               </h2>
               <p style={{ fontSize: 16, color: "#9ca3af", lineHeight: 1.7, maxWidth: 520, margin: "0 auto" }}>
-                Everything you need to know about using DealSignals for pre-diligence.
+                Everything you need to know about using ScoreOM for pre-diligence.
               </p>
             </div>
 
@@ -3803,10 +2973,10 @@ export default function OmAnalyzerPage() {
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "0 0 8px", marginBottom: 4 }}>Getting Started</div>
 
                 {[
-                  { q: "What exactly does DealSignals do?", a: "DealSignals is a pre-diligence engine for commercial real estate. Upload an OM, rent roll, or broker flyer and get a scored deal brief with extracted financials, risk signals, and a buy/hold/pass recommendation in under 60 seconds." },
-                  { q: "Who is this built for?", a: "Active CRE investors, acquisition analysts, and brokers who evaluate multiple deals per week. If you spend time reading OMs and building spreadsheets before deciding whether to pursue a deal, DealSignals gives you that answer faster." },
+                  { q: "What exactly does ScoreOM do?", a: "ScoreOM is a pre-diligence engine for commercial real estate. Upload an OM, rent roll, or broker flyer and get a scored deal brief with extracted financials, risk signals, and a buy/hold/pass recommendation in under 60 seconds." },
+                  { q: "Who is this built for?", a: "Active CRE investors, acquisition analysts, and brokers who evaluate multiple deals per week. If you spend time reading OMs and building spreadsheets before deciding whether to pursue a deal, ScoreOM gives you that answer faster." },
                   { q: "What file types can I upload?", a: "PDF (recommended for best accuracy), Word (.docx), Excel (.xlsx/.xls), CSV, and plain text files. Maximum file size is 50MB. Multi-page OMs, single-page flyers, and rent rolls all work." },
-                  { q: "How accurate is the extraction?", a: "90%+ accuracy on standard CRE metrics like price, cap rate, NOI, tenant name, lease terms, and building size. DealSignals is designed for pre-diligence speed. Always verify against the source document before making final investment decisions." },
+                  { q: "How accurate is the extraction?", a: "90%+ accuracy on standard CRE metrics like price, cap rate, NOI, tenant name, lease terms, and building size. ScoreOM is designed for pre-diligence speed. Always verify against the source document before making final investment decisions." },
                   { q: "Do I need to create an account?", a: "No. You can analyze deals with no signup required. Create a free account if you want to save deals to your workspace and access your DealBoard." },
                 ].map((item, i) => {
                   const faqIdx = i;
@@ -3845,9 +3015,9 @@ export default function OmAnalyzerPage() {
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "16px 0 8px", marginBottom: 4 }}>Free Access</div>
 
                 {[
-                  { q: "Is it really free?", a: "Yes. DealSignals is free to use right now, no card required and no cap on how many deals you analyze." },
-                  { q: "Do I need a credit card to sign up?", a: "No. Creating a DealSignals account is free and never asks for payment information." },
-                  { q: "Will DealSignals stay free?", a: "DealSignals is free during this period. If paid plans are reintroduced in the future, existing users will be notified in advance." },
+                  { q: "Is it really free?", a: "Yes. ScoreOM is free to use right now, no card required and no cap on how many deals you analyze." },
+                  { q: "Do I need a credit card to sign up?", a: "No. Creating a ScoreOM account is free and never asks for payment information." },
+                  { q: "Will ScoreOM stay free?", a: "ScoreOM is free during this period. If paid plans are reintroduced in the future, existing users will be notified in advance." },
                 ].map((item, i) => {
                   const faqIdx = 5 + i;
                   return (
@@ -3888,11 +3058,12 @@ export default function OmAnalyzerPage() {
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "0 0 8px", marginBottom: 4 }}>The Product</div>
 
                 {[
-                  { q: "How is this different from just reading the OM?", a: "Reading an OM takes 20–45 minutes and you still have to build a spreadsheet. DealSignals gives you the same data extraction, a structured financial summary, and a scored recommendation in under 60 seconds. It's the difference between reading every deal and filtering to the ones worth your time." },
+                  { q: "Does ScoreOM replace my underwriting?", a: "No. ScoreOM is a first pass for when you are scanning the market and OMs are landing faster than you can read them. It pulls the numbers out, flags what stands out, and gives you a score to sort by and a link to share. The deals that earn a closer look still get your full underwriting and diligence." },
+                  { q: "How is this different from just reading the OM?", a: "Reading an OM takes 20–45 minutes and you still have to build a spreadsheet. ScoreOM gives you the same data extraction, a structured financial summary, and a scored recommendation in under 60 seconds. It's the difference between reading every deal and filtering to the ones worth your time." },
                   { q: "What does the Deal Score actually measure?", a: "The Deal Score (0–100) evaluates six investment dimensions: pricing relative to market, cashflow strength, tenant credit quality, rollover and lease risk, location fundamentals, and upside potential. Each dimension is scored independently so you can see exactly where a deal is strong or weak." },
                   { q: "What's in the Excel export?", a: "Downloadable XLS worksheets of analysis covering deal summary inputs, rent roll, operating statement, debt and returns analysis, breakeven scenarios, and cap rate sensitivity tables. Every sheet is formatted and ready for your own underwriting adjustments." },
-                  { q: "Can I share analysis with clients?", a: "Yes. Any user can generate a unique shareable link for any deal. Your client sees the full analysis (score, metrics, financial summary) without needing a DealSignals account." },
-                  { q: "What property types does it support?", a: "DealSignals works across all major CRE asset classes: retail NNN, multifamily, industrial, office, medical, self-storage, and mixed-use. The scoring models adapt to the specific asset type and deal structure." },
+                  { q: "Can I share analysis with clients?", a: "Yes. Any user can generate a unique shareable link for any deal. Your client sees the full analysis (score, metrics, financial summary) without needing a ScoreOM account." },
+                  { q: "What property types does it support?", a: "ScoreOM is built for retail, industrial and office deals, including single-tenant NNN, shopping centers, warehouses, flex and medical office. Each asset class has its own scoring model." },
                 ].map((item, i) => {
                   const faqIdx = 8 + i;
                   return (
@@ -3966,17 +3137,8 @@ export default function OmAnalyzerPage() {
                 })}
               </div>
             </div>
-
-            {/* Bottom CTA */}
-            <div style={{ textAlign: "center", marginTop: 56 }}>
-              <p style={{ fontSize: 15, color: "#9ca3af", marginBottom: 16 }}>
-                Still have questions? Upload a deal and see for yourself.
-              </p>
-              <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="ds-btn ds-btn-primary" style={{ fontSize: 14, padding: "12px 32px" }}>
-                Try Your First Deal - Free
-              </button>
-            </div>
           </div>
+
 
         </section>
       )}
@@ -4160,9 +3322,9 @@ export default function OmAnalyzerPage() {
       }}>
         <div className="ds-footer-grid" style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1.8fr 1fr 1fr 1fr", gap: 48, marginBottom: 40 }}>
           <div>
-            <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 40 }} />
+            <img src="/images/scoreom-logo.png" alt="ScoreOM" style={{ height: 40 }} />
             <p style={{ fontSize: 13, color: "#8b93a8", lineHeight: 1.7, marginTop: 16, maxWidth: 300, fontFamily: "'Inter', sans-serif" }}>
-              AI underwriting for commercial real estate. Upload an OM, rent roll, or broker package and get institutional-grade signals in under 60 seconds.
+              A fast first pass on commercial real estate OMs. Upload an OM, rent roll, or broker package and see under the hood in about 60 seconds.
             </p>
             <div style={{ marginTop: 20, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <span style={{
@@ -4184,7 +3346,7 @@ export default function OmAnalyzerPage() {
                 border: "1px solid rgba(255,255,255,0.1)",
                 fontFamily: "'Inter', sans-serif", letterSpacing: 0.3,
               }}>
-                Retail · Industrial · Office · Land
+                Retail · Industrial · Office
               </span>
             </div>
           </div>
@@ -4193,8 +3355,9 @@ export default function OmAnalyzerPage() {
             <div style={{ fontSize: 12, fontWeight: 700, color: "#ffffff", marginBottom: 18, textTransform: "uppercase", letterSpacing: 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Product</div>
             {[
               { label: "Examples", hash: "examples" },
-              { label: "How it works", hash: "how-it-works" },
+              { label: "How it works", hash: "demo" },
               { label: "Features", hash: "features" },
+              { label: "Who it's for", hash: "who" },
               { label: "FAQ", hash: "faq" },
             ].map(link => (
               <a
@@ -4227,11 +3390,11 @@ export default function OmAnalyzerPage() {
               >{link.label}</a>
             ))}
             <a
-              href="#pricing"
+              href="#faq"
               onClick={(e) => {
                 e.preventDefault();
                 const scroll = () => {
-                  const el = typeof document !== "undefined" ? document.getElementById("pricing") : null;
+                  const el = typeof document !== "undefined" ? document.getElementById("faq") : null;
                   if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
                 };
                 if (view !== "upload") {
@@ -4279,7 +3442,7 @@ export default function OmAnalyzerPage() {
           flexWrap: "wrap", gap: 12,
         }}>
           <span style={{ fontSize: 12, color: "#5b6170", fontFamily: "'Inter', sans-serif" }}>
-            &copy; {new Date().getFullYear()} DealSignals, Inc. All rights reserved.
+            &copy; {new Date().getFullYear()} ScoreOM, Inc. All rights reserved.
           </span>
           <span style={{ fontSize: 12, color: "#5b6170", fontFamily: "'Inter', sans-serif" }}>
             Made for CRE investors and brokers.
@@ -4291,7 +3454,7 @@ export default function OmAnalyzerPage() {
           fontSize: 10.5, color: "#5b6170", lineHeight: 1.55,
           fontFamily: "'Inter', sans-serif", fontStyle: "italic",
         }}>
-          DealSignals output is automated general guidance, not investment, legal, tax, or financial advice. Every deal demands your own full due diligence and independent professional review before you commit capital. Figures are derived from uploaded documents and public data sources that may be incomplete or inaccurate. Verify all material facts directly.
+          ScoreOM output is automated general guidance, not investment, legal, tax, or financial advice. Every deal demands your own full due diligence and independent professional review before you commit capital. Figures are derived from uploaded documents and public data sources that may be incomplete or inaccurate. Verify all material facts directly.
         </p>
       </footer>
     </div>

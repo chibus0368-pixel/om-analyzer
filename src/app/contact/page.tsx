@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import DealSignalNav from "@/components/DealSignalNav";
-import DealSignalFooter from "@/components/DealSignalFooter";
+import ScoreOMNav from "@/components/ScoreOMNav";
+import ScoreOMFooter from "@/components/ScoreOMFooter";
 
 type SendState = "idle" | "sending" | "sent" | "error";
 
@@ -86,7 +86,7 @@ export default function ContactPage() {
 
   return (
     <div style={{ background: "#0d0d14", minHeight: "100vh", color: "#ffffff" }}>
-      <DealSignalNav />
+      <ScoreOMNav />
 
       <main
         style={{
@@ -362,13 +362,13 @@ export default function ContactPage() {
             Home
           </Link>
           {" · "}
-          <Link href="/#pricing" style={{ color: "#cbd2e0" }}>
+          <Link href="/#faq" style={{ color: "#cbd2e0" }}>
             Free Access
           </Link>
         </div>
       </main>
 
-      <DealSignalFooter />
+      <ScoreOMFooter />
 
       <style>{`
         .ds-contact-grid input:focus,

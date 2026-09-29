@@ -1,9 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * Playwright config for DealSignals e2e tests.
+ * Playwright config for ScoreOM e2e tests.
  *
- * Default target is the production deploy at https://www.dealsignals.app.
+ * Default target is the production deploy at https://www.scoreom.com.
  * Override via the E2E_BASE_URL env var to test a Vercel preview deploy
  * or a local dev server (`E2E_BASE_URL=http://localhost:3000 npm run test:e2e`).
  *
@@ -27,7 +27,7 @@ export default defineConfig({
     ["html", { open: "never", outputFolder: "e2e-report" }],
   ],
   use: {
-    baseURL: process.env.E2E_BASE_URL || "https://www.dealsignals.app",
+    baseURL: process.env.E2E_BASE_URL || "https://www.scoreom.com",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure",

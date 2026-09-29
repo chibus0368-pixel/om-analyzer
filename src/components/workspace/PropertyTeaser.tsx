@@ -88,7 +88,7 @@ function SignupModal({ onClose, propertyName }: { onClose: () => void; propertyN
 
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 32 }} />
+          <img src="/images/scoreom-logo.png" alt="ScoreOM" style={{ height: 32 }} />
         </div>
 
         {/* Headline */}
@@ -102,16 +102,16 @@ function SignupModal({ onClose, propertyName }: { onClose: () => void; propertyN
           fontSize: 14, color: "#6B7280", textAlign: "center",
           margin: "0 0 24px 0", lineHeight: 1.5,
         }}>
-          Sign up free to unlock the complete investment brief, download the underwriting workbook, and run your own deals through DealSignals.
+          Sign up free to unlock the complete investment brief, download the underwriting workbook, and run your own deals through ScoreOM.
         </p>
 
-        {/* What DealSignals does */}
+        {/* What ScoreOM does */}
         <div style={{
           background: "#F9FAFB", borderRadius: 10, padding: "14px 16px",
           marginBottom: 24, fontSize: 13, color: "#374151", lineHeight: 1.6,
         }}>
           <div style={{ fontWeight: 600, marginBottom: 8, color: "#111827", fontSize: 14 }}>
-            What you get with DealSignals:
+            What you get with ScoreOM:
           </div>
           {[
             "Upload any OM, rent roll, or broker flyer",
@@ -148,7 +148,7 @@ function SignupModal({ onClose, propertyName }: { onClose: () => void; propertyN
           textAlign: "center", marginTop: 16, fontSize: 12, color: "#9CA3AF",
         }}>
           <Link href="/" style={{ color: "#6B7280", textDecoration: "underline" }}>
-            Learn more about DealSignals
+            Learn more about ScoreOM
           </Link>
         </p>
       </div>
@@ -210,7 +210,7 @@ export default function PropertyTeaser() {
           display: "inline-block", marginTop: 20,
           background: "#84CC16", color: "#FFFFFF", fontWeight: 600,
           padding: "10px 20px", borderRadius: 8, textDecoration: "none",
-        }}>Go to DealSignals</Link>
+        }}>Go to ScoreOM</Link>
       </div>
     );
   }
@@ -337,7 +337,7 @@ export default function PropertyTeaser() {
         display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
         <Link href="/">
-          <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 28 }} />
+          <img src="/images/scoreom-logo.png" alt="ScoreOM" style={{ height: 28 }} />
         </Link>
         <div style={{ display: "flex", gap: 10 }}>
           <Link href="/workspace/login" style={{
@@ -496,15 +496,15 @@ export default function PropertyTeaser() {
           </Link>
           <p style={{ fontSize: 12, color: "#9CA3AF", marginTop: 12 }}>
             <Link href="/" style={{ color: "#6B7280", textDecoration: "underline" }}>
-              Learn more about DealSignals
+              Learn more about ScoreOM
             </Link>
           </p>
         </div>
 
         {/* Footer */}
         <div style={{ textAlign: "center", padding: "24px 0 12px", color: "#9CA3AF", fontSize: 11 }}>
-          <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 18, marginBottom: 6, display: "block", margin: "0 auto 6px" }} />
-          AI-powered CRE pre-diligence &middot; <a href="https://www.dealsignals.app" style={{ color: "#6B7280" }}>www.dealsignals.app</a>
+          <img src="/images/scoreom-logo.png" alt="ScoreOM" style={{ height: 18, marginBottom: 6, display: "block", margin: "0 auto 6px" }} />
+          AI-powered CRE pre-diligence &middot; <a href="https://www.scoreom.com" style={{ color: "#6B7280" }}>www.scoreom.com</a>
         </div>
       </div>
 

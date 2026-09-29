@@ -1,10 +1,10 @@
-# DealSignals homepage demo video — recording script
+# ScoreOM homepage demo video — recording script
 
 Target: **45 seconds**, no audio, no cuts to camera. Screen only.
 It plays muted, autoplaying, on loop in the `#demo` band on the homepage, so it
 has to read with the sound off and it has to be worth watching twice.
 
-The section is already live in the code. Until `public/videos/dealsignals-demo.mp4`
+The section is already live in the code. Until `public/videos/scoreom-tour.mp4`
 exists, the band falls back to the poster still, so nothing looks broken.
 
 ---
@@ -29,7 +29,7 @@ Timestamps map to the `CHAPTERS` array in
 change the `at` values there rather than re-recording.
 
 ### 01 — Drop the OM · 0:00-0:08
-Start on the DealSignals upload screen, already scrolled so the drop zone fills
+Start on the ScoreOM upload screen, already scrolled so the drop zone fills
 the frame. Drag the OM PDF in from the desktop. Let the file name appear.
 **The point:** it takes one gesture, not a form.
 
@@ -76,13 +76,13 @@ ffmpeg -i "/Users/brody/Desktop/dealsignals-demo-raw.mp4" \
   -vf "scale=1600:-2" \
   -c:v libx264 -profile:v high -crf 26 -preset slow \
   -movflags +faststart -pix_fmt yuv420p -an \
-  "/Users/brody/Library/CloudStorage/Dropbox/newbro (1)/hacktheprompt new/dealsignals/public/videos/dealsignals-demo.mp4"
+  "/Users/brody/Library/CloudStorage/Dropbox/newbro (1)/hacktheprompt new/dealsignals/public/videos/scoreom-tour.mp4"
 ```
 
 Check the size:
 
 ```bash
-ls -lh "/Users/brody/Library/CloudStorage/Dropbox/newbro (1)/hacktheprompt new/dealsignals/public/videos/dealsignals-demo.mp4"
+ls -lh "/Users/brody/Library/CloudStorage/Dropbox/newbro (1)/hacktheprompt new/dealsignals/public/videos/scoreom-tour.mp4"
 ```
 
 If it comes out over 6 MB, raise `-crf 26` to `-crf 29` and run it again. Screen
@@ -92,14 +92,14 @@ recordings of flat UI compress extremely well, so you have room.
 
 ## Replace the poster frame
 
-The current poster is built from `videos formarketing/static images DealSignals/screenshot for landing.png`.
+The current poster is built from `videos formarketing/static images ScoreOM/screenshot for landing.png`.
 Once the video exists, pull the poster from the video itself so the first painted
 frame matches. Grab it from the verdict moment (0:24), not frame zero — the
 poster is what people see before the video decodes, and the verdict sells better
 than an empty upload box:
 
 ```bash
-ffmpeg -y -ss 24 -i "/Users/brody/Library/CloudStorage/Dropbox/newbro (1)/hacktheprompt new/dealsignals/public/videos/dealsignals-demo.mp4" \
+ffmpeg -y -ss 24 -i "/Users/brody/Library/CloudStorage/Dropbox/newbro (1)/hacktheprompt new/dealsignals/public/videos/scoreom-tour.mp4" \
   -frames:v 1 -q:v 3 \
   "/Users/brody/Library/CloudStorage/Dropbox/newbro (1)/hacktheprompt new/dealsignals/public/videos/demo-poster.jpg"
 ```

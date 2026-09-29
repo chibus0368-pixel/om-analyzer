@@ -1,5 +1,5 @@
 /**
- * AuthBrand - canonical DealSignals wordmark for auth screens.
+ * AuthBrand - canonical ScoreOM wordmark for auth screens.
  *
  * Renders "Deal" (#0B1120) + "Signals" (#4D7C0F) in Plus Jakarta Sans
  * 800 weight, followed by a small tagline. Used on login, register,
@@ -34,7 +34,7 @@ export function AuthBrand({
           letterSpacing: -0.5,
           lineHeight: 1,
         }}
-        aria-label="DealSignals"
+        aria-label="ScoreOM"
       >
         <span style={{ color: "#0B1120" }}>Deal</span>
         <span style={{ color: "#4D7C0F" }}>Signals</span>

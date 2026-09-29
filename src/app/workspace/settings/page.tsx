@@ -191,7 +191,7 @@ export default function SettingsPage() {
       {/* Sign Out */}
       <div style={{ ...cardStyle, marginTop: 32, borderColor: "#FEE2E2" }}>
         <h2 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 6px" }}>Sign Out</h2>
-        <p style={{ fontSize: 12, color: "#6B7280", margin: "0 0 16px" }}>Sign out of your DealSignals account on this device.</p>
+        <p style={{ fontSize: 12, color: "#6B7280", margin: "0 0 16px" }}>Sign out of your ScoreOM account on this device.</p>
         <button
           onClick={async () => {
             const { auth } = await import("@/lib/firebase");

@@ -452,7 +452,7 @@ export default function AdminPage() {
           Admin Console
         </h1>
         <p style={{ fontSize: 14, color: "#9CA3AF", margin: 0 }}>
-          Manage users, dealboards, and billing for Deal Signals.
+          Manage users, dealboards, and billing for ScoreOM.
         </p>
       </div>
 

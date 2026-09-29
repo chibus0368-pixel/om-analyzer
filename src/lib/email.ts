@@ -46,16 +46,16 @@ function getResend(): any {
  * The `from` address is resolved defensively: if any env var still carries a
  * legacy nnntriplenet.com sender (from the old newsletter project that used
  * to share this repo), we ignore it and fall back to the canonical
- * DealSignals sender. This prevents stale Vercel env vars from leaking a
+ * ScoreOM sender. This prevents stale Vercel env vars from leaking a
  * wrong "From" line into production emails while the env vars get cleaned up.
  */
 function resolveDefaultFrom(): string {
   const raw = process.env.EMAIL_FROM_ADDRESS;
   if (raw && !/nnntriplenet/i.test(raw)) return raw;
-  return 'Deal Signals <no-reply@dealsignals.app>';
+  return 'ScoreOM <no-reply@dealsignals.app>';
 }
 const DEFAULT_FROM = resolveDefaultFrom();
-const COMPANY_NAME = 'Deal Signals';
+const COMPANY_NAME = 'ScoreOM';
 const PHYSICAL_ADDRESS = 'Mequon, Wisconsin';
 
 /**
@@ -178,7 +178,7 @@ function isValidEmail(email: string): boolean {
 
 /**
  * Add transactional email footer (company name + physical address).
- * DealSignals only sends transactional emails (account, billing, password)
+ * ScoreOM only sends transactional emails (account, billing, password)
  * - no marketing lists, so no unsubscribe link is required.
  */
 function addCamCanSpamFooter(html: string, _email: string, _manageToken?: string): string {
@@ -188,7 +188,7 @@ function addCamCanSpamFooter(html: string, _email: string, _manageToken?: string
         <td style="font-size: 12px; color: #666666; text-align: center; padding: 20px 0;">
           <p style="margin: 5px 0;">© ${new Date().getFullYear()} ${COMPANY_NAME}. All rights reserved.</p>
           <p style="margin: 5px 0;">${PHYSICAL_ADDRESS}</p>
-          <p style="margin: 5px 0;">This is a transactional email related to your Deal Signals account.</p>
+          <p style="margin: 5px 0;">This is a transactional email related to your ScoreOM account.</p>
         </td>
       </tr>
     </table>

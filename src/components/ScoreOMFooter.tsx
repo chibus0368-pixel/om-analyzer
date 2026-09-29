@@ -1,16 +1,16 @@
 import Link from "next/link";
 
 /**
- * Deal Signals shared site footer - used on /pricing, /terms, /privacy,
+ * ScoreOM shared site footer - used on /pricing, /terms, /privacy,
  * /contact, /not-found, and any other marketing-style page.
  *
  * Mirrors the main footer used inline on /om-analyzer so every public
  * page shows the same dark, 4-column layout with product + company +
  * legal columns. Product links jump to the homepage sections via
  * absolute paths so clicking "How it works" from /pricing still lands
- * on /om-analyzer#how-it-works.
+ * on /om-analyzer#demo.
  */
-export default function DealSignalFooter() {
+export default function ScoreOMFooter() {
   const colHeader: React.CSSProperties = {
     fontSize: 13,
     fontWeight: 700,
@@ -53,8 +53,8 @@ export default function DealSignalFooter() {
         {/* ── Brand column ── */}
         <div>
           <img
-            src="/images/dealsignals-full-logo4.png"
-            alt="DealSignals"
+            src="/images/scoreom-logo.png"
+            alt="ScoreOM"
             style={{ height: 36 }}
           />
           <p
@@ -67,8 +67,8 @@ export default function DealSignalFooter() {
               fontFamily: "'Inter', sans-serif",
             }}
           >
-            Analyze CRE deals with AI-powered intelligence. Get real signals,
-            not guesses.
+            Score every OM in about a minute. Underwrite only the deals
+            that pencil.
           </p>
           <div
             style={{
@@ -114,7 +114,7 @@ export default function DealSignalFooter() {
           <Link prefetch={false} href="/om-analyzer#examples" style={linkStyle}>
             Examples
           </Link>
-          <Link prefetch={false} href="/om-analyzer#how-it-works" style={linkStyle}>
+          <Link prefetch={false} href="/#why" style={linkStyle}>
             How it works
           </Link>
           <Link prefetch={false} href="/om-analyzer#features" style={linkStyle}>
@@ -123,7 +123,7 @@ export default function DealSignalFooter() {
           <Link prefetch={false} href="/om-analyzer#faq" style={linkStyle}>
             FAQ
           </Link>
-          <Link prefetch={false} href="/#pricing" style={linkStyle}>
+          <Link prefetch={false} href="/#faq" style={linkStyle}>
             Free Access
           </Link>
           <Link prefetch={false} href="/om-analyzer" style={linkStyle}>
@@ -178,7 +178,7 @@ export default function DealSignalFooter() {
             fontFamily: "'Inter', sans-serif",
           }}
         >
-          &copy; {new Date().getFullYear()} DealSignals, Inc. All rights reserved.
+          &copy; {new Date().getFullYear()} ScoreOM, Inc. All rights reserved.
         </span>
         <span
           style={{
@@ -203,7 +203,7 @@ export default function DealSignalFooter() {
           fontStyle: "italic",
         }}
       >
-        DealSignals output is automated general guidance, not investment, legal, tax, or financial advice. Every deal demands your own full due diligence and independent professional review before you commit capital. Figures are derived from uploaded documents and public data sources that may be incomplete or inaccurate. Verify all material facts directly.
+        ScoreOM output is automated general guidance, not investment, legal, tax, or financial advice. Every deal demands your own full due diligence and independent professional review before you commit capital. Figures are derived from uploaded documents and public data sources that may be incomplete or inaccurate. Verify all material facts directly.
       </p>
 
       {/* Responsive stack on narrow screens */}

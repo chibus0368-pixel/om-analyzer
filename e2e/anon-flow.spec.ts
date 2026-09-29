@@ -16,7 +16,7 @@ test.describe("anon trial flow", () => {
     page.on("response", r => { if (r.status() >= 500) errors.push(`${r.status()} ${r.url()}`); });
     await page.goto("/om-analyzer", { waitUntil: "domcontentloaded" });
     // Generic check: we got an HTML page with the brand somewhere on it
-    await expect(page.locator("body")).toContainText(/deal\s*signals|dealsignals/i, { timeout: 15_000 });
+    await expect(page.locator("body")).toContainText(/score\s*om|scoreom/i, { timeout: 15_000 });
     expect(errors, `5xx responses: ${errors.join(", ")}`).toHaveLength(0);
   });
 

@@ -1,5 +1,5 @@
 /**
- * DealSignals Crexi extension — page-context network sniffer.
+ * ScoreOM Crexi extension — page-context network sniffer.
  *
  * Runs in the page's main world (not the isolated content-script world)
  * so it can monkey-patch window.fetch and XMLHttpRequest on Crexi's own

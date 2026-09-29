@@ -5,7 +5,7 @@
  *
  * Compact pill-style switch that turns the DemographicsOverlay on or off.
  * Designed to drop into a map header next to other "Map / List" style
- * toggles. Uses DealSignals tokens (Inter, navy 950, gold accents).
+ * toggles. Uses ScoreOM tokens (Inter, navy 950, gold accents).
  *
  * The off state is intentionally subdued (light cream background, muted
  * text) so it doesn't compete with the rest of the chrome. The on state

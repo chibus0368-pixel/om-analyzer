@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import DealSignalNav from "@/components/DealSignalNav";
-import DealSignalFooter from "@/components/DealSignalFooter";
+import ScoreOMNav from "@/components/ScoreOMNav";
+import ScoreOMFooter from "@/components/ScoreOMFooter";
 
 export const metadata: Metadata = {
-  title: "Terms of Use | Deal Signals",
-  description: "Deal Signals terms of use - guidelines for using our platform, content, and tools.",
+  title: "Terms of Use | ScoreOM",
+  description: "ScoreOM terms of use - guidelines for using our platform, content, and tools.",
   openGraph: {
     title: "Terms of Use",
     description:
-      "Deal Signals terms of use - guidelines for using our platform, content, and tools.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Deal Signals" }],
+      "ScoreOM terms of use - guidelines for using our platform, content, and tools.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "ScoreOM" }],
   },
   twitter: {
     title: "Terms of Use",
     description:
-      "Deal Signals terms of use - guidelines for using our platform, content, and tools.",
+      "ScoreOM terms of use - guidelines for using our platform, content, and tools.",
     images: ["/og-image.png"],
   },
 };
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <>
-      <DealSignalNav />
+      <ScoreOMNav />
       <section style={{
         background: "linear-gradient(135deg, #0B1120 0%, #151b2b 100%)",
         color: "#fff",
@@ -30,7 +30,7 @@ export default function TermsPage() {
       }}>
         <div className="container" style={{ maxWidth: 720 }}>
           <div style={{ marginBottom: 16 }}>
-            <img src="/images/dealsignals-full-logo4.png" alt="DealSignals" style={{ height: 30 }} />
+            <img src="/images/scoreom-logo.png" alt="ScoreOM" style={{ height: 30 }} />
           </div>
           <h1 style={{ fontFamily: "'Inter', sans-serif", fontSize: 36, fontWeight: 900, marginBottom: 8, letterSpacing: -0.5 }}>Terms of Use</h1>
           <p style={{ fontSize: 14, opacity: 0.7 }}>Last updated: February 2026</p>
@@ -42,15 +42,15 @@ export default function TermsPage() {
           {[
             {
               title: "Acceptance of Terms",
-              content: "By accessing and using DealSignals.app, you agree to be bound by these Terms of Use. If you do not agree to these terms, please do not use the site. We reserve the right to modify these terms at any time; continued use constitutes acceptance of changes."
+              content: "By accessing and using ScoreOM (scoreom.com), you agree to be bound by these Terms of Use. If you do not agree to these terms, please do not use the site. We reserve the right to modify these terms at any time; continued use constitutes acceptance of changes."
             },
             {
               title: "Not Investment Advice",
-              content: "Deal Signals provides market data, educational content, and analytical tools for informational purposes only. Nothing on this site constitutes investment advice, financial advice, tax advice, or legal advice. Market data, statistics, risk scores, and analysis should not be relied upon as the sole basis for any investment decision. Always consult with qualified financial, legal, and tax professionals before making investment decisions."
+              content: "ScoreOM provides market data, educational content, and analytical tools for informational purposes only. Nothing on this site constitutes investment advice, financial advice, tax advice, or legal advice. Market data, statistics, risk scores, and analysis should not be relied upon as the sole basis for any investment decision. Always consult with qualified financial, legal, and tax professionals before making investment decisions."
             },
             {
               title: "Data Accuracy Disclaimer",
-              content: "While we strive to provide accurate and up-to-date information, Deal Signals makes no warranties or representations regarding the accuracy, completeness, or timeliness of any data, analysis, or content on this site. Market data may be estimated, delayed, or sourced from third-party providers. We recommend verifying critical data points with primary sources such as CoStar, MSCI Real Capital Analytics, CBRE Research, and government agencies (FRED, BLS, SEC)."
+              content: "While we strive to provide accurate and up-to-date information, ScoreOM makes no warranties or representations regarding the accuracy, completeness, or timeliness of any data, analysis, or content on this site. Market data may be estimated, delayed, or sourced from third-party providers. We recommend verifying critical data points with primary sources such as CoStar, MSCI Real Capital Analytics, CBRE Research, and government agencies (FRED, BLS, SEC)."
             },
             {
               title: "No Guarantees",
@@ -58,11 +58,11 @@ export default function TermsPage() {
             },
             {
               title: "Intellectual Property",
-              content: "All content on DealSignals.app, including text, graphics, logos, tools, and software, is the property of Deal Signals or its content suppliers and is protected by copyright laws. You may not reproduce, distribute, or create derivative works from our content without express written permission."
+              content: "All content on ScoreOM, including text, graphics, logos, tools, and software, is the property of ScoreOM or its content suppliers and is protected by copyright laws. You may not reproduce, distribute, or create derivative works from our content without express written permission."
             },
             {
               title: "Permitted Use",
-              content: "You may use Deal Signals for personal, non-commercial research and educational purposes. You may share individual articles or pages via direct links. You may not scrape, crawl, or systematically download content from the site. You may not use our content to create competing products or services."
+              content: "You may use ScoreOM for personal, non-commercial research and educational purposes. You may share individual articles or pages via direct links. You may not scrape, crawl, or systematically download content from the site. You may not use our content to create competing products or services."
             },
             {
               title: "User Accounts & Subscriptions",
@@ -70,11 +70,11 @@ export default function TermsPage() {
             },
             {
               title: "Third-Party Links",
-              content: "Deal Signals may contain links to third-party websites. We are not responsible for the content, accuracy, or practices of external sites. Links do not imply endorsement."
+              content: "ScoreOM may contain links to third-party websites. We are not responsible for the content, accuracy, or practices of external sites. Links do not imply endorsement."
             },
             {
               title: "Limitation of Liability",
-              content: "Deal Signals and its operators shall not be liable for any direct, indirect, incidental, special, or consequential damages arising from your use of the site, reliance on any data or analysis, or inability to access the site. This includes, without limitation, damages from investment decisions made using information from this site."
+              content: "ScoreOM and its operators shall not be liable for any direct, indirect, incidental, special, or consequential damages arising from your use of the site, reliance on any data or analysis, or inability to access the site. This includes, without limitation, damages from investment decisions made using information from this site."
             },
             {
               title: "Governing Law",
@@ -92,7 +92,7 @@ export default function TermsPage() {
           ))}
         </div>
       </section>
-      <DealSignalFooter />
+      <ScoreOMFooter />
     </>
   );
 }

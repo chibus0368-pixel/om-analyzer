@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "DealSignals: Save from Crexi",
+  "name": "ScoreOM: Save from Crexi",
   "version": "0.1.0",
-  "description": "One-click save of Crexi property flyers and OMs into a DealSignals DealBoard.",
+  "description": "One-click save of Crexi property flyers and OMs into a ScoreOM DealBoard.",
   "permissions": [
     "storage",
     "activeTab",
@@ -17,7 +17,7 @@
     "http://localhost:3000/*"
   ],
   "action": {
-    "default_title": "DealSignals: Save from Crexi",
+    "default_title": "ScoreOM: Save from Crexi",
     "default_popup": "popup.html"
   },
   "background": {

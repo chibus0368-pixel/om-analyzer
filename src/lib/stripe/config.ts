@@ -1,4 +1,4 @@
-// NOTE: DealSignals is currently in a free public-access period. The Stripe
+// NOTE: ScoreOM is currently in a free public-access period. The Stripe
 // checkout/webhook/portal/sync API routes and the getStripe() client they
 // used have been removed from the live app (moved to _to_delete/ pending
 // permanent deletion) so there are no dangling payment screens or hooks.
@@ -62,7 +62,7 @@ export const PLANS: Record<string, PlanConfig> = {
     features: [
       "7 deal analyses per month",
       "Save deals to workspace",
-      "Deal Signals scoring",
+      "ScoreOM scoring",
       "First-pass brief download",
       "Downloadable XLS worksheets of analysis",
     ],
@@ -78,7 +78,7 @@ export const PLANS: Record<string, PlanConfig> = {
     features: [
       "100 deal analyses/month",
       "Save deals to workspace",
-      "Deal Signals scoring",
+      "ScoreOM scoring",
       "Downloadable XLS worksheets of analysis",
       "First-pass brief download",
       "Pro DealBoard with history",

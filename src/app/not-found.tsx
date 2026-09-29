@@ -1,6 +1,6 @@
 import Link from "next/link";
-import DealSignalNav from "@/components/DealSignalNav";
-import DealSignalFooter from "@/components/DealSignalFooter";
+import ScoreOMNav from "@/components/ScoreOMNav";
+import ScoreOMFooter from "@/components/ScoreOMFooter";
 
 export default function NotFound() {
   return (
@@ -27,7 +27,7 @@ export default function NotFound() {
               textDecoration: "none", borderRadius: 8,
               fontWeight: 700, fontSize: 15,
             }}>
-              Deal Signals
+              ScoreOM
             </Link>
             <Link prefetch={false} href="/workspace" style={{
               display: "inline-flex", alignItems: "center", gap: 8,

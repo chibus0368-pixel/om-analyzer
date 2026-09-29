@@ -1,4 +1,4 @@
-# DealSignals E2E Tests
+# ScoreOM E2E Tests
 
 End-to-end tests that drive a real browser against the production deploy
 (or any other URL via `E2E_BASE_URL`). These exist so that flow regressions

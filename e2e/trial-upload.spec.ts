@@ -35,8 +35,8 @@ test.describe("trial upload end-to-end", () => {
     await fileInput.setInputFiles(SAMPLE_OM);
 
     // The Analyze CTA appears once a file is selected. Actual label is
-    // "Get Deal Signal" - keep the regex permissive in case copy changes.
-    const analyzeBtn = page.getByRole("button", { name: /get.*deal.*signal|analyze|start|submit/i }).first();
+    // "Score My OM" - keep the regex permissive in case copy changes.
+    const analyzeBtn = page.getByRole("button", { name: /score.*om|get.*deal.*signal|analyze|start|submit/i }).first();
     await analyzeBtn.waitFor({ state: "visible", timeout: 15_000 });
     await analyzeBtn.click();
 

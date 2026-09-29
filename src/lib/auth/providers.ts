@@ -56,7 +56,7 @@ export async function loginWithEmail(email: string, password: string): Promise<U
    This bypasses Firebase's auth handler entirely.  Instead of
    opening a popup to firebaseapp.com/__/auth/handler, we open
    Google's own OAuth consent screen directly.  The consent
-   screen shows the app name ("Deal Signals") and origin domain
+   screen shows the app name ("ScoreOM") and origin domain
    ("dealsignals.app") - no Firebase domain visible anywhere.
 
    Flow:
@@ -114,7 +114,7 @@ declare global {
 
 /**
  * Sign in with Google using GIS (Google Identity Services).
- * Shows "Deal Signals" and "dealsignals.app" on the consent screen.
+ * Shows "ScoreOM" and the site domain on the consent screen.
  * Falls back to the legacy Firebase popup flow if GIS client ID is not set.
  */
 export async function loginWithGoogle(): Promise<UserCredential> {

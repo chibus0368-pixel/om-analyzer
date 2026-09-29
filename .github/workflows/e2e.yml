@@ -1,4 +1,4 @@
-# DealSignals E2E tests
+# ScoreOM E2E tests
 #
 # Runs the Playwright suite against production after every push to main,
 # and against a manually-supplied URL on workflow_dispatch.
@@ -23,7 +23,7 @@ on:
       base_url:
         description: "URL to test against"
         required: false
-        default: "https://www.dealsignals.app"
+        default: "https://www.scoreom.com"
 
 concurrency:
   group: e2e-${{ github.ref }}
@@ -62,7 +62,7 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             URL="${{ github.event.inputs.base_url }}"
           else
-            URL="https://www.dealsignals.app"
+            URL="https://www.scoreom.com"
           fi
           echo "url=$URL" >> "$GITHUB_OUTPUT"
           echo "Testing against: $URL"

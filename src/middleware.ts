@@ -25,14 +25,18 @@ export function middleware(request: NextRequest) {
   // newly uploaded file via URL.createObjectURL(). Without it the browser
   // silently blocks <img src="blob:..."> and the editor appears to do nothing
   // after a file pick.
+  // Next.js dev mode (React Refresh / eval source maps) needs 'unsafe-eval'; production stays strict.
+  const DEV_EVAL = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : '';
   response.headers.set(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com https://apis.google.com https://*.firebaseapp.com https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: https://www.google-analytics.com https://www.googletagmanager.com; media-src 'self' blob:; connect-src 'self' blob: https: https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com; frame-src 'self' https://maps.google.com https://www.google.com https://*.firebaseapp.com https://accounts.google.com; frame-ancestors 'self'; upgrade-insecure-requests;"
+    `default-src 'self'; script-src 'self' 'unsafe-inline'${DEV_EVAL} https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com https://apis.google.com https://*.firebaseapp.com https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: https://www.google-analytics.com https://www.googletagmanager.com; media-src 'self' blob:; connect-src 'self' blob: https: https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com; frame-src 'self' https://maps.google.com https://www.google.com https://*.firebaseapp.com https://accounts.google.com; frame-ancestors 'self'; upgrade-insecure-requests;`
   );
 
   // Add CORS headers for public API routes only (not admin)
   if (pathname.startsWith('/api/') && !pathname.startsWith('/api/admin/')) {
     const allowedOrigins = [
+      'https://www.scoreom.com',
+      'https://scoreom.com',
       'https://dealsignals.app',
       'https://www.dealsignals.app',
       ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : []),

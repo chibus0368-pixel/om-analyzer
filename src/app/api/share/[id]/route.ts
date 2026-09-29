@@ -39,37 +39,33 @@ export async function GET(
     // Increment view count (fire and forget)
     shareDoc.ref.update({ viewCount: (shareData.viewCount || 0) + 1 }).catch(() => {});
 
-    // Get properties for this workspace
-    // Query by userId first (the owner of the share link)
-    let propsSnap = await db().collection("workspace_properties")
+    // ── Security: reject share links owned by anonymous users ──────
+    // Anonymous Firebase users should never have share links (the POST
+    // endpoint blocks them), but guard the read path too in case legacy
+    // data exists.
+    // Also reject the legacy "admin-user" userId which previously had a
+    // dangerous fallback that could return every property in the database.
+    if (!shareData.userId || shareData.userId === "admin-user") {
+      console.warn(`[share/[id]] Blocked share link with unsafe userId: ${shareData.userId}`);
+      return NextResponse.json(
+        { error: "This share link is no longer valid. Please ask the owner to create a new one." },
+        { status: 410 },
+      );
+    }
+
+    // Get properties for this workspace, scoped strictly to the link owner
+    const propsSnap = await db().collection("workspace_properties")
       .where("userId", "==", shareData.userId)
       .get();
 
-    // Fallback: if userId is "admin-user" (legacy links created before auth fix),
-    // query all properties for the workspaceId instead
-    if (propsSnap.empty && shareData.userId === "admin-user") {
-      const wsId = shareData.workspaceId;
-      if (wsId && wsId !== "default") {
-        propsSnap = await db().collection("workspace_properties")
-          .where("workspaceId", "==", wsId)
-          .get();
-      } else {
-        // For default workspace, get all properties
-        propsSnap = await db().collection("workspace_properties").get();
-      }
-    }
-
-    // Filter by workspace client-side (same pattern as workspace firestore.ts)
+    // Filter by workspace - strict matching, no fallbacks
     const allProps = propsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     const wsId = shareData.workspaceId;
 
     let properties: any[];
     if (wsId === "default") {
-      // "default" workspace: include properties with no workspaceId, workspaceId "default",
-      // OR all properties if this is a legacy admin-user share (since the user's actual
-      // workspace IDs won't match "default")
-      const defaultFiltered = allProps.filter((p: any) => !p.workspaceId || p.workspaceId === "default");
-      properties = defaultFiltered.length > 0 ? defaultFiltered : allProps;
+      // "default" workspace: include properties with no workspaceId or workspaceId "default"
+      properties = allProps.filter((p: any) => !p.workspaceId || p.workspaceId === "default");
     } else {
       properties = allProps.filter((p: any) => p.workspaceId === wsId);
     }

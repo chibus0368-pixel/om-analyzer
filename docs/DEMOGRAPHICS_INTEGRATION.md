@@ -1,6 +1,6 @@
 # Demographics Overlay — Integration Notes
 
-A toggleable Census ACS demographics layer that drops into both Leaflet maps in DealSignals (the Pro `/workspace/map` deal map and the public `/share/[id]` DealBoard map). Off by default. When enabled, it draws a tract-level choropleth + 1/3/5 mile dashed radius rings around the selected property, and floats a metrics panel anchored to the map.
+A toggleable Census ACS demographics layer that drops into both Leaflet maps in ScoreOM (the Pro `/workspace/map` deal map and the public `/share/[id]` DealBoard map). Off by default. When enabled, it draws a tract-level choropleth + 1/3/5 mile dashed radius rings around the selected property, and floats a metrics panel anchored to the map.
 
 The work is modular: the data adapters live under `src/lib/demographics/` with zero framework dependencies, and the UI lives under `src/components/demographics/`. The same overlay component plugs into either map — no duplication.
 
@@ -22,7 +22,7 @@ src/lib/demographics/
 
 src/components/demographics/
   DemographicsOverlay.tsx  # main component (data + Leaflet layers + panel UI)
-  DemographicsToggle.tsx   # the on/off pill switch (DealSignals styling)
+  DemographicsToggle.tsx   # the on/off pill switch (ScoreOM styling)
 
 src/app/api/demographics/
   route.ts                 # GET /api/demographics?lat=&lng=&radii=1,3,5
@@ -88,7 +88,7 @@ The overlay needs four things from the parent page:
 | `lat`, `lng` | Coords of the focal property |
 | `enabled` | Boolean toggle |
 
-Both DealSignals maps already keep `mapInstanceRef` and `leafletRef`, so wiring took only the two prop bindings. The component renders `null` when `enabled` is false, so it has zero cost off.
+Both ScoreOM maps already keep `mapInstanceRef` and `leafletRef`, so wiring took only the two prop bindings. The component renders `null` when `enabled` is false, so it has zero cost off.
 
 ---
 
@@ -111,7 +111,7 @@ The `next.config.*` doesn't need any changes — Next 15 picks up route handlers
 
 The toggle pill mirrors the existing `.back-pill` pattern in `src/app/share/[id]/page.tsx`: navy `#0F172A` background when on, cream `#FAF8F4` with a navy switch knob when off. The active state shows a gold `#D4B255` track to flag that an extra data layer is live.
 
-The metrics panel uses the same DealSignals tokens you'll find elsewhere in the app:
+The metrics panel uses the same ScoreOM tokens you'll find elsewhere in the app:
 
 - Header: navy `#0F172A` with white text and a gold mini-icon chip.
 - Body: white card with `#E5E1D6` cream-stone border, 12px radius, `0 12px 32px rgba(15,23,43,0.12)` drop shadow.

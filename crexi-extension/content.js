@@ -1,8 +1,8 @@
 /**
- * DealSignals Crexi extension — content script.
+ * ScoreOM Crexi extension — content script.
  *
  * Runs on crexi.com/properties/* pages. Responsibilities:
- *   1. Inject a floating "Save to DealSignals" pill button.
+ *   1. Inject a floating "Save to ScoreOM" pill button.
  *   2. Scrape visible metadata (title, address, price, cap rate, NOI).
  *   3. On click, open an overlay with editable metadata + a PDF drop zone
  *      + board / analysis-type selectors + a Save button.
@@ -29,7 +29,7 @@
   // plugin. That surfaces in the DOM as either <embed type="application/pdf">,
   // <iframe src="...pdf">, or <object type="application/pdf">. We watch for
   // any of those and remember the URL so one click on the pill can ship it
-  // straight to DealSignals — no manual download required.
+  // straight to ScoreOM — no manual download required.
 
   let detectedPdf = null; // { url, name } or null
   let pdfSniffFromNetwork = null; // { url, name } from fetch/XHR interception
@@ -249,7 +249,7 @@
       btn.className = "ds-pill";
       btn.innerHTML =
         '<span class="ds-pill-dot"></span>' +
-        '<span class="ds-pill-text">Save to DealSignals</span>';
+        '<span class="ds-pill-text">Save to ScoreOM</span>';
       btn.addEventListener("click", openOverlay);
       btn.style.zIndex = "2147483647";
       btn.style.position = "fixed";
@@ -288,13 +288,13 @@
     const label = btn.querySelector(".ds-pill-text");
     if (!label) return;
     if (detectedPdf && detectedPdf.url) {
-      label.textContent = "Save this PDF to DealSignals";
+      label.textContent = "Save this PDF to ScoreOM";
       btn.classList.add("ds-pill-hot");
       btn.title = "Capture: " + (detectedPdf.name || "PDF");
     } else {
-      label.textContent = "Save to DealSignals";
+      label.textContent = "Save to ScoreOM";
       btn.classList.remove("ds-pill-hot");
-      btn.title = "DealSignals: Save from Crexi";
+      btn.title = "ScoreOM: Save from Crexi";
     }
   }
 
@@ -315,7 +315,7 @@
         <div class="ds-overlay-header">
           <div class="ds-brand">
             <span class="ds-brand-dot"></span>
-            <span>DealSignals</span>
+            <span>ScoreOM</span>
           </div>
           <button type="button" class="ds-close" aria-label="Close">×</button>
         </div>
@@ -410,7 +410,7 @@
         boardSelect.appendChild(opt);
         boardSelect.value = preferredId;
         if (res && !res.ok && res.error) {
-          console.warn("[DealSignals] Could not load boards:", res.error);
+          console.warn("[ScoreOM] Could not load boards:", res.error);
         }
       }
     });
@@ -591,10 +591,10 @@
     // the background. Tell the user it's in flight and let them jump
     // straight into Pro where the analysis will land shortly.
     setStatus(
-      "Saved to DealSignals. Parsing and scoring are running in the background — it'll show up in your DealBoard in about a minute.",
+      "Saved to ScoreOM. Parsing and scoring are running in the background — it'll show up in your DealBoard in about a minute.",
       "success",
     );
-    saveBtn.textContent = "Open in DealSignals →";
+    saveBtn.textContent = "Open in ScoreOM →";
     saveBtn.disabled = false;
     saveBtn.onclick = () => window.open(res.url, "_blank");
   }

@@ -238,7 +238,7 @@ export async function POST(req: NextRequest) {
         const baseUrl =
           process.env.NEXT_PUBLIC_APP_URL ||
           process.env.NEXT_PUBLIC_SITE_URL ||
-          "https://www.dealsignals.app";
+          "https://www.scoreom.com";
         void fetch(`${baseUrl}/api/workspace/research/${propertyId}`, {
           method: "POST",
           headers: {

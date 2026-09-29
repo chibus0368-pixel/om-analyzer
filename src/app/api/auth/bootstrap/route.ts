@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
         if (welcomeHtml) {
           const emailResult = await sendEmail(
             email,
-            'Welcome to Deal Signals - Your Workspace Is Ready',
+            'Welcome to ScoreOM - Your Workspace Is Ready',
             welcomeHtml
           );
           if (!emailResult.success) {

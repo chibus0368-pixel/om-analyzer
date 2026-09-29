@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-// Deal Signals — Next.js configuration
+// ScoreOM — Next.js configuration
 const nextConfig: NextConfig = {
   // Disable ESLint during builds (fix lint issues separately)
   eslint: {
@@ -39,9 +39,13 @@ const nextConfig: NextConfig = {
 
   // Custom headers for caching and performance
   async headers() {
+    // In `next dev` the chunk URLs are not content-hashed, so a 1-year immutable
+    // cache makes the browser run stale JS after edits (hydration errors, old
+    // sections reappearing). Only apply the long-lived cache in production.
+    const isDev = process.env.NODE_ENV !== "production";
     return [
-      // Static assets: Cache for 1 year
-      {
+      // Static assets: Cache for 1 year (production only)
+      ...(isDev ? [] : [{
         source: "/:path((?:.*\\.(?:js|css|woff|woff2|ttf|eot|svg|webp|jpg|jpeg|png|gif)|_next/static).*)",
         headers: [
           {
@@ -49,7 +53,7 @@ const nextConfig: NextConfig = {
             value: "public, max-age=31536000, immutable",
           },
         ],
-      },
+      }]),
       // Images: Cache for 1 year
       {
         source: "/public/:path(.*)",

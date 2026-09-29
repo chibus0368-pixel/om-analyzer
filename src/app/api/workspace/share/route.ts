@@ -15,7 +15,7 @@ const db = () => getAdminDb();
  *   workspaceId: string
  *   workspaceName: string
  *   displayName: string (custom override name, or empty)
- *   whiteLabel: boolean (hide Deal Signals branding)
+ *   whiteLabel: boolean (hide ScoreOM branding)
  *   hideDocuments: boolean (don't show source docs)
  *   isActive: boolean
  *   viewCount: number
@@ -23,7 +23,12 @@ const db = () => getAdminDb();
  *   updatedAt: string
  */
 
-async function getUserIdFromToken(req: NextRequest): Promise<string | null> {
+interface AuthResult {
+  uid: string;
+  isAnonymous: boolean;
+}
+
+async function getUserFromToken(req: NextRequest): Promise<AuthResult | null> {
   const auth = req.headers.get("authorization");
   if (!auth?.startsWith("Bearer ")) return null;
   const token = auth.replace("Bearer ", "");
@@ -32,11 +37,18 @@ async function getUserIdFromToken(req: NextRequest): Promise<string | null> {
   try {
     const adminAuth = getAdminAuth();
     const decoded = await adminAuth.verifyIdToken(token);
-    return decoded.uid;
+    const isAnonymous = !decoded.email && (decoded.firebase?.sign_in_provider === "anonymous");
+    return { uid: decoded.uid, isAnonymous };
   } catch (err) {
     console.error("[share] Token verification failed:", err);
     return null;
   }
+}
+
+/** Backward-compat wrapper for GET/PATCH/DELETE: returns uid or null */
+async function getUserIdFromToken(req: NextRequest): Promise<string | null> {
+  const result = await getUserFromToken(req);
+  return result?.uid ?? null;
 }
 
 // GET - list share links for current user
@@ -66,10 +78,17 @@ export async function GET(req: NextRequest) {
 // POST - create a new share link
 export async function POST(req: NextRequest) {
   try {
-    const userId = await getUserIdFromToken(req);
-    if (!userId) {
+    const authResult = await getUserFromToken(req);
+    if (!authResult) {
       return NextResponse.json({ error: "Unauthorized - valid Firebase token required" }, { status: 401 });
     }
+    if (authResult.isAnonymous) {
+      return NextResponse.json(
+        { error: "Anonymous users cannot create share links. Please sign up first." },
+        { status: 403 },
+      );
+    }
+    const userId = authResult.uid;
     const body = await req.json();
     const { workspaceId, workspaceName, displayName, whiteLabel, hideDocuments, contactName, contactAgency, contactPhone, expiresAt } = body;
 
@@ -104,7 +123,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       id: ref.id,
       ...doc,
-      url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.dealsignals.app"}/share/${shareId}`,
+      url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.scoreom.com"}/share/${shareId}`,
     });
   } catch (err: any) {
     console.error("[share] POST error:", err);

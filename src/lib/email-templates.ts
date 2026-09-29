@@ -1,5 +1,5 @@
 /**
- * Email template functions for Deal Signals.
+ * Email template functions for ScoreOM.
  * Brand-aligned with the live site: dark #0d0d14 header, lime #4D7C0F accent,
  * white body. All styling is inline + table-based for email client compat.
  */
@@ -20,7 +20,7 @@ const COLORS = {
 };
 
 function getAppUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://dealsignals.app';
+  return process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://www.scoreom.com';
 }
 
 function emailWrapper(content: string): string {
@@ -29,7 +29,7 @@ function emailWrapper(content: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Deal Signals</title>
+  <title>ScoreOM</title>
 </head>
 <body style="margin: 0; padding: 24px 0; background-color: ${COLORS.pageBg}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; color: ${COLORS.textGray};">
   <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: ${COLORS.cardBg}; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
@@ -54,7 +54,7 @@ function emailHeader(): string {
       <tr>
         <td style="padding: 28px 32px; text-align: center;">
           <a href="${appUrl}" style="text-decoration: none; display: inline-block;">
-            <img src="${appUrl}/images/dealsignals-full-logo4.png" alt="Deal Signals" width="200" style="max-width: 200px; height: auto; display: inline-block; border: 0;" />
+            <img src="${appUrl}/images/scoreom-logo.png" alt="ScoreOM" width="200" style="max-width: 200px; height: auto; display: inline-block; border: 0;" />
           </a>
         </td>
       </tr>
@@ -72,9 +72,9 @@ function emailFooter(): string {
       <tr>
         <td style="padding: 24px 32px; font-size: 11px; color: ${COLORS.muted}; text-align: center; line-height: 1.7;">
           <p style="margin: 0 0 4px 0;">
-            <a href="${appUrl}" style="color: ${COLORS.limeDark}; text-decoration: none; font-weight: 600;">dealsignals.app</a>
+            <a href="${appUrl}" style="color: ${COLORS.limeDark}; text-decoration: none; font-weight: 600;">scoreom.com</a>
           </p>
-          <p style="margin: 4px 0;">&copy; ${new Date().getFullYear()} Deal Signals. All rights reserved.</p>
+          <p style="margin: 4px 0;">&copy; ${new Date().getFullYear()} ScoreOM. All rights reserved.</p>
           <p style="margin: 4px 0;">Mequon, Wisconsin</p>
         </td>
       </tr>
@@ -102,7 +102,7 @@ export function registrationWelcomeTemplate(data: { name: string; email: string 
           </h1>
 
           <p style="margin: 0 0 14px 0; color: ${COLORS.textGray}; font-size: 15px; line-height: 1.65;">
-            Deal Signals turns offering memorandums into institutional-grade first-pass screens in minutes. Drop in an OM and we'll score the deal, pull the financials, flag the risks, and hand you an underwriting workbook ready to share with your partners.
+            ScoreOM turns offering memorandums into institutional-grade first-pass screens in minutes. Drop in an OM and we'll score the deal, pull the financials, flag the risks, and hand you an underwriting workbook ready to share with your partners.
           </p>
 
           <p style="margin: 0 0 24px 0; color: ${COLORS.textGray}; font-size: 15px; line-height: 1.65;">
@@ -181,7 +181,7 @@ export function registrationWelcomeTemplate(data: { name: string; email: string 
             Questions, feedback, or a deal you'd like us to look at? Just reply. This inbox goes straight to the team.
           </p>
           <p style="margin: 6px 0 0 0; color: ${COLORS.muted}; font-size: 12px;">
-            &mdash; The Deal Signals team
+            &mdash; The ScoreOM team
           </p>
         </td>
       </tr>
@@ -234,7 +234,7 @@ export function purchaseConfirmationTemplate(data: { name: string; email: string
                 <table width="100%" cellpadding="0" cellspacing="0">
                   <tr>
                     <td style="padding: 9px 0; font-size: 14px; color: ${COLORS.darkGray}; border-bottom: 1px solid ${COLORS.borderGray};">Plan</td>
-                    <td style="padding: 9px 0; font-size: 14px; color: ${COLORS.ink}; font-weight: 700; text-align: right; border-bottom: 1px solid ${COLORS.borderGray};">Deal Signals ${planDisplay}</td>
+                    <td style="padding: 9px 0; font-size: 14px; color: ${COLORS.ink}; font-weight: 700; text-align: right; border-bottom: 1px solid ${COLORS.borderGray};">ScoreOM ${planDisplay}</td>
                   </tr>
                   <tr>
                     <td style="padding: 9px 0; font-size: 14px; color: ${COLORS.darkGray}; border-bottom: 1px solid ${COLORS.borderGray};">Monthly Price</td>
@@ -266,7 +266,7 @@ export function purchaseConfirmationTemplate(data: { name: string; email: string
                 <h3 style="margin: 0 0 14px 0; color: ${COLORS.ink}; font-size: 17px; font-weight: 700;">Everything you need to run more deals</h3>
                 <table width="100%" cellpadding="0" cellspacing="0">
                   <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: ${COLORS.limeDark}; margin-right: 8px; font-weight: 700;">&#10003;</span> Up to ${uploadLimit} deal analyses per month</td></tr>
-                  <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: ${COLORS.limeDark}; margin-right: 8px; font-weight: 700;">&#10003;</span> Full Deal Signals scoring with category breakdowns</td></tr>
+                  <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: ${COLORS.limeDark}; margin-right: 8px; font-weight: 700;">&#10003;</span> Full ScoreOM scoring with category breakdowns</td></tr>
                   <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: ${COLORS.limeDark}; margin-right: 8px; font-weight: 700;">&#10003;</span> Downloadable XLS worksheets of analysis</td></tr>
                   <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: ${COLORS.limeDark}; margin-right: 8px; font-weight: 700;">&#10003;</span> Workspace with saved deals and history</td></tr>
                   <tr><td style="padding: 5px 0; font-size: 14px; color: ${COLORS.textGray};"><span style="color: ${COLORS.limeDark}; margin-right: 8px; font-weight: 700;">&#10003;</span> Property map and scoreboard views</td></tr>
@@ -300,7 +300,7 @@ export function purchaseConfirmationTemplate(data: { name: string; email: string
             Questions about billing or the platform? Reply to this email and the team will get back to you.
           </p>
           <p style="margin: 10px 0 0 0; color: ${COLORS.muted}; font-size: 12px;">
-            &mdash; The Deal Signals team
+            &mdash; The ScoreOM team
           </p>
         </td>
       </tr>
