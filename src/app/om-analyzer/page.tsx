@@ -11,6 +11,7 @@ import { HeroStats, HomeSectionStyles } from "@/components/marketing/HomeSection
 import { IntroVideo } from "@/components/marketing/IntroVideo";
 import { HeroStars, PillEyebrow, StackedFeatures, CompareChatGPT, StackStyles } from "@/components/marketing/StackedFeatures";
 import { trackLiteUpload, trackLiteResult, trackLeadCapture, trackProCTAClick, trackDownload } from "@/lib/analytics";
+import { deferUntilIdle } from "@/lib/defer-until-idle";
 
 /* ── Lazy Firebase helpers ──────────────────────────────────────────────
    Firebase SDK modules (auth, firestore, storage) are ~300KB+ combined.
@@ -25,17 +26,19 @@ function useLazyWorkspaceAuth() {
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
     let cancelled = false;
-    // Defer Firebase Auth import so it doesn't block first paint
-    import("@/lib/firebase").then(({ auth: authInstance }) =>
-      import("firebase/auth").then(({ onAuthStateChanged }) => {
-        if (cancelled) return;
-        unsubscribe = onAuthStateChanged(authInstance, (u) => {
-          setUser(u);
-          setLoading(false);
-        });
-      }),
-    ).catch(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; unsubscribe?.(); };
+    // Defer Firebase Auth until the visitor interacts or the page is idle
+    const cancelDefer = deferUntilIdle(() => {
+      import("@/lib/firebase").then(({ auth: authInstance }) =>
+        import("firebase/auth").then(({ onAuthStateChanged }) => {
+          if (cancelled) return;
+          unsubscribe = onAuthStateChanged(authInstance, (u) => {
+            setUser(u);
+            setLoading(false);
+          });
+        }),
+      ).catch(() => { if (!cancelled) setLoading(false); });
+    });
+    return () => { cancelled = true; cancelDefer(); unsubscribe?.(); };
   }, []);
   return { user, loading };
 }
@@ -2119,10 +2122,7 @@ export default function OmAnalyzerPage() {
           runtime-injected <style> tag was delaying this page's primary font
           until after the whole JS bundle parsed and rendered, which is
           exactly the kind of thing that reads as "slow" on mobile. */}
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
-      />
+      {/* Plus Jakarta Sans + Inter are self-hosted in app/layout.tsx (no render-blocking font CSS). */}
       <HomeSectionStyles />
       <StackStyles />
       <style>{`
@@ -2160,7 +2160,7 @@ export default function OmAnalyzerPage() {
 
         .ds-om-outputs > div:hover { cursor: default; }
         /* Reusable curved green underline callout */
-        @media (max-width: 760px) { .so-hide-mobile { display: none !important; } }
+        @media (max-width: 760px) { .so-hide-mobile { display: none !important; } .so-hero-blob { display: none !important; } }
         .ds-callout {
           color: #84CC16;
           position: relative;
@@ -2590,8 +2590,8 @@ export default function OmAnalyzerPage() {
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "30%", background: "linear-gradient(to top, #0d0d14, transparent)", pointerEvents: "none", zIndex: 0 }} />
 
             {/* Gradient orbs for hero depth */}
-            <div style={{ position: "absolute", top: -100, left: -200, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.12)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
-            <div style={{ position: "absolute", bottom: -100, right: -150, width: 400, height: 400, borderRadius: "50%", background: "rgba(132,204,22,0.06)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
+            <div className="so-hero-blob" style={{ position: "absolute", top: -100, left: -200, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.12)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
+            <div className="so-hero-blob" style={{ position: "absolute", bottom: -100, right: -150, width: 400, height: 400, borderRadius: "50%", background: "rgba(132,204,22,0.06)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
             <div className="so-hero-center" style={{ animation: "fadeInUp 0.5s ease-out" }}>
               <PillEyebrow>For CRE investors, brokers, lenders and owner-operators</PillEyebrow>
               <h1 className="so-hero-h1">

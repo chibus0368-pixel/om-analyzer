@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { deferUntilIdle } from "./defer-until-idle";
 
 /* ── Lazy Firebase imports ──────────────────────────────────────────────
    Firebase SDK modules (auth ~90KB, firestore ~250KB) were imported
@@ -41,6 +42,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let unsubscribe: (() => void) | undefined;
     let cancelled = false;
 
+    // Marketing pages: wait for interaction or idle before pulling in Firebase.
+    const cancelDefer = deferUntilIdle(() => { if (!cancelled) start(); });
+    function start() {
     Promise.all([
       import("./firebase"),
       import("firebase/auth"),
@@ -71,9 +75,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }).catch(() => {
       if (!cancelled) setLoading(false);
     });
+    }
 
     return () => {
       cancelled = true;
+      cancelDefer();
       unsubscribe?.();
     };
   }, []);

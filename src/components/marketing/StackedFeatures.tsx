@@ -328,8 +328,9 @@ export function StackedFeatures() {
     const update = () => {
       const wrap = wrapRef.current;
       if (!wrap) return;
-      const cards = Array.from(wrap.querySelectorAll<HTMLElement>(".so-stack-card"));
       const sticky = window.matchMedia("(min-width: 901px)").matches;
+      if (!sticky) return;
+      const cards = Array.from(wrap.querySelectorAll<HTMLElement>(".so-stack-card"));
       cards.forEach((card, i) => {
         const next = cards[i + 1];
         let t = 0;
@@ -499,7 +500,7 @@ export function StackStyles() {
       .so-stars-a { animation: soTwinkle 6s ease-in-out infinite; }
       .so-stars-b { width:2px !important; height:2px !important; opacity:.5; animation: soTwinkle 9s ease-in-out infinite reverse; }
       .so-stars-glow { position:absolute; left:50%; top:-260px; width:1100px; height:620px; transform:translateX(-50%);
-        background: radial-gradient(closest-side, rgba(132,204,22,0.16), rgba(132,204,22,0.04) 60%, transparent); filter: blur(10px); }
+        background: radial-gradient(closest-side, rgba(132,204,22,0.16), rgba(132,204,22,0.04) 60%, transparent); }
       @keyframes soTwinkle { 0%,100% { opacity:.9 } 50% { opacity:.45 } }
 
       .so-pill-eyebrow { display:inline-flex; align-items:center; gap:9px; padding:0; border:0; background:none;
