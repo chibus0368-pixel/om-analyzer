@@ -505,13 +505,15 @@ export function StackStyles() {
 
       .so-pill-eyebrow { display:inline-flex; align-items:center; gap:9px; padding:0; border:0; background:none;
         font-size:14px; font-weight:700; color:#e5e7eb; letter-spacing:0.01em; }
-      .so-pill-dot { width:6px; height:6px; border-radius:50%; background:#6b7280; }
+      .so-pill-dot { width:6px; height:6px; border-radius:50%; background:${LIME}; box-shadow:0 0 10px ${LIME}; animation: soDotPulse 2.4s ease-in-out infinite; }
+      @keyframes soDotPulse { 0%,100% { opacity:1; box-shadow:0 0 10px ${LIME}; } 50% { opacity:.45; box-shadow:0 0 3px ${LIME}; } }
+      @media (prefers-reduced-motion: reduce) { .so-pill-dot, .so-stack-eyebrow span { animation:none !important; } }
 
       /* Centered hero */
       .so-hero-center { max-width: 920px; margin: 0 auto; text-align: center; position: relative; z-index: 1; }
       .so-hero-h1 { font-family:'Plus Jakarta Sans',sans-serif; font-size: clamp(40px, 6.6vw, 80px); font-weight: 800;
         line-height: 1.03; letter-spacing: -0.035em; color:#fff; margin: 26px 0 22px; }
-      .so-hero-h1 .accent { color:#fff; display:block; }
+      .so-hero-h1 .accent { color:${LIME}; display:block; }
       .so-hero-sub { font-size: clamp(16px, 1.6vw, 19px); color:#9ca3af; line-height:1.65; max-width: 640px; margin: 0 auto 36px; }
       .so-upload-label { display:flex; align-items:center; justify-content:center; gap:9px; margin: 0 auto 14px;
         font-size:14px; font-weight:700; color:#9ca3af; }
@@ -567,7 +569,7 @@ export function StackStyles() {
       .so-stack-copy { position: relative; z-index: 1; }
       .so-stack-eyebrow { display:inline-flex; align-items:center; gap:9px; font-size:13px; font-weight:700; color:#d1d5db;
         letter-spacing:0.04em; text-transform:uppercase; }
-      .so-stack-eyebrow span { width:8px; height:8px; border-radius:50%; background:#6b7280; }
+      .so-stack-eyebrow span { width:8px; height:8px; border-radius:50%; background:${LIME}; box-shadow:0 0 12px ${LIME}; animation: soDotPulse 2.4s ease-in-out infinite; }
       .so-stack-copy h3 .so-hl { color: inherit; }
       .so-stack-copy h3 { font-family:'Plus Jakarta Sans',sans-serif; font-size: clamp(30px, 3.3vw, 44px); font-weight:800;
         letter-spacing:-0.03em; line-height:1.08; color:#fff; margin: 18px 0 16px; }
@@ -598,7 +600,7 @@ export function StackStyles() {
       .so-frag-tag { position:absolute; left:14px; top:-15px; display:inline-flex; align-items:center; gap:7px;
         padding:6px 12px; border-radius:999px; background:#0d0d14; border:1px solid rgba(255,255,255,0.18);
         color:#fff; font-size:12px; font-weight:700; white-space:nowrap; box-shadow:0 8px 24px rgba(0,0,0,0.5); }
-      .so-frag-tag span { width:6px; height:6px; border-radius:50%; background:#9ca3af; }
+      .so-frag-tag span { width:6px; height:6px; border-radius:50%; background:${LIME}; }
       @keyframes soFloat { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
 
       /* Callout cards sit slightly tilted (dealstack-style); main visuals stay flat */
@@ -674,7 +676,7 @@ export function StackStyles() {
       .so-compare-row:last-child { border-bottom: 0; }
       .so-compare-row.head { padding-top: 8px; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color:#6b7280; border-bottom-color: rgba(255,255,255,0.1); }
       .so-compare-row.head .us { color: #fff; display:flex; align-items:center; gap:8px; }
-      .so-compare-row.head .us i { width:8px; height:8px; border-radius:50%; background:#fff; }
+      .so-compare-row.head .us i { width:8px; height:8px; border-radius:50%; background:${LIME}; box-shadow:0 0 10px ${LIME}; }
       .so-compare-row .lbl { color:#fff; font-weight:700; font-size:14.5px; }
       .so-compare-row span.us, .so-compare-row span.them { display:flex; gap:9px; align-items:flex-start; font-size:14.5px; line-height:1.5; }
       .so-compare-row span.us { color:#f3f4f6; font-weight:500; }

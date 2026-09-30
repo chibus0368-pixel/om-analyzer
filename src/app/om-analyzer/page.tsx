@@ -2164,7 +2164,9 @@ export default function OmAnalyzerPage() {
         .ds-callout {
           color: inherit;
           position: relative;
-          display: inline;
+          display: inline-block;
+        }
+        .so-hero-h1 .ds-callout::after { display: block !important;
         }
         .ds-callout::after {
           display: none;
