@@ -48,7 +48,7 @@ export default function PrivacyPage() {
                 "Documents you upload: offering memorandums (OMs), rent rolls, T-12s, flyers and other files, plus the text and numbers we extract from them and the analysis we produce (scores, briefs, notes and chat history).",
                 "Deal details you enter or edit, and the DealBoards you create.",
                 "Try-it-free uploads: if you upload without an account, we create an anonymous session. Those deals are deleted after 7 days unless you sign up and claim them.",
-                "Usage data: pages visited, device and browser type, and where you came from (for example a tagged link or the referring site). We keep the first tagged link you arrived from with your account so we can tell which communities people find us through.",
+                "Usage data: pages visited, device and browser type, and where you came from (for example a tagged link or the referring site). We record the marketing source you first arrived from (the campaign tags on the link, such as utm_source, or the name of the site that referred you) and save it with your account when you sign up, so we can tell which channels people find us through.",
                 "We do not collect payment card numbers, bank details, or government ID numbers.",
               ],
             },
@@ -64,7 +64,7 @@ export default function PrivacyPage() {
             },
             {
               title: "Cookies and analytics",
-              content: "We use Google Analytics, which sets cookies, to understand how people use the site. Sign-in and a few site preferences are kept in your browser's local storage. We do not run advertising trackers or sell data to ad networks. You can block analytics cookies in your browser or with an extension; the product still works.",
+              content: "We use Google Analytics, which sets cookies, and Vercel Web Analytics, which does not, to understand how people use the site. A first-party cookie named som_attr stores the marketing source you arrived from for 90 days; it holds only the campaign tags, the page you landed on and the referring site name. Sign-in and a few site preferences are kept in your browser's local storage. We do not run advertising trackers or sell data to ad networks. You can block analytics cookies in your browser or with an extension; the product still works.",
             },
             {
               title: "Emails",

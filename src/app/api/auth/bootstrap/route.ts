@@ -37,15 +37,22 @@ export async function POST(request: NextRequest) {
       .map((p) => p.providerId)
       .filter(Boolean);
 
-    // First-touch attribution from the signup page (see src/lib/attribution.ts).
+    // First-touch attribution from the som_attr cookie (see src/lib/attribution.ts).
+    // Saved only when an account is created; existing users are never changed.
     const cleanAttr = (a: any) => {
-      if (!a || typeof a !== "object" || typeof a.source !== "string" || !a.source.trim()) return null;
       const s = (v: any, n = 80) => (typeof v === "string" && v.trim() ? v.trim().slice(0, n) : null);
-      return {
-        source: s(a.source)!.toLowerCase(),
-        medium: s(a.medium), campaign: s(a.campaign), content: s(a.content),
-        referrer: s(a.referrer), landingPath: s(a.landingPath, 120), firstSeenAt: s(a.firstSeenAt, 40),
+      const src = a && typeof a === "object" ? a : {};
+      const out = {
+        utm_source: s(src.utm_source)?.toLowerCase() ?? null,
+        utm_campaign: s(src.utm_campaign),
+        utm_content: s(src.utm_content),
+        landing_path: s(src.landing_path, 120),
+        referrer_host: s(src.referrer_host, 100)?.toLowerCase() ?? null,
+        first_seen_at: s(src.first_seen_at, 40),
       };
+      // No cookie (or nothing useful in it) = direct.
+      if (!out.utm_source && !out.utm_campaign && !out.utm_content && !out.referrer_host) out.utm_source = "direct";
+      return out;
     };
     const attribution = cleanAttr(body.attribution);
 
@@ -92,7 +99,6 @@ export async function POST(request: NextRequest) {
       }
       if (body.company && !existing.company) updates.company = body.company;
       if (body.role && !existing.role) updates.role = body.role;
-      if (attribution && !existing.signupSource) updates.signupSource = attribution;
 
       // Merge anonymous usage - only increase, never decrease
       if (anonUploadsUsed > 0 && (!existing.uploadsUsed || existing.uploadsUsed < anonUploadsUsed)) {
@@ -111,7 +117,7 @@ export async function POST(request: NextRequest) {
         updates.isLifetimeLimit = false;
         updates.isAnonymous = false;
         updates.registeredAt = now;
-        if (!existing.signupSource) updates.signupSource = attribution || { source: "direct" };
+        if (!existing.attribution) updates.attribution = attribution;
         updates.periodStart = new Date();
         // Reset their counter so they get a clean monthly quota - their
         // 2 free trial uploads should not eat into the 7/month allowance.
@@ -152,8 +158,7 @@ export async function POST(request: NextRequest) {
         isLifetimeLimit: false,
         periodStart: new Date(),
         newsletterOptIn: false,
-        // "direct" = signed up with no tag and no outside referrer.
-        signupSource: attribution || { source: "direct" },
+        attribution,
         registeredAt: now,
         productUpdatesOptIn: false,
         lastLoginAt: now,

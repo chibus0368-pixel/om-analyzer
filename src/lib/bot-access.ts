@@ -10,7 +10,7 @@ import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
  * Vercel. Unset key = the endpoints are off. Rotate the key to cut access.
  */
 export function checkBotKey(req: NextRequest): NextResponse | null {
-  const key = process.env.BOT_API_KEY || "";
+  const key = process.env.BOT_API_KEY || process.env.SCOREOM_BOT_KEY || "";
   if (key.length < 24) return NextResponse.json({ error: "Bot access is not enabled" }, { status: 503 });
   const h = req.headers.get("authorization") || "";
   const got = h.startsWith("Bearer ") ? h.slice(7).trim() : "";
@@ -48,9 +48,11 @@ export interface Member {
   company: string | null;
   signedUpAt: number;
   lastActiveAt: number;
-  source: string;
+  source: string;              // utm_source, "direct", "referral" (no UTMs, outside site) or "untracked" (signed up before tracking)
   medium: string | null;
   campaign: string | null;
+  content: string | null;
+  referrerHost: string | null;
   sourceTracked: boolean;
   uploads: number[];           // OM upload times, ascending (copies excluded)
   firstUploadAt: number;
@@ -102,7 +104,15 @@ export async function loadMembers(): Promise<Member[]> {
     const ups = (uploads.get(u.uid) || []).sort((a, b) => a - b);
     const first = ups[0] || 0;
     const ret = first ? ups.find(t => t - first >= RETURN_MIN_GAP_MS && t - first <= RETURN_WINDOW_MS) || 0 : 0;
-    const src = doc.signupSource;
+    // New field: attribution {utm_source, utm_campaign, utm_content, landing_path, referrer_host, first_seen_at}.
+    // Legacy field (first day of tracking only): signupSource {source, medium, campaign, content, referrer}.
+    const at = doc.attribution;
+    const legacy = doc.signupSource;
+    const attr = at
+      ? { source: at.utm_source || (at.referrer_host ? "referral" : "direct"), medium: null, campaign: at.utm_campaign || null, content: at.utm_content || null, referrer: at.referrer_host || null }
+      : legacy?.source
+        ? { source: legacy.source, medium: legacy.medium || null, campaign: legacy.campaign || null, content: legacy.content || null, referrer: legacy.referrer || null }
+        : null;
     out.push({
       uid: u.uid,
       email: u.email.toLowerCase(),
@@ -110,10 +120,12 @@ export async function loadMembers(): Promise<Member[]> {
       company: doc.company || null,
       signedUpAt: toMs(doc.registeredAt) || toMs(doc.createdAt) || toMs(u.metadata.creationTime),
       lastActiveAt: toMs(u.metadata.lastSignInTime) || toMs(doc.lastLoginAt),
-      source: src?.source || "untracked",
-      medium: src?.medium || null,
-      campaign: src?.campaign || null,
-      sourceTracked: !!src?.source,
+      source: attr?.source || "untracked",
+      medium: attr?.medium || null,
+      campaign: attr?.campaign || null,
+      content: attr?.content || null,
+      referrerHost: attr?.referrer || null,
+      sourceTracked: !!attr,
       uploads: ups,
       firstUploadAt: first,
       returnedAt: ret,

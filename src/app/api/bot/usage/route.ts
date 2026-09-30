@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkBotKey, loadMembers, dayKey, memberIso, NO_STORE, DAY_MS, RETURN_WINDOW_MS } from "@/lib/bot-access";
+import { checkBotKey, loadMembers, dayKey, NO_STORE, DAY_MS, RETURN_WINDOW_MS } from "@/lib/bot-access";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,6 +39,8 @@ export async function GET(req: NextRequest) {
     const totals = blank();
     const byDay = new Map<string, Row>();
     const bySource = new Map<string, Row & { source: string; medium: string | null; campaign: string | null }>();
+    type SrcRow = { utm_source: string; utm_campaign: string | null; utm_content: string | null; referrer_host: string | null; signups: number; users_with_1plus_upload: number; total_uploads: number; returned_within_14d: number };
+    const bySrc = new Map<string, SrcRow>();
     // Pre-fill every day so gaps show as zeros.
     for (let t = from; t <= now; t += DAY_MS) byDay.set(dayKey(t), blank());
     for (const m of members) {
@@ -49,6 +51,14 @@ export async function GET(req: NextRequest) {
       const k = `${m.source}|${m.medium || ""}|${m.campaign || ""}`;
       if (!bySource.has(k)) bySource.set(k, { ...blank(), source: m.source, medium: m.medium, campaign: m.campaign });
       add(bySource.get(k)!, m);
+      // by_source: grouped by first-touch utm_source / utm_campaign / utm_content.
+      const k2 = `${m.source}|${m.campaign || ""}|${m.content || ""}|${m.source === "referral" ? m.referrerHost || "" : ""}`;
+      if (!bySrc.has(k2)) bySrc.set(k2, { utm_source: m.source, utm_campaign: m.campaign, utm_content: m.content, referrer_host: m.source === "referral" ? m.referrerHost : null, signups: 0, users_with_1plus_upload: 0, total_uploads: 0, returned_within_14d: 0 });
+      const r2 = bySrc.get(k2)!;
+      r2.signups++;
+      if (m.uploads.length) r2.users_with_1plus_upload++;
+      r2.total_uploads += m.uploads.length;
+      if (m.returnedAt) r2.returned_within_14d++;
     }
 
     return NextResponse.json({
@@ -61,20 +71,13 @@ export async function GET(req: NextRequest) {
         eligibleFor14d: "First upload was 14+ days ago, so the return window is closed.",
         stillInWindow: "Uploaded a first OM less than 14 days ago and has not come back yet. Too early to call.",
         returnRatePct: "returnedWithin14d / (uploadedFirstOm - stillInWindow). People still inside their 14 days are left out until they come back or the window closes.",
-        source: "First tagged link the person arrived on (utm_source or ref), else the outside site that referred them, else 'direct'. 'untracked' = signed up before source tracking existed.",
+        source: "First-touch utm_source from the som_attr cookie. 'referral' = no UTMs, arrived from another site (see referrer_host). 'direct' = no UTMs and no outside referrer. 'untracked' = signed up before source tracking existed.",
+        by_source: "Aggregates for accounts that signed up in the window, grouped by first-touch utm_source / utm_campaign / utm_content. total_uploads counts deals (duplicated copies excluded). returned_within_14d uses the same rule as returnedWithin14d.",
       },
       totals: withRates(totals),
+      by_source: [...bySrc.values()].sort((a, b) => b.signups - a.signups),
       bySource: [...bySource.values()].map(withRates).sort((a, b) => b.signups - a.signups),
       daily: [...byDay.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([date, r]) => ({ date, ...r })),
-      signups: members
-        .sort((a, b) => b.signedUpAt - a.signedUpAt)
-        .map(m => ({
-          signedUpAt: memberIso(m.signedUpAt),
-          source: m.source, medium: m.medium, campaign: m.campaign,
-          uploads: m.uploads.length,
-          firstUploadAt: memberIso(m.firstUploadAt),
-          returnedAt: memberIso(m.returnedAt),
-        })),
     }, { headers: NO_STORE });
   } catch (err: any) {
     console.error("[bot/usage]", err?.message);
