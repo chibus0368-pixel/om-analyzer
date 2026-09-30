@@ -368,7 +368,7 @@ export function StackedFeatures() {
               <ul>
                 {c.points.map((p) => (
                   <li key={p}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="20 6 9 17 4 12" /></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={LIME} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="20 6 9 17 4 12" /></svg>
                     {p}
                   </li>
                 ))}
@@ -469,7 +469,7 @@ export function CompareChatGPT() {
             <div key={r.label} className="so-compare-row" role="row">
               <span role="rowheader" className="lbl">{r.label}</span>
               <span role="cell" className="us">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e5e7eb" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="20 6 9 17 4 12" /></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={LIME} strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="20 6 9 17 4 12" /></svg>
                 {r.us}
               </span>
               <span role="cell" className="them">
