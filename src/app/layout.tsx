@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "@/styles/globals.css";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import VercelAnalytics from "@/components/VercelAnalytics";
 import GoogleFontsLoader from "@/components/GoogleFontsLoader";
 import Providers from "./Providers";
 
@@ -99,6 +100,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             paint (see GoogleFontsLoader.tsx for the full rationale). */}
         <GoogleFontsLoader />
         <GoogleAnalytics />
+        <VercelAnalytics />
         <Providers>{children}</Providers>
       </body>
     </html>
