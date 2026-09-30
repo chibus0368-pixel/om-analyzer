@@ -100,9 +100,24 @@ export async function getTraffic(days: number): Promise<Traffic> {
   };
   const notTest = (x: any) => clean(x.utmSource).toLowerCase() !== "test";
   const dailyRows = minus(rows(daily), rows(tDaily), x => String(x.timestamp));
+  // The count response has been seen in more than one shape; read whichever is present.
+  const pick = (res: any, f: "visitors" | "pageviews") => {
+    const d = res?.data;
+    const obj = Array.isArray(d) ? d[0] : d && typeof d === "object" ? d : res;
+    return n(obj?.[f] ?? obj?.[f === "visitors" ? "devices" : "total"]);
+  };
+  // Test traffic for totals comes from the utmSource breakdown (reliable), not the filtered count.
+  const testSrc = rows(src).find(x => clean(x.utmSource).toLowerCase() === "test");
+  const sumDaily = (f: "visitors" | "pageviews") => dailyRows.reduce((s, x) => s + n(x[f]), 0);
+  let totV = Math.max(0, pick(count, "visitors") - n(testSrc?.visitors));
+  let totP = Math.max(0, pick(count, "pageviews") - n(testSrc?.pageviews));
+  // If the count call still reads as empty while the days have data, fall back to summing days
+  // (visitors can then overcount people seen on more than one day).
+  if (totP === 0 && sumDaily("pageviews") > 0) { totV = sumDaily("visitors"); totP = sumDaily("pageviews"); }
+  void tCount;
   return {
     range: { days, since: r.sinceIso, until: r.untilIso, timezone: "America/Chicago" },
-    totals: { visitors: Math.max(0, n(count?.data?.visitors) - n(tCount?.data?.visitors)), pageviews: Math.max(0, n(count?.data?.pageviews) - n(tCount?.data?.pageviews)) },
+    totals: { visitors: totV, pageviews: totP },
     daily: dailyRows.map(x => ({ date: utcDayKey(Date.parse(x.timestamp)), visitors: n(x.visitors), pageviews: n(x.pageviews) }))
       .sort((a, b) => a.date.localeCompare(b.date)),
     by_utm_source: rows(src).filter(notTest).map(x => ({ utm_source: clean(x.utmSource).toLowerCase(), visitors: n(x.visitors), pageviews: n(x.pageviews) })).sort(byVisitors),
