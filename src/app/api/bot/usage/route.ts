@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkBotKey, loadMembers, dayKey, NO_STORE, DAY_MS, RETURN_WINDOW_MS } from "@/lib/bot-access";
+import { checkBotKey, loadMembers, isTestSource, dayKey, NO_STORE, DAY_MS, RETURN_WINDOW_MS } from "@/lib/bot-access";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const days = Math.min(365, Math.max(1, Number(req.nextUrl.searchParams.get("days")) || 30));
     const now = Date.now();
     const from = now - days * DAY_MS;
-    const members = (await loadMembers()).filter(m => m.signedUpAt >= from);
+    const members = (await loadMembers()).filter(m => m.signedUpAt >= from && !isTestSource(m.source));
 
     // Cohort stats: counted by the day / source people signed up under.
     type Row = { signups: number; uploadedFirstOm: number; returnedWithin14d: number; eligibleFor14d: number; stillInWindow: number };
@@ -72,6 +72,7 @@ export async function GET(req: NextRequest) {
         stillInWindow: "Uploaded a first OM less than 14 days ago and has not come back yet. Too early to call.",
         returnRatePct: "returnedWithin14d / (uploadedFirstOm - stillInWindow). People still inside their 14 days are left out until they come back or the window closes.",
         source: "First-touch utm_source from the som_attr cookie. 'referral' = no UTMs, arrived from another site (see referrer_host). 'direct' = no UTMs and no outside referrer. 'untracked' = signed up before source tracking existed.",
+        test_traffic: "Signups whose first-touch utm_source is 'test' are excluded everywhere.",
         by_source: "Aggregates for accounts that signed up in the window, grouped by first-touch utm_source / utm_campaign / utm_content. total_uploads counts deals (duplicated copies excluded). returned_within_14d uses the same rule as returnedWithin14d.",
       },
       totals: withRates(totals),

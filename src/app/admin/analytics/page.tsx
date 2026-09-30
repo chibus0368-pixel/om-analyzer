@@ -21,10 +21,22 @@ function Rate({ num, den, min }: { num: number; den: number | null | undefined; 
   return <b style={{ color: TEXT }}>{((num / den) * 100).toFixed(1)}%</b>;
 }
 
-function Card({ label, children, sub }: { label: string; children: React.ReactNode; sub?: string }) {
+const APPROX_TIP = "Approximate: visits are tagged on every visit, but signups are credited to the person's first visit, so the two don't line up exactly.";
+function Approx() {
+  return <span title={APPROX_TIP} style={{ marginLeft: 5, fontSize: 10, fontWeight: 700, letterSpacing: ".04em", color: MUTED, borderBottom: `1px dotted ${MUTED}`, cursor: "help", textTransform: "none" }}>approx.</span>;
+}
+/** "7 pm to 7 pm" in daylight time, "6 pm to 6 pm" in standard time. */
+function utcDayNote() {
+  const utcMidnight = new Date(); utcMidnight.setUTCHours(0, 0, 0, 0);
+  const h = Number(new Intl.DateTimeFormat("en-US", { timeZone: "America/Chicago", hour: "numeric", hourCycle: "h23" }).format(utcMidnight));
+  const t = `${h > 12 ? h - 12 : h} pm`;
+  return `Days are UTC (${t} to ${t} Central).`;
+}
+
+function Card({ label, children, sub, approx }: { label: string; children: React.ReactNode; sub?: string; approx?: boolean }) {
   return (
     <div style={{ background: CARD, border: `1px solid ${LINE}`, borderRadius: 12, padding: "14px 16px", minWidth: 0 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: MUTED, letterSpacing: ".06em", textTransform: "uppercase" }}>{label}</div>
+      <div style={{ fontSize: 11, fontWeight: 700, color: MUTED, letterSpacing: ".06em", textTransform: "uppercase" }}>{label}{approx && <Approx />}</div>
       <div style={{ fontSize: 26, fontWeight: 800, color: TEXT, marginTop: 6, fontFamily: "'Plus Jakarta Sans', Inter, sans-serif" }}>{children}</div>
       {sub && <div style={{ fontSize: 11.5, color: MUTED, marginTop: 4 }}>{sub}</div>}
     </div>
@@ -147,7 +159,7 @@ export default function AdminAnalyticsPage() {
   const cells = (r: Any) => (<>
     <td style={td}>{fmt(r.visitors)}</td>
     <td style={td}>{fmt(r.signups)}</td>
-    <td style={td}><Rate num={r.signups} den={r.visitors} min={MIN_VISITORS} /></td>
+    <td style={td} title={APPROX_TIP}><Rate num={r.signups} den={r.visitors} min={MIN_VISITORS} /> <span style={{ color: MUTED, fontSize: 10.5 }}>~</span></td>
     <td style={td}>{fmt(r.first_uploads)} <span style={{ color: MUTED, fontSize: 12 }}>(<Rate num={r.first_uploads} den={r.signups} min={MIN_SIGNUPS} />)</span></td>
     <td style={td}>{fmt(r.returned)} <span style={{ color: MUTED, fontSize: 12 }}>(<Rate num={r.returned} den={r.retDen} min={MIN_SIGNUPS} />)</span></td>
   </>);
@@ -179,19 +191,20 @@ export default function AdminAnalyticsPage() {
             <Card label="Visitors">{fmt(t?.totals.visitors)}</Card>
             <Card label="Page views">{fmt(t?.totals.pageviews)}</Card>
             <Card label="Signups">{fmt(tot?.signups)}</Card>
-            <Card label="Visitor → signup"><Rate num={tot?.signups || 0} den={t?.totals.visitors} min={MIN_VISITORS} /></Card>
+            <Card label="Visitor → signup" approx><Rate num={tot?.signups || 0} den={t?.totals.visitors} min={MIN_VISITORS} /></Card>
             <Card label="First upload" sub="of signups"><Rate num={tot?.first_uploads || 0} den={tot?.signups} min={MIN_SIGNUPS} /></Card>
             <Card label="14-day return" sub="of first uploaders, window closed"><Rate num={tot?.returned_within_14d || 0} den={tot?.return_denominator} min={MIN_SIGNUPS} /></Card>
           </div>
 
-          <Section title="Visitors and signups by day" note="Line: visitors · bars: signups · UTC days">
+          <Section title="Visitors and signups by day" note="Line: visitors · bars: signups">
             <Chart days={daily} />
+            <div style={{ fontSize: 11.5, color: MUTED, marginTop: 6 }}>{utcDayNote()}</div>
           </Section>
 
           <Section title="By source" note="Click a row to compare campaigns and content">
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 760 }}>
-                <thead><tr><th style={thL}>utm_source</th><th style={th}>Visitors</th><th style={th}>Signups</th><th style={th}>Signup %</th><th style={th}>First uploads</th><th style={th}>14-day returns</th></tr></thead>
+                <thead><tr><th style={thL}>utm_source</th><th style={th}>Visitors</th><th style={th}>Signups</th><th style={th}>Signup %<Approx /></th><th style={th}>First uploads</th><th style={th}>14-day returns</th></tr></thead>
                 <tbody>
                   {sources.length === 0 && <tr><td style={tdL} colSpan={6}>No data in this range.</td></tr>}
                   {sources.map((s: Any) => (
@@ -219,7 +232,7 @@ export default function AdminAnalyticsPage() {
                 </tbody>
               </table>
             </div>
-            <div style={{ fontSize: 11.5, color: MUTED, marginTop: 8 }}>Visitors from Vercel Web Analytics; signups, uploads and returns from ScoreOM for accounts created in this range, by the first-touch tag saved at signup. Rates under {MIN_VISITORS} visitors or {MIN_SIGNUPS} signups show as low sample.</div>
+            <div style={{ fontSize: 11.5, color: MUTED, marginTop: 8 }}>Visitors from Vercel Web Analytics; signups, uploads and returns from ScoreOM for accounts created in this range, by the first-touch tag saved at signup. Rates under {MIN_VISITORS} visitors or {MIN_SIGNUPS} signups show as low sample. Signup % is approximate (hover for why). Internal test traffic (utm_source=test) is excluded.</div>
           </Section>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>

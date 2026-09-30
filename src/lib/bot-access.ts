@@ -136,4 +136,7 @@ export async function loadMembers(): Promise<Member[]> {
 }
 
 export const memberIso = iso;
+
+/** Internal test traffic (utm_source=test) is excluded from all reports. */
+export const isTestSource = (s: string | null | undefined) => (s || "").trim().toLowerCase() === "test";
 export const DAY_MS = DAY;

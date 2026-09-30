@@ -4,7 +4,7 @@
  * GET /api/bot/usage (loadMembers + RETURN_* rules). Aggregate counts only:
  * no emails, names or deal contents.
  */
-import { loadMembers, RETURN_WINDOW_MS } from "@/lib/bot-access";
+import { loadMembers, isTestSource, RETURN_WINDOW_MS } from "@/lib/bot-access";
 import { chicagoRange, utcDayKey } from "./range";
 
 export interface Counts {
@@ -21,7 +21,7 @@ export interface OutcomeRow extends Counts { utm_source: string; utm_campaign: s
 export async function getOutcomes(days: number) {
   const now = Date.now();
   const { since } = chicagoRange(days, now);
-  const members = (await loadMembers()).filter(m => m.signedUpAt >= since);
+  const members = (await loadMembers()).filter(m => m.signedUpAt >= since && !isTestSource(m.source));
 
   const totals = blank();
   const bySource = new Map<string, Counts>();
