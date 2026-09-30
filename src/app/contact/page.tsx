@@ -339,10 +339,10 @@ export default function ContactPage() {
               >
                 Prefer email? Write us directly at{" "}
                 <a
-                  href="mailto:support@dealsignals.app"
+                  href="mailto:support@scoreom.com"
                   style={{ color: "#4D7C0F", textDecoration: "none" }}
                 >
-                  support@dealsignals.app
+                  support@scoreom.com
                 </a>
               </p>
             </form>

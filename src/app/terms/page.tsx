@@ -30,7 +30,7 @@ export default function TermsPage() {
       }}>
         <div className="container" style={{ maxWidth: 720 }}>
           <h1 style={{ fontFamily: "'Inter', sans-serif", fontSize: 36, fontWeight: 900, marginBottom: 8, letterSpacing: -0.5 }}>Terms of Use</h1>
-          <p style={{ fontSize: 14, opacity: 0.7 }}>Last updated: February 2026</p>
+          <p style={{ fontSize: 14, opacity: 0.7 }}>Last updated: September 30, 2026</p>
         </div>
       </section>
 
@@ -43,7 +43,7 @@ export default function TermsPage() {
             },
             {
               title: "Not Investment Advice",
-              content: "ScoreOM provides market data, educational content, and analytical tools for informational purposes only. Nothing on this site constitutes investment advice, financial advice, tax advice, or legal advice. Market data, statistics, risk scores, and analysis should not be relied upon as the sole basis for any investment decision. Always consult with qualified financial, legal, and tax professionals before making investment decisions."
+              content: "ScoreOM provides automated analysis of documents you upload, plus market data and tools, for informational purposes only. Scores, extracted figures and AI-written summaries can contain errors, so check them against the source documents. Nothing on this site constitutes investment advice, financial advice, tax advice, or legal advice. Market data, statistics, risk scores, and analysis should not be relied upon as the sole basis for any investment decision. Always consult with qualified financial, legal, and tax professionals before making investment decisions."
             },
             {
               title: "Data Accuracy Disclaimer",
@@ -59,11 +59,15 @@ export default function TermsPage() {
             },
             {
               title: "Permitted Use",
-              content: "You may use ScoreOM for personal, non-commercial research and educational purposes. You may share individual articles or pages via direct links. You may not scrape, crawl, or systematically download content from the site. You may not use our content to create competing products or services."
+              content: "You may use ScoreOM for your own investment, brokerage, lending, advisory or research work, including on behalf of the firm you work for, and you may share your deal analyses and DealBoards with clients, partners and lenders. You may not scrape, crawl, or systematically download the site, resell or white-label the service, attempt to access other users' data, or use ScoreOM to build a competing product."
             },
             {
-              title: "User Accounts & Subscriptions",
-              content: "Subscribers agree to provide accurate email addresses and to receive communications at the frequency selected. You may unsubscribe at any time via the link in any email. We reserve the right to terminate accounts that violate these terms or engage in abusive behavior."
+              title: "Your Uploads",
+              content: "You keep all rights to the documents you upload and the deals you create. You give ScoreOM permission to store and process them, including through the AI and data providers listed in our Privacy Policy, only to provide the service to you. You are responsible for making sure you are allowed to upload each document; many OMs are shared under confidentiality agreements, so check yours. We do not sell your uploads or use them to train AI models."
+            },
+            {
+              title: "Accounts",
+              content: "Provide an accurate email address and keep your sign-in secure. You can stop using ScoreOM and ask us to delete your account at any time. We may suspend accounts that violate these terms, abuse the service, or put other users at risk. Marketing emails can be turned off with the unsubscribe link in any of them."
             },
             {
               title: "Third-Party Links",
@@ -79,7 +83,7 @@ export default function TermsPage() {
             },
             {
               title: "Contact",
-              content: "For questions about these terms, contact us at support@dealsignals.app."
+              content: "For questions about these terms, contact us at support@scoreom.com."
             },
           ].map((section) => (
             <div key={section.title} style={{ marginBottom: 32 }}>

@@ -108,7 +108,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!adminResult.success) {
       console.error('[contact] Admin notification failed:', adminResult.error);
       return NextResponse.json(
-        { success: false, error: 'Unable to deliver your message right now. Please email support@dealsignals.app directly.' },
+        { success: false, error: 'Unable to deliver your message right now. Please email support@scoreom.com directly.' },
         { status: 500 }
       );
     }

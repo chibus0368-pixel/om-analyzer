@@ -2839,7 +2839,7 @@ export default function OmAnalyzerPage() {
                   { q: "What exactly does ScoreOM do?", a: "ScoreOM is a pre-diligence engine for commercial real estate. Upload an OM, rent roll, or broker flyer and get a scored deal brief with extracted financials, risk signals, and a first-pass score against consistent criteria in about a minute." },
                   { q: "Who is this built for?", a: "Active CRE investors, acquisition analysts, and brokers who evaluate multiple deals per week. If you spend time reading OMs and building spreadsheets before deciding whether to pursue a deal, ScoreOM gives you that answer faster." },
                   { q: "What file types can I upload?", a: "PDF (recommended for best accuracy), Word (.docx), Excel (.xlsx/.xls), CSV, and plain text files. Maximum file size is 50MB. Multi-page OMs, single-page flyers, and rent rolls all work." },
-                  { q: "How accurate is the extraction?", a: "90%+ accuracy on standard CRE metrics like price, cap rate, NOI, tenant name, lease terms, and building size. ScoreOM is designed for pre-diligence speed. Always verify against the source document before making final investment decisions." },
+                  { q: "How accurate is the extraction?", a: "It is built to pull the standard CRE numbers (price, cap rate, NOI, tenants, lease terms, building size) and does well on typical, text-based OMs. Scanned pages, unusual layouts and broker pro formas are where it slips. Every extracted number is editable, and fixing one re-scores the deal. Treat it as a fast first pass and check anything that matters against the OM." },
                   { q: "Do I need to create an account?", a: "No. You can analyze deals with no signup required. Create a free account if you want to save deals to your workspace and access your DealBoard." },
                 ].map((item, i) => {
                   const faqIdx = i;
@@ -2964,8 +2964,8 @@ export default function OmAnalyzerPage() {
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "16px 0 8px", marginBottom: 4 }}>Privacy &amp; Security</div>
 
                 {[
-                  { q: "Is my data private and secure?", a: "Yes. Documents are processed in real-time and not stored permanently on our servers. We don't sell or share your data. No tracking cookies, no analytics on your deals. Free tier doesn't even require an account." },
-                  { q: "Can other users see my deals?", a: "No. Your DealBoard is completely private. The only way someone else can see a deal is if you explicitly generate a share link for it. Share links can be password-protected and set to expire." },
+                  { q: "Is my data private and secure?", a: "Your uploads are stored in your private workspace so you can come back to them, and you can delete a deal any time. To read the documents, their text is processed through OpenAI's API, and deal chat and market research use Perplexity's API. Under both providers' API terms, your data is not used to train their models. We don't sell your data, and the site uses Google Analytics for traffic stats. Uploads without an account are deleted after 7 days. Details are in the Privacy Policy." },
+                  { q: "Can other users see my deals?", a: "No. Your DealBoard is completely private. The only way someone else can see a deal is if you explicitly generate a share link for it. DealBoard share links can be set to expire, and you can turn a link off at any time." },
                 ].map((item, i) => {
                   const faqIdx = 13 + i;
                   return (
