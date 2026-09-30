@@ -124,6 +124,13 @@ const nextConfig: NextConfig = {
         destination: 'https://www.scoreom.com/:path*',
         permanent: true,
       },
+      // Short share links (temporary 307s so the targets can change later).
+      // Each lands on the homepage with its UTM tags so the som_attr cookie,
+      // Vercel Analytics and GA4 record the source.
+      { source: '/x', destination: '/?utm_source=x&utm_campaign=launch&utm_content=vs_chatgpt_thread', permanent: false },
+      { source: '/xbio', destination: '/?utm_source=x&utm_campaign=bio&utm_content=profile', permanent: false },
+      { source: '/ig', destination: '/?utm_source=instagram&utm_campaign=bio&utm_content=vs_chatgpt', permanent: false },
+      { source: '/ph', destination: '/?utm_source=producthunt&utm_campaign=launch&utm_content=maker_comment_screening', permanent: false },
       // Redirect /om-analyzer to root (homepage now lives at /)
       {
         source: '/om-analyzer',
