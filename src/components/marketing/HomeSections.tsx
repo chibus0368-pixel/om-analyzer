@@ -894,7 +894,7 @@ export function HomeSectionStyles() {
       .so-hero-stats { display: grid; grid-template-columns: repeat(4, auto); gap: 28px; margin-top: 4px; }
       .so-hero-stat-value { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -0.8px; line-height: 1; }
       .so-hero-stat-label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5); margin-top: 6px; }
-      .so-hero-stat:first-child .so-hero-stat-value { color: ${LIME}; }
+      .so-hero-stat:first-child .so-hero-stat-value { color: #fff; }
 
       /* Browser frame */
       .so-frame { border-radius: 14px; overflow: hidden; background: #fff; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 8px 20px rgba(0,0,0,0.35), 0 40px 90px rgba(0,0,0,0.5), 0 0 0 1px rgba(132,204,22,0.06), 0 0 80px rgba(132,204,22,0.08); }

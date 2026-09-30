@@ -85,11 +85,11 @@ export default function ScoreOMFooter() {
                 gap: 6,
                 fontSize: 11,
                 fontWeight: 600,
-                color: "#84CC16",
+                color: "#9ca3af",
                 padding: "4px 10px",
                 borderRadius: 999,
-                background: "rgba(132,204,22,0.08)",
-                border: "1px solid rgba(132,204,22,0.25)",
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.1)",
                 fontFamily: "'Inter', sans-serif",
                 letterSpacing: 0.3,
               }}
@@ -100,7 +100,6 @@ export default function ScoreOMFooter() {
                   height: 6,
                   borderRadius: "50%",
                   background: "#84CC16",
-                  boxShadow: "0 0 6px #84CC16",
                 }}
               />
               All systems operational

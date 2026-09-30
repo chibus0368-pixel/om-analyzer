@@ -2162,11 +2162,12 @@ export default function OmAnalyzerPage() {
         /* Reusable curved green underline callout */
         @media (max-width: 760px) { .so-hide-mobile { display: none !important; } .so-hero-blob { display: none !important; } }
         .ds-callout {
-          color: #84CC16;
+          color: inherit;
           position: relative;
-          display: inline-block;
+          display: inline;
         }
         .ds-callout::after {
+          display: none;
           content: '';
           position: absolute;
           bottom: -12px;
@@ -2223,7 +2224,7 @@ export default function OmAnalyzerPage() {
         .om-feature-card { transition: all 0.25s ease; }
         .om-feature-card:hover { transform: translateY(-2px); }
         footer a { transition: color 0.15s ease; }
-        footer a:hover { color: #84CC16 !important; }
+        footer a:hover { color: #ffffff !important; }
         input:focus { box-shadow: 0 0 0 3px rgba(132,204,22,0.1) !important; }
         @media (max-width: 900px) {
           .ds-hero-grid { grid-template-columns: 1fr !important; text-align: center; }
@@ -2590,8 +2591,8 @@ export default function OmAnalyzerPage() {
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "30%", background: "linear-gradient(to top, #0d0d14, transparent)", pointerEvents: "none", zIndex: 0 }} />
 
             {/* Gradient orbs for hero depth */}
-            <div className="so-hero-blob" style={{ position: "absolute", top: -100, left: -200, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.12)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
-            <div className="so-hero-blob" style={{ position: "absolute", bottom: -100, right: -150, width: 400, height: 400, borderRadius: "50%", background: "rgba(132,204,22,0.06)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
+            <div className="so-hero-blob" style={{ position: "absolute", top: -100, left: -200, width: 500, height: 500, borderRadius: "50%", background: "rgba(255,255,255,0.03)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
+            <div className="so-hero-blob" style={{ position: "absolute", bottom: -100, right: -150, width: 400, height: 400, borderRadius: "50%", background: "rgba(255,255,255,0.02)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
             <div className="so-hero-center">
               <PillEyebrow>For CRE investors, brokers, lenders and owner-operators</PillEyebrow>
               <h1 className="so-hero-h1">
@@ -2785,7 +2786,7 @@ export default function OmAnalyzerPage() {
                   },
                 ].map((a) => (
                   <div key={a.label} className="so-asset">
-                    <svg viewBox="4 6 44 34" width="52" height="40" fill="none" stroke="#84CC16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden style={{ flexShrink: 0 }}>{a.draw}</svg>
+                    <svg viewBox="4 6 44 34" width="52" height="40" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden style={{ flexShrink: 0 }}>{a.draw}</svg>
                     <div style={{ textAlign: "left", minWidth: 0 }}>
                       <div style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>{a.label}</div>
                       <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)", lineHeight: 1.45 }}>{a.blurb}</div>
@@ -2833,7 +2834,7 @@ export default function OmAnalyzerPage() {
               {/* Left column */}
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {/* Category: Getting Started */}
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "0 0 8px", marginBottom: 4 }}>Getting Started</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" as const, letterSpacing: 1, padding: "0 0 8px", marginBottom: 4 }}>Getting Started</div>
 
                 {[
                   { q: "What exactly does ScoreOM do?", a: "ScoreOM is a pre-diligence engine for commercial real estate. Upload an OM, rent roll, or broker flyer and get a scored deal brief with extracted financials, risk signals, and a first-pass score against consistent criteria in about a minute." },
@@ -2845,8 +2846,8 @@ export default function OmAnalyzerPage() {
                   const faqIdx = i;
                   return (
                     <div key={faqIdx} style={{
-                      borderRadius: 12, border: openFaq === faqIdx ? "1px solid rgba(132,204,22,0.15)" : "1px solid rgba(255,255,255,0.06)",
-                      background: openFaq === faqIdx ? "rgba(132,204,22,0.03)" : "rgba(22,26,35,0.4)",
+                      borderRadius: 12, border: openFaq === faqIdx ? "1px solid rgba(255,255,255,0.14)" : "1px solid rgba(255,255,255,0.06)",
+                      background: openFaq === faqIdx ? "rgba(255,255,255,0.03)" : "rgba(22,26,35,0.4)",
                       transition: "all 0.2s ease",
                       overflow: "hidden",
                     }}>
@@ -2860,8 +2861,8 @@ export default function OmAnalyzerPage() {
                           color: "inherit", font: "inherit", outline: "none",
                         }}
                       >
-                        <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#84CC16" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#84CC16" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#e5e7eb" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
                           <polyline points="6 9 12 15 18 9" />
                         </svg>
                       </button>
@@ -2875,7 +2876,7 @@ export default function OmAnalyzerPage() {
                 })}
 
                 {/* Category: Pricing */}
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "16px 0 8px", marginBottom: 4 }}>Free Access</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" as const, letterSpacing: 1, padding: "16px 0 8px", marginBottom: 4 }}>Free Access</div>
 
                 {[
                   { q: "Is it really free?", a: "Yes. ScoreOM is free to use right now, no card required and no cap on how many deals you analyze." },
@@ -2885,8 +2886,8 @@ export default function OmAnalyzerPage() {
                   const faqIdx = 5 + i;
                   return (
                     <div key={faqIdx} style={{
-                      borderRadius: 12, border: openFaq === faqIdx ? "1px solid rgba(132,204,22,0.15)" : "1px solid rgba(255,255,255,0.06)",
-                      background: openFaq === faqIdx ? "rgba(132,204,22,0.03)" : "rgba(22,26,35,0.4)",
+                      borderRadius: 12, border: openFaq === faqIdx ? "1px solid rgba(255,255,255,0.14)" : "1px solid rgba(255,255,255,0.06)",
+                      background: openFaq === faqIdx ? "rgba(255,255,255,0.03)" : "rgba(22,26,35,0.4)",
                       transition: "all 0.2s ease",
                       overflow: "hidden",
                     }}>
@@ -2900,8 +2901,8 @@ export default function OmAnalyzerPage() {
                           color: "inherit", font: "inherit", outline: "none",
                         }}
                       >
-                        <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#84CC16" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#84CC16" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#e5e7eb" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
                           <polyline points="6 9 12 15 18 9" />
                         </svg>
                       </button>
@@ -2918,7 +2919,7 @@ export default function OmAnalyzerPage() {
               {/* Right column */}
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {/* Category: The Product */}
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "0 0 8px", marginBottom: 4 }}>The Product</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" as const, letterSpacing: 1, padding: "0 0 8px", marginBottom: 4 }}>The Product</div>
 
                 {[
                   { q: "Does ScoreOM replace my underwriting?", a: "No. ScoreOM is a first pass for when you are scanning the market and OMs are landing faster than you can read them. It pulls the numbers out, flags what stands out, and gives you a score to sort by and a link to share. The deals that earn a closer look still get your full underwriting and diligence." },
@@ -2931,8 +2932,8 @@ export default function OmAnalyzerPage() {
                   const faqIdx = 8 + i;
                   return (
                     <div key={faqIdx} style={{
-                      borderRadius: 12, border: openFaq === faqIdx ? "1px solid rgba(132,204,22,0.15)" : "1px solid rgba(255,255,255,0.06)",
-                      background: openFaq === faqIdx ? "rgba(132,204,22,0.03)" : "rgba(22,26,35,0.4)",
+                      borderRadius: 12, border: openFaq === faqIdx ? "1px solid rgba(255,255,255,0.14)" : "1px solid rgba(255,255,255,0.06)",
+                      background: openFaq === faqIdx ? "rgba(255,255,255,0.03)" : "rgba(22,26,35,0.4)",
                       transition: "all 0.2s ease",
                       overflow: "hidden",
                     }}>
@@ -2946,8 +2947,8 @@ export default function OmAnalyzerPage() {
                           color: "inherit", font: "inherit", outline: "none",
                         }}
                       >
-                        <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#84CC16" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#84CC16" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#e5e7eb" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
                           <polyline points="6 9 12 15 18 9" />
                         </svg>
                       </button>
@@ -2961,7 +2962,7 @@ export default function OmAnalyzerPage() {
                 })}
 
                 {/* Category: Security */}
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase" as const, letterSpacing: 1, padding: "16px 0 8px", marginBottom: 4 }}>Privacy &amp; Security</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" as const, letterSpacing: 1, padding: "16px 0 8px", marginBottom: 4 }}>Privacy &amp; Security</div>
 
                 {[
                   { q: "Is my data private and secure?", a: "Your uploads are stored in your private workspace so you can come back to them, and you can delete a deal any time. To read the documents, their text is processed through OpenAI's API, and deal chat and market research use Perplexity's API. Under both providers' API terms, your data is not used to train their models. We don't sell your data, and the site uses Google Analytics for traffic stats. Uploads without an account are deleted after 7 days. Details are in the Privacy Policy." },
@@ -2970,8 +2971,8 @@ export default function OmAnalyzerPage() {
                   const faqIdx = 13 + i;
                   return (
                     <div key={faqIdx} style={{
-                      borderRadius: 12, border: openFaq === faqIdx ? "1px solid rgba(132,204,22,0.15)" : "1px solid rgba(255,255,255,0.06)",
-                      background: openFaq === faqIdx ? "rgba(132,204,22,0.03)" : "rgba(22,26,35,0.4)",
+                      borderRadius: 12, border: openFaq === faqIdx ? "1px solid rgba(255,255,255,0.14)" : "1px solid rgba(255,255,255,0.06)",
+                      background: openFaq === faqIdx ? "rgba(255,255,255,0.03)" : "rgba(22,26,35,0.4)",
                       transition: "all 0.2s ease",
                       overflow: "hidden",
                     }}>
@@ -2985,8 +2986,8 @@ export default function OmAnalyzerPage() {
                           color: "inherit", font: "inherit", outline: "none",
                         }}
                       >
-                        <span style={{ fontSize: 14, fontWeight: 600, color: openFaq === faqIdx ? "#84CC16" : "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#84CC16" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: "#ffffff", transition: "color 0.2s" }}>{item.q}</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === faqIdx ? "#e5e7eb" : "#6b7280"} strokeWidth="2" style={{ transition: "transform 0.2s", transform: openFaq === faqIdx ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}>
                           <polyline points="6 9 12 15 18 9" />
                         </svg>
                       </button>
@@ -3192,13 +3193,13 @@ export default function OmAnalyzerPage() {
             <div style={{ marginTop: 20, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <span style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
-                fontSize: 11, fontWeight: 600, color: "#84CC16",
+                fontSize: 11, fontWeight: 600, color: "#9ca3af",
                 padding: "5px 11px", borderRadius: 999,
-                background: "rgba(132,204,22,0.08)",
-                border: "1px solid rgba(132,204,22,0.25)",
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.1)",
                 fontFamily: "'Inter', sans-serif", letterSpacing: 0.3,
               }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#84CC16", boxShadow: "0 0 6px #84CC16" }} />
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#84CC16" }} />
                 All systems operational
               </span>
               <span style={{

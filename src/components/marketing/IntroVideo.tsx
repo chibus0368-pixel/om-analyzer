@@ -63,16 +63,16 @@ export function IntroVideo() {
         .so-intro-head h2 { font-family:'Plus Jakarta Sans',sans-serif; font-size: clamp(32px, 4.4vw, 52px); font-weight:800; letter-spacing:-0.03em; line-height:1.08; color:#fff; margin: 22px 0 18px; }
         .so-intro-head p { color:#9ca3af; font-size:17px; line-height:1.65; margin:0; }
         .so-intro-frame { position:relative; border-radius: 28px; overflow:hidden; aspect-ratio: 16 / 9; background:#0a0a10;
-          border:1px solid rgba(255,255,255,0.1); box-shadow: 0 40px 100px rgba(0,0,0,0.55), 0 0 0 8px rgba(255,255,255,0.03), 0 0 120px rgba(132,204,22,0.10); }
+          border:1px solid rgba(255,255,255,0.1); box-shadow: 0 40px 100px rgba(0,0,0,0.55), 0 0 0 8px rgba(255,255,255,0.03), 0 0 120px rgba(255,255,255,0.0); }
         .so-intro-frame video { width:100%; height:100%; display:block; background:#000; }
         .so-intro-poster { all: unset; position:absolute; inset:0; cursor:pointer; display:block; }
         .so-intro-poster img { width:100%; height:100%; object-fit:cover; display:block; transition: transform .8s cubic-bezier(.2,.8,.2,1); }
         .so-intro-poster:hover img { transform: scale(1.025); }
         .so-intro-shade { position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,0.65) 100%); }
         .so-intro-play { position:absolute; left:50%; top:50%; width:96px; height:96px; transform: translate(-50%,-50%); border-radius:50%;
-          background:${LIME}; display:flex; align-items:center; justify-content:center; padding-left:6px; box-sizing:border-box;
-          box-shadow: 0 0 0 10px rgba(132,204,22,0.22), 0 20px 50px rgba(0,0,0,0.5); transition: transform .25s ease; }
-        .so-intro-play::before { content:""; position:absolute; inset:-10px; border-radius:50%; border:2px solid rgba(132,204,22,0.6); animation: soIntroPulse 2.4s ease-out infinite; }
+          background:#fff; display:flex; align-items:center; justify-content:center; padding-left:6px; box-sizing:border-box;
+          box-shadow: 0 0 0 10px rgba(255,255,255,0.14), 0 20px 50px rgba(0,0,0,0.5); transition: transform .25s ease; }
+        .so-intro-play::before { content:""; position:absolute; inset:-10px; border-radius:50%; border:2px solid rgba(255,255,255,0.45); animation: soIntroPulse 2.4s ease-out infinite; }
         @keyframes soIntroPulse { from { transform: scale(1); opacity:.9; } to { transform: scale(1.5); opacity:0; } }
         .so-intro-poster:hover .so-intro-play, .so-intro-poster:focus-visible .so-intro-play { transform: translate(-50%,-50%) scale(1.07); }
         .so-intro-poster:focus-visible { outline: 3px solid ${LIME}; outline-offset: -3px; }

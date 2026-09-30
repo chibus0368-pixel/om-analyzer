@@ -368,7 +368,7 @@ export function StackedFeatures() {
               <ul>
                 {c.points.map((p) => (
                   <li key={p}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={LIME} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="20 6 9 17 4 12" /></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="20 6 9 17 4 12" /></svg>
                     {p}
                   </li>
                 ))}
@@ -469,7 +469,7 @@ export function CompareChatGPT() {
             <div key={r.label} className="so-compare-row" role="row">
               <span role="rowheader" className="lbl">{r.label}</span>
               <span role="cell" className="us">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={LIME} strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="20 6 9 17 4 12" /></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e5e7eb" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="20 6 9 17 4 12" /></svg>
                 {r.us}
               </span>
               <span role="cell" className="them">
@@ -500,33 +500,30 @@ export function StackStyles() {
       .so-stars-a { animation: soTwinkle 6s ease-in-out infinite; }
       .so-stars-b { width:2px !important; height:2px !important; opacity:.5; animation: soTwinkle 9s ease-in-out infinite reverse; }
       .so-stars-glow { position:absolute; left:50%; top:-260px; width:1100px; height:620px; transform:translateX(-50%);
-        background: radial-gradient(closest-side, rgba(132,204,22,0.16), rgba(132,204,22,0.04) 60%, transparent); }
+        background: radial-gradient(closest-side, rgba(255,255,255,0.05), rgba(255,255,255,0.015) 60%, transparent); }
       @keyframes soTwinkle { 0%,100% { opacity:.9 } 50% { opacity:.45 } }
 
       .so-pill-eyebrow { display:inline-flex; align-items:center; gap:9px; padding:0; border:0; background:none;
         font-size:14px; font-weight:700; color:#e5e7eb; letter-spacing:0.01em; }
-      .so-pill-dot { width:6px; height:6px; border-radius:50%; background:${LIME}; box-shadow:0 0 10px ${LIME}; }
+      .so-pill-dot { width:6px; height:6px; border-radius:50%; background:#6b7280; }
 
       /* Centered hero */
       .so-hero-center { max-width: 920px; margin: 0 auto; text-align: center; position: relative; z-index: 1; }
       .so-hero-h1 { font-family:'Plus Jakarta Sans',sans-serif; font-size: clamp(40px, 6.6vw, 80px); font-weight: 800;
         line-height: 1.03; letter-spacing: -0.035em; color:#fff; margin: 26px 0 22px; }
-      .so-hero-h1 .accent { color:${LIME}; display:block; }
+      .so-hero-h1 .accent { color:#fff; display:block; }
       .so-hero-sub { font-size: clamp(16px, 1.6vw, 19px); color:#9ca3af; line-height:1.65; max-width: 640px; margin: 0 auto 36px; }
       .so-upload-label { display:flex; align-items:center; justify-content:center; gap:9px; margin: 0 auto 14px;
-        font-size:14px; font-weight:700; color:${LIME}; }
+        font-size:14px; font-weight:700; color:#9ca3af; }
       @property --so-a { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
       .so-hero-upload { position:relative; max-width: 640px; margin: 0 auto; text-align: left; padding: 2px; border-radius: 24px;
-        background: conic-gradient(from var(--so-a), rgba(132,204,22,0.15) 0deg, rgba(132,204,22,0.15) 200deg, #bef264 260deg, #84CC16 300deg, rgba(132,204,22,0.15) 360deg);
-        animation: soSpin 5s linear infinite;
-        box-shadow: 0 0 0 1px rgba(132,204,22,0.18), 0 30px 80px rgba(0,0,0,0.5), 0 0 90px rgba(132,204,22,0.18); }
-      .so-hero-upload::after { content:""; position:absolute; inset:-28px; border-radius: 40px; z-index:-1; pointer-events:none;
-        background: radial-gradient(closest-side, rgba(132,204,22,0.20), transparent 75%); animation: soBreathe 4.5s ease-in-out infinite; }
+        background: rgba(255,255,255,0.10);
+        box-shadow: 0 30px 80px rgba(0,0,0,0.5); }
       @keyframes soSpin { to { --so-a: 360deg; } }
       @keyframes soBreathe { 0%,100% { opacity:.55; transform: scale(.98); } 50% { opacity:1; transform: scale(1.02); } }
-      .so-hero-upload .tm-upload-zone { border: 1.5px dashed rgba(132,204,22,0.4) !important; border-radius: 22px !important;
+      .so-hero-upload .tm-upload-zone { border: 1.5px dashed rgba(255,255,255,0.16) !important; border-radius: 22px !important;
         background: linear-gradient(180deg, #14161d, #0f1116) !important; padding: 44px 32px 40px !important; }
-      .so-hero-upload .tm-upload-zone:hover { border-color: rgba(163,230,53,0.8) !important; }
+      .so-hero-upload .tm-upload-zone:hover { border-color: rgba(255,255,255,0.4) !important; }
       .so-hero-upload .tm-upload-zone p:first-of-type { font-size: 17px !important; }
       .so-hero-upload .ds-btn-primary { font-size: 15px !important; padding: 14px 38px !important; }
       .so-hero-center .so-hero-stats { justify-content: center; margin: 44px auto 0; max-width: 760px; }
@@ -537,7 +534,7 @@ export function StackStyles() {
         font-size: clamp(26px, 3.6vw, 46px); line-height: 1.28; letter-spacing: -0.02em; }
       .so-word { color: rgba(255,255,255,0.16); transition: color .35s ease; }
       .so-word.on { color: #fff; }
-      .so-word.hl.on { color: ${LIME}; }
+      .so-word.hl.on { color: #fff; }
 
       /* Stacked cards */
       .so-stack-section { padding: 40px 32px 120px; position: relative; }
@@ -563,15 +560,15 @@ export function StackStyles() {
         overflow: hidden;
       }
       .so-stack-card::before { content:""; position:absolute; right:-160px; top:-160px; width:520px; height:520px; border-radius:50%;
-        background: radial-gradient(closest-side, rgba(132,204,22,0.13), transparent); pointer-events:none; }
+        background: radial-gradient(closest-side, rgba(255,255,255,0.035), transparent); pointer-events:none; }
       .so-stack-card.flip { grid-template-columns: 1.28fr 0.72fr; }
       .so-stack-card.flip .so-stack-copy { order: 2; }
       .so-stack-card.flip::before { right:auto; left:-160px; }
       .so-stack-copy { position: relative; z-index: 1; }
       .so-stack-eyebrow { display:inline-flex; align-items:center; gap:9px; font-size:13px; font-weight:700; color:#d1d5db;
         letter-spacing:0.04em; text-transform:uppercase; }
-      .so-stack-eyebrow span { width:8px; height:8px; border-radius:50%; background:${LIME}; box-shadow:0 0 12px ${LIME}; }
-      .so-stack-copy h3 .so-hl { color: #84CC16; }
+      .so-stack-eyebrow span { width:8px; height:8px; border-radius:50%; background:#6b7280; }
+      .so-stack-copy h3 .so-hl { color: inherit; }
       .so-stack-copy h3 { font-family:'Plus Jakarta Sans',sans-serif; font-size: clamp(30px, 3.3vw, 44px); font-weight:800;
         letter-spacing:-0.03em; line-height:1.08; color:#fff; margin: 18px 0 16px; }
       .so-stack-copy p { color:#9ca3af; font-size:17px; line-height:1.65; margin:0 0 22px; }
@@ -599,9 +596,9 @@ export function StackStyles() {
       .so-frag-video { display:block; width:100%; height:auto; aspect-ratio: 1280 / 648; object-fit: cover; object-position: top; border-radius:14px; background:#0d0d14;
         border: 1px solid rgba(255,255,255,0.14); box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 0 6px rgba(255,255,255,0.03); }
       .so-frag-tag { position:absolute; left:14px; top:-15px; display:inline-flex; align-items:center; gap:7px;
-        padding:6px 12px; border-radius:999px; background:#0d0d14; border:1px solid rgba(132,204,22,0.55);
+        padding:6px 12px; border-radius:999px; background:#0d0d14; border:1px solid rgba(255,255,255,0.18);
         color:#fff; font-size:12px; font-weight:700; white-space:nowrap; box-shadow:0 8px 24px rgba(0,0,0,0.5); }
-      .so-frag-tag span { width:6px; height:6px; border-radius:50%; background:${LIME}; }
+      .so-frag-tag span { width:6px; height:6px; border-radius:50%; background:#9ca3af; }
       @keyframes soFloat { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
 
       /* Callout cards sit slightly tilted (dealstack-style); main visuals stay flat */
@@ -666,18 +663,18 @@ export function StackStyles() {
       @keyframes soSweep { 0% { transform: translateX(-10%); opacity:0; } 15% { opacity:1; } 85% { opacity:1; } 100% { transform: translateX(260%); opacity:0; } }
       .so-compare-cap { position:absolute; top:26px; display:flex; flex-direction:column; gap:3px; padding:10px 14px; border-radius:12px;
         background: rgba(10,10,16,0.72); border:1px solid rgba(255,255,255,0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-      .so-compare-cap.left { left:26px; } .so-compare-cap.right { right:26px; text-align:right; border-color: rgba(132,204,22,0.45); }
+      .so-compare-cap.left { left:26px; } .so-compare-cap.right { right:26px; text-align:right; }
       .so-compare-cap b { color:#fff; font:800 15px 'Plus Jakarta Sans',sans-serif; }
-      .so-compare-cap.right b { color:${LIME}; }
+      .so-compare-cap.right b { color:#fff; }
       .so-compare-cap span { color:#9ca3af; font-size:12.5px; }
       .so-compare-table { position: relative; padding: 0 40px 34px; margin-top: -40px; }
       .so-compare-col-us { position:absolute; top:-10px; bottom:22px; left: calc(40px + 150px + 18px - 14px); width: calc((100% - 80px - 150px - 36px) / 2 + 28px);
-        border-radius: 18px; background: linear-gradient(180deg, rgba(132,204,22,0.10), rgba(132,204,22,0.04)); border:1px solid rgba(132,204,22,0.28); }
+        border-radius: 18px; background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); border:1px solid rgba(255,255,255,0.12); }
       .so-compare-row { position: relative; display:grid; grid-template-columns: 150px 1fr 1fr; gap: 18px; padding: 15px 0; border-bottom:1px solid rgba(255,255,255,0.06); align-items:start; }
       .so-compare-row:last-child { border-bottom: 0; }
       .so-compare-row.head { padding-top: 8px; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color:#6b7280; border-bottom-color: rgba(255,255,255,0.1); }
-      .so-compare-row.head .us { color: ${LIME}; display:flex; align-items:center; gap:8px; }
-      .so-compare-row.head .us i { width:8px; height:8px; border-radius:50%; background:${LIME}; box-shadow:0 0 10px ${LIME}; }
+      .so-compare-row.head .us { color: #fff; display:flex; align-items:center; gap:8px; }
+      .so-compare-row.head .us i { width:8px; height:8px; border-radius:50%; background:#fff; }
       .so-compare-row .lbl { color:#fff; font-weight:700; font-size:14.5px; }
       .so-compare-row span.us, .so-compare-row span.them { display:flex; gap:9px; align-items:flex-start; font-size:14.5px; line-height:1.5; }
       .so-compare-row span.us { color:#f3f4f6; font-weight:500; }

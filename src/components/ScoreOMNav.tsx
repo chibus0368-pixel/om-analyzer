@@ -125,21 +125,21 @@ export default function ScoreOMNav() {
                 style={{
                   fontSize: 14, fontWeight: 600, textDecoration: "none",
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  color: isActive ? "#84CC16" : "#e0e0e6",
+                  color: isActive ? "#ffffff" : "#c9ccd6",
                   position: "relative",
                   height: 56, display: "inline-flex", alignItems: "center",
                   transition: "color 0.2s",
                 }}
                 onMouseEnter={e => {
                   const el = e.currentTarget as HTMLElement;
-                  el.style.color = "#84CC16";
+                  el.style.color = "#ffffff";
                   const line = el.querySelector(".nav-underline") as HTMLElement;
                   if (line) { line.style.transform = "scaleX(1)"; line.style.opacity = "1"; }
                 }}
                 onMouseLeave={e => {
                   const el = e.currentTarget as HTMLElement;
                   const stillActive = isOnLanding && activeSection === sectionId;
-                  el.style.color = stillActive ? "#84CC16" : "#e0e0e6";
+                  el.style.color = stillActive ? "#ffffff" : "#c9ccd6";
                   const line = el.querySelector(".nav-underline") as HTMLElement;
                   if (line && !stillActive) { line.style.transform = "scaleX(0)"; line.style.opacity = "0"; }
                 }}
@@ -150,7 +150,7 @@ export default function ScoreOMNav() {
                   className="nav-underline"
                   style={{
                     position: "absolute", bottom: 12, left: 0, right: 0, height: 2,
-                    background: "#84CC16", borderRadius: 1,
+                    background: "rgba(255,255,255,0.7)", borderRadius: 1,
                     transform: isActive ? "scaleX(1)" : "scaleX(0)",
                     opacity: isActive ? 1 : 0,
                     transition: "transform 0.2s ease, opacity 0.2s ease",
@@ -234,7 +234,7 @@ export default function ScoreOMNav() {
                 transition: "color 0.15s",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#84CC16"; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#ffffff"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#e0e0e6"; }}
               >Sign in</Link>
               {!resultShowing && (
@@ -297,7 +297,7 @@ export default function ScoreOMNav() {
             <button
               onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setMobileMenuOpen(false); }}
               style={{
-                background: "none", border: "none", color: "#84CC16",
+                background: "none", border: "none", color: "#ffffff",
                 fontSize: 15, fontWeight: 700, padding: "12px 0", cursor: "pointer",
                 textAlign: "left", fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}
@@ -321,7 +321,7 @@ export default function ScoreOMNav() {
                 }
               }}
               style={{
-                color: activeSection === sectionId ? "#84CC16" : "#e0e0e6",
+                color: activeSection === sectionId ? "#ffffff" : "#c9ccd6",
                 fontSize: 15, fontWeight: 600, padding: "12px 0",
                 textDecoration: "none", borderBottom: "1px solid rgba(255,255,255,0.04)",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
