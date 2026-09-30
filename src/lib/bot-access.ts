@@ -3,11 +3,11 @@ import { timingSafeEqual } from "crypto";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
 
 /**
- * Read-only access for an outside agent (grokbot).
+ * Access for an outside agent (grokbot). /api/bot/usage and /api/bot/leads read;
+ * /api/bot/actions writes (email, social, contact notes) with its own guardrails.
  *
  * Auth: `Authorization: Bearer <BOT_API_KEY>` where BOT_API_KEY is set in
  * Vercel. Unset key = the endpoints are off. Rotate the key to cut access.
- * These routes only read. Nothing here sends email or changes data.
  */
 export function checkBotKey(req: NextRequest): NextResponse | null {
   const key = process.env.BOT_API_KEY || "";

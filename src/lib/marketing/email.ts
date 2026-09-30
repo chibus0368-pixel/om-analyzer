@@ -95,7 +95,7 @@ export function renderEmail(content: EmailContent, c: Pick<Contact, "firstName" 
   return { subject, html, text };
 }
 
-export interface SendItem { contact: Contact; content: EmailContent; kind: "broadcast" | "drip" | "test"; refId: string; step?: number }
+export interface SendItem { contact: Contact; content: EmailContent; kind: "broadcast" | "drip" | "test" | "followup"; refId: string; step?: number }
 export interface SendSummary { sent: number; failed: number; skipped: number; errors: string[] }
 
 /**
