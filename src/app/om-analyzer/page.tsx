@@ -2592,7 +2592,7 @@ export default function OmAnalyzerPage() {
             {/* Gradient orbs for hero depth */}
             <div className="so-hero-blob" style={{ position: "absolute", top: -100, left: -200, width: 500, height: 500, borderRadius: "50%", background: "rgba(132,204,22,0.12)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
             <div className="so-hero-blob" style={{ position: "absolute", bottom: -100, right: -150, width: 400, height: 400, borderRadius: "50%", background: "rgba(132,204,22,0.06)", filter: "blur(128px)", pointerEvents: "none", zIndex: 0 }} />
-            <div className="so-hero-center" style={{ animation: "fadeInUp 0.5s ease-out" }}>
+            <div className="so-hero-center">
               <PillEyebrow>For CRE investors, brokers, lenders and owner-operators</PillEyebrow>
               <h1 className="so-hero-h1">
                 Turn your CRE deal&nbsp;flow
