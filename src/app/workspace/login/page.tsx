@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { getAttribution } from "@/lib/attribution";
 import { updateProfile } from "firebase/auth";
 import { registerWithEmail } from "@/lib/auth/providers";
 import { auth } from "@/lib/firebase";
@@ -55,7 +56,7 @@ async function bootstrapUser(user: any, extra?: { firstName?: string; lastName?:
     const res = await fetch("/api/auth/bootstrap", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ firstName, lastName, company: extra?.company, anonId: anonId || undefined }),
+      body: JSON.stringify({ firstName, lastName, company: extra?.company, anonId: anonId || undefined, attribution: getAttribution() }),
     });
     if (!res.ok) console.error("Bootstrap failed:", await res.text());
     if (anonId) localStorage.removeItem("nnn_anon_id");

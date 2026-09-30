@@ -122,6 +122,15 @@ const BAND_CONFIG: Record<string, { label: string; color: string; bg: string; ba
   strong_reject: { label: "Strong Reject", color: "#991B1B", bg: "#FEF2F2", barColor: "#EF4444" },
 };
 
+/** Price per SF: the extracted value, else asking price / building SF. */
+function pricePerSf(pd: { values: Map<string, string> }): number | null {
+  const direct = Number(pd.values.get("price_sf"));
+  if (direct > 0) return direct;
+  const price = Number(pd.values.get("asking_price"));
+  const sf = Number(pd.values.get("building_sf"));
+  return price > 0 && sf > 0 ? price / sf : null;
+}
+
 function getThresholdColor(key: string, n: number): { color: string; bg: string } | null {
   if (isNaN(n)) return null;
   const g = { color: "#059669", bg: "rgba(16,185,129,0.08)" };
@@ -292,8 +301,21 @@ function LeaderboardRow({ pd, rank, totalCount, maxScore, expanded, onToggle }: 
           )}
         </div>
 
-        {/* Name + Location + inline metrics */}
-        <div style={{ minWidth: 0 }}>
+        {/* Photo + Name + Location + inline metrics */}
+        <div style={{ minWidth: 0, display: "flex", alignItems: "center", gap: 18 }}>
+          <div className="sb-lb-photo" style={{
+            width: 168, height: 112, borderRadius: 12, overflow: "hidden", flexShrink: 0,
+            background: "#F3F4F6", border: "1px solid rgba(0,0,0,0.06)",
+          }}>
+            {(pd.property as any).heroImageUrl ? (
+              <img src={(pd.property as any).heroImageUrl} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            ) : (
+              <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4" /></svg>
+              </div>
+            )}
+          </div>
+          <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
             <Link href={`/workspace/properties/${pd.property.id}`}
               onClick={e => e.stopPropagation()}
@@ -350,6 +372,7 @@ function LeaderboardRow({ pd, rank, totalCount, maxScore, expanded, onToggle }: 
               )}
             </div>
           )}
+          </div>
         </div>
 
         {/* Mini sparkline bar (compact) */}
@@ -624,7 +647,7 @@ async function exportToXlsx(propertyData: PropertyData[], workspaceName: string)
 // ══════════════════════════════════════════════════════════════
 // MAIN PAGE
 // ══════════════════════════════════════════════════════════════
-type SortKey = "score" | "name" | "price" | "cap_rate" | "noi" | "gla" | "value_add" | "signal" | "lens";
+type SortKey = "score" | "name" | "price" | "cap_rate" | "noi" | "gla" | "value_add" | "signal" | "lens" | "psf" | "occ" | "dscr";
 type SortDir = "asc" | "desc";
 type ViewMode = "leaderboard" | "comparison";
 
@@ -833,6 +856,9 @@ export default function ScoreboardPage() {
         case "cap_rate": cmp = (Number(a.values.get("cap_rate")) || 0) - (Number(b.values.get("cap_rate")) || 0); break;
         case "noi": cmp = (Number(a.values.get("noi")) || 0) - (Number(b.values.get("noi")) || 0); break;
         case "gla": cmp = (Number(a.values.get("building_sf")) || 0) - (Number(b.values.get("building_sf")) || 0); break;
+        case "psf": cmp = (pricePerSf(a) || 0) - (pricePerSf(b) || 0); break;
+        case "occ": cmp = (Number(a.values.get("occupancy")) || 0) - (Number(b.values.get("occupancy")) || 0); break;
+        case "dscr": cmp = (Number(a.values.get("dscr")) || 0) - (Number(b.values.get("dscr")) || 0); break;
         case "value_add": cmp = ((a.property as any).valueAddScore || 0) - ((b.property as any).valueAddScore || 0); break;
         case "lens": {
           const la = String((a.property as any).analysisType || activeWorkspace?.analysisType || "retail");
@@ -918,6 +944,7 @@ export default function ScoreboardPage() {
 
         /* ─── Tablet & Mobile Responsive Rules (≤768px) ─── */
         @media (max-width: 768px) {
+          .sb-lb-photo { width: 96px !important; height: 64px !important; }
           .sb-heading-area {
             margin-bottom: 16px !important;
             padding: 0 4px !important;
@@ -969,6 +996,7 @@ export default function ScoreboardPage() {
           }
           .sb-comparison-table {
             font-size: 12px !important;
+            min-width: 0 !important;
           }
           .sb-comparison-table th {
             padding: 12px 8px !important;
@@ -978,19 +1006,21 @@ export default function ScoreboardPage() {
             padding: 12px 8px !important;
             font-size: 12px !important;
           }
-          /* Hide GLA (7th) on tablet to keep the core 6 columns visible */
-          .sb-comparison-table thead tr th:nth-child(n+7),
-          .sb-comparison-table tbody tr td:nth-child(n+7) {
+          /* Tablet: Property, Score, Price, Cap only ($/SF 4th, NOI 6th and later hidden) */
+          .sb-comparison-table thead tr th:nth-child(4),
+          .sb-comparison-table tbody tr td:nth-child(4),
+          .sb-comparison-table thead tr th:nth-child(n+6),
+          .sb-comparison-table tbody tr td:nth-child(n+6) {
             display: none !important;
           }
-          /* Tighten property thumbnail */
-          .sb-comparison-table td:first-child { padding: 10px 8px !important; }
-          .sb-comparison-table td:first-child img,
-          .sb-comparison-table td:first-child div:first-child { width: 36px !important; height: 36px !important; }
+          /* Smaller property photo */
+          .sb-comparison-table td:first-child { padding: 10px 8px !important; min-width: 0 !important; }
+          .sb-comparison-table .sb-thumb { width: 64px !important; height: 44px !important; }
         }
 
         /* ─── Mobile Responsive Rules (≤480px) ─── */
         @media (max-width: 480px) {
+          .sb-lb-photo { display: none !important; }
           .sb-heading-area {
             margin-bottom: 16px !important;
           }
@@ -1246,41 +1276,42 @@ export default function ScoreboardPage() {
           {/* TABLE VIEW */}
           {view === "comparison" && (
           <div className="sb-table-container" style={{
-            background: "#fff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.05)",
-            boxShadow: "0 1px 2px rgba(0,0,0,0.05)", overflow: "hidden", marginBottom: 24,
+            background: "#fff", borderRadius: 12, border: "1px solid rgba(0,0,0,0.06)",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.05)", overflowX: "auto", marginBottom: 24,
           }}>
-            <table className="sb-comparison-table" style={{ width: "100%", borderCollapse: "collapse" }}>
+            <table className="sb-comparison-table" style={{ width: "100%", borderCollapse: "collapse", minWidth: 980 }}>
               <thead>
-                <tr style={{ background: "#fff", borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
+                <tr style={{ background: "#FAFBFC", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
                   {([
                     { key: "name" as SortKey, label: "Property", align: "left" as const },
-                    { key: "lens" as SortKey, label: "Lens", align: "center" as const },
-                    { key: "score" as SortKey, label: "Deal Score", align: "center" as const },
+                    { key: "score" as SortKey, label: "Score", align: "center" as const },
                     { key: "price" as SortKey, label: "Price", align: "right" as const },
-                    { key: "cap_rate" as SortKey, label: "Cap Rate", align: "right" as const },
+                    { key: "psf" as SortKey, label: "$ / SF", align: "right" as const },
+                    { key: "cap_rate" as SortKey, label: "Cap", align: "right" as const },
                     { key: "noi" as SortKey, label: "NOI", align: "right" as const },
+                    { key: "occ" as SortKey, label: "Occ.", align: "right" as const },
+                    { key: "dscr" as SortKey, label: "DSCR", align: "right" as const },
                     { key: "gla" as SortKey, label: "GLA", align: "right" as const },
                   ]).map(col => (
                     <th
                       key={col.key}
                       onClick={() => handleSort(col.key)}
+                      title={`Sort by ${col.label}`}
                       style={{
-                        padding: "16px 24px", textAlign: col.align,
+                        padding: "12px 16px", textAlign: col.align,
                         color: sortBy === col.key ? "#111827" : "#9CA3AF",
-                        fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2,
+                        fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.2,
                         cursor: "pointer", userSelect: "none", whiteSpace: "nowrap",
                         transition: "color 0.15s",
                       }}
                     >
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                         {col.label}
-                        {sortBy === col.key && (
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
-                            style={{ transform: sortDir === "asc" ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}
-                          >
-                            <path d="M6 9l6 6 6-6" />
-                          </svg>
-                        )}
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+                          style={{ opacity: sortBy === col.key ? 1 : 0.35, transform: sortBy === col.key && sortDir === "asc" ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}
+                        >
+                          <path d="M6 9l6 6 6-6" />
+                        </svg>
                       </span>
                     </th>
                   ))}
@@ -1296,10 +1327,12 @@ export default function ScoreboardPage() {
                   const capRate = pd.values.get("cap_rate");
                   const noi = pd.values.get("noi");
                   const gla = pd.values.get("building_sf");
+                  const occ = pd.values.get("occupancy");
+                  const dscr = pd.values.get("dscr");
+                  const psf = pricePerSf(pd);
 
-                  // SVG score ring
-                  const ringSize = 60;
-                  const strokeWidth = 3;
+                  const ringSize = 46;
+                  const strokeWidth = 4;
                   const radius = (ringSize - strokeWidth) / 2;
                   const circumference = 2 * Math.PI * radius;
                   const progress = score > 0 ? Math.min(score / 100, 1) : 0;
@@ -1310,49 +1343,55 @@ export default function ScoreboardPage() {
                   const heroUrl = (pd.property as any).heroImageUrl;
                   const procStatus = (pd.property as any).processingStatus || "";
                   const isProcessing = procStatus && procStatus !== "complete";
+                  const href = `/workspace/properties/${pd.property.id}`;
+
+                  const num = (v: string | undefined, key: string, bold = true) => {
+                    const th = v ? getThresholdColor(key, Number(v)) : null;
+                    return (
+                      <td style={{
+                        padding: "10px 16px", textAlign: "right", fontSize: 14,
+                        fontWeight: bold ? 700 : 500, color: v ? (th?.color || "#111827") : "#C4C9D2",
+                        fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap",
+                      }}>
+                        {v ? formatValue(key, v) : "--"}
+                      </td>
+                    );
+                  };
 
                   return (
-                    <tr key={pd.property.id} style={{
-                      borderBottom: "1px solid rgba(0,0,0,0.05)",
-                      transition: "background 0.15s",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "#FAFAFA"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}
+                    <tr key={pd.property.id}
+                      onClick={() => router.push(href)}
+                      style={{ borderBottom: "1px solid rgba(0,0,0,0.05)", transition: "background 0.15s", cursor: "pointer" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "#F7FAF2"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}
                     >
-                      {/* Property Name + Thumbnail + City + Status */}
-                      <td style={{
-                        padding: "12px 24px", color: "#111827", fontSize: 14, fontWeight: 700,
-                      }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                          {/* Thumbnail */}
-                          <div style={{
-                            width: 48, height: 48, borderRadius: 8, overflow: "hidden", flexShrink: 0,
-                            background: "#F3F4F6", border: "1px solid rgba(0,0,0,0.05)",
+                      {/* Rank + Photo + Name + City */}
+                      <td style={{ padding: "10px 16px", color: "#111827", fontSize: 14, fontWeight: 700, minWidth: 320 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                          <div style={{ width: 22, textAlign: "center", fontSize: 12, fontWeight: 800, color: idx < 3 ? "#4D7C0F" : "#9CA3AF", flexShrink: 0 }}>{idx + 1}</div>
+                          <div className="sb-thumb" style={{
+                            width: 104, height: 70, borderRadius: 10, overflow: "hidden", flexShrink: 0,
+                            background: "#F3F4F6", border: "1px solid rgba(0,0,0,0.06)",
                           }}>
                             {heroUrl ? (
-                              <img src={heroUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                              <img src={heroUrl} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                             ) : (
                               <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                                   <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4" />
                                 </svg>
                               </div>
                             )}
                           </div>
-                          {/* Name + location + status */}
                           <div style={{ minWidth: 0 }}>
-                            <Link href={`/workspace/properties/${pd.property.id}`} style={{
-                              textDecoration: "none", color: "#111827", cursor: "pointer",
-                              display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                            <Link href={href} onClick={e => e.stopPropagation()} style={{
+                              textDecoration: "none", color: "#111827",
+                              display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 260,
                             }}>
                               {propertyName}
                             </Link>
                             {cityState && (
-                              <div style={{
-                                fontSize: 12, color: "#9CA3AF", marginTop: 2, fontWeight: 400,
-                              }}>
-                                {cityState}
-                              </div>
+                              <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 3, fontWeight: 500 }}>{cityState}</div>
                             )}
                             {isProcessing && (
                               <div style={{
@@ -1374,103 +1413,42 @@ export default function ScoreboardPage() {
                         </div>
                       </td>
 
-                      {/* Lens (scoring model) chip */}
-                      {(() => {
-                        const lensType = ((pd.property as any).analysisType as string) || activeWorkspace?.analysisType || "retail";
-                        const lensColor = ANALYSIS_TYPE_COLORS[lensType as keyof typeof ANALYSIS_TYPE_COLORS] || "#6B7280";
-                        const lensLabel = ANALYSIS_TYPE_LABELS[lensType as keyof typeof ANALYSIS_TYPE_LABELS] || "Retail";
-                        return (
-                          <td style={{ padding: "16px 16px", textAlign: "center" }}>
-                            <span
-                              title={`Scored with ${lensLabel} model`}
-                              style={{
-                                display: "inline-flex", alignItems: "center", gap: 6,
-                                padding: "4px 10px", borderRadius: 999,
-                                background: `${lensColor}14`, color: lensColor,
-                                border: `1px solid ${lensColor}33`,
-                                fontSize: 11, fontWeight: 700, letterSpacing: "0.02em",
-                                whiteSpace: "nowrap",
-                              }}>
-                              <AnalysisTypeIcon type={lensType} size={12} color={lensColor} />
-                              <span>{lensLabel}</span>
-                            </span>
-                          </td>
-                        );
-                      })()}
-
-                      {/* Deal Score with circular badge */}
-                      <td style={{
-                        padding: "16px 24px", textAlign: "center",
-                      }}>
-                        <div style={{
-                          display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
-                        }}>
-                          <div style={{ position: "relative", width: ringSize, height: ringSize }}>
+                      {/* Score */}
+                      <td style={{ padding: "10px 16px", textAlign: "center" }}>
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+                          <div style={{ position: "relative", width: ringSize, height: ringSize, flexShrink: 0 }}>
                             <svg width={ringSize} height={ringSize} style={{ transform: "rotate(-90deg)" }}>
-                              <circle cx={ringSize / 2} cy={ringSize / 2} r={radius}
-                                fill="none" stroke="#E5E7EB" strokeWidth={strokeWidth} />
+                              <circle cx={ringSize / 2} cy={ringSize / 2} r={radius} fill="none" stroke="#E5E7EB" strokeWidth={strokeWidth} />
                               {score > 0 && (
                                 <circle cx={ringSize / 2} cy={ringSize / 2} r={radius}
                                   fill="none" stroke={bandConfig.barColor} strokeWidth={strokeWidth}
-                                  strokeLinecap="round"
-                                  strokeDasharray={circumference}
-                                  strokeDashoffset={dashOffset}
-                                  style={{ transition: "stroke-dashoffset 0.6s ease" }}
-                                />
+                                  strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={dashOffset} />
                               )}
                             </svg>
                             <div style={{
-                              position: "absolute", inset: 0,
-                              display: "flex", alignItems: "center", justifyContent: "center",
-                              fontSize: 18, fontWeight: 900, color: score > 0 ? bandConfig.color : "#D1D5DB",
+                              position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                              fontSize: 15, fontWeight: 900, color: score > 0 ? bandConfig.color : "#D1D5DB",
                             }}>
                               {score > 0 ? score : "--"}
                             </div>
                           </div>
                           {score > 0 && (
-                            <div style={{
-                              fontSize: 10, fontWeight: 700, color: bandConfig.color,
-                              textTransform: "uppercase", letterSpacing: 0.5,
-                              whiteSpace: "nowrap",
-                            }}>
+                            <div style={{ fontSize: 10.5, fontWeight: 800, color: bandConfig.color, textTransform: "uppercase", letterSpacing: 0.4, whiteSpace: "nowrap", minWidth: 58, textAlign: "left" }}>
                               {bandConfig.label}
                             </div>
                           )}
                         </div>
                       </td>
 
-                      {/* Price */}
-                      <td style={{
-                        padding: "16px 24px", textAlign: "right", fontSize: 14,
-                        fontWeight: 700, color: "#111827", fontVariantNumeric: "tabular-nums",
-                      }}>
-                        {price ? formatValue("asking_price", price) : "--"}
+                      {num(price, "asking_price")}
+                      <td style={{ padding: "10px 16px", textAlign: "right", fontSize: 14, fontWeight: 600, color: psf ? "#374151" : "#C4C9D2", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+                        {psf ? `$${Math.round(psf).toLocaleString()}` : "--"}
                       </td>
-
-                      {/* Cap Rate */}
-                      <td style={{
-                        padding: "16px 24px", textAlign: "right", fontSize: 14,
-                        fontWeight: 700, color: "#111827", fontVariantNumeric: "tabular-nums",
-                      }}>
-                        {capRate ? formatValue("cap_rate", capRate) : "--"}
-                      </td>
-
-                      {/* NOI */}
-                      <td style={{
-                        padding: "16px 24px", textAlign: "right", fontSize: 14,
-                        fontWeight: 700, color: "#111827", fontVariantNumeric: "tabular-nums",
-                      }}>
-                        {noi ? formatValue("noi", noi) : "--"}
-                      </td>
-
-                      {/* GLA */}
-                      <td style={{
-                        padding: "16px 24px", textAlign: "right", fontSize: 14,
-                        fontWeight: 500, color: "#4B5563", fontVariantNumeric: "tabular-nums",
-                      }}>
-                        {gla ? formatValue("building_sf", gla) : "--"}
-                      </td>
-
+                      {num(capRate, "cap_rate")}
+                      {num(noi, "noi")}
+                      {num(occ, "occupancy")}
+                      {num(dscr, "dscr")}
+                      {num(gla, "building_sf", false)}
                     </tr>
                   );
                 })}

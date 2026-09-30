@@ -356,7 +356,7 @@ export default function DealCoachChat({
     return (
       <button
         type="button"
-        aria-label="Open Deal Coach"
+        aria-label="Ask the agent"
         onClick={() => setOpen(true)}
         style={{
           position: "fixed", bottom: 24, right: 24, zIndex: 9999,
@@ -382,7 +382,7 @@ export default function DealCoachChat({
   return (
     <div
       role="dialog"
-      aria-label="Deal Coach"
+      aria-label="Ask the agent"
       style={{
         position: "fixed", bottom: 24, right: 24, zIndex: 9999,
         width: 560, maxWidth: "calc(100vw - 32px)",
@@ -412,7 +412,7 @@ export default function DealCoachChat({
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4.09 12.97a.5.5 0 0 0 .39.81H10l-1.5 8.22a.5.5 0 0 0 .89.39L20 11.41a.5.5 0 0 0-.39-.81H14l1-7.81A.5.5 0 0 0 13 2z" /></svg>
           </span>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 700 }}>Deal Coach</div>
+            <div style={{ fontSize: 13, fontWeight: 700 }}>Ask the agent</div>
             <div style={{ fontSize: 11, opacity: 0.7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {propertyName}
             </div>

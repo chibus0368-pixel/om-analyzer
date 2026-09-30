@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, ReactNode } from 'react';
 import { onAuthStateChanged, signOut as firebaseSignOut, browserLocalPersistence, setPersistence } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { getAttribution } from "@/lib/attribution";
 import type { UserDoc } from '@/lib/types/user';
 import { AuthContext, type AuthContextValue } from './auth-context';
 
@@ -40,7 +41,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${idToken}`,
         },
-        body: JSON.stringify({ uid, anonId: anonId || undefined }),
+        body: JSON.stringify({ uid, anonId: anonId || undefined, attribution: getAttribution() }),
       });
       // Clear anonymous ID after merge attempt
       if (anonId && response.ok) localStorage.removeItem("nnn_anon_id");

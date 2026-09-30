@@ -238,6 +238,24 @@ function PropertyCard({ property, docCount, workspaces, activeWorkspaceId, prior
           ) : isAnalyzed ? "Analyzed" : "Pending"}
         </span>
 
+        {/* Deal Agent badge - bottom-left, only after the agent has been activated */}
+        {(property as any).agentStatus && (property as any).agentStatus !== "failed" && (
+          <span style={{
+            position: "absolute", bottom: 10, left: 10,
+            padding: "3px 8px", borderRadius: 4, fontSize: 9, fontWeight: 700,
+            color: "#FFFFFF", background: "rgba(15,23,42,0.85)",
+            letterSpacing: "0.05em", textTransform: "uppercase",
+            display: "flex", alignItems: "center", gap: 5, backdropFilter: "blur(4px)",
+          }}>
+            {(property as any).agentStatus === "running" ? (
+              <div style={{ width: 8, height: 8, borderRadius: "50%", border: "2px solid rgba(132,204,22,0.3)", borderTopColor: "#84CC16", animation: "spin 0.8s linear infinite" }} />
+            ) : (
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#84CC16" }} />
+            )}
+            {(property as any).agentStatus === "running" ? "Agent working" : "Agent done"}
+          </span>
+        )}
+
         {/* Score circle - top-right, prominent */}
         {score != null && (
           <div style={{
@@ -473,6 +491,58 @@ function EmptyDealboardDropZone({ onFiles }: { onFiles: (files: FileList) => voi
       }}>
         Select File from Local
       </button>
+    </div>
+  );
+}
+
+/* "Add a deal" tile that sits in the grid alongside the property cards. */
+function AddDealTile({ onFiles }: { onFiles: (files: FileList) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [hover, setHover] = useState(false);
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label="Add a deal: upload an OM, rent roll or flyer"
+      onClick={() => inputRef.current?.click()}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); inputRef.current?.click(); } }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onDragOver={e => { e.preventDefault(); e.stopPropagation(); setHover(true); }}
+      onDragLeave={e => { e.preventDefault(); e.stopPropagation(); setHover(false); }}
+      onDrop={e => {
+        e.preventDefault(); e.stopPropagation(); setHover(false);
+        if (e.dataTransfer.files?.length) onFiles(e.dataTransfer.files);
+      }}
+      style={{
+        minHeight: 300, borderRadius: 12, cursor: "pointer",
+        border: `2px dashed ${hover ? "#65A30D" : "#D1D9E4"}`,
+        background: hover ? "rgba(132,204,22,0.06)" : "#FFFFFF",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        textAlign: "center", padding: "32px 24px", transition: "all 0.18s",
+      }}
+    >
+      <input
+        ref={inputRef} type="file" multiple
+        accept=".pdf,.xls,.xlsx,.csv,.doc,.docx"
+        style={{ display: "none" }}
+        onClick={e => e.stopPropagation()}
+        onChange={e => { if (e.target.files?.length) onFiles(e.target.files); }}
+      />
+      <div style={{
+        width: 64, height: 64, borderRadius: "50%", marginBottom: 16,
+        background: hover ? "#84CC16" : "rgba(132,204,22,0.12)",
+        display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.18s",
+      }}>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={hover ? "#0F172A" : "#4D7C0F"} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+      </div>
+      <div style={{ fontSize: 17, fontWeight: 800, color: "#0F172A", marginBottom: 6 }}>Add a deal</div>
+      <div style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.5, maxWidth: 220 }}>
+        Drop an OM, rent roll or flyer here, or click to choose a file
+      </div>
+      <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 12, fontWeight: 600, letterSpacing: "0.04em" }}>PDF, EXCEL, WORD OR CSV</div>
     </div>
   );
 }
@@ -829,7 +899,7 @@ export default function WorkspaceDashboard() {
             }}
             onMouseLeave={e => {
               const el = e.currentTarget as HTMLElement;
-              el.style.background = "#4D7C0F";
+              el.style.background = "#0F172A";
               el.style.transform = "none";
             }}
           >
@@ -872,8 +942,12 @@ export default function WorkspaceDashboard() {
           gap: 24,
           marginBottom: 24,
         }}>
+          <AddDealTile onFiles={(fl) => {
+            setPendingUploadFiles(fl);
+            router.push("/workspace/upload");
+          }} />
           {properties.map((p, idx) => (
-            <PropertyCard key={p.id} property={p} docCount={docCounts[p.id] || 0} workspaces={workspaces} activeWorkspaceId={activeWorkspace?.id || ""} priority={idx < 4} />
+            <PropertyCard key={p.id} property={p} docCount={docCounts[p.id] || 0} workspaces={workspaces} activeWorkspaceId={activeWorkspace?.id || ""} priority={idx < 3} />
           ))}
         </div>
       )}

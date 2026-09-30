@@ -4,6 +4,7 @@ import { renderSkillsBlock } from "@/lib/workspace/skill-loader";
 import { scoreBandLabel } from "@/lib/workspace/score-band-labels";
 import { pplxStream, getPerplexityKey, type PplxMessage } from "@/lib/perplexity";
 import { loadOmText } from "@/lib/workspace/load-om-text";
+import { agentFindingsForPrompt } from "@/lib/workspace/deal-agent";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -398,8 +399,9 @@ ${renderSkillsBlock(prop.analysisType)}`;
     // We translate the {user, assistant} history straight through;
     // Perplexity does not support a `tool` role so anything from the
     // old tool-calling era would be filtered upstream of here.
+    const agentFindings = await agentFindingsForPrompt(propertyId);
     const messages: PplxMessage[] = [
-      { role: "system", content: systemPrompt },
+      { role: "system", content: systemPrompt + (agentFindings ? `\n\n${agentFindings}` : "") },
       ...history.map((m) => ({ role: m.role, content: m.content })),
       { role: "user", content: message },
     ];

@@ -33,6 +33,7 @@ import DealQuickScreen, { buildInput as buildQuickScreenInput, type Standardized
 import { runQuickScreen } from "@/lib/analysis/quick-screen";
 import OmReversePricing from "@/components/workspace/OmReversePricing";
 import DealVerdictBox from "@/components/workspace/DealVerdictBox";
+import DealAgentPanel from "@/components/workspace/DealAgentPanel";
 import RentRollDetailAnalysis from "@/components/workspace/RentRollDetailAnalysis";
 import SectionHeader from "@/components/workspace/SectionHeader";
 import FinancialsSummary from "@/components/workspace/FinancialsSummary";
@@ -1687,6 +1688,9 @@ function PropertyDetailInner({
   // here so the labeled hero button can open/close it; the chat
   // component just renders the panel.
   const [coachOpen, setCoachOpen] = useState(false);
+  // Deal Agent: bumping this number tells the panel to scroll into view and start a run.
+  const [agentSignal, setAgentSignal] = useState(0);
+  const getAgentToken = useCallback(async () => (user ? await user.getIdToken() : ""), [user]);
   const selectProTab = useCallback((next: ProTab) => {
     setActiveProTab(next);
     // Keep the URL in sync with a shallow push so refresh + share both land
@@ -2184,9 +2188,23 @@ function PropertyDetailInner({
                 to a solid fill so the user can see at a glance that
                 the chat is currently expanded. */}
             <button
+              onClick={() => setAgentSignal((n) => n + 1)}
+              className="dl-btn"
+              title="Activate the Deal Agent on this deal"
+              style={{
+                padding: "6px 14px", borderRadius: 8,
+                border: "1px solid #0F172A", background: "#0F172A", color: "#FFFFFF",
+                fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                display: "inline-flex", alignItems: "center", gap: 6,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.25)", letterSpacing: 0.2,
+              }}>
+              <span style={{ color: "#84CC16", display: "inline-flex" }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="8" width="16" height="12" rx="3" /><path d="M12 8V4M9 14h.01M15 14h.01" /></svg></span>
+              Activate agent
+            </button>
+            <button
               onClick={() => setCoachOpen((prev) => !prev)}
               className="dl-btn"
-              title={coachOpen ? "Close CRE Chatbot" : "Open CRE Chatbot"}
+              title={coachOpen ? "Close Ask the agent" : "Ask the agent about this deal"}
               style={{
                 padding: "6px 14px", borderRadius: 8,
                 border: `1px solid ${coachOpen ? "#4D7C0F" : "#BBF77A"}`,
@@ -2211,7 +2229,7 @@ function PropertyDetailInner({
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
               </svg>
-              CRE Chatbot
+              Ask the agent
               <span style={{
                 padding: "1px 5px",
                 background: coachOpen ? "rgba(255,255,255,0.18)" : "#BBF77A",
@@ -2362,6 +2380,15 @@ function PropertyDetailInner({
       {/*  slim repeat of this same verdict so the signal      */}
       {/*  is never lost when a tab is shared in isolation.    */}
       {/* ═══════════════════════════════════════════════════ */}
+      {user && (
+        <DealAgentPanel
+          propertyId={propertyId}
+          getToken={getAgentToken}
+          onAsk={() => setCoachOpen(true)}
+          activateSignal={agentSignal}
+        />
+      )}
+
       <DealVerdictBox
         property={property}
         fields={fields}
@@ -2700,6 +2727,18 @@ function PropertyDetailInner({
             overflowX: "auto", scrollSnapType: "x mandatory",
             paddingBottom: 4,
           }}>            <button
+              onClick={() => setAgentSignal((n) => n + 1)}
+              style={{
+                flex: "0 0 auto", scrollSnapAlign: "start",
+                padding: "8px 14px", borderRadius: 10,
+                border: "1px solid #0F172A", background: "#0F172A", color: "#FFFFFF",
+                fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap",
+              }}>
+              <span style={{ color: "#84CC16", display: "inline-flex" }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="8" width="16" height="12" rx="3" /><path d="M12 8V4M9 14h.01M15 14h.01" /></svg></span>
+              Activate agent
+            </button>
+            <button
               onClick={() => setCoachOpen((prev) => !prev)}
               style={{
                 flex: "0 0 auto", scrollSnapAlign: "start",
@@ -2713,7 +2752,7 @@ function PropertyDetailInner({
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
               </svg>
-              CRE Chatbot
+              Ask the agent
             </button>
               
             <button

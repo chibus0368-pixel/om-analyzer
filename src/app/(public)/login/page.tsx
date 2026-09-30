@@ -4,6 +4,7 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { loginWithEmail, loginWithGoogle } from "@/lib/auth/providers";
 import { mapAuthError } from "@/lib/auth/errors";
+import { getAttribution } from "@/lib/attribution";
 import { AuthBrand } from "@/components/auth/AuthBrand";
 
 const C = {
@@ -47,7 +48,7 @@ function LoginContent() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ anonId: anonId1 || undefined }),
+        body: JSON.stringify({ anonId: anonId1 || undefined, attribution: getAttribution() }),
       });
 
       if (!bootstrapRes.ok) {
@@ -93,7 +94,7 @@ function LoginContent() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ anonId: anonId2 || undefined }),
+        body: JSON.stringify({ anonId: anonId2 || undefined, attribution: getAttribution() }),
       });
 
       if (!bootstrapRes.ok) {

@@ -37,6 +37,18 @@ export async function POST(request: NextRequest) {
       .map((p) => p.providerId)
       .filter(Boolean);
 
+    // First-touch attribution from the signup page (see src/lib/attribution.ts).
+    const cleanAttr = (a: any) => {
+      if (!a || typeof a !== "object" || typeof a.source !== "string" || !a.source.trim()) return null;
+      const s = (v: any, n = 80) => (typeof v === "string" && v.trim() ? v.trim().slice(0, n) : null);
+      return {
+        source: s(a.source)!.toLowerCase(),
+        medium: s(a.medium), campaign: s(a.campaign), content: s(a.content),
+        referrer: s(a.referrer), landingPath: s(a.landingPath, 120), firstSeenAt: s(a.firstSeenAt, 40),
+      };
+    };
+    const attribution = cleanAttr(body.attribution);
+
     const fullName = `${firstName} ${lastName}`.trim() || firebaseUser.displayName || email.split("@")[0];
 
     // ===== 1. Upsert user doc =====
@@ -80,6 +92,7 @@ export async function POST(request: NextRequest) {
       }
       if (body.company && !existing.company) updates.company = body.company;
       if (body.role && !existing.role) updates.role = body.role;
+      if (attribution && !existing.signupSource) updates.signupSource = attribution;
 
       // Merge anonymous usage - only increase, never decrease
       if (anonUploadsUsed > 0 && (!existing.uploadsUsed || existing.uploadsUsed < anonUploadsUsed)) {
@@ -97,6 +110,8 @@ export async function POST(request: NextRequest) {
         updates.uploadLimit = 7;
         updates.isLifetimeLimit = false;
         updates.isAnonymous = false;
+        updates.registeredAt = now;
+        if (!existing.signupSource) updates.signupSource = attribution || { source: "direct" };
         updates.periodStart = new Date();
         // Reset their counter so they get a clean monthly quota - their
         // 2 free trial uploads should not eat into the 7/month allowance.
@@ -137,6 +152,9 @@ export async function POST(request: NextRequest) {
         isLifetimeLimit: false,
         periodStart: new Date(),
         newsletterOptIn: false,
+        // "direct" = signed up with no tag and no outside referrer.
+        signupSource: attribution || { source: "direct" },
+        registeredAt: now,
         productUpdatesOptIn: false,
         lastLoginAt: now,
         createdAt: now,

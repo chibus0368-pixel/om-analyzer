@@ -1035,11 +1035,11 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                     );
                   })}
                 </div>
-                <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: "6px 6px" }}>
+                <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: "6px 6px", display: "flex", gap: 4 }}>
                   <button
                     onClick={() => { setShowWsDropdown(false); setShowNewWs(true); }}
                     style={{
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flex: 1,
                       padding: "12px 14px", border: "none", borderRadius: 8,
                       background: "transparent", cursor: "pointer", transition: "background 0.12s",
                     }}
@@ -1047,7 +1047,20 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
                     onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#84CC16" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14" /></svg>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: "0.08em" }}>Add New Dealboard</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#84CC16", textTransform: "uppercase", letterSpacing: "0.08em" }}>Add New</span>
+                  </button>
+                  <button
+                    onClick={() => { setShowWsDropdown(false); router.push("/workspace/manage"); }}
+                    style={{
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flex: 1,
+                      padding: "12px 14px", border: "none", borderRadius: 8,
+                      background: "transparent", cursor: "pointer", transition: "background 0.12s",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Edit DealBoards</span>
                   </button>
                 </div>
               </div>

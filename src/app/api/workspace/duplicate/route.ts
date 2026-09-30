@@ -45,6 +45,8 @@ export async function POST(req: NextRequest) {
     copyData.propertyName = (original.propertyName || "Untitled") + " (Copy)";
     copyData.workspaceId = targetWorkspaceId;
     copyData.createdAt = FieldValue.serverTimestamp();
+    // Marks copies so usage stats don't count them as new OM uploads.
+    copyData.duplicatedFrom = propertyId;
     copyData.updatedAt = FieldValue.serverTimestamp();
 
     const newRef = await db.collection("workspace_properties").add(copyData);

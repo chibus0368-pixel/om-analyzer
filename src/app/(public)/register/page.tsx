@@ -9,6 +9,7 @@ import {
   updateFirebaseDisplayName,
 } from "@/lib/auth/providers";
 import { mapAuthError } from "@/lib/auth/errors";
+import { getAttribution } from "@/lib/attribution";
 import type { UserRole } from "@/lib/types/user";
 import { AuthBrand } from "@/components/auth/AuthBrand";
 
@@ -107,6 +108,7 @@ export default function RegisterPage() {
           company: company || undefined,
           role: role || undefined,
           anonId: anonId || undefined,
+          attribution: getAttribution(),
         }),
       });
 
@@ -165,6 +167,7 @@ export default function RegisterPage() {
           company: company || undefined,
           role: role || undefined,
           anonId: gAnonId || undefined,
+          attribution: getAttribution(),
         }),
       });
 
