@@ -3308,7 +3308,7 @@ export default function OmAnalyzerPage() {
           flexWrap: "wrap", gap: 12,
         }}>
           <span style={{ fontSize: 12, color: "#5b6170", fontFamily: "'Inter', sans-serif" }}>
-            &copy; {new Date().getFullYear()} ScoreOM, Inc. All rights reserved.
+            &copy; {new Date().getFullYear()} ScoreOM by BBG Properties, LLC All rights reserved.
           </span>
           <span style={{ fontSize: 12, color: "#5b6170", fontFamily: "'Inter', sans-serif" }}>
             Made for CRE investors and brokers.

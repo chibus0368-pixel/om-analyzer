@@ -1534,7 +1534,7 @@ function WorkspaceLayoutInner({ children, user }: { children: React.ReactNode; u
             }}>
               <div>
                 <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 14, color: "#151b2b", display: "block", marginBottom: 6 }}>ScoreOM</span>
-                <span style={{ color: "#585e70", fontSize: 10 }}>&copy; {new Date().getFullYear()} ScoreOM, Inc. All rights reserved.</span>
+                <span style={{ color: "#585e70", fontSize: 10 }}>&copy; {new Date().getFullYear()} ScoreOM by BBG Properties, LLC All rights reserved.</span>
               </div>
               <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
                 <a href="/" style={{ color: "#585e70", textDecoration: "none", fontSize: 11 }}>Home</a>

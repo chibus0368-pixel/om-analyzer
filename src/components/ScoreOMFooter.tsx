@@ -177,7 +177,7 @@ export default function ScoreOMFooter() {
             fontFamily: "'Inter', sans-serif",
           }}
         >
-          &copy; {new Date().getFullYear()} ScoreOM, Inc. All rights reserved.
+          &copy; {new Date().getFullYear()} ScoreOM by BBG Properties, LLC All rights reserved.
         </span>
         <span
           style={{
