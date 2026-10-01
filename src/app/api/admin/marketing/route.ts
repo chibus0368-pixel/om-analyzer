@@ -44,11 +44,19 @@ export async function GET(req: NextRequest) {
     const resend = resendClient();
     if (resend) {
       try {
-        const r = await resend.domains.list();
-        const all = r.data?.data || r.data || [];
         const want = (MARKETING_FROM.match(/@([^>\s]+)/)?.[1] || "scoreom.com").toLowerCase();
-        const d = all.find((x: any) => x.name?.toLowerCase() === want);
-        domain = d ? { name: d.name, status: d.status } : { name: want, status: "not added" };
+        const r: any = await resend.domains.list();
+        if (r.error) {
+          // The Resend SDK returns errors instead of throwing. A send-only API key
+          // can't list domains, which previously fell through to "not added".
+          const msg = String(r.error.message || r.error.name || "unknown error");
+          const restricted = /restricted|only send|permission/i.test(msg) || r.error.name === "restricted_api_key";
+          domain = { name: want, status: restricted ? "unchecked" : "error", error: msg, restrictedKey: restricted };
+        } else {
+          const all = r.data?.data || r.data || [];
+          const d = all.find((x: any) => x.name?.toLowerCase() === want);
+          domain = d ? { name: d.name, status: d.status } : { name: want, status: "not added", seen: all.map((x: any) => x.name) };
+        }
       } catch (e: any) { domain = { error: e?.message }; }
     }
     const [latest, sup] = await Promise.all([

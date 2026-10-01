@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { api, Btn, C, Card, Notice, Pill, when } from "./ui";
 
 interface Status {
-  resendKey: boolean; from: string; domain: { name?: string; status?: string; error?: string } | null;
+  resendKey: boolean; from: string; domain: { name?: string; status?: string; error?: string; restrictedKey?: boolean; seen?: string[] } | null;
   cronSecret: boolean; openai: boolean; siteUrl: string; suppressions: number; lastRun: any;
 }
 
@@ -61,8 +61,10 @@ export default function Overview({ redirectBase }: { redirectBase: string }) {
           <div>
             <Row ok={s.resendKey} label="Resend API key">{s.resendKey ? "Set." : <>Add <code style={code}>RESEND_API_KEY</code> in Vercel.</>}</Row>
             <Row ok={domainOk ? true : "warn"} label={`Sending domain: ${s.domain?.name || "scoreom.com"}`}>
-              {domainOk ? <>Verified. Marketing email sends from <code style={code}>{s.from}</code>.</> : <>
-                Status: <Pill s="warn">{s.domain?.status || s.domain?.error || "unknown"}</Pill>. In Resend, go to Domains, add <b>scoreom.com</b>, then add the DNS records it shows (DKIM, SPF and MX on a <code style={code}>send</code> subdomain) in GoDaddy, plus a DMARC record: TXT <code style={code}>_dmarc</code> = <code style={code}>v=DMARC1; p=none;</code>. Click Verify in Resend once they're in.
+              {domainOk ? <>Verified. Marketing email sends from <code style={code}>{s.from}</code>.</> : s.domain?.restrictedKey ? <>
+                Can't read domain status: <code style={code}>RESEND_API_KEY</code> is a sending-only key, so Resend won't list domains for it. Sending is not affected. Check the domain in the Resend dashboard, or use a Full access key if you want this row to show it. Sends from <code style={code}>{s.from}</code>.
+              </> : <>
+                Status: <Pill s="warn">{s.domain?.status || "unknown"}</Pill>{s.domain?.error ? <> ({s.domain.error})</> : null}{s.domain?.seen?.length ? <> Domains on this key's Resend account: {s.domain.seen.join(", ")}.</> : <>.</>} In Resend, go to Domains, add <b>scoreom.com</b>, then add the DNS records it shows (DKIM, SPF and MX on a <code style={code}>send</code> subdomain) in GoDaddy, plus a DMARC record: TXT <code style={code}>_dmarc</code> = <code style={code}>v=DMARC1; p=none;</code>. Click Verify in Resend once they're in.
               </>}
             </Row>
             <Row ok={s.cronSecret} label="Scheduler (every 15 min)">
