@@ -616,7 +616,7 @@ const ROLES = [
     img: "/images/product/financials.webp",
     alt: "Year one operating statement with adjusted NOI",
     panel: "noi" as PanelKind,
-    chips: [{ tone: "amber", icon: "trend", label: "NOI gap", title: "-16% vs. the OM", body: "Vacancy and reserves applied." }, { tone: "green", icon: "check", label: "Coverage", title: "1.66x DSCR", body: "Surfaced on every deal." }] as Chip[],
+    chips: [{ tone: "amber", icon: "trend", label: "NOI gap", title: "-8% vs. the OM", body: "Vacancy and reserves applied." }, { tone: "green", icon: "check", label: "Coverage", title: "1.66x DSCR", body: "Surfaced on every deal." }] as Chip[],
   },
   {
     id: "operators",

@@ -10,8 +10,13 @@ import ScoreOMNav from "@/components/ScoreOMNav";
 import { HeroStats, HomeSectionStyles } from "@/components/marketing/HomeSections";
 import { IntroVideo } from "@/components/marketing/IntroVideo";
 import { HeroStars, PillEyebrow, StackedFeatures, CompareChatGPT, StackStyles } from "@/components/marketing/StackedFeatures";
-import { trackLiteUpload, trackLiteResult, trackLeadCapture, trackProCTAClick, trackDownload } from "@/lib/analytics";
+import { trackLiteUpload, trackLiteResult, trackLeadCapture, trackProCTAClick, trackDownload, trackHeroSampleClick } from "@/lib/analytics";
+import { getAttribution } from "@/lib/attribution";
 import { deferUntilIdle } from "@/lib/defer-until-idle";
+
+// Where "See a sample result" goes. Set NEXT_PUBLIC_SAMPLE_RESULT_URL in Vercel
+// to a public /p/<propertyId> page; until then it scrolls to the on-page panels.
+const SAMPLE_RESULT_URL = process.env.NEXT_PUBLIC_SAMPLE_RESULT_URL || "#features";
 
 /* ── Lazy Firebase helpers ──────────────────────────────────────────────
    Firebase SDK modules (auth, firestore, storage) are ~300KB+ combined.
@@ -1849,7 +1854,7 @@ export default function OmAnalyzerPage() {
       const res = await fetch("/api/om-analyzer/email-claim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ anonId: getAnonId(), email }),
+        body: JSON.stringify({ anonId: getAnonId(), email, attribution: getAttribution() }),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -2009,7 +2014,7 @@ export default function OmAnalyzerPage() {
         await fetch("/api/workspace/usage", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({}),
+          body: JSON.stringify({ attribution: getAttribution() }),
         });
       } catch { /* non-fatal */ }
       if (typeof window !== "undefined") {
@@ -2297,6 +2302,14 @@ export default function OmAnalyzerPage() {
         }
         @media (max-width: 900px) {
           .ds-section-pad.ds-hero-section { padding-top: 108px !important; }
+        }
+        /* Phones: keep Select File and the sample link above the fold
+           (390x664 is the visible area in iPhone Safari). */
+        @media (max-width: 480px) {
+          .ds-section-pad.ds-hero-section { padding-top: 84px !important; }
+          .so-hero-sub { display: none !important; }
+          .so-hero-center .so-hero-upload .tm-upload-zone { padding: 20px 16px 22px !important; }
+          .so-upload-icon { display: none !important; }
         }
       `}</style>
 
@@ -2641,7 +2654,7 @@ export default function OmAnalyzerPage() {
                   <div style={{ pointerEvents: dragging ? "none" : "auto" }}>
                   {!selectedFile ? (
                     <>
-                      <div style={{
+                      <div className="so-upload-icon" style={{
                         width: 56, height: 56, borderRadius: "50%", background: "rgba(132,204,22,0.12)",
                         display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 16,
                       }}>
@@ -2702,6 +2715,32 @@ export default function OmAnalyzerPage() {
                     </span>
                   </div>
                 )}
+              </div>
+              <div className="so-hero-alt" style={{ marginTop: 16, textAlign: "center" }}>
+                <a
+                  href={SAMPLE_RESULT_URL}
+                  onClick={(e) => {
+                    try { trackHeroSampleClick("hero"); } catch {}
+                    if (SAMPLE_RESULT_URL.startsWith("#")) {
+                      e.preventDefault();
+                      document.getElementById(SAMPLE_RESULT_URL.slice(1))?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                  }}
+                  style={{ display: "inline-block", fontSize: 15, fontWeight: 600, color: "#84CC16", textDecoration: "none", padding: "6px 8px" }}
+                >
+                  No OM handy? See a sample result &rarr;
+                </a>
+                <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 4 }}>
+                  Want to save deals?{" "}
+                  <Link
+                    href="/workspace/login?mode=register"
+                    prefetch={false}
+                    onClick={() => { try { trackProCTAClick("hero_create_account"); } catch {} }}
+                    style={{ color: "#d1d5db", textDecoration: "underline" }}
+                  >
+                    Create an account
+                  </Link>
+                </div>
               </div>
               <HeroStats />
             </div>

@@ -157,6 +157,15 @@ export function trackLeadCapture(source: string): void {
   });
 }
 
+/** Hero: visitor without an OM opens the sample result */
+export function trackHeroSampleClick(location: string): void {
+  if (typeof window === 'undefined' || !window.gtag) return;
+  window.gtag('event', 'hero_sample_click', {
+    event_category: 'conversion',
+    event_label: location,
+  });
+}
+
 /** User clicks Upgrade to Pro CTA */
 export function trackProCTAClick(location: string): void {
   if (typeof window === 'undefined' || !window.gtag) return;

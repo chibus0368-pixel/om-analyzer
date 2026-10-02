@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { LEAD_LIMIT } from "@/lib/stripe/config";
+import { cleanAttribution, readAttributionCookie } from "@/lib/attribution";
 
 /**
  * POST /api/om-analyzer/email-claim
@@ -14,7 +15,7 @@ import { LEAD_LIMIT } from "@/lib/stripe/config";
  * the doc is already at tier="lead". The first valid email wins; we do
  * not overwrite a previously-captured email.
  *
- * Body: { anonId: string, email: string }
+ * Body: { anonId: string, email: string, attribution?: Attribution }
  * Response: { uploadsUsed, uploadLimit, tier, emailCaptured: true }
  */
 
@@ -55,6 +56,8 @@ export async function POST(req: NextRequest) {
       // multiple captures on the same browser later if needed.
       lastEmailSubmittedAt: now,
       lastEmailSubmitted: email,
+      // First-touch source of the lead; saved once, never overwritten.
+      ...(existing.attribution ? {} : { attribution: cleanAttribution(body.attribution ?? readAttributionCookie(req.headers.get("cookie"))) }),
       createdAt: snap.exists ? existing.createdAt : now,
       updatedAt: now,
     }, { merge: true });

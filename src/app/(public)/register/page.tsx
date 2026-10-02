@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   registerWithEmail,
@@ -10,6 +10,7 @@ import {
 } from "@/lib/auth/providers";
 import { mapAuthError } from "@/lib/auth/errors";
 import { getAttribution } from "@/lib/attribution";
+import { auth } from "@/lib/firebase";
 import type { UserRole } from "@/lib/types/user";
 import { AuthBrand } from "@/components/auth/AuthBrand";
 
@@ -50,6 +51,9 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  // True when the visitor already ran a trial deal as an anonymous user.
+  const [isAnonTrial, setIsAnonTrial] = useState(false);
+  useEffect(() => auth.onAuthStateChanged((u) => setIsAnonTrial(!!u?.isAnonymous)), []);
   const [passwordError, setPasswordError] = useState("");
 
   const validatePassword = (pwd: string) => {
@@ -646,6 +650,13 @@ export default function RegisterPage() {
         />
       </div>
 
+      {/* Google sign-in starts a fresh account (see lib/auth/providers.ts), so a
+          trial deal only carries over with the email form. */}
+      {isAnonTrial && (
+        <p style={{ margin: "0 0 10px", fontSize: 12.5, color: C.secondary, textAlign: "center", lineHeight: 1.5 }}>
+          Just ran a deal? Sign up with email above to keep it in your workspace.
+        </p>
+      )}
       {/* Google Sign Up Button */}
       <button
         onClick={handleGoogleRegister}

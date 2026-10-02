@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cleanAttribution } from "@/lib/attribution";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
 import { Timestamp } from "firebase-admin/firestore";
 import { sendEmail, renderTemplate } from "@/lib/email";
@@ -39,22 +40,7 @@ export async function POST(request: NextRequest) {
 
     // First-touch attribution from the som_attr cookie (see src/lib/attribution.ts).
     // Saved only when an account is created; existing users are never changed.
-    const cleanAttr = (a: any) => {
-      const s = (v: any, n = 80) => (typeof v === "string" && v.trim() ? v.trim().slice(0, n) : null);
-      const src = a && typeof a === "object" ? a : {};
-      const out = {
-        utm_source: s(src.utm_source)?.toLowerCase() ?? null,
-        utm_campaign: s(src.utm_campaign),
-        utm_content: s(src.utm_content),
-        landing_path: s(src.landing_path, 120),
-        referrer_host: s(src.referrer_host, 100)?.toLowerCase() ?? null,
-        first_seen_at: s(src.first_seen_at, 40),
-      };
-      // No cookie (or nothing useful in it) = direct.
-      if (!out.utm_source && !out.utm_campaign && !out.utm_content && !out.referrer_host) out.utm_source = "direct";
-      return out;
-    };
-    const attribution = cleanAttr(body.attribution);
+    const attribution = cleanAttribution(body.attribution);
 
     const fullName = `${firstName} ${lastName}`.trim() || firebaseUser.displayName || email.split("@")[0];
 

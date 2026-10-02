@@ -334,6 +334,13 @@ function WorkspaceLoginPageInner() {
 
         {/* ══════════ SOCIAL LOGIN ══════════ */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+          {/* Google sign-in starts a fresh account (see lib/auth/providers.ts), so a
+              trial deal only carries over with the email form below. */}
+          {mode === "register" && looksAnon && (
+            <p style={{ margin: 0, fontSize: 12.5, color: "#6b7280", textAlign: "center", lineHeight: 1.5 }}>
+              Just ran a deal? Sign up with email below to keep it in your workspace.
+            </p>
+          )}
           {/* Google */}
           <button
             type="button"

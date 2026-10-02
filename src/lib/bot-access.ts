@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
+import { groupAnonymousUsers, groupEmailLeads, type AnonUserRow, type LeadRow } from "@/lib/bot-trials";
 
 /**
  * Access for an outside agent (grokbot). /api/bot/usage and /api/bot/leads read;
@@ -140,3 +141,54 @@ export const memberIso = iso;
 /** Internal test traffic (utm_source=test) is excluded from all reports. */
 export const isTestSource = (s: string | null | undefined) => (s || "").trim().toLowerCase() === "test";
 export const DAY_MS = DAY;
+
+/**
+ * Trial activity that never became an account, for the window starting at
+ * `from` (ms): anonymous trial users (users docs still at tier "anonymous")
+ * and email-only leads (anonymous_trials docs at tier "lead"), each grouped by
+ * first-touch source. Read-only; returns counts only.
+ */
+export async function loadTrials(from: number) {
+  const db = getAdminDb();
+  const [anonSnap, leadSnap, propsSnap] = await Promise.all([
+    db.collection("users").where("tier", "==", "anonymous").get(),
+    db.collection("anonymous_trials").where("tier", "==", "lead").get(),
+    db.collection("workspace_properties").select("userId", "ownerId", "createdAt", "duplicatedFrom", "propertyName").get(),
+  ]);
+
+  // Same counting rule as loadMembers: duplicated copies don't count as uploads.
+  const uploads = new Map<string, number>();
+  propsSnap.docs.forEach(d => {
+    const x = d.data();
+    const uid = x.userId || x.ownerId;
+    if (!uid || x.duplicatedFrom) return;
+    if (typeof x.propertyName === "string" && /\(Copy\)\s*$/.test(x.propertyName)) return;
+    if (!toMs(x.createdAt)) return;
+    uploads.set(uid, (uploads.get(uid) || 0) + 1);
+  });
+
+  const anon: AnonUserRow[] = [];
+  anonSnap.docs.forEach(d => {
+    const x = d.data();
+    if (toMs(x.createdAt) < from) return;
+    anon.push({ attribution: x.attribution, uploads: uploads.get(d.id) || 0 });
+  });
+  const leads: LeadRow[] = [];
+  leadSnap.docs.forEach(d => {
+    const x = d.data();
+    if (toMs(x.createdAt) < from) return;
+    leads.push({ attribution: x.attribution });
+  });
+
+  const anonymous_users = groupAnonymousUsers(anon);
+  const email_leads = groupEmailLeads(leads);
+  return {
+    totals: {
+      anonymous_users: anonymous_users.reduce((n, g) => n + g.users, 0),
+      anonymous_users_with_1plus_upload: anonymous_users.reduce((n, g) => n + g.users_with_1plus_upload, 0),
+      email_leads: email_leads.reduce((n, g) => n + g.leads, 0),
+    },
+    anonymous_users,
+    email_leads,
+  };
+}

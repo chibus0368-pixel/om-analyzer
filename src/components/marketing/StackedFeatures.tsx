@@ -180,10 +180,10 @@ const CARDS: StackCard[] = [
     points: ["OM-stated vs. adjusted NOI, side by side", "Near-term rollover and concentration flagged"],
     flip: true,
     frags: [
-      { panel: "noi", alt: "Rebuilt NOI panel: OM-stated $221,308 vs. adjusted $185,736", x: 24, y: 8, w: 76, z: 2 },
-      { chip: { ins: true, tone: "amber", icon: "trend", label: "NOI gap", title: "-16% vs. the OM", body: "Rebuilt with vacancy, expenses and reserves applied.", tag: "Adjusted" }, x: 0, y: 4, w: 0, z: 5 },
+      { panel: "noi", alt: "Rebuilt NOI panel: OM-stated $221,308 vs. adjusted $204,562", x: 24, y: 8, w: 76, z: 2 },
+      { chip: { ins: true, tone: "amber", icon: "trend", label: "NOI gap", title: "-8% vs. the OM", body: "Rebuilt with vacancy, expenses and reserves applied.", tag: "Adjusted" }, x: 0, y: 4, w: 0, z: 5 },
       { chip: { ins: true, tone: "blue", icon: "doc", label: "Transparent", title: "Estimates labeled", body: "Reserves at $0.25/SF are flagged and editable." }, x: 2, y: 36, w: 0, z: 6 },
-      { chip: { ins: true, tone: "red", icon: "alert", label: "Rollover", title: "2 leases end in 2025", body: "Plaza Barber Shop and KK Sew & Vac.", tag: "Near-term" }, x: 0, y: 64, w: 0, z: 7 },
+      { chip: { ins: true, tone: "red", icon: "alert", label: "Rollover", title: "2 leases near expiration", body: "Plaza Barber Shop and KK Sew & Vac.", tag: "Near-term" }, x: 0, y: 64, w: 0, z: 7 },
     ],
   },
   {

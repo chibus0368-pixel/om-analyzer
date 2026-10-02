@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkBotKey, loadMembers, isTestSource, dayKey, NO_STORE, DAY_MS, RETURN_WINDOW_MS } from "@/lib/bot-access";
+import { checkBotKey, loadMembers, loadTrials, isTestSource, dayKey, NO_STORE, DAY_MS, RETURN_WINDOW_MS } from "@/lib/bot-access";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
  * GET /api/bot/usage?days=30
- * Read-only usage numbers for grokbot. Registered accounts only (anonymous
- * trial visitors are left out). Days are US Central calendar days.
+ * Read-only usage numbers for grokbot. Signup stats cover registered accounts
+ * only; anonymous trial visitors and email-only leads are reported separately
+ * in the `trials` block. Days are US Central calendar days.
  */
 export async function GET(req: NextRequest) {
   const denied = checkBotKey(req);
@@ -16,7 +17,8 @@ export async function GET(req: NextRequest) {
     const days = Math.min(365, Math.max(1, Number(req.nextUrl.searchParams.get("days")) || 30));
     const now = Date.now();
     const from = now - days * DAY_MS;
-    const members = (await loadMembers()).filter(m => m.signedUpAt >= from && !isTestSource(m.source));
+    const [allMembers, trials] = await Promise.all([loadMembers(), loadTrials(from)]);
+    const members = allMembers.filter(m => m.signedUpAt >= from && !isTestSource(m.source));
 
     // Cohort stats: counted by the day / source people signed up under.
     type Row = { signups: number; uploadedFirstOm: number; returnedWithin14d: number; eligibleFor14d: number; stillInWindow: number };
@@ -74,8 +76,10 @@ export async function GET(req: NextRequest) {
         source: "First-touch utm_source from the som_attr cookie. 'referral' = no UTMs, arrived from another site (see referrer_host). 'direct' = no UTMs and no outside referrer. 'untracked' = signed up before source tracking existed.",
         test_traffic: "Signups whose first-touch utm_source is 'test' are excluded everywhere.",
         by_source: "Aggregates for accounts that signed up in the window, grouped by first-touch utm_source / utm_campaign / utm_content. total_uploads counts deals (duplicated copies excluded). returned_within_14d uses the same rule as returnedWithin14d.",
+        trials: "Trial activity in the window that has not become an account, by first-touch utm_source / utm_campaign / utm_content. anonymous_users = trial visitors (no signup) first seen in the window; users_with_1plus_upload = those who ran at least one deal (duplicated copies excluded). A trial visitor who later registers moves out of here and into signups. email_leads = visitors who gave an email at the trial gate without creating an account. 'untracked' = created before trial source tracking existed. utm_source 'test' is excluded. Counts only.",
       },
       totals: withRates(totals),
+      trials,
       by_source: [...bySrc.values()].sort((a, b) => b.signups - a.signups),
       bySource: [...bySource.values()].map(withRates).sort((a, b) => b.signups - a.signups),
       daily: [...byDay.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([date, r]) => ({ date, ...r })),

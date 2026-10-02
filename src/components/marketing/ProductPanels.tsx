@@ -69,7 +69,7 @@ function ScorePanel() {
         </div>
       </div>
       <div className="pp-stats">
-        {[["Going-in cap", "8.75%"], ["DSCR", "1.66x"], ["Price / replacement", "27%"], ["Base IRR", "15.0%"]].map(([k, v]) => (
+        {[["Going-in cap", "8.75%"], ["DSCR", "1.66x"], ["Price / replacement", "27%"], ["Base IRR", "14.8%"]].map(([k, v]) => (
           <div key={k}><span>{k}</span><b>{v}</b></div>
         ))}
       </div>
@@ -93,7 +93,7 @@ function NoiPanel() {
         <div className="pp-arrow" aria-hidden>
           <svg viewBox="0 0 24 24" width="1.6em" height="1.6em" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
         </div>
-        <div className="pp-cmp adj"><span>Adjusted NOI</span><b>$185,736</b><em>-16%</em></div>
+        <div className="pp-cmp adj"><span>Adjusted NOI</span><b>$204,562</b><em>-8%</em></div>
       </div>
       <div className="pp-lines">
         {rows.map(([k, v, t]) => (
@@ -126,7 +126,7 @@ function OfferPanel() {
         ))}
       </div>
       <div className="pp-cases">
-        {[["Bull", "18.5%", "g"], ["Base", "15.0%", "b"], ["Bear", "9.3%", "r"]].map(([k, v, c]) => (
+        {[["Bull", "18.5%", "g"], ["Base", "14.8%", "b"], ["Bear", "9.3%", "r"]].map(([k, v, c]) => (
           <div key={k} className={`pp-case ${c}`}><span>{k}</span><b>{v}</b><small>levered IRR</small></div>
         ))}
       </div>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cleanAttribution, readAttributionCookie } from "@/lib/attribution";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
 import { getUploadLimit, ANONYMOUS_LIMIT, LEAD_LIMIT, PLANS, FREE_ACCESS_MODE, UNLIMITED_UPLOADS } from "@/lib/stripe/config";
 
@@ -94,6 +95,8 @@ export async function GET(req: NextRequest) {
         fullName: null,
         displayName: "Anonymous user",
         defaultWorkspaceId: null,
+        // First-touch source of the trial (som_attr cookie), so trials can be reported by source.
+        attribution: cleanAttribution(readAttributionCookie(req.headers.get("cookie"))),
         createdAt: provisionNow,
         updatedAt: provisionNow,
       };
@@ -239,6 +242,7 @@ export async function POST(req: NextRequest) {
         fullName: null,
         displayName: "Anonymous user",
         defaultWorkspaceId: null,
+        attribution: cleanAttribution(body.attribution ?? readAttributionCookie(req.headers.get("cookie"))),
         createdAt: provisionNow,
         updatedAt: provisionNow,
       };
@@ -274,6 +278,11 @@ export async function POST(req: NextRequest) {
     };
     if (!userData.periodStart || shouldResetPeriod(userData)) {
       updateData.periodStart = new Date();
+    }
+    // Anonymous trial docs provisioned before attribution was tracked: fill it
+    // in once. Never overwrite an existing attribution.
+    if (tier === "anonymous" && !(userData as any).attribution) {
+      updateData.attribution = cleanAttribution(body.attribution ?? readAttributionCookie(req.headers.get("cookie")));
     }
 
     await userRef.update(updateData);

@@ -50,3 +50,40 @@ export function getAttribution(): Attribution | undefined {
     return undefined;
   }
 }
+
+/**
+ * Server-safe cleaner for an attribution object sent by the client (or read
+ * from the som_attr cookie). Trims and caps every field, lowercases the source
+ * and referrer host, and falls back to utm_source "direct" when nothing useful
+ * is present. Used by /api/auth/bootstrap, /api/workspace/usage,
+ * /api/om-analyzer/tryme-analyze and /api/om-analyzer/email-claim so signups,
+ * anonymous trials and email leads are all attributed the same way.
+ */
+export function cleanAttribution(a: unknown): Attribution {
+  const s = (v: unknown, n = 80) => (typeof v === "string" && v.trim() ? v.trim().slice(0, n) : null);
+  const src: Record<string, unknown> = a && typeof a === "object" ? (a as Record<string, unknown>) : {};
+  const out: Attribution = {
+    utm_source: s(src.utm_source)?.toLowerCase() ?? null,
+    utm_campaign: s(src.utm_campaign),
+    utm_content: s(src.utm_content),
+    landing_path: s(src.landing_path, 120),
+    referrer_host: s(src.referrer_host, 100)?.toLowerCase() ?? null,
+    first_seen_at: s(src.first_seen_at, 40),
+  };
+  // No cookie (or nothing useful in it) = direct.
+  if (!out.utm_source && !out.utm_campaign && !out.utm_content && !out.referrer_host) out.utm_source = "direct";
+  return out;
+}
+
+/** Parse the som_attr first-touch cookie out of a raw Cookie request header. */
+export function readAttributionCookie(cookieHeader: string | null | undefined): unknown {
+  try {
+    if (!cookieHeader) return undefined;
+    const row = cookieHeader.split(/;\s*/).find((c) => c.startsWith(`${ATTR_COOKIE}=`));
+    if (!row) return undefined;
+    const a = JSON.parse(decodeURIComponent(row.slice(ATTR_COOKIE.length + 1)));
+    return a && typeof a === "object" ? a : undefined;
+  } catch {
+    return undefined;
+  }
+}

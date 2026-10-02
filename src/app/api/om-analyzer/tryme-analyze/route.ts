@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cleanAttribution, readAttributionCookie } from "@/lib/attribution";
 import { randomUUID } from "crypto";
 import { runParseEngine } from "@/lib/workspace/parse-engine";
 import { runScoreEngine } from "@/lib/workspace/score-engine";
@@ -119,6 +120,7 @@ export async function POST(request: NextRequest) {
           fullName: null,
           displayName: "Anonymous user",
           defaultWorkspaceId: null,
+          attribution: cleanAttribution(body.attribution ?? readAttributionCookie(request.headers.get("cookie"))),
           createdAt: provisionNow,
           updatedAt: provisionNow,
         });
