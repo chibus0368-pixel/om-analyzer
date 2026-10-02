@@ -28,7 +28,6 @@ import PropertyImageEditor from "@/components/workspace/PropertyImageEditor";
 // behind `{false && (...)}` wrappers below; flip those to `{true && (...)}`
 // or remove the wrapper to re-enable. Import + state are kept live so TS
 // still typechecks the disabled JSX.
-import DealCoachChat from "@/components/workspace/DealCoachChat";
 import DealQuickScreen, { buildInput as buildQuickScreenInput, type StandardizedBaseline } from "@/components/workspace/DealQuickScreen";
 import { runQuickScreen } from "@/lib/analysis/quick-screen";
 import OmReversePricing from "@/components/workspace/OmReversePricing";
@@ -1685,10 +1684,16 @@ function PropertyDetailInner({
 
   // Image editor modal (crop existing hero or upload a new image).
   const [imageEditorOpen, setImageEditorOpen] = useState(false);
-  // Deal Coach chat (CRE Chatbot in the hero's upper-right). Controlled
-  // here so the labeled hero button can open/close it; the chat
-  // component just renders the panel.
-  const [coachOpen, setCoachOpen] = useState(false);
+  // "Ask the agent" opens the full-page chat for this deal
+  // (/workspace/properties/[id]/chat) instead of the old floating panel.
+  const openAgentChat = useCallback(() => {
+    routerForTabs.push(`/workspace/properties/${propertyId}/chat`);
+  }, [routerForTabs, propertyId]);
+  // Answers saved from the agent chat; added to the Brief download.
+  const agentNotes = useMemo(
+    () => (notes || []).filter((n: any) => n.noteType === "general" && n.content).map((n: any) => ({ title: n.title || "Note", content: String(n.content), createdAt: n.createdAt })),
+    [notes],
+  );
   // Deal Agent: bumping this number tells the panel to scroll into view and start a run.
   const [agentSignal, setAgentSignal] = useState(0);
   const getAgentToken = useCallback(async () => (user ? await user.getIdToken() : ""), [user]);
@@ -1897,7 +1902,6 @@ function PropertyDetailInner({
         /* Hero action buttons keep their own colour on hover. The generic
            .dl-btn hover above washed them out to grey with a gold border. */
         .dl-btn.pd-ask-btn:hover { background: #DCFCE7 !important; border-color: #4D7C0F !important; }
-        .dl-btn.pd-ask-btn.is-open:hover { background: #3F6212 !important; border-color: #3F6212 !important; }
         .dl-btn.pd-xlsx-btn:hover { background: #D1FAE5 !important; border-color: #34D399 !important; }
         .dl-btn.pd-doc-btn:hover { background: #DBEAFE !important; border-color: #60A5FA !important; }
         .dl-btn:focus-visible { outline: 2px solid #84CC16; outline-offset: 2px; }
@@ -2200,14 +2204,14 @@ function PropertyDetailInner({
                 to a solid fill so the user can see at a glance that
                 the chat is currently expanded. */}
             <button
-              onClick={() => setCoachOpen((prev) => !prev)}
-              className={`dl-btn pd-ask-btn${coachOpen ? " is-open" : ""}`}
-              title={coachOpen ? "Close Ask the agent" : "Ask the agent about this deal"}
+              onClick={openAgentChat}
+              className="dl-btn pd-ask-btn"
+              title="Ask the agent about this deal"
               style={{
                 padding: "6px 14px", borderRadius: 8,
-                border: `1px solid ${coachOpen ? "#4D7C0F" : "#BBF77A"}`,
-                background: coachOpen ? "#4D7C0F" : "#F0FDF4",
-                color: coachOpen ? "#FFFFFF" : "#3F6212",
+                border: "1px solid #BBF77A",
+                background: "#F0FDF4",
+                color: "#3F6212",
                 fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
                 display: "inline-flex", alignItems: "center", gap: 6,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
@@ -2219,8 +2223,8 @@ function PropertyDetailInner({
               Ask the agent
               <span style={{
                 padding: "1px 5px",
-                background: coachOpen ? "rgba(255,255,255,0.18)" : "#BBF77A",
-                color: coachOpen ? "#FFFFFF" : "#3F6212",
+                background: "#BBF77A",
+                color: "#3F6212",
                 borderRadius: 3, fontSize: 8, fontWeight: 700,
               }}>
                 BETA
@@ -2242,7 +2246,7 @@ function PropertyDetailInner({
               <span style={{ padding: "1px 5px", background: "#D1FAE5", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#065F46" }}>XLSX</span>
             </button>
             <button
-              onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType, { quickScreen: downloadQuickScreen, tenants })}
+              onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType, { quickScreen: downloadQuickScreen, tenants, agentNotes })}
               className="dl-btn pd-doc-btn"
               style={{
                 padding: "6px 14px", borderRadius: 8,
@@ -2371,7 +2375,7 @@ function PropertyDetailInner({
         <DealAgentPanel
           propertyId={propertyId}
           getToken={getAgentToken}
-          onAsk={() => setCoachOpen(true)}
+          onAsk={openAgentChat}
           activateSignal={agentSignal}
         />
       )}
@@ -2676,7 +2680,7 @@ function PropertyDetailInner({
                 <span style={{ padding: "1px 5px", background: "#D1FAE5", borderRadius: 3, fontSize: 8, fontWeight: 700, color: "#065F46" }}>XLSX</span>
               </button>
               <button
-                onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType, { quickScreen: downloadQuickScreen, tenants })}
+                onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType, { quickScreen: downloadQuickScreen, tenants, agentNotes })}
                 className="dl-btn"
                 style={{
                   padding: "6px 14px", borderRadius: 8,
@@ -2726,13 +2730,13 @@ function PropertyDetailInner({
               Activate agent
             </button>
             <button
-              onClick={() => setCoachOpen((prev) => !prev)}
+              onClick={openAgentChat}
               style={{
                 flex: "0 0 auto", scrollSnapAlign: "start",
                 padding: "8px 14px", borderRadius: 10,
-                border: `1px solid ${coachOpen ? "#4D7C0F" : "#BBF77A"}`,
-                background: coachOpen ? "#4D7C0F" : "#F0FDF4",
-                color: coachOpen ? "#FFFFFF" : "#3F6212",
+                border: "1px solid #BBF77A",
+                background: "#F0FDF4",
+                color: "#3F6212",
                 fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
                 display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap",
               }}>
@@ -2755,7 +2759,7 @@ function PropertyDetailInner({
               Workbook
             </button>
             <button
-              onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType, { quickScreen: downloadQuickScreen, tenants })}
+              onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType, { quickScreen: downloadQuickScreen, tenants, agentNotes })}
               style={{
                 flex: "0 0 auto", scrollSnapAlign: "start",
                 padding: "8px 14px", borderRadius: 10,
@@ -3335,25 +3339,6 @@ function PropertyDetailInner({
           Delete Deal
         </button>
       </div>
-
-      {/* Floating Deal Coach chat - context-loaded brainstorming partner.
-          Anchored bottom-right; rendered alongside the modal so the user
-          can ask questions without losing whatever tab they're on. */}
-      {user && property && (
-        <DealCoachChat
-          propertyId={propertyId}
-          propertyName={property.propertyName || "Untitled property"}
-          analysisType={(property as any)?.analysisType}
-          getToken={async () => {
-            try { return await user.getIdToken(); } catch { return null; }
-          }}
-          // Controlled by the labeled "CRE Chatbot" button in the hero
-          // upper-right (search for setCoachOpen call sites). Floating
-          // bubble is skipped in controlled mode.
-          open={coachOpen}
-          onOpenChange={setCoachOpen}
-        />
-      )}
 
       {/* Image editor modal - crop existing or upload new */}
       {imageEditorOpen && user && property && (

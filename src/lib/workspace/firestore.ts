@@ -509,6 +509,10 @@ export async function getPropertyNotes(propertyId: string): Promise<Note[]> {
   });
 }
 
+export async function deleteNote(noteId: string): Promise<void> {
+  await deleteDoc(doc(db, "workspace_notes", noteId));
+}
+
 export async function updateNote(noteId: string, data: Partial<Note>): Promise<void> {
   await updateDoc(doc(db, "workspace_notes", noteId), clean({ ...data, updatedAt: now() }));
 }

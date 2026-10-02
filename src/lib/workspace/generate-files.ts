@@ -1188,9 +1188,16 @@ export function generateBriefDownload(
   brief: string,
   fields: ExtractedField[],
   analysisType: AnalysisType = "retail",
-  options?: { returnBlob?: boolean; quickScreen?: QuickScreenReport | null; tenants?: any[] }
+  options?: { returnBlob?: boolean; quickScreen?: QuickScreenReport | null; tenants?: any[]; agentNotes?: { title: string; content: string; createdAt?: string }[] }
 ): void | { blob: Blob; filename: string } {
   const quickScreen = options?.quickScreen || null;
+  // Answers the user saved from the agent chat ("Save to notes").
+  const escNote = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const agentNotesHtml = (options?.agentNotes || []).filter(n => n && n.content).map(n => {
+    const date = n.createdAt ? new Date(n.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+    const body = escNote(n.content).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").split(/\n{2,}/).map(par => `<p>${par.replace(/\n/g, "<br/>")}</p>`).join("");
+    return `<h3>${escNote(n.title)}${date ? ` <span style="font-weight:normal;color:#6B7280;font-size:9pt;">(${date})</span>` : ""}</h3>${body}`;
+  }).join("");
   const tenantData = options?.tenants || [];
   const g = (group: string, name: string) => getField(fields, group, name);
   const typeLabel = analysisType === "retail" ? "Retail" : analysisType === "industrial" ? "Industrial" : analysisType === "office" ? "Office" : "Land";
@@ -1746,6 +1753,10 @@ ${tenantRolloverHtml}
 
 <h2>Next Steps</h2>
 <ol>${nextSteps.map(s => `<li>${s}</li>`).join("")}</ol>
+
+${agentNotesHtml ? `<h2>Agent Notes</h2>
+<p style="color:#6B7280;font-size:9pt;">Answers saved from the ScoreOM agent chat for this deal. AI-generated; verify before relying on them.</p>
+${agentNotesHtml}` : ""}
 
 <h2>First-Pass Conclusion</h2>
 ${g("signals", "overall_signal") ? `<h3>Overall Signal</h3><p class="${sigClass(g("signals", "overall_signal"))}"><b>${g("signals", "overall_signal")}</b></p>` : ""}
