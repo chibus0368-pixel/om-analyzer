@@ -1894,6 +1894,13 @@ function PropertyDetailInner({
         .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(21,27,43,0.08); }
         .dl-btn { transition: all 0.15s ease; }
         .dl-btn:hover { background: ${C.surfLow} !important; border-color: ${C.gold} !important; }
+        /* Hero action buttons keep their own colour on hover. The generic
+           .dl-btn hover above washed them out to grey with a gold border. */
+        .dl-btn.pd-ask-btn:hover { background: #DCFCE7 !important; border-color: #4D7C0F !important; }
+        .dl-btn.pd-ask-btn.is-open:hover { background: #3F6212 !important; border-color: #3F6212 !important; }
+        .dl-btn.pd-xlsx-btn:hover { background: #D1FAE5 !important; border-color: #34D399 !important; }
+        .dl-btn.pd-doc-btn:hover { background: #DBEAFE !important; border-color: #60A5FA !important; }
+        .dl-btn:focus-visible { outline: 2px solid #84CC16; outline-offset: 2px; }
         .doc-row { transition: all 0.12s ease; }
         .doc-row:hover { background: ${C.surfLow} !important; }
         .section-row { transition: background 0.15s ease; }
@@ -2193,22 +2200,8 @@ function PropertyDetailInner({
                 to a solid fill so the user can see at a glance that
                 the chat is currently expanded. */}
             <button
-              onClick={() => setAgentSignal((n) => n + 1)}
-              className="dl-btn"
-              title="Activate the Deal Agent on this deal"
-              style={{
-                padding: "6px 14px", borderRadius: 8,
-                border: "1px solid #0F172A", background: "#0F172A", color: "#FFFFFF",
-                fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-                display: "inline-flex", alignItems: "center", gap: 6,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.25)", letterSpacing: 0.2,
-              }}>
-              <span style={{ color: "#84CC16", display: "inline-flex" }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="8" width="16" height="12" rx="3" /><path d="M12 8V4M9 14h.01M15 14h.01" /></svg></span>
-              Activate agent
-            </button>
-            <button
               onClick={() => setCoachOpen((prev) => !prev)}
-              className="dl-btn"
+              className={`dl-btn pd-ask-btn${coachOpen ? " is-open" : ""}`}
               title={coachOpen ? "Close Ask the agent" : "Ask the agent about this deal"}
               style={{
                 padding: "6px 14px", borderRadius: 8,
@@ -2219,17 +2212,6 @@ function PropertyDetailInner({
                 display: "inline-flex", alignItems: "center", gap: 6,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
                 letterSpacing: 0.2,
-                transition: "background 0.12s ease, color 0.12s ease, border-color 0.12s ease",
-              }}
-              onMouseEnter={(e) => {
-                if (coachOpen) return;
-                (e.currentTarget as HTMLElement).style.background = "#DCFCE7";
-                (e.currentTarget as HTMLElement).style.borderColor = "#4D7C0F";
-              }}
-              onMouseLeave={(e) => {
-                if (coachOpen) return;
-                (e.currentTarget as HTMLElement).style.background = "#F0FDF4";
-                (e.currentTarget as HTMLElement).style.borderColor = "#BBF77A";
               }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
@@ -2247,7 +2229,7 @@ function PropertyDetailInner({
               
             <button
               onClick={async () => { try { await generateUnderwritingXLSX(property.propertyName, fields, wsType); } catch (e: any) { alert("XLSX failed: " + (e?.message || "unknown")); } }}
-              className="dl-btn"
+              className="dl-btn pd-xlsx-btn"
               style={{
                 padding: "6px 14px", borderRadius: 8,
                 border: "1px solid #A7F3D0", background: "#ECFDF5",
@@ -2261,7 +2243,7 @@ function PropertyDetailInner({
             </button>
             <button
               onClick={() => generateBriefDownload(property.propertyName, brief, fields, wsType, { quickScreen: downloadQuickScreen, tenants })}
-              className="dl-btn"
+              className="dl-btn pd-doc-btn"
               style={{
                 padding: "6px 14px", borderRadius: 8,
                 border: "1px solid #BFDBFE", background: "#EFF6FF",
