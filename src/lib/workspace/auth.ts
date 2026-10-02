@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
   onAuthStateChanged,
+  onIdTokenChanged,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   type User,
@@ -25,6 +26,7 @@ interface WorkspaceAuthState {
 export function useWorkspaceAuth(): WorkspaceAuthState {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [, bump] = useState(0);
   const lastKnownUser = useRef<User | null>(null);
   const hasInitialized = useRef(false);
 
@@ -56,7 +58,17 @@ export function useWorkspaceAuth(): WorkspaceAuthState {
         setLoading(false);
       }
     });
-    return () => unsubscribe();
+    // linkWithCredential upgrades an anonymous user IN PLACE: same User
+    // object, so onAuthStateChanged doesn't fire and nothing re-renders.
+    // Watch the token instead and re-render once when a trial user becomes a
+    // real account, so the header and trial-only UI update without a reload.
+    let wasAnon: boolean | null = null;
+    const unsubToken = onIdTokenChanged(auth, (u) => {
+      if (!u) { wasAnon = null; return; }
+      if (wasAnon === true && !u.isAnonymous) bump((n) => n + 1);
+      wasAnon = u.isAnonymous;
+    });
+    return () => { unsubscribe(); unsubToken(); };
   }, []);
 
   async function signIn(email: string, password: string) {

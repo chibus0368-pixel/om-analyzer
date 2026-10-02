@@ -190,6 +190,62 @@ export async function loginWithGoogle(): Promise<UserCredential> {
 }
 
 /**
+ * Convert the current anonymous trial user into a Google account IN PLACE
+ * (same UID), so their trial deals stay attached. Used only by the
+ * "Save this deal" card on the property page.
+ *
+ * This is deliberately separate from loginWithGoogle: linking from the login
+ * page raced with that page's auto-redirect effect and looped (see the note
+ * in loginWithGoogle). The property page has no such effect.
+ *
+ * Throws auth/credential-already-in-use when that Google account already has
+ * a ScoreOM account; the caller shows a message and leaves the trial session
+ * untouched. If the visitor is not anonymous it falls back to loginWithGoogle.
+ */
+export async function linkAnonymousWithGoogle(): Promise<UserCredential> {
+  const current = auth.currentUser;
+  if (!current || !current.isAnonymous) return loginWithGoogle();
+
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  let gisReady = false;
+  if (clientId) {
+    try { await loadGisScript(); gisReady = !!window.google?.accounts?.oauth2; } catch { gisReady = false; }
+  }
+  // No GIS: Firebase's own popup, still linking (never a redirect, which
+  // would reload the page and lose the in-progress card state).
+  if (!clientId || !gisReady) return linkWithPopup(current, googleProvider);
+
+  return new Promise<UserCredential>((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject({ code: 'auth/timeout', message: 'Google sign-in timed out. Try again, allow popups for this site, or use email.' });
+    }, 90_000);
+    const client = window.google!.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: 'openid email profile',
+      callback: async (response) => {
+        clearTimeout(timeoutId);
+        if (response.error || !response.access_token) {
+          reject(new Error(response.error || 'No access token received'));
+          return;
+        }
+        try {
+          const credential = GoogleAuthProvider.credential(null, response.access_token);
+          resolve(await linkWithCredential(current, credential));
+        } catch (err) {
+          reject(err);
+        }
+      },
+      error_callback: (error) => {
+        clearTimeout(timeoutId);
+        if (error.type === 'popup_closed') reject({ code: 'auth/popup-closed-by-user', message: 'Popup closed' });
+        else reject(new Error(`Google sign-in error: ${error.type}`));
+      },
+    });
+    client.requestAccessToken({ prompt: 'select_account' });
+  });
+}
+
+/**
  * Legacy Firebase popup/redirect flow.
  * Shows deal-signals.firebaseapp.com on the consent screen.
  *

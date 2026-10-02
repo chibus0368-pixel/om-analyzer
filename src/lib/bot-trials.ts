@@ -58,3 +58,26 @@ export function groupEmailLeads(rows: LeadRow[]): LeadGroup[] {
   }
   return [...map.values()].sort((a, b) => b.leads - a.leads || a.utm_source.localeCompare(b.utm_source));
 }
+
+export interface SavePromptRow { attribution?: any; shown: boolean; dismissed: boolean; signedUp: boolean }
+export interface SavePromptGroup { utm_source: string; shown: number; dismissed: number; signups_from_prompt: number }
+
+/**
+ * "Save this deal" card funnel by first-touch utm_source. One row per user the
+ * card was shown to. utm_source=test is dropped. Counts only.
+ */
+export function groupSavePrompt(rows: SavePromptRow[]): { totals: Omit<SavePromptGroup, "utm_source">; by_utm_source: SavePromptGroup[] } {
+  const map = new Map<string, SavePromptGroup>();
+  const totals = { shown: 0, dismissed: 0, signups_from_prompt: 0 };
+  for (const r of rows) {
+    if (!r.shown) continue;
+    const src = trialSource(r.attribution).utm_source;
+    if (isTest(src)) continue;
+    if (!map.has(src)) map.set(src, { utm_source: src, shown: 0, dismissed: 0, signups_from_prompt: 0 });
+    const g = map.get(src)!;
+    g.shown++; totals.shown++;
+    if (r.dismissed) { g.dismissed++; totals.dismissed++; }
+    if (r.signedUp) { g.signups_from_prompt++; totals.signups_from_prompt++; }
+  }
+  return { totals, by_utm_source: [...map.values()].sort((a, b) => b.shown - a.shown || a.utm_source.localeCompare(b.utm_source)) };
+}

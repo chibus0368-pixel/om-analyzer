@@ -144,6 +144,9 @@ const nextConfig: NextConfig = {
       { source: '/xre', destination: '/?utm_source=x&utm_campaign=reel_e_rent_roll&utm_content=reel_e', permanent: false },
       { source: '/xrf', destination: '/?utm_source=x&utm_campaign=reel_f_cap_spread&utm_content=reel_f', permanent: false },
       { source: '/xe',  destination: '/?utm_source=x&utm_campaign=x_extras&utm_content=x_extra', permanent: false },
+      // Paid ads. Incoming query params (gclid etc.) are passed through by Next.
+      { source: '/ad-g1', destination: '/?utm_source=google_ads&utm_medium=cpc&utm_campaign=paid_test_oct26&utm_content=g1_speed', permanent: false },
+      { source: '/ad-g2', destination: '/?utm_source=google_ads&utm_medium=cpc&utm_campaign=paid_test_oct26&utm_content=g2_noi', permanent: false },
       { source: '/ig', destination: '/?utm_source=instagram&utm_campaign=bio&utm_content=vs_chatgpt', permanent: false },
       { source: '/ph', destination: '/?utm_source=producthunt&utm_campaign=launch&utm_content=maker_comment_screening', permanent: false },
       // Redirect /om-analyzer to root (homepage now lives at /)

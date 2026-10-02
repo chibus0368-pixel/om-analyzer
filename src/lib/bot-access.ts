@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
-import { groupAnonymousUsers, groupEmailLeads, type AnonUserRow, type LeadRow } from "@/lib/bot-trials";
+import { groupAnonymousUsers, groupEmailLeads, groupSavePrompt, type AnonUserRow, type LeadRow } from "@/lib/bot-trials";
 
 /**
  * Access for an outside agent (grokbot). /api/bot/usage and /api/bot/leads read;
@@ -110,7 +110,7 @@ export async function loadMembers(): Promise<Member[]> {
     const at = doc.attribution;
     const legacy = doc.signupSource;
     const attr = at
-      ? { source: at.utm_source || (at.referrer_host ? "referral" : "direct"), medium: null, campaign: at.utm_campaign || null, content: at.utm_content || null, referrer: at.referrer_host || null }
+      ? { source: at.utm_source || (at.referrer_host ? "referral" : "direct"), medium: at.utm_medium || null, campaign: at.utm_campaign || null, content: at.utm_content || null, referrer: at.referrer_host || null }
       : legacy?.source
         ? { source: legacy.source, medium: legacy.medium || null, campaign: legacy.campaign || null, content: legacy.content || null, referrer: legacy.referrer || null }
         : null;
@@ -191,4 +191,17 @@ export async function loadTrials(from: number) {
     anonymous_users,
     email_leads,
   };
+}
+
+/**
+ * "Save this deal" card funnel for users first shown the card in the window
+ * starting at `from` (ms). Read-only; counts only.
+ */
+export async function loadSavePrompt(from: number) {
+  const snap = await getAdminDb().collection("users").where("savePrompt.shownAt", ">=", new Date(from)).get();
+  return groupSavePrompt(snap.docs.map(d => {
+    const x = d.data();
+    const sp = x.savePrompt || {};
+    return { attribution: x.attribution, shown: !!sp.shownAt, dismissed: !!sp.dismissedAt, signedUp: !!sp.signedUpAt };
+  }));
 }

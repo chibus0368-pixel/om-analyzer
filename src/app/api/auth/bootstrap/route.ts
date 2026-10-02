@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     const uid = decodedToken.uid;
-    const email = decodedToken.email || "";
+    let email = decodedToken.email || "";
     const now = Timestamp.now();
 
     // Parse optional body data
@@ -37,6 +37,9 @@ export async function POST(request: NextRequest) {
     const providerIds = firebaseUser.providerData
       .map((p) => p.providerId)
       .filter(Boolean);
+    // A trial user who just linked Google can arrive with a token minted
+    // before the link, so fall back to the Auth record for the email.
+    if (!email) email = firebaseUser.email || firebaseUser.providerData.find((p) => p.email)?.email || "";
 
     // First-touch attribution from the som_attr cookie (see src/lib/attribution.ts).
     // Saved only when an account is created; existing users are never changed.
@@ -104,6 +107,16 @@ export async function POST(request: NextRequest) {
         updates.isAnonymous = false;
         updates.registeredAt = now;
         if (!existing.attribution) updates.attribution = attribution;
+        // The trial doc was created with no identity; fill it in now.
+        if (email) { updates.email = email; updates.emailLower = email.toLowerCase(); }
+        updates.displayName = firebaseUser.displayName || fullName;
+        if (firebaseUser.photoURL) updates.photoURL = firebaseUser.photoURL;
+        // Signed up from the "Save this deal" card on a trial result
+        // (see SavePromptCard). Reported by /api/bot/usage as save_prompt.
+        if (body.signupVia === "save_prompt") {
+          updates["savePrompt.signedUpAt"] = now;
+          updates["savePrompt.method"] = body.signupMethod === "google" ? "google" : "email";
+        }
         updates.periodStart = new Date();
         // Reset their counter so they get a clean monthly quota - their
         // 2 free trial uploads should not eat into the 7/month allowance.

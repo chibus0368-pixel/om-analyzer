@@ -33,6 +33,7 @@ import DealQuickScreen, { buildInput as buildQuickScreenInput, type Standardized
 import { runQuickScreen } from "@/lib/analysis/quick-screen";
 import OmReversePricing from "@/components/workspace/OmReversePricing";
 import DealVerdictBox from "@/components/workspace/DealVerdictBox";
+import SavePromptCard from "@/components/workspace/SavePromptCard";
 import DealAgentPanel from "@/components/workspace/DealAgentPanel";
 import RentRollDetailAnalysis from "@/components/workspace/RentRollDetailAnalysis";
 import SectionHeader from "@/components/workspace/SectionHeader";
@@ -2046,6 +2047,10 @@ function PropertyDetailInner({
           </div>
         </div>
       )}
+
+      {/* Trial users only: "save this deal" card on their first finished
+          result. Non-blocking; the result below stays fully visible. */}
+      <SavePromptCard user={user} ready={hasData && (!processingStatus || processingStatus === "complete")} />
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  MOBILE HERO IMAGE (hidden on desktop)              */}

@@ -185,6 +185,16 @@ export function trackSignupStart(source: string): void {
   });
 }
 
+/** "Save this deal" card on a trial result: shown, dismissed, or signed up (method = google | email) */
+export function trackSavePrompt(action: 'shown' | 'dismissed' | 'signup', method?: string): void {
+  if (typeof window === 'undefined' || !window.gtag) return;
+  window.gtag('event', `save_prompt_${action}`, {
+    event_category: 'conversion',
+    event_label: method || 'trial_result',
+  });
+  if (action === 'signup') window.gtag('event', 'sign_up', { method: method || 'unknown' });
+}
+
 /** User completes paid subscription */
 export function trackPurchase(tier: string, value: number): void {
   if (typeof window === 'undefined' || !window.gtag) return;

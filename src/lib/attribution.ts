@@ -2,7 +2,7 @@
  * First-touch marketing attribution.
  *
  * Capture (every page load, see GoogleAnalytics.tsx): if the URL has
- * utm_source, utm_campaign or utm_content, those three plus the landing path
+ * utm_source, utm_medium, utm_campaign or utm_content, those plus the landing path
  * and a timestamp go into a first-party cookie "som_attr" (90 days,
  * SameSite=Lax). With no UTMs, only the outside referrer's hostname is kept.
  * First touch wins: an existing som_attr is never overwritten. No other query
@@ -17,6 +17,7 @@ export const ATTR_COOKIE = "som_attr";
 
 export interface Attribution {
   utm_source: string | null;
+  utm_medium?: string | null; // added Oct 2026; older cookies and records don't have it
   utm_campaign: string | null;
   utm_content: string | null;
   landing_path: string | null;
@@ -30,9 +31,9 @@ var K='${ATTR_COOKIE}';
 if(document.cookie.split('; ').some(function(c){return c.indexOf(K+'=')===0;}))return;
 var p=new URLSearchParams(location.search);
 var cut=function(v){return v?String(v).trim().slice(0,80):null;};
-var s=cut(p.get('utm_source')),c=cut(p.get('utm_campaign')),t=cut(p.get('utm_content'));
+var s=cut(p.get('utm_source')),m=cut(p.get('utm_medium')),c=cut(p.get('utm_campaign')),t=cut(p.get('utm_content'));
 var a=null;
-if(s||c||t){a={utm_source:s,utm_campaign:c,utm_content:t,landing_path:location.pathname.slice(0,120),referrer_host:null,first_seen_at:new Date().toISOString()};}
+if(s||m||c||t){a={utm_source:s,utm_medium:m,utm_campaign:c,utm_content:t,landing_path:location.pathname.slice(0,120),referrer_host:null,first_seen_at:new Date().toISOString()};}
 else{var rh=null;try{if(document.referrer){var h=new URL(document.referrer).hostname.replace(/^www\\./,'');if(h&&h.indexOf('scoreom.com')<0&&h.indexOf('dealsignals')<0)rh=h.slice(0,100);}}catch(e){}
 if(!rh)return;a={utm_source:null,utm_campaign:null,utm_content:null,landing_path:location.pathname.slice(0,120),referrer_host:rh,first_seen_at:new Date().toISOString()};}
 document.cookie=K+'='+encodeURIComponent(JSON.stringify(a))+'; Max-Age=7776000; Path=/; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');
@@ -64,6 +65,7 @@ export function cleanAttribution(a: unknown): Attribution {
   const src: Record<string, unknown> = a && typeof a === "object" ? (a as Record<string, unknown>) : {};
   const out: Attribution = {
     utm_source: s(src.utm_source)?.toLowerCase() ?? null,
+    utm_medium: s(src.utm_medium)?.toLowerCase() ?? null,
     utm_campaign: s(src.utm_campaign),
     utm_content: s(src.utm_content),
     landing_path: s(src.landing_path, 120),
@@ -71,7 +73,7 @@ export function cleanAttribution(a: unknown): Attribution {
     first_seen_at: s(src.first_seen_at, 40),
   };
   // No cookie (or nothing useful in it) = direct.
-  if (!out.utm_source && !out.utm_campaign && !out.utm_content && !out.referrer_host) out.utm_source = "direct";
+  if (!out.utm_source && !out.utm_medium && !out.utm_campaign && !out.utm_content && !out.referrer_host) out.utm_source = "direct";
   return out;
 }
 

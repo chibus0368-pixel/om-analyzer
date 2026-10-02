@@ -1,4 +1,4 @@
-import { trialSource, groupAnonymousUsers, groupEmailLeads } from "../bot-trials";
+import { trialSource, groupAnonymousUsers, groupEmailLeads, groupSavePrompt } from "../bot-trials";
 import { cleanAttribution, readAttributionCookie } from "../attribution";
 
 const x = { utm_source: "x", utm_campaign: "x_tips", utm_content: "afternoon_tip" };
@@ -64,5 +64,30 @@ describe("cleanAttribution", () => {
     expect(cleanAttribution(readAttributionCookie(cookie))).toMatchObject(x);
     expect(readAttributionCookie("a=1")).toBeUndefined();
     expect(readAttributionCookie("som_attr=%7Bbroken")).toBeUndefined();
+  });
+});
+
+describe("groupSavePrompt", () => {
+  const g = { utm_source: "google_ads", utm_medium: "cpc", utm_campaign: "paid_test_oct26", utm_content: "g1_speed" };
+  it("counts shown, dismissed and signups per utm_source", () => {
+    const out = groupSavePrompt([
+      { attribution: g, shown: true, dismissed: true, signedUp: false },
+      { attribution: g, shown: true, dismissed: false, signedUp: true },
+      { attribution: x, shown: true, dismissed: false, signedUp: false },
+      { attribution: x, shown: false, dismissed: false, signedUp: false },
+      { attribution: { utm_source: "test" }, shown: true, dismissed: true, signedUp: true },
+    ]);
+    expect(out.totals).toEqual({ shown: 3, dismissed: 1, signups_from_prompt: 1 });
+    expect(out.by_utm_source).toEqual([
+      { utm_source: "google_ads", shown: 2, dismissed: 1, signups_from_prompt: 1 },
+      { utm_source: "x", shown: 1, dismissed: 0, signups_from_prompt: 0 },
+    ]);
+  });
+});
+
+describe("utm_medium", () => {
+  it("is kept and lowercased by cleanAttribution", () => {
+    expect(cleanAttribution({ utm_source: "google_ads", utm_medium: "CPC" }).utm_medium).toBe("cpc");
+    expect(cleanAttribution({ utm_source: "x" }).utm_medium).toBeNull();
   });
 });

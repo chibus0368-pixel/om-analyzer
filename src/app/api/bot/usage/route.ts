@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkBotKey, loadMembers, loadTrials, isTestSource, dayKey, NO_STORE, DAY_MS, RETURN_WINDOW_MS } from "@/lib/bot-access";
+import { checkBotKey, loadMembers, loadTrials, loadSavePrompt, isTestSource, dayKey, NO_STORE, DAY_MS, RETURN_WINDOW_MS } from "@/lib/bot-access";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     const days = Math.min(365, Math.max(1, Number(req.nextUrl.searchParams.get("days")) || 30));
     const now = Date.now();
     const from = now - days * DAY_MS;
-    const [allMembers, trials] = await Promise.all([loadMembers(), loadTrials(from)]);
+    const [allMembers, trials, save_prompt] = await Promise.all([loadMembers(), loadTrials(from), loadSavePrompt(from)]);
     const members = allMembers.filter(m => m.signedUpAt >= from && !isTestSource(m.source));
 
     // Cohort stats: counted by the day / source people signed up under.
@@ -77,9 +77,11 @@ export async function GET(req: NextRequest) {
         test_traffic: "Signups whose first-touch utm_source is 'test' are excluded everywhere.",
         by_source: "Aggregates for accounts that signed up in the window, grouped by first-touch utm_source / utm_campaign / utm_content. total_uploads counts deals (duplicated copies excluded). returned_within_14d uses the same rule as returnedWithin14d.",
         trials: "Trial activity in the window that has not become an account, by first-touch utm_source / utm_campaign / utm_content. anonymous_users = trial visitors (no signup) first seen in the window; users_with_1plus_upload = those who ran at least one deal (duplicated copies excluded). A trial visitor who later registers moves out of here and into signups. email_leads = visitors who gave an email at the trial gate without creating an account. 'untracked' = created before trial source tracking existed. utm_source 'test' is excluded. Counts only.",
+        save_prompt: "The 'Save this deal' card on a trial visitor's first deal result, for visitors first shown it in the window, by first-touch utm_source. shown = visitors who saw the card. dismissed = clicked 'Not now'. signups_from_prompt = created an account from the card (Google or email). utm_source 'test' is excluded. Counts only.",
       },
       totals: withRates(totals),
       trials,
+      save_prompt,
       by_source: [...bySrc.values()].sort((a, b) => b.signups - a.signups),
       bySource: [...bySource.values()].map(withRates).sort((a, b) => b.signups - a.signups),
       daily: [...byDay.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([date, r]) => ({ date, ...r })),
