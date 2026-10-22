@@ -19,7 +19,7 @@ export function IntroVideo() {
 
   const start = () => {
     const wide = typeof window !== "undefined" && window.innerWidth >= 900 && (window.devicePixelRatio || 1) * window.innerWidth >= 1200;
-    setSrc(wide ? "/videos/scoreom-intro-v6-1080.mp4" : "/videos/scoreom-intro-v6-720.mp4");
+    setSrc(wide ? "/videos/scoreom-intro-v7-1080.mp4" : "/videos/scoreom-intro-v7-720.mp4");
     setPlaying(true);
     requestAnimationFrame(() => { ref.current?.play().catch(() => {}); });
   };
@@ -36,23 +36,37 @@ export function IntroVideo() {
           <video
             ref={ref}
             src={src}
-            poster="/videos/scoreom-intro-v6-poster.webp"
+            poster="/videos/scoreom-intro-v7-poster.webp"
             controls
             autoPlay
             playsInline
             preload="auto"
             aria-label="ScoreOM intro video"
-          />
+            onLoadedMetadata={(e) => {
+              // Captions on by default (some browsers ignore the default attribute).
+              const t = e.currentTarget.textTracks;
+              for (let i = 0; i < t.length; i++) t[i].mode = "showing";
+            }}
+          >
+            <track kind="captions" src="/videos/scoreom-intro-v7.vtt" srcLang="en" label="English" default />
+          </video>
         ) : (
           <button type="button" className="so-intro-poster" onClick={start} aria-label="Play the ScoreOM intro video with sound">
-            <img src="/videos/scoreom-intro-v6-poster.webp" alt="" loading="lazy" decoding="async" width={1600} height={900} />
+            <img src="/videos/scoreom-intro-v7-poster.webp" alt="" loading="lazy" decoding="async" width={1600} height={900} />
             <span className="so-intro-shade" aria-hidden />
+            <span className="so-intro-sound" aria-hidden>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 5 6 9H3v6h3l5 4V5z" fill="currentColor" stroke="none" />
+                <path d="M15.5 8.5a5 5 0 0 1 0 7" /><path d="M18.5 5.5a9 9 0 0 1 0 13" />
+              </svg>
+              Sound on &middot; captions
+            </span>
             <span className="so-intro-play" aria-hidden>
               <svg viewBox="0 0 24 24" width="34" height="34"><path d="M8 5.5v13l11-6.5z" fill="#0d0d14" /></svg>
             </span>
             <span className="so-intro-meta">
               <b>Screen deals faster</b>
-              <span>1:20 &middot; sound on</span>
+              <span>1:21 &middot; turn your sound on</span>
             </span>
           </button>
         )}
@@ -76,6 +90,10 @@ export function IntroVideo() {
         @keyframes soIntroPulse { from { transform: scale(1); opacity:.9; } to { transform: scale(1.5); opacity:0; } }
         .so-intro-poster:hover .so-intro-play, .so-intro-poster:focus-visible .so-intro-play { transform: translate(-50%,-50%) scale(1.07); }
         .so-intro-poster:focus-visible { outline: 3px solid ${LIME}; outline-offset: -3px; }
+        .so-intro-sound { position:absolute; right:22px; top:20px; display:inline-flex; align-items:center; gap:8px; padding:8px 14px; border-radius:999px;
+          background:rgba(10,10,16,0.72); border:1px solid rgba(132,204,22,0.55); color:${LIME}; font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; font-weight:700;
+          letter-spacing:.01em; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+        .so-intro-frame video::cue { background:rgba(0,0,0,0.72); color:#fff; font-family:'Plus Jakarta Sans',sans-serif; font-size:clamp(14px, 1.9vw, 22px); line-height:1.35; }
         .so-intro-meta { position:absolute; left:28px; bottom:24px; display:flex; flex-direction:column; gap:2px; font-family:'Plus Jakarta Sans',sans-serif; }
         .so-intro-meta b { color:#fff; font-size:20px; font-weight:800; }
         .so-intro-meta span { color:rgba(255,255,255,0.75); font-size:14px; }
@@ -83,7 +101,11 @@ export function IntroVideo() {
           .so-intro { padding: 30px 16px 80px; }
           .so-intro-frame { border-radius: 18px; }
           .so-intro-play { width:68px; height:68px; }
-          .so-intro-meta { left:16px; bottom:14px; } .so-intro-meta b { font-size:16px; }
+          .so-intro-sound { position:absolute; right:22px; top:20px; display:inline-flex; align-items:center; gap:8px; padding:8px 14px; border-radius:999px;
+          background:rgba(10,10,16,0.72); border:1px solid rgba(132,204,22,0.55); color:${LIME}; font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; font-weight:700;
+          letter-spacing:.01em; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+        .so-intro-frame video::cue { background:rgba(0,0,0,0.72); color:#fff; font-family:'Plus Jakarta Sans',sans-serif; font-size:clamp(14px, 1.9vw, 22px); line-height:1.35; }
+        .so-intro-meta { left:16px; bottom:14px; } .so-intro-meta b { font-size:16px; }
         }
         @media (prefers-reduced-motion: reduce) { .so-intro-play::before { animation:none; } }
       `}</style>
